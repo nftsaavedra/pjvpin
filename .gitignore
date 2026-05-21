@@ -1,5 +1,58 @@
-# Logs
-logs
+# === Dependencias ===
+node_modules/
+
+# === Build / Distribucion ===
+dist/
+dist-ssr/
+*.zip
+*.tar.gz
+*.tar
+
+# === Vite / TypeScript ===
+*.tsbuildinfo
+.vite/
+
+# === Rust / Tauri ===
+/src-tauri/target/
+/src-tauri/bundle/
+
+# === Test / Coverage ===
+coverage/
+
+# === Entorno / Configuracion local ===
+.env
+.env.*
+!.env.example
+*.local
+
+# === Bases de datos locales (dev) ===
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+
+# === Scripts temporales / Agentes / OpenCode / IDE ===
+scripts/
+.agents/
+.continue/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# === Documentacion interna (Obsidian vault) ===
+_docs/
+
+# === Archivos de OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+*.swp
+*.swo
+*~
+
+# === Logs ===
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,34 +60,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-_docs
-
-*.local
-.env
-.env.*
-!.env.example
-
-# Editor directories and files
-.continue/
-.continue/*
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
+# === Temporales / Backups ===
+*.bak
+*.tmp
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
-
-# Database files (local dev data)
-src-tauri/database.db
-
-# Utility scripts (tools/dev helpers)
-scripts/
-
-# Agent/OpenCode artifacts
-skills-lock.json
