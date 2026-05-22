@@ -509,3 +509,49 @@ export interface ReporteDocenteIntegral {
   total_publicaciones: number;
   trazabilidad: TrazabilidadDocente;
 }
+
+// ── Publicaciones Cientificas ─────────────────────────────────────────────
+
+export interface PublicacionCientifica {
+  id_publicacion: string;
+  titulo: string;
+  autores_ids: string[];
+  revista?: string | null;
+  doi?: string | null;
+  issn?: string | null;
+  anio?: number | null;
+  cuartil?: string | null;
+  tipo: string;
+  url?: string | null;
+  resumen?: string | null;
+  palabras_clave: string[];
+  pure_id?: string | null;
+  activo: number;
+}
+
+// ── Eventos Academicos ────────────────────────────────────────────────────
+
+export interface ParticipanteEvento {
+  docente_id: string;
+  rol: string;
+}
+
+export interface EventoAcademico {
+  id_evento: string;
+  nombre: string;
+  tipo: string;
+  fecha_inicio?: number | null;
+  fecha_fin?: number | null;
+  lugar?: string | null;
+  descripcion?: string | null;
+  participantes: ParticipanteEvento[];
+  activo: number;
+}
+
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}

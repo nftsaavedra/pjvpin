@@ -1,0 +1,7 @@
+@layer components {
+  .table-interactive tbody tr { @apply cursor-pointer transition-all duration-300; }
+  .table-interactive tbody tr:hover { @apply bg-blue-100; box-shadow: inset 0 0 0 1px var(--color-primary); }
+  .table-interactive tbody tr.unassigned { @apply opacity-70; }
+  .font-semibold { @apply font-semibold; }
+  .table-actions-empty { @apply text-gray-500 text-xs font-semibold; }
+}

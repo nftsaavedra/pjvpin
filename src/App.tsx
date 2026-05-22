@@ -1,26 +1,37 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, ChevronLeft, ChevronRight, FileSpreadsheet, FolderOpen, GraduationCap, LayoutDashboard, LogOut, Settings2, Users } from 'lucide-react';
-import { AppIcon } from './shared/ui/AppIcon';
-import { type Usuario } from './features/auth/api';
-import { SkeletonBlock } from './shared/ui/Skeleton';
-import { ToastContainer } from './shared/feedback/ToastContainer';
-import { TabNavigation, type Tab } from './shared/navigation/TabNavigation';
-import { getRoleLabel, hasPermission } from './shared/auth/permissions';
-import { AuthShell } from './app/AuthShell';
-import { TabRenderers } from './app/TabRenderers';
-import { useAuth } from './app/hooks/useAuth';
-import { useAutoRefresh } from './app/hooks/useAutoRefresh';
-import { WizardScreen } from './features/wizard';
-import { wizardHasConfig } from './services/tauri/wizard';
-import './App.css';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  FileSpreadsheet,
+  FolderOpen,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+  Settings2,
+  Users,
+} from "lucide-react";
+import { AppIcon } from "./shared/ui/AppIcon";
+import { type Usuario } from "./features/auth/api";
+import { SkeletonBlock } from "./shared/ui/Skeleton";
+import { ToastContainer } from "./shared/feedback/ToastContainer";
+import { TabNavigation, type Tab } from "./shared/navigation/TabNavigation";
+import { getRoleLabel, hasPermission } from "./shared/auth/permissions";
+import { AuthShell } from "./app/AuthShell";
+import { TabRenderers } from "./app/TabRenderers";
+import { useAuth } from "./app/hooks/useAuth";
+import { useAutoRefresh } from "./app/hooks/useAutoRefresh";
+import { WizardScreen } from "./features/wizard";
+import { wizardHasConfig } from "./services/tauri/wizard";
+import "@/assets/styles/index.css";
 
 function App() {
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const savedValue = window.localStorage.getItem('pjupi.sidebarCollapsed');
-    if (savedValue === 'true' || savedValue === 'false') {
-      return savedValue === 'true';
+    const savedValue = window.localStorage.getItem("pjupi.sidebarCollapsed");
+    if (savedValue === "true" || savedValue === "false") {
+      return savedValue === "true";
     }
     return window.innerWidth <= 1360 && window.innerWidth > 1024;
   });
@@ -67,56 +78,107 @@ function App() {
 
   const handleLogout = async () => {
     await baseHandleLogout();
-    setActiveTab('dashboard');
+    setActiveTab("dashboard");
   };
 
   const currentRole = currentUser?.rol ?? null;
 
-  const tabs: Tab[] = useMemo(() => [
-    ...(hasPermission(currentRole, 'dashboard.view') ? [{ id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Indicadores clave' }] : []),
-    ...(hasPermission(currentRole, 'proyectos.view') ? [{ id: 'proyectos', label: 'Proyectos', icon: FolderOpen, description: 'Alta y seguimiento' }] : []),
-    ...(hasPermission(currentRole, 'docentes.view') ? [{ id: 'docentes', label: 'Docentes', icon: GraduationCap, description: 'Registro y estado' }] : []),
-    ...(hasPermission(currentRole, 'grupos.view') ? [{ id: 'grupos', label: 'Grupos', icon: Users, description: 'Investigación coordinada' }] : []),
-    ...(hasPermission(currentRole, 'reportes.view') ? [{ id: 'reportes', label: 'Reportes', icon: FileSpreadsheet, description: 'Vista previa y exportación' }] : []),
-    ...(hasPermission(currentRole, 'configuracion.view') ? [{ id: 'configuracion', label: 'Configuración', icon: Settings2, description: 'Accesos y catálogos' }] : []),
-  ], [currentRole]);
+  const tabs: Tab[] = useMemo(
+    () => [
+      ...(hasPermission(currentRole, "dashboard.view")
+        ? [
+            {
+              id: "dashboard",
+              label: "Dashboard",
+              icon: LayoutDashboard,
+              description: "Indicadores clave",
+            },
+          ]
+        : []),
+      ...(hasPermission(currentRole, "proyectos.view")
+        ? [
+            {
+              id: "proyectos",
+              label: "Proyectos",
+              icon: FolderOpen,
+              description: "Alta y seguimiento",
+            },
+          ]
+        : []),
+      ...(hasPermission(currentRole, "docentes.view")
+        ? [
+            {
+              id: "docentes",
+              label: "Docentes",
+              icon: GraduationCap,
+              description: "Registro y estado",
+            },
+          ]
+        : []),
+      ...(hasPermission(currentRole, "grupos.view")
+        ? [{ id: "grupos", label: "Grupos", icon: Users, description: "Investigación coordinada" }]
+        : []),
+      ...(hasPermission(currentRole, "reportes.view")
+        ? [
+            {
+              id: "reportes",
+              label: "Reportes",
+              icon: FileSpreadsheet,
+              description: "Vista previa y exportación",
+            },
+          ]
+        : []),
+      ...(hasPermission(currentRole, "configuracion.view")
+        ? [
+            {
+              id: "configuracion",
+              label: "Configuración",
+              icon: Settings2,
+              description: "Accesos y catálogos",
+            },
+          ]
+        : []),
+    ],
+    [currentRole],
+  );
 
   const tabHeaderMeta: Record<string, { kicker: string; title: string; subtitle: string }> = {
     dashboard: {
-      kicker: 'Indicadores clave',
-      title: 'Dashboard',
-      subtitle: 'Carga docente y proyectos en una sola vista.',
+      kicker: "Indicadores clave",
+      title: "Dashboard",
+      subtitle: "Carga docente y proyectos en una sola vista.",
     },
     proyectos: {
-      kicker: 'Gestión operativa',
-      title: 'Proyectos',
-      subtitle: 'Alta, asignación y seguimiento de proyectos.',
+      kicker: "Gestión operativa",
+      title: "Proyectos",
+      subtitle: "Alta, asignación y seguimiento de proyectos.",
     },
     docentes: {
-      kicker: 'Gestión operativa',
-      title: 'Docentes',
-      subtitle: 'Registro, estado y trazabilidad docente.',
+      kicker: "Gestión operativa",
+      title: "Docentes",
+      subtitle: "Registro, estado y trazabilidad docente.",
     },
     grupos: {
-      kicker: 'Investigación',
-      title: 'Grupos de Investigación',
-      subtitle: 'Coordinación y líneas de investigación.',
+      kicker: "Investigación",
+      title: "Grupos de Investigación",
+      subtitle: "Coordinación y líneas de investigación.",
     },
     reportes: {
-      kicker: 'Análisis y salida',
-      title: 'Reportes',
-      subtitle: 'Vista previa, filtros y exportación.',
+      kicker: "Análisis y salida",
+      title: "Reportes",
+      subtitle: "Vista previa, filtros y exportación.",
     },
     configuracion: {
-      kicker: 'Administración base',
-      title: 'Configuración',
-      subtitle: 'Accesos y catálogos del sistema.',
+      kicker: "Administración base",
+      title: "Configuración",
+      subtitle: "Accesos y catálogos del sistema.",
     },
   };
 
-  const validActiveTab = (!currentUser || tabs.length === 0 || tabs.some((tab) => tab.id === activeTab))
-    ? activeTab
-    : tabs[0].id;
+  const validActiveTab =
+    !currentUser || tabs.length === 0 || tabs.some((tab) => tab.id === activeTab)
+      ? activeTab
+      : tabs[0].id;
 
   const activeTabMeta = tabs.find((tab) => tab.id === validActiveTab) ?? tabs[0];
   const activeHeaderMeta = tabHeaderMeta[activeTabMeta.id] ?? tabHeaderMeta.dashboard;
@@ -124,7 +186,7 @@ function App() {
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => {
       const next = !prev;
-      window.localStorage.setItem('pjupi.sidebarCollapsed', String(next));
+      window.localStorage.setItem("pjupi.sidebarCollapsed", String(next));
       return next;
     });
   };
@@ -220,7 +282,7 @@ function App() {
       {!currentUser ? (
         <AuthShell requiresSetup={requiresSetup} onAuthenticated={handleAuthenticated} />
       ) : (
-        <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <div className={`app-shell ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
           <aside id="app-sidebar" className="app-sidebar">
             <div className="sidebar-brand">
               <div className="sidebar-brand-mark">UPI</div>
@@ -231,7 +293,7 @@ function App() {
                 type="button"
                 className="sidebar-toggle"
                 onClick={handleToggleSidebar}
-                aria-label={sidebarCollapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
+                aria-label={sidebarCollapsed ? "Expandir barra lateral" : "Colapsar barra lateral"}
                 aria-controls="app-sidebar"
                 aria-expanded={!sidebarCollapsed}
               >
@@ -250,7 +312,9 @@ function App() {
 
             <div className="sidebar-footer">
               <div className="sidebar-user-card">
-                <div className="sidebar-user-avatar">{currentUser.nombre_completo.charAt(0).toUpperCase()}</div>
+                <div className="sidebar-user-avatar">
+                  {currentUser.nombre_completo.charAt(0).toUpperCase()}
+                </div>
                 <div className="sidebar-user-copy">
                   <strong>{currentUser.nombre_completo}</strong>
                   <span>@{currentUser.username}</span>
@@ -281,7 +345,7 @@ function App() {
                   type="button"
                   className="content-sidebar-toggle"
                   onClick={handleToggleSidebar}
-                  aria-label={sidebarCollapsed ? 'Expandir navegación' : 'Colapsar navegación'}
+                  aria-label={sidebarCollapsed ? "Expandir navegación" : "Colapsar navegación"}
                   aria-controls="app-sidebar"
                   aria-expanded={!sidebarCollapsed}
                 >
@@ -290,7 +354,9 @@ function App() {
                     <span>Menú</span>
                   </span>
                 </button>
-                <span className="status-chip status-chip-total">Rol: {getRoleLabel(currentUser.rol)}</span>
+                <span className="status-chip status-chip-total">
+                  Rol: {getRoleLabel(currentUser.rol)}
+                </span>
               </div>
             </header>
 

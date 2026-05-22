@@ -1,0 +1,13 @@
+@layer components {
+  .app-header { @apply bg-gradient-to-br from-blue-500 to-blue-900 text-white p-8 shadow-lg sticky top-0 z-[100]; }
+  .header-content { @apply max-w-[1400px] mx-auto flex items-center justify-between; }
+  .app-title { @apply text-3xl font-bold -tracking-[0.5px] mb-1; }
+  .title-with-icon { @apply inline-flex items-center gap-2.5; }
+  .title-with-icon svg { @apply flex-shrink-0; }
+  .app-subtitle { @apply text-base opacity-90 font-normal tracking-[0.3px]; }
+  .session-box { @apply flex items-center gap-4; }
+  .session-user { @apply flex flex-col items-end gap-0.5; }
+  .session-user span { @apply text-sm opacity-85; }
+  .session-logout { @apply border-white/35 text-white bg-white/10; }
+  .session-logout:hover { @apply bg-white/20; }
+}

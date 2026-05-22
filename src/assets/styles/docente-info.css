@@ -1,0 +1,8 @@
+@layer components {
+  .docente-info { @apply bg-gray-50 rounded-lg p-4 mb-6; }
+  .info-row { @apply flex justify-between items-center py-3 border-b border-gray-200; }
+  .info-row:last-child { @apply border-b-0; }
+  .info-row label { @apply font-semibold text-gray-800 min-w-[150px]; }
+  .info-row span { @apply text-gray-500; }
+  .info-row.highlight span { @apply bg-blue-100 text-blue-500 px-3 py-1 rounded-full font-semibold; }
+}

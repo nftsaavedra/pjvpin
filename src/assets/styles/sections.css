@@ -1,0 +1,8 @@
+@layer components {
+  .section-header, .field-header { @apply flex items-center justify-between gap-4 flex-wrap; }
+  .section-header-actions { @apply flex items-center gap-3 flex-wrap ml-auto justify-end; }
+  .field-header label { @apply mb-0; }
+  .inline-feedback { @apply flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl mb-4 flex-wrap; }
+  .inline-feedback-warning { @apply bg-orange-50 text-orange-800 border border-orange-300; }
+  .inline-feedback-info { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+}

@@ -45,6 +45,16 @@ pub async fn get_all_proyectos_detalle(
 }
 
 #[tauri::command]
+pub async fn get_all_proyectos_paginated(
+    window: Window,
+    state: State<'_, AppState>,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
+    access_control::get_all_proyectos_paginated(&state, window.label(), page, limit).await
+}
+
+#[tauri::command]
 pub async fn eliminar_relacion_proyecto_docente(
     window: Window,
     state: State<'_, AppState>,

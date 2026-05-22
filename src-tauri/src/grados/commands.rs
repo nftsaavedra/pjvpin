@@ -13,6 +13,16 @@ pub async fn get_all_grados(
 }
 
 #[tauri::command]
+pub async fn get_all_grados_paginated(
+    window: Window,
+    state: State<'_, AppState>,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<GradoAcademico>, AppError> {
+    access_control::get_all_grados_paginated(&state, window.label(), page, limit).await
+}
+
+#[tauri::command]
 pub async fn crear_grado(
     window: Window,
     state: State<'_, AppState>,

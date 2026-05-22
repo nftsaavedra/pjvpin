@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
+import React, { useState } from "react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { toast } from "@/services/toast";
 
 interface RelatedEntity {
   id: string;
@@ -11,7 +12,7 @@ interface RelatedEntityFieldConfig {
   name: string;
   label: string;
   placeholder?: string;
-  type?: 'text' | 'number' | 'textarea' | 'select';
+  type?: "text" | "number" | "textarea" | "select";
   required?: boolean;
   options?: { value: string; label: string }[];
 }
@@ -35,23 +36,23 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
   fields,
   onItemsChange,
   renderItem,
-  emptyMessage = 'No hay elementos registrados',
+  emptyMessage = "No hay elementos registrados",
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<RelatedEntity | null>(null);
 
   const getField = (item: RelatedEntity | null, name: string): string => {
-    if (!item) return '';
+    if (!item) return "";
     const val = item[name];
-    return typeof val === 'string' ? val : JSON.stringify(val ?? '');
+    return typeof val === "string" ? val : JSON.stringify(val ?? "");
   };
 
   const handleAddItem = () => {
     const newId = `temp-${Date.now()}`;
     const newItem: RelatedEntity = { id: newId };
     fields.forEach((field) => {
-      newItem[field.name] = field.type === 'number' ? 0 : '';
+      newItem[field.name] = field.type === "number" ? 0 : "";
     });
     setEditingId(newId);
     setEditingItem(newItem);
@@ -68,12 +69,12 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
     // Validation
     for (const field of fields) {
       if (field.required && !editingItem[field.name]) {
-        alert(`${field.label} es requerido`);
+        toast.warning(`${field.label} es requerido`);
         return;
       }
     }
 
-    const isNew = editingId?.startsWith('temp-');
+    const isNew = editingId?.startsWith("temp-");
     if (isNew) {
       const finalId = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
       onItemsChange([...items, { ...editingItem, id: finalId }]);
@@ -87,7 +88,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
   };
 
   const handleDeleteItem = (id: string) => {
-    if (confirm('¿Está seguro de que desea eliminar este elemento?')) {
+    if (confirm("¿Está seguro de que desea eliminar este elemento?")) {
       onItemsChange(items.filter((item) => item.id !== id));
     }
   };
@@ -102,7 +103,9 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
       <button
         type="button"
         className="related-entities-toggle"
-        onClick={() => { setExpanded((prev) => !prev); }}
+        onClick={() => {
+          setExpanded((prev) => !prev);
+        }}
         aria-expanded={expanded}
       >
         <span className="related-entities-toggle-copy">
@@ -135,14 +138,18 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
                       <button
                         type="button"
                         className="btn-small btn-secondary"
-                        onClick={() => { handleEditItem(item); }}
+                        onClick={() => {
+                          handleEditItem(item);
+                        }}
                       >
                         Editar
                       </button>
                       <button
                         type="button"
                         className="btn-small btn-danger"
-                        onClick={() => { handleDeleteItem(item.id); }}
+                        onClick={() => {
+                          handleDeleteItem(item.id);
+                        }}
                       >
                         <AppIcon icon={Trash2} size={14} />
                       </button>
@@ -161,14 +168,18 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
                       <button
                         type="button"
                         className="btn-small btn-secondary"
-                        onClick={() => { handleEditItem(item); }}
+                        onClick={() => {
+                          handleEditItem(item);
+                        }}
                       >
                         Editar
                       </button>
                       <button
                         type="button"
                         className="btn-small btn-danger"
-                        onClick={() => { handleDeleteItem(item.id); }}
+                        onClick={() => {
+                          handleDeleteItem(item.id);
+                        }}
                       >
                         <AppIcon icon={Trash2} size={14} />
                       </button>
@@ -182,7 +193,9 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
           {editingId && editingItem && (
             <div className="related-entity-form">
               <h4 className="related-entity-form-title">
-                {editingId.startsWith('temp-') ? `Agregar ${title.toLowerCase()}` : `Editar ${title.toLowerCase()}`}
+                {editingId.startsWith("temp-")
+                  ? `Agregar ${title.toLowerCase()}`
+                  : `Editar ${title.toLowerCase()}`}
               </h4>
               {fields.map((field) => (
                 <div key={field.name} className="form-group">
@@ -190,39 +203,41 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
                     {field.label}
                     {field.required && <span className="required">*</span>}
                   </label>
-                  {field.type === 'textarea' ? (
+                  {field.type === "textarea" ? (
                     <textarea
-                        id={`${field.name}-${editingId}`}
-                        value={getField(editingItem, field.name)}
-                        onChange={(e) =>
-                          { setEditingItem({ ...editingItem, [field.name]: e.target.value }); }
-                        }
-                        placeholder={field.placeholder}
-                        rows={3}
-                      />
-                    ) : field.type === 'select' && field.options ? (
-                      <select
-                        id={`${field.name}-${editingId}`}
-                        value={getField(editingItem, field.name)}
-                        onChange={(e) =>
-                          { setEditingItem({ ...editingItem, [field.name]: e.target.value }); }
-                        }
-                      >
-                        <option value="">{field.placeholder || 'Seleccionar...'}</option>
-                        {field.options.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        id={`${field.name}-${editingId}`}
-                        type={field.type || 'text'}
-                        value={getField(editingItem, field.name)}
-                        onChange={(e) =>
-                          { setEditingItem({ ...editingItem, [field.name]: e.target.value }); }
-                        }
-                        placeholder={field.placeholder}
-                      />
+                      id={`${field.name}-${editingId}`}
+                      value={getField(editingItem, field.name)}
+                      onChange={(e) => {
+                        setEditingItem({ ...editingItem, [field.name]: e.target.value });
+                      }}
+                      placeholder={field.placeholder}
+                      rows={3}
+                    />
+                  ) : field.type === "select" && field.options ? (
+                    <select
+                      id={`${field.name}-${editingId}`}
+                      value={getField(editingItem, field.name)}
+                      onChange={(e) => {
+                        setEditingItem({ ...editingItem, [field.name]: e.target.value });
+                      }}
+                    >
+                      <option value="">{field.placeholder || "Seleccionar..."}</option>
+                      {field.options.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      id={`${field.name}-${editingId}`}
+                      type={field.type || "text"}
+                      value={getField(editingItem, field.name)}
+                      onChange={(e) => {
+                        setEditingItem({ ...editingItem, [field.name]: e.target.value });
+                      }}
+                      placeholder={field.placeholder}
+                    />
                   )}
                 </div>
               ))}
@@ -239,11 +254,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
 
           {!editingId && (
             <div className="related-entities-add">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={handleAddItem}
-              >
+              <button type="button" className="btn-secondary" onClick={handleAddItem}>
                 <span className="button-with-icon">
                   <AppIcon icon={Plus} size={16} />
                   <span>Agregar {title.toLowerCase()}</span>

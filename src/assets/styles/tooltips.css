@@ -1,0 +1,11 @@
+@layer components {
+  .floating-tooltip { @apply bg-gray-900 text-white shadow-2xl z-[1200]; }
+  .floating-tooltip-content { @apply text-inherit; }
+  .floating-tooltip-arrow { @apply fill-gray-900; }
+  .floating-tooltip-sm { @apply max-w-[220px] px-2.5 py-2 rounded-xl; }
+  .floating-tooltip-sm .floating-tooltip-content { @apply text-xs font-semibold leading-tight whitespace-nowrap; }
+  .floating-tooltip-md { @apply max-w-[260px] px-3 py-2.5 rounded-xl; }
+  .floating-tooltip-md .floating-tooltip-content { @apply text-sm leading-5 whitespace-normal; }
+  .floating-tooltip-rich { @apply max-w-[280px] px-3.5 py-3 rounded-2xl; }
+  .floating-tooltip-rich .floating-tooltip-content { @apply text-sm leading-6 whitespace-normal; }
+}

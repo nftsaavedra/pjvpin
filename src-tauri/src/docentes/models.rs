@@ -141,7 +141,7 @@ impl From<(Docente, String, Vec<String>)> for DocenteDetalle {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ReniecDniLookupResult {
     pub first_name: String,
     pub first_last_name: String,

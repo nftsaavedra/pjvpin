@@ -5,6 +5,7 @@ mod docentes;
 mod eventos;
 mod grados;
 mod grupos;
+mod personas;
 mod proyectos;
 mod publicaciones;
 mod recursos;
@@ -118,6 +119,7 @@ pub fn run() {
             proyecto_cmds::actualizar_proyecto_con_participantes,
             proyecto_cmds::buscar_proyectos_por_docente,
             proyecto_cmds::get_all_proyectos_detalle,
+            proyecto_cmds::get_all_proyectos_paginated,
             proyecto_cmds::eliminar_relacion_proyecto_docente,
             proyecto_cmds::eliminar_relaciones_proyecto,
             proyecto_cmds::eliminar_proyecto,
@@ -139,6 +141,7 @@ pub fn run() {
             reporte_cmds::get_renacyt_distribucion,
             // Grados
             grado_cmds::get_all_grados,
+            grado_cmds::get_all_grados_paginated,
             grado_cmds::crear_grado,
             grado_cmds::actualizar_grado,
             grado_cmds::eliminar_grado,
@@ -158,6 +161,7 @@ pub fn run() {
             usuario_cmds::get_current_session,
             usuario_cmds::logout_usuario,
             usuario_cmds::get_all_usuarios,
+            usuario_cmds::get_all_usuarios_paginated,
             usuario_cmds::actualizar_usuario,
             usuario_cmds::desactivar_usuario,
             usuario_cmds::reactivar_usuario,

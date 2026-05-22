@@ -1,0 +1,39 @@
+@layer components {
+  .form-card { @apply bg-white rounded-xl p-8 shadow-md border border-gray-200 mb-8; }
+  .form-card h2 { @apply mb-6 text-2xl text-gray-800 border-b-2 border-blue-100 pb-4; }
+  .form { @apply flex flex-col gap-5; }
+  .form-group { @apply flex flex-col gap-1.5; }
+  .form-label-row { @apply flex items-center justify-between gap-2 min-w-0; }
+  .form-label-text { @apply mb-0; }
+  .form-input-action-group { @apply flex gap-2 items-stretch; }
+  .form-input-action-group .form-input { @apply flex-1; }
+  .form-input-action-button { @apply flex-shrink-0 min-w-[152px] whitespace-nowrap; }
+  .form-inline-hint { @apply text-gray-500 text-sm mt-1.5; }
+  .form-inline-status { @apply mt-0.5 px-3 py-2.5 rounded-xl text-xs leading-5 border border-transparent; }
+  .form-inline-status-idle, .form-inline-status-checking { @apply bg-blue-50 text-blue-800 border-blue-200; }
+  .form-inline-status-validated { @apply bg-green-50 text-green-700 border-green-200; }
+  .form-inline-status-duplicate, .form-inline-status-error { @apply bg-red-50 text-red-700 border-red-200; }
+  .form-inline-preview { @apply flex flex-col gap-1 px-3.5 py-3 rounded-xl border border-dashed border-blue-200 bg-blue-50/50; }
+  .form-inline-preview strong { @apply text-blue-800 text-sm; }
+  .form-inline-preview span { @apply text-gray-800 text-base; }
+  .form-group label { @apply font-semibold mb-0 text-gray-800 text-sm; }
+  .field-help-trigger { @apply w-6 h-6 p-0 border border-blue-300/20 rounded-full bg-blue-100/70 text-blue-700 inline-flex items-center justify-center cursor-help transition-all duration-300; }
+  .field-help-trigger:hover { @apply bg-blue-200 text-blue-800 border-blue-300/30; }
+  .field-help-trigger:focus-visible { @apply ring-4 ring-blue-300/20; }
+  .form-input, select { @apply px-4 py-2.5 border border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white font-sans min-h-[40px]; }
+  .form-input:focus, select:focus { @apply outline-none border-blue-400 ring-2 ring-blue-200/50; }
+  .docente-form-modal { @apply max-h-[94vh]; }
+  .docente-form-modal-body { @apply gap-3; }
+  .docente-form-layout { @apply flex flex-col gap-3 min-h-0; }
+  .docente-form-grid { @apply grid grid-cols-2 gap-x-4 gap-y-3 items-start; }
+  .docente-form-span-1 { @apply min-w-0; }
+  .docente-form-span-2 { @apply col-span-2; }
+  .docente-dni-group { @apply gap-1.5; }
+  .docente-dni-input-row { @apply items-stretch; }
+  .docente-form-preview-card { @apply justify-center min-h-full; }
+  .docente-form-preview-card strong { @apply uppercase tracking-wider; }
+  .docente-renacyt-card { @apply gap-2; }
+  .renacyt-summary-card { @apply flex flex-col gap-3 mt-1 px-4 py-3.5 rounded-2xl border border-blue-200; }
+  .form-buttons { @apply flex items-center gap-3 justify-end pt-2; }
+  .form-hint-error { @apply text-red-600 text-xs mt-1; }
+}

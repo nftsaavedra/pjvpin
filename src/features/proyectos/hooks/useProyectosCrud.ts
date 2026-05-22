@@ -1,0 +1,88 @@
+import { useStableFetchData } from "@/shared/hooks/useStableFetch";
+import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
+import { toast } from "@/services/toast";
+import {
+  actualizarProyectoConParticipantes,
+  crearProyectoConParticipantes,
+  eliminarProyecto,
+  getAllProyectosDetalle,
+  reactivarProyecto,
+  type ProyectoParticipantesPayload,
+  type ProyectoDetalle,
+} from "../api";
+import type { Proyecto } from "@/services/tauri/types";
+
+export const useProyectosCrud = (refreshTrigger: number, onProyectoCreated: () => void) => {
+  const {
+    data: proyectos,
+    loading,
+    refreshing,
+    error: proyectosError,
+    recargar: cargarProyectos,
+  } = useStableFetchData<ProyectoDetalle[]>(
+    () => getAllProyectosDetalle(),
+    refreshTrigger,
+    "Error cargando proyectos",
+    [],
+  );
+
+  useRefreshToast({
+    refreshing,
+    message: "Actualizando proyectos",
+    toastKey: "proyectos-refresh",
+  });
+
+  const handleCreate = async (
+    titulo: string,
+    docentesSeleccionados: string[],
+    docenteResponsableId: string,
+  ): Promise<Proyecto> => {
+    return await crearProyectoConParticipantes(titulo, docentesSeleccionados, docenteResponsableId);
+  };
+
+  const handleUpdate = async (
+    idProyecto: string,
+    payload: ProyectoParticipantesPayload,
+  ): Promise<void> => {
+    if (!payload.titulo_proyecto.trim()) {
+      toast.warning("Ingrese el título del proyecto");
+      return;
+    }
+
+    if (payload.docentes_ids.length > 0 && !payload.docente_responsable_id) {
+      toast.warning("Seleccione un docente responsable antes de guardar los cambios");
+      return;
+    }
+
+    await actualizarProyectoConParticipantes(idProyecto, payload);
+    toast.success("Proyecto actualizado correctamente");
+    await cargarProyectos();
+    onProyectoCreated();
+  };
+
+  const handleDelete = async (idProyecto: string): Promise<void> => {
+    const resultado = await eliminarProyecto(idProyecto);
+    toast.info(resultado.mensaje);
+    await cargarProyectos();
+    onProyectoCreated();
+  };
+
+  const handleReactivate = async (id: string): Promise<void> => {
+    await reactivarProyecto(id);
+    toast.success("Proyecto reactivado correctamente");
+    await cargarProyectos();
+    onProyectoCreated();
+  };
+
+  return {
+    proyectos,
+    loading,
+    refreshing,
+    proyectosError,
+    cargarProyectos,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    handleReactivate,
+  } as const;
+};

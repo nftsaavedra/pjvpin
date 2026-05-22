@@ -1,7 +1,12 @@
-import { Suspense } from 'react';
-import { hasPermission } from '@/shared/auth/permissions';
-import { DashboardFallback, FormAndTableFallback, TableOnlyFallback } from '@/shared/ui/SkeletonFallbacks';
-import { type Usuario } from '@/features/auth/api';
+import { Suspense } from "react";
+import { hasPermission } from "@/shared/auth/permissions";
+import {
+  DashboardFallback,
+  FormAndTableFallback,
+  TableOnlyFallback,
+} from "@/shared/ui/SkeletonFallbacks";
+import { ErrorBoundary } from "@/shared/feedback/ErrorBoundary";
+import { type Usuario } from "@/features/auth/api";
 import {
   DashboardTab,
   ProyectosTab,
@@ -10,7 +15,7 @@ import {
   DocentesTable,
   ReportesTab,
   ConfiguracionTab,
-} from '@/app/lazyImports';
+} from "@/app/lazyImports";
 
 interface TabRenderersProps {
   validActiveTab: string;
@@ -36,66 +41,89 @@ export function TabRenderers({
   }
 
   switch (validActiveTab) {
-    case 'dashboard':
+    case "dashboard":
       return (
-        <Suspense fallback={<DashboardFallback />}>
-          <DashboardTab refreshTrigger={refreshTrigger} />
-        </Suspense>
+        <ErrorBoundary fallbackTitle="Error en Dashboard">
+          <Suspense fallback={<DashboardFallback />}>
+            <DashboardTab refreshTrigger={refreshTrigger} />
+          </Suspense>
+        </ErrorBoundary>
       );
-    case 'proyectos':
+    case "proyectos":
       return (
-        <Suspense fallback={<FormAndTableFallback columns={5} />}>
-          <ProyectosTab canManage={hasPermission(currentRole, 'proyectos.manage')} onProyectoCreated={onDataModified} refreshTrigger={refreshTrigger} />
-        </Suspense>
-      );
-    case 'docentes':
-      return (
-        <Suspense fallback={<FormAndTableFallback columns={6} />}>
-          <div className="module-shell docentes-module">
-            <DocentesTable
-              canManage={hasPermission(currentRole, 'docentes.manage')}
-              onCreateClick={() => { setDocenteFormOpen(true); }}
+        <ErrorBoundary fallbackTitle="Error en Proyectos">
+          <Suspense fallback={<FormAndTableFallback columns={5} />}>
+            <ProyectosTab
+              canManage={hasPermission(currentRole, "proyectos.manage")}
+              onProyectoCreated={onDataModified}
               refreshTrigger={refreshTrigger}
             />
-            {docenteFormOpen && hasPermission(currentRole, 'docentes.manage') && (
-              <Suspense fallback={null}>
-                <DocenteCreateModal
-                  open={docenteFormOpen}
-                  onClose={() => { setDocenteFormOpen(false); }}
-                  onDocenteCreated={onDataModified}
-                  refreshTrigger={refreshTrigger}
-                />
-              </Suspense>
-            )}
-          </div>
-        </Suspense>
+          </Suspense>
+        </ErrorBoundary>
       );
-    case 'grupos':
+    case "docentes":
       return (
-        <Suspense fallback={<FormAndTableFallback columns={4} />}>
-          <GruposTab canManage={hasPermission(currentRole, 'grupos.manage')} />
-        </Suspense>
+        <ErrorBoundary fallbackTitle="Error en Docentes">
+          <Suspense fallback={<FormAndTableFallback columns={6} />}>
+            <div className="module-shell docentes-module">
+              <DocentesTable
+                canManage={hasPermission(currentRole, "docentes.manage")}
+                onCreateClick={() => {
+                  setDocenteFormOpen(true);
+                }}
+                refreshTrigger={refreshTrigger}
+              />
+              {docenteFormOpen && hasPermission(currentRole, "docentes.manage") && (
+                <Suspense fallback={null}>
+                  <DocenteCreateModal
+                    open={docenteFormOpen}
+                    onClose={() => {
+                      setDocenteFormOpen(false);
+                    }}
+                    onDocenteCreated={onDataModified}
+                    refreshTrigger={refreshTrigger}
+                  />
+                </Suspense>
+              )}
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       );
-    case 'configuracion':
-      if (!hasPermission(currentRole, 'configuracion.view')) {
+    case "grupos":
+      return (
+        <ErrorBoundary fallbackTitle="Error en Grupos">
+          <Suspense fallback={<FormAndTableFallback columns={4} />}>
+            <GruposTab canManage={hasPermission(currentRole, "grupos.manage")} />
+          </Suspense>
+        </ErrorBoundary>
+      );
+    case "configuracion":
+      if (!hasPermission(currentRole, "configuracion.view")) {
         return null;
       }
 
       return (
-        <Suspense fallback={<FormAndTableFallback columns={5} />}>
-          <ConfiguracionTab
-            currentUser={currentUser}
-            onDataModified={onDataModified}
-            refreshTrigger={refreshTrigger}
-            isAdmin={hasPermission(currentRole, 'usuarios.manage')}
-          />
-        </Suspense>
+        <ErrorBoundary fallbackTitle="Error en Configuracion">
+          <Suspense fallback={<FormAndTableFallback columns={5} />}>
+            <ConfiguracionTab
+              currentUser={currentUser}
+              onDataModified={onDataModified}
+              refreshTrigger={refreshTrigger}
+              isAdmin={hasPermission(currentRole, "usuarios.manage")}
+            />
+          </Suspense>
+        </ErrorBoundary>
       );
-    case 'reportes':
+    case "reportes":
       return (
-        <Suspense fallback={<TableOnlyFallback columns={5} />}>
-          <ReportesTab canExport={hasPermission(currentRole, 'reportes.export')} refreshTrigger={refreshTrigger} />
-        </Suspense>
+        <ErrorBoundary fallbackTitle="Error en Reportes">
+          <Suspense fallback={<TableOnlyFallback columns={5} />}>
+            <ReportesTab
+              canExport={hasPermission(currentRole, "reportes.export")}
+              refreshTrigger={refreshTrigger}
+            />
+          </Suspense>
+        </ErrorBoundary>
       );
     default:
       return null;

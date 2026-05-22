@@ -1,0 +1,19 @@
+@layer components {
+  .table-container { @apply bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-8; }
+  .filter-bar { @apply flex items-center gap-3 p-4 border-b border-gray-200 flex-wrap; }
+  .filter-search { @apply flex-1 min-w-[200px] max-w-[320px]; }
+  .filter-select { @apply min-w-[160px] max-w-[220px]; }
+  .table-responsive { @apply overflow-x-auto; }
+  table { @apply w-full border-collapse; }
+  thead { @apply bg-gray-50; }
+  thead th { @apply px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200; }
+  tbody td { @apply px-4 py-3 text-sm text-gray-700 border-b border-gray-100; }
+  tbody tr:hover { @apply bg-gray-50; }
+  .table-actions { @apply flex items-center justify-between gap-3 py-3 flex-wrap; }
+  .table-actions .btn-primary,
+  .table-actions .btn-secondary { @apply w-auto; }
+  .table-action-button-wrapper { @apply inline-flex; }
+  .table-action-button { @apply inline-flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 cursor-pointer border border-gray-200 bg-white text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300; }
+  .table-action-button:disabled { @apply opacity-40 cursor-not-allowed; }
+  .table-empty { @apply text-center py-12 text-gray-500 text-sm; }
+}

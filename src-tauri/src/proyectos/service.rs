@@ -231,3 +231,12 @@ pub async fn get_by_id(state: &AppState, id_proyecto: &str) -> Result<Proyecto, 
     let db = state.mongo_db()?;
     repository::get_proyecto_by_id(db, id_proyecto).await
 }
+
+pub async fn get_all_paginated(
+    state: &AppState,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_all_proyectos_paginated(db, page, limit).await
+}

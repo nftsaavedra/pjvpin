@@ -1,0 +1,10 @@
+@layer components {
+  .settings-shell { @apply flex flex-col gap-6; }
+  .settings-nav { @apply flex gap-2 flex-wrap border-b border-gray-200 pb-2; }
+  .settings-nav-btn { @apply px-4 py-2.5 rounded-xl text-sm font-semibold border border-transparent cursor-pointer transition-all duration-200 bg-transparent text-gray-500; }
+  .settings-nav-btn:hover { @apply text-gray-800 bg-gray-50; }
+  .settings-nav-btn.active { @apply text-blue-700 bg-blue-50 border-blue-200; }
+  .settings-content { @apply flex flex-col gap-6; }
+  .settings-content-panel { @apply flex flex-col gap-4; }
+  .settings-hero-badges { @apply flex gap-2 flex-wrap; }
+}

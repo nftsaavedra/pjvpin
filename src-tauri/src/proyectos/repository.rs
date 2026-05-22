@@ -23,6 +23,42 @@ pub async fn get_proyecto_by_id(db: &Database, id_proyecto: &str) -> Result<Proy
         .await?
         .ok_or_else(|| AppError::NotFound("Proyecto no encontrado.".to_string()))
 }
+
+pub async fn get_all_proyectos_paginated(
+    db: &Database,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
+    let filter = doc! {};
+    let total = db
+        .collection::<Proyecto>("proyectos")
+        .count_documents(filter.clone())
+        .await?;
+    let skip = (page.saturating_sub(1) * limit) as u64;
+    let limit_i64 = limit as i64;
+
+    let mut cursor = db
+        .collection::<Proyecto>("proyectos")
+        .find(filter)
+        .sort(doc! { "titulo_proyecto": 1 })
+        .skip(skip)
+        .limit(limit_i64)
+        .await?;
+
+    let mut proyectos: Vec<Proyecto> = Vec::new();
+    while let Some(p) = cursor.try_next().await? {
+        proyectos.push(p);
+    }
+
+    let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
+    Ok(crate::shared::pagination::PaginatedResult {
+        items: proyectos,
+        total,
+        page,
+        limit,
+        total_pages,
+    })
+}
 use crate::catalogos::models::CatalogoItem;
 use crate::grupos::models::GrupoInvestigacion;
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};

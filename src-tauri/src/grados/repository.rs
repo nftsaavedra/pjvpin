@@ -91,3 +91,39 @@ pub async fn reactivar_grado(db: &Database, id_grado: &str) -> Result<GradoAcade
         .await?;
     get_grado_by_id(db, id_grado).await
 }
+
+pub async fn get_all_grados_paginated(
+    db: &Database,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<GradoAcademico>, AppError> {
+    let filter = doc! {};
+    let total = db
+        .collection::<GradoAcademico>("grados")
+        .count_documents(filter.clone())
+        .await?;
+    let skip = (page.saturating_sub(1) * limit) as u64;
+    let limit_i64 = limit as i64;
+
+    let mut cursor = db
+        .collection::<GradoAcademico>("grados")
+        .find(filter)
+        .sort(doc! { "nombre": 1 })
+        .skip(skip)
+        .limit(limit_i64)
+        .await?;
+
+    let mut grados: Vec<GradoAcademico> = Vec::new();
+    while let Some(g) = cursor.try_next().await? {
+        grados.push(g);
+    }
+
+    let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
+    Ok(crate::shared::pagination::PaginatedResult {
+        items: grados,
+        total,
+        page,
+        limit,
+        total_pages,
+    })
+}

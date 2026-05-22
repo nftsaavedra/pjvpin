@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1e40af;
+  --color-primary-light: #dbeafe;
+  --color-secondary: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-bg: #f8fafc;
+  --color-card: #ffffff;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #556274;
+  --color-border: #e5e7eb;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  --radius: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background: linear-gradient(135deg, var(--color-bg) 0%, #f1f5f9 100%);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 200;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #0f172a;
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow-lg);
+  transition: top 160ms ease;
+}
+
+.skip-link:focus-visible {
+  top: 1rem;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 3px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.22);
+}
+
+/* ===== TOASTS (kept as custom — self-contained) ===== */
+.toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-width: min(420px, calc(100vw - 2rem));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid transparent;
+  animation: toastIn 0.25s ease;
+  backdrop-filter: blur(4px);
+}
+
+.toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+.toast-message { font-size: 0.92rem; line-height: 1.35; }
+.toast-success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+.toast-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.toast-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.toast-info { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(10px) translateX(10px); }
+  to { opacity: 1; transform: translateY(0) translateX(0); }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-secondary); }
+
+/* ===== The rest is in domain CSS files (kept for compatibility during migration) ===== */
+@import "./tokens.css";
+@import "./global.css";
+@import "./layout.css";
+@import "./header.css";
+@import "./sidebar.css";
+@import "./content-header.css";
+@import "./auth.css";
+@import "./modal.css";
+@import "./tabs.css";
+@import "./tables.css";
+@import "./table-components.css";
+@import "./buttons.css";
+@import "./badges.css";
+@import "./forms.css";
+@import "./kpis.css";
+@import "./dashboard.css";
+@import "./tooltips.css";
+@import "./docentes.css";
+@import "./grupos.css";
+@import "./proyectos.css";
+@import "./charts.css";
+@import "./sections.css";
+@import "./settings.css";
+@import "./skeleton.css";
+@import "./related-entities.css";
+@import "./project-diff.css";
+@import "./docente-info.css";
+@import "./role-matrix.css";
+@import "./export.css";
+@import "./catalogos.css";
+@import "./wizard.css";
+@import "./error-boundary.css";
+@import "./animations.css";
+@import "./scrollbar.css";
+@import "./responsive.css";

@@ -1,0 +1,6 @@
+@layer components {
+  .error-boundary-fallback { @apply flex flex-col items-center justify-center gap-2.5 px-8 py-12 text-center; }
+  .error-boundary-icon { @apply text-amber-500; }
+  .error-boundary-fallback h2 { @apply text-lg text-gray-800 m-0; }
+  .error-boundary-fallback p { @apply text-sm text-gray-500 max-w-[36ch] m-0 leading-6; }
+}

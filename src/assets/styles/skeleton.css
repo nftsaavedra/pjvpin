@@ -1,0 +1,26 @@
+@layer components {
+  .skeleton { @apply bg-gray-200 rounded-lg animate-[shimmer_1.5s_ease-in-out_infinite]; background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; }
+  .skeleton-input { @apply h-10 rounded-lg; }
+  .skeleton-button { @apply h-10 rounded-lg w-[140px]; }
+  .skeleton-line { @apply h-4 rounded; }
+  .skeleton-line-soft { @apply w-3/4; }
+  .skeleton-line-strong { @apply w-1/2; }
+  .skeleton-title-md { @apply h-6 w-2/5; }
+  .skeleton-title-sm { @apply h-5 w-1/3; }
+  .skeleton-title-lg { @apply h-7 w-1/2; }
+  .skeleton-circle { @apply w-12 h-12 rounded-full; }
+  .skeleton-checkbox { @apply w-[18px] h-[18px] rounded; }
+  .skeleton-table { @apply grid gap-0; }
+  .skeleton-table-header { @apply grid gap-4 mb-2; grid-template-columns: repeat(var(--skeleton-columns, 5), minmax(0, 1fr)); }
+  .skeleton-table-row { @apply grid gap-4 py-2; grid-template-columns: repeat(var(--skeleton-columns, 5), minmax(0, 1fr)); }
+  .skeleton-table-cell { @apply h-4; }
+  .skeleton-table-head { @apply h-5; }
+  .skeleton-chart { @apply rounded-xl w-full; }
+  .skeleton-chart-md { @apply h-[280px]; }
+  .skeleton-chart-lg { @apply h-[320px]; }
+  .skeleton-chart-sm { @apply h-[200px]; }
+  .skeleton-chart-card { @apply flex flex-col gap-4; }
+  .auth-card-loading { @apply pointer-events-none; }
+  .auth-loading-form { @apply flex flex-col gap-3.5; }
+}
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }

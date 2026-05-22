@@ -1,0 +1,9 @@
+@layer components {
+  .related-entities-section { @apply mt-6 pt-5 border-t border-gray-200; }
+  .related-entities-toggle { @apply inline-flex items-center gap-2 px-0 py-2 text-sm font-semibold text-blue-600 bg-transparent border-0 cursor-pointer transition-all duration-200; }
+  .related-entities-toggle:hover { @apply text-blue-800; }
+  .related-entities-list { @apply flex flex-col gap-3 mt-3; }
+  .related-entities-empty { @apply text-gray-500 text-sm py-3; }
+  .related-entities-card { @apply flex items-center justify-between gap-4 p-3.5 rounded-xl border border-gray-200 bg-gray-50; }
+  .related-entities-form { @apply flex flex-col gap-3 mt-4 p-4 rounded-xl border border-blue-200 bg-blue-50/50; }
+}

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use mongodb::Database;
 use tokio::sync::RwLock;
 
+use crate::docentes::models::ReniecDniLookupResult;
 use crate::shared::config::{PureConfig, RenacytConfig, ReniecConfig};
 use crate::shared::error::AppError;
 use crate::shared::time;
@@ -166,6 +167,7 @@ pub struct AppState {
     pub pure_config: PureConfig,
     sessions: SessionStore,
     pub rate_limiter: LoginRateLimiter,
+    pub reniec_cache: ReniecCache,
 }
 
 impl AppState {
@@ -182,6 +184,7 @@ impl AppState {
             pure_config,
             sessions: SessionStore::new(),
             rate_limiter: LoginRateLimiter::new(),
+            reniec_cache: ReniecCache::new(),
         }
     }
 
@@ -230,5 +233,47 @@ impl AppState {
 
     pub async fn cleanup_sessions(&self) {
         self.sessions.cleanup_expired().await;
+    }
+}
+
+pub struct ReniecCache {
+    cache: RwLock<HashMap<String, ReniecCacheEntry>>,
+}
+
+struct ReniecCacheEntry {
+    result: ReniecDniLookupResult,
+    cached_at: i64,
+}
+
+impl ReniecCache {
+    const TTL_MS: i64 = 60 * 60 * 1000;
+
+    pub fn new() -> Self {
+        Self {
+            cache: RwLock::new(HashMap::new()),
+        }
+    }
+
+    pub async fn get(&self, dni: &str) -> Option<ReniecDniLookupResult> {
+        let now = time::now_ms();
+        let cache = self.cache.read().await;
+        cache.get(dni.trim()).and_then(|entry| {
+            if now - entry.cached_at < Self::TTL_MS {
+                Some(entry.result.clone())
+            } else {
+                None
+            }
+        })
+    }
+
+    pub async fn put(&self, dni: &str, result: ReniecDniLookupResult) {
+        let mut cache = self.cache.write().await;
+        cache.insert(
+            dni.trim().to_string(),
+            ReniecCacheEntry {
+                result,
+                cached_at: time::now_ms(),
+            },
+        );
     }
 }

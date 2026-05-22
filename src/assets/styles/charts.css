@@ -1,0 +1,6 @@
+@layer components {
+  .chart-container { @apply bg-white rounded-xl p-8 mb-8 shadow-md border border-gray-200 min-w-0 overflow-hidden; }
+  .chart-container h2 { @apply mb-6 text-gray-800 text-xl; }
+  .recharts-responsive-container, .recharts-wrapper, .recharts-surface { @apply min-w-0 max-w-full; }
+  .kpi-card, .module-aside-card, .settings-content, .settings-content-panel { @apply min-w-0 max-w-full; }
+}

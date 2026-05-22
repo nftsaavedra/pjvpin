@@ -226,6 +226,44 @@ pub async fn get_all_usuarios(
     Ok(usuarios)
 }
 
+pub async fn get_all_usuarios_paginated(
+    db: &Database,
+    actor_user_id: &str,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<Usuario>, AppError> {
+    validar_actor_admin(db, actor_user_id).await?;
+    let filter = doc! {};
+    let total = db
+        .collection::<UsuarioConPassword>("usuarios")
+        .count_documents(filter.clone())
+        .await?;
+    let skip = (page.saturating_sub(1) * limit) as u64;
+    let limit_i64 = limit as i64;
+
+    let mut cursor = db
+        .collection::<UsuarioConPassword>("usuarios")
+        .find(filter)
+        .sort(doc! { "username": 1 })
+        .skip(skip)
+        .limit(limit_i64)
+        .await?;
+
+    let mut usuarios: Vec<Usuario> = Vec::new();
+    while let Some(u) = cursor.try_next().await? {
+        usuarios.push(u.public_view());
+    }
+
+    let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
+    Ok(crate::shared::pagination::PaginatedResult {
+        items: usuarios,
+        total,
+        page,
+        limit,
+        total_pages,
+    })
+}
+
 pub async fn get_usuario_by_id(
     db: &Database,
     id_usuario: &str,

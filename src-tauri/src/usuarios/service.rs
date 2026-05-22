@@ -72,3 +72,13 @@ pub async fn reactivate(
     let db = state.mongo_db()?;
     repository::reactivar_usuario(db, actor_user_id, id_usuario).await
 }
+
+pub async fn get_all_paginated(
+    state: &AppState,
+    actor_user_id: &str,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<Usuario>, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_all_usuarios_paginated(db, actor_user_id, page, limit).await
+}

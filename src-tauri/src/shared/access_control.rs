@@ -58,6 +58,16 @@ pub async fn get_all_grados(
     grado_service::get_all(state).await
 }
 
+pub async fn get_all_grados_paginated(
+    state: &AppState,
+    window_label: &str,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<GradoAcademico>, AppError> {
+    rbac::require_permission(state, window_label, rbac::AppPermission::GradosRead).await?;
+    grado_service::get_all_paginated(state, page, limit).await
+}
+
 pub async fn crear_grado(
     state: &AppState,
     window_label: &str,
@@ -246,6 +256,16 @@ pub async fn get_all_proyectos_detalle(
 ) -> Result<Vec<ProyectoDetalle>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
     proyecto_service::get_all_detalle(state).await
+}
+
+pub async fn get_all_proyectos_paginated(
+    state: &AppState,
+    window_label: &str,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
+    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
+    proyecto_service::get_all_paginated(state, page, limit).await
 }
 
 pub async fn eliminar_relacion_proyecto_docente(
@@ -686,6 +706,16 @@ pub async fn get_all_usuarios(
 ) -> Result<Vec<Usuario>, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     usuario_service::get_all(state, &actor.id_usuario).await
+}
+
+pub async fn get_all_usuarios_paginated(
+    state: &AppState,
+    window_label: &str,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<Usuario>, AppError> {
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    usuario_service::get_all_paginated(state, &actor.id_usuario, page, limit).await
 }
 
 pub async fn actualizar_usuario(

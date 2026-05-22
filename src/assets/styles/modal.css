@@ -1,0 +1,21 @@
+@layer components {
+  .modal-overlay { @apply fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-y-auto z-[1000] animate-[fadeIn_0.2s_ease-in]; }
+  .modal-content { @apply bg-white rounded-xl shadow-xl max-w-[600px] w-[90%] max-h-[92vh] flex flex-col overflow-hidden border border-amber-200 animate-[modalPopIn_0.22s_ease-out]; }
+  .form-modal { @apply w-full max-w-[680px] border-blue-200; }
+  .form-modal-lg { @apply max-w-[860px]; }
+  .modal-header { @apply flex justify-between items-center p-6 border-b-2 border-gray-200 bg-gradient-to-br from-amber-50 to-amber-100; }
+  .form-modal-header { @apply bg-gradient-to-br from-blue-50 to-white; }
+  .modal-header h2 { @apply m-0 text-amber-800; }
+  .form-modal-header h2 { @apply text-blue-900; }
+  .modal-close { @apply bg-transparent border-none w-9 h-9 inline-flex items-center justify-center rounded-full cursor-pointer text-gray-500 transition-all duration-300 hover:text-blue-500 hover:scale-110; }
+  .modal-body { @apply flex-1 p-6 overflow-y-auto; }
+  .modal-footer { @apply p-6 border-t-2 border-gray-200 flex gap-4 justify-end; }
+  .confirm-dialog { @apply max-w-[520px]; }
+  .confirm-message { @apply text-base text-gray-800; }
+  .confirm-actions { @apply justify-end; }
+  .form-modal-form { @apply flex-1 min-h-0 gap-0; }
+  .form-modal-body { @apply flex flex-col gap-3.5 min-h-0; }
+  .form-modal-description { @apply text-gray-500 text-sm leading-5 m-0; }
+  .form-modal-footer { @apply bg-gradient-to-b from-gray-50 to-white sticky bottom-0 z-10; }
+}
+@keyframes modalPopIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

@@ -1,0 +1,7 @@
+@layer components {
+  .role-matrix-grid { @apply grid gap-4 mb-4; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .role-matrix-card { @apply min-h-full; }
+  .role-matrix-card-active { @apply border-blue-400/35 shadow-[0_18px_34px_-28px_rgba(37,99,235,0.55)]; }
+  .role-matrix-list { @apply flex flex-col gap-2; }
+  .role-matrix-item { @apply text-gray-500 text-sm; }
+}

@@ -34,3 +34,12 @@ pub async fn reactivate(state: &AppState, id_grado: &str) -> Result<GradoAcademi
     let db = state.mongo_db()?;
     repository::reactivar_grado(db, id_grado).await
 }
+
+pub async fn get_all_paginated(
+    state: &AppState,
+    page: u32,
+    limit: u32,
+) -> Result<crate::shared::pagination::PaginatedResult<GradoAcademico>, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_all_grados_paginated(db, page, limit).await
+}

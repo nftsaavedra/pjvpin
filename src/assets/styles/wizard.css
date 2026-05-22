@@ -1,0 +1,51 @@
+@layer components {
+  .wizard-shell { @apply flex flex-col min-h-screen bg-gray-50; }
+  .wizard-container { @apply flex flex-col items-center px-4 py-8 pb-12 max-w-[640px] mx-auto w-full; }
+  .wizard-progress { @apply flex items-center justify-center mb-8 w-full; }
+  .wizard-progress-step { @apply flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-500 relative; }
+  .wizard-progress-step::after { content: ''; @apply w-6 h-px bg-gray-200 ml-2; }
+  .wizard-progress-step:last-child::after { @apply hidden; }
+  .wizard-progress-step.active { @apply text-blue-500 font-semibold; }
+  .wizard-progress-step.done { @apply text-green-500; }
+  .wizard-progress-step.done .wizard-dot { @apply bg-green-500 text-white; }
+  .wizard-dot { @apply inline-flex items-center justify-center w-5.5 h-5.5 rounded-full bg-gray-200 text-gray-500 text-xs font-bold flex-shrink-0; }
+  .wizard-progress-step.active .wizard-dot { @apply bg-blue-500 text-white; }
+  .wizard-progress-label { @apply hidden; } @media (min-width: 480px) { .wizard-progress-label { @apply inline; } }
+  .wizard-card { @apply bg-white rounded-2xl border border-gray-200 shadow-xl p-8 pb-10 w-full; }
+  .wizard-step { @apply flex flex-col gap-6; }
+  .wizard-step-header { @apply text-center; }
+  .wizard-step-header svg { @apply text-blue-500 mb-2; }
+  .wizard-step-header h2 { @apply text-xl font-bold m-0 mb-1.5 text-gray-800; }
+  .wizard-step-header p { @apply text-sm text-gray-500 leading-6 max-w-[44ch] mx-auto; }
+  .wizard-section { @apply border-t border-gray-200 pt-4 mt-1; }
+  .wizard-section-title { @apply text-sm font-bold text-gray-800 m-0 mb-3 uppercase tracking-[0.04em]; }
+  .wizard-requirements { @apply bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5; }
+  .wizard-requirements-title { @apply text-xs font-bold text-gray-500 m-0 mb-2; }
+  .wizard-requirements-list { @apply list-none p-0 m-0 flex flex-col gap-1.5; }
+  .wizard-req-item { @apply text-sm text-gray-500; }
+  .wizard-req-item.wizard-req-met { @apply text-green-500 font-semibold; }
+  .wizard-tests { @apply flex flex-col gap-2.5; }
+  .wizard-test-row { @apply flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50; }
+  .wizard-test-row.wizard-test-ok { @apply border-green-200 bg-green-50; }
+  .wizard-test-row.wizard-test-fail { @apply border-red-200 bg-red-50; }
+  .wizard-test-row.wizard-test-running { @apply border-blue-200 bg-blue-50; }
+  .wizard-test-icon { @apply flex-shrink-0 flex; }
+  .wizard-test-icon .test-icon-ok { @apply text-green-600; }
+  .wizard-test-icon .test-icon-fail { @apply text-red-600; }
+  .wizard-test-icon .spinning { animation: spin 1s linear infinite; @apply text-blue-500; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .wizard-test-info { @apply flex flex-col gap-0.5 min-w-0; }
+  .wizard-test-info strong { @apply text-sm text-gray-800; }
+  .wizard-test-msg { @apply text-xs text-gray-500 break-words; }
+  .wizard-nav { @apply flex items-center justify-between gap-3 pt-2; }
+  .wizard-nav .btn-secondary { @apply flex-shrink-0; }
+  .wizard-nav .btn-primary { @apply ml-auto; }
+  .wizard-next { @apply mt-3 w-full; }
+  .wizard-summary { @apply flex flex-col gap-4; }
+  .wizard-summary-section { @apply border border-gray-200 rounded-xl px-4 py-3.5; }
+  .wizard-summary-section h3 { @apply text-xs font-bold text-gray-500 uppercase tracking-[0.04em] m-0 mb-2; }
+  .wizard-summary-row { @apply flex items-baseline justify-between gap-3 py-1.5 text-sm; }
+  .wizard-summary-row span:first-child { @apply text-gray-500 flex-shrink-0; }
+  .wizard-summary-row code { @apply text-xs text-gray-800 break-all text-right max-w-[28ch]; }
+  .wizard-summary-row strong { @apply text-gray-800 text-right; }
+}

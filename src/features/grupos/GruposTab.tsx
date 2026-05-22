@@ -1,145 +1,45 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, Trash2, Edit2, Search } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { toast } from '@/services/toast';
-import { FormInput } from '@/shared/forms/FormInput';
-import { FormModal } from '@/shared/forms/FormModal';
-import { ConfirmDialog } from '@/shared/overlays/ConfirmDialog';
-import {
-  createGrupo,
-  deleteGrupo,
-  getAllGrupos,
-  getTauriErrorMessage,
-  updateGrupo,
-  type GrupoInvestigacion,
-} from './api';
-
-type Grupo = GrupoInvestigacion & {
-  coordinador_nombre?: string;
-};
+import React, { useState, useMemo } from "react";
+import { Plus, Trash2, Edit2, Search } from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
+import { useGruposTab } from "./hooks/useGruposTab";
+import { GrupoFormModal } from "./components/GrupoFormModal";
 
 interface GruposTabProps {
   canManage: boolean;
 }
 
 export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
-  const [busqueda, setBusqueda] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingGrupo, setEditingGrupo] = useState<Grupo | null>(null);
-  const [grupoToDelete, setGrupoToDelete] = useState<Grupo | null>(null);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    linea: '',
-  });
-  const [lineas, setLineas] = useState<string[]>([]);
+  const {
+    grupos,
+    loading,
+    error,
+    recargar,
+    formOpen,
+    setFormOpen,
+    editingGrupo,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    deletingId,
+    setDeletingId,
+  } = useGruposTab(canManage);
 
-  const cargarGrupos = useCallback(async () => {
-    try {
-      const data = await getAllGrupos();
-      setGrupos(data);
-    } catch (error) {
-      toast.error(getTauriErrorMessage(error));
-    }
-  }, []);
+  const [busqueda, setBusqueda] = useState("");
 
-  useEffect(() => {
-    const load = async () => { await cargarGrupos(); };
-    load().catch(console.error);
-  }, [cargarGrupos]);
-
-  const handleOpenCreate = () => {
-    setEditingGrupo(null);
-    setFormData({ nombre: '', descripcion: '', linea: '' });
-    setLineas([]);
-    setIsFormOpen(true);
-  };
-
-  const handleEditGrupo = (grupo: Grupo) => {
-    setEditingGrupo(grupo);
-    setFormData({
-      nombre: grupo.nombre,
-      descripcion: grupo.descripcion || '',
-      linea: '',
-    });
-    setLineas([...grupo.lineas_investigacion]);
-    setIsFormOpen(true);
-  };
-
-  const handleAddLinea = () => {
-    if (formData.linea.trim() && !lineas.includes(formData.linea.trim())) {
-      setLineas([...lineas, formData.linea.trim()]);
-      setFormData({ ...formData, linea: '' });
-    }
-  };
-
-  const handleRemoveLinea = (linea: string) => {
-    setLineas(lineas.filter((l) => l !== linea));
-  };
-
-  const handleSubmit = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-
-    if (!formData.nombre.trim()) {
-      toast.warning('Ingrese el nombre del grupo');
-      return;
-    }
-
-    if (lineas.length === 0) {
-      toast.warning('Agregue al menos una línea de investigación');
-      return;
-    }
-
-    const request = {
-      nombre: formData.nombre.trim(),
-      descripcion: formData.descripcion.trim() || null,
-      coordinador_id: null,
-      lineas_investigacion: lineas,
-    };
-
-    setIsLoading(true);
-    try {
-      if (editingGrupo) {
-        await updateGrupo(editingGrupo.id_grupo, request);
-        toast.success('Grupo actualizado correctamente');
-      } else {
-        await createGrupo(request);
-        toast.success('Grupo creado correctamente');
-      }
-
-      await cargarGrupos();
-      setIsFormOpen(false);
-      setFormData({ nombre: '', descripcion: '', linea: '' });
-      setLineas([]);
-    } catch (error) {
-      toast.error(getTauriErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteGrupo = async () => {
-    if (!grupoToDelete) return;
-
-    setIsLoading(true);
-    try {
-      await deleteGrupo(grupoToDelete.id_grupo);
-      toast.success('Grupo eliminado correctamente');
-      setGrupoToDelete(null);
-      await cargarGrupos();
-    } catch (error) {
-      toast.error(getTauriErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const gruposFiltrados = grupos.filter((grupo) =>
-    grupo.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-    (grupo.descripcion ?? '').toLowerCase().includes(busqueda.toLowerCase())
+  const gruposFiltrados = useMemo(
+    () =>
+      grupos.filter(
+        (grupo) =>
+          grupo.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+          (grupo.descripcion ?? "").toLowerCase().includes(busqueda.toLowerCase()),
+      ),
+    [busqueda, grupos],
   );
+
+  const deletingGrupo = useMemo(() => {
+    return deletingId ? (grupos.find((g) => g.id_grupo === deletingId) ?? null) : null;
+  }, [deletingId, grupos]);
 
   return (
     <div className="tab-panel module-shell grupos-module">
@@ -148,7 +48,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
           <h2>Grupos de Investigación</h2>
           {canManage && (
             <div className="section-header-actions">
-              <button type="button" className="btn-primary" onClick={handleOpenCreate}>
+              <button type="button" className="btn-primary" onClick={handleCreate}>
                 <span className="button-with-icon">
                   <AppIcon icon={Plus} size={18} />
                   <span>Nuevo grupo</span>
@@ -160,7 +60,25 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
 
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
-            <span>Modo consulta: puede revisar grupos de investigación y líneas, pero no crear, editar ni eliminar.</span>
+            <span>
+              Modo consulta: puede revisar grupos de investigación y líneas, pero no crear, editar
+              ni eliminar.
+            </span>
+          </div>
+        )}
+
+        {error && (
+          <div className="inline-feedback inline-feedback-warning">
+            <span>{error}</span>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                void recargar();
+              }}
+            >
+              Reintentar
+            </button>
           </div>
         )}
 
@@ -171,7 +89,9 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
               type="text"
               placeholder="Buscar por nombre o coordinador..."
               value={busqueda}
-              onChange={(e) => { setBusqueda(e.target.value); }}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+              }}
               className="search-input"
             />
           </div>
@@ -179,11 +99,15 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
         </div>
 
         <div className="grupos-grid">
-          {gruposFiltrados.length === 0 ? (
+          {loading ? (
+            <div className="empty-state">
+              <p>Cargando grupos...</p>
+            </div>
+          ) : gruposFiltrados.length === 0 ? (
             <div className="empty-state">
               <p>No hay grupos de investigación registrados</p>
               {canManage && (
-                <button type="button" className="btn-secondary" onClick={handleOpenCreate}>
+                <button type="button" className="btn-secondary" onClick={handleCreate}>
                   Crear primer grupo
                 </button>
               )}
@@ -195,7 +119,9 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                   <div>
                     <h3>{grupo.nombre}</h3>
                     <p className="grupo-coordinador">
-                      {grupo.coordinador_nombre ? `Coordinador: ${grupo.coordinador_nombre}` : 'Sin coordinador asignado'}
+                      {grupo.coordinador_nombre
+                        ? `Coordinador: ${grupo.coordinador_nombre}`
+                        : "Sin coordinador asignado"}
                     </p>
                   </div>
                   {canManage && (
@@ -203,7 +129,9 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                       <button
                         type="button"
                         className="btn-icon"
-                        onClick={() => { handleEditGrupo(grupo); }}
+                        onClick={() => {
+                          handleUpdate(grupo);
+                        }}
                         title="Editar grupo"
                       >
                         <AppIcon icon={Edit2} size={16} />
@@ -211,7 +139,9 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                       <button
                         type="button"
                         className="btn-icon btn-danger"
-                        onClick={() => { setGrupoToDelete(grupo); }}
+                        onClick={() => {
+                          setDeletingId(grupo.id_grupo);
+                        }}
                         title="Eliminar grupo"
                       >
                         <AppIcon icon={Trash2} size={16} />
@@ -220,9 +150,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                   )}
                 </div>
 
-                {grupo.descripcion && (
-                  <p className="grupo-descripcion">{grupo.descripcion}</p>
-                )}
+                {grupo.descripcion && <p className="grupo-descripcion">{grupo.descripcion}</p>}
 
                 <div className="grupo-lineas">
                   <strong>Líneas de investigación:</strong>
@@ -240,8 +168,8 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                 </div>
 
                 <div className="grupo-footer">
-                  <span className={`badge badge-${grupo.activo !== 0 ? 'success' : 'warning'}`}>
-                    {grupo.activo !== 0 ? 'Activo' : 'Inactivo'}
+                  <span className={`badge badge-${grupo.activo !== 0 ? "success" : "warning"}`}>
+                    {grupo.activo !== 0 ? "Activo" : "Inactivo"}
                   </span>
                 </div>
               </div>
@@ -251,89 +179,31 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
       </div>
 
       {canManage && (
-        <FormModal
-          open={isFormOpen}
-          title={
-            <span className="title-with-icon form-card-title">
-              <span>{editingGrupo ? 'Editar grupo' : 'Crear nuevo grupo'}</span>
-            </span>
-          }
-          description="Configure los detalles del grupo de investigación"
-          onClose={() => { setIsFormOpen(false); }}
-          onSubmit={(e) => { void handleSubmit(e); }}
-          submitText={editingGrupo ? 'Actualizar grupo' : 'Crear grupo'}
-          isLoading={isLoading}
-          size="lg"
-        >
-          <FormInput
-            label="Nombre del Grupo"
-            value={formData.nombre}
-            onChange={(value) => { setFormData({ ...formData, nombre: value }); }}
-            placeholder="Ej: Grupo de Sostenibilidad Ambiental"
-            required
-          />
-
-          <div className="form-group">
-            <label htmlFor="descripcion">Descripción</label>
-            <textarea
-              id="descripcion"
-              value={formData.descripcion}
-              onChange={(e) => { setFormData({ ...formData, descripcion: e.target.value }); }}
-              placeholder="Breve descripción del grupo y sus objetivos"
-              rows={3}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="linea">Líneas de Investigación</label>
-            <div className="linea-input-group">
-              <input
-                id="linea"
-                type="text"
-                value={formData.linea}
-                onChange={(e) => { setFormData({ ...formData, linea: e.target.value }); }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddLinea();
-                  }
-                }}
-                placeholder="Ingrese una línea y presione Enter"
-              />
-              <button type="button" className="btn-secondary" onClick={handleAddLinea}>
-                Agregar
-              </button>
-            </div>
-
-            {lineas.length > 0 && (
-              <div className="lineas-list">
-                {lineas.map((linea) => (
-                  <div key={linea} className="linea-item">
-                    <span>{linea}</span>
-                    <button
-                      type="button"
-                      className="btn-icon-small"
-                      onClick={() => { handleRemoveLinea(linea); }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </FormModal>
+        <GrupoFormModal
+          open={formOpen}
+          onClose={() => {
+            setFormOpen(false);
+          }}
+          editingGrupo={editingGrupo}
+          onDataModified={() => {
+            void recargar();
+          }}
+        />
       )}
 
       {canManage && (
         <ConfirmDialog
-          open={Boolean(grupoToDelete)}
+          open={Boolean(deletingId)}
           title="Eliminar grupo"
-          message={`¿Está seguro de que desea eliminar el grupo "${grupoToDelete?.nombre ?? ''}"?`}
+          message={`¿Está seguro de que desea eliminar el grupo "${deletingGrupo?.nombre ?? ""}"?`}
           confirmText="Sí, eliminar"
           cancelText="Cancelar"
-          onConfirm={() => { void handleDeleteGrupo(); }}
-          onCancel={() => { setGrupoToDelete(null); }}
+          onConfirm={() => {
+            void handleDelete();
+          }}
+          onCancel={() => {
+            setDeletingId(null);
+          }}
         />
       )}
     </div>

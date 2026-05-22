@@ -3,6 +3,7 @@ use crate::shared::state::AppState;
 use crate::usuarios::models::Usuario;
 use crate::usuarios::service as usuario_service;
 
+#[derive(Debug)]
 pub enum AppPermission {
     DashboardView,
     DocentesView,
