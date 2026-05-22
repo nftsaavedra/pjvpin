@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::personas::models::Persona;
 use crate::shared::time;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -41,12 +42,8 @@ pub struct RenacytLookupResult {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Docente {
     pub id_docente: String,
-    pub dni: String,
+    pub persona_id: String,
     pub id_grado: String,
-    pub nombres_apellidos: String,
-    pub nombres: Option<String>,
-    pub apellido_paterno: Option<String>,
-    pub apellido_materno: Option<String>,
     pub activo: i64,
     #[serde(default)]
     pub updated_at: Option<i64>,
@@ -63,7 +60,6 @@ pub struct Docente {
     pub renacyt_fecha_ultima_sincronizacion: Option<i64>,
     pub renacyt_ficha_url: Option<String>,
     pub renacyt_formaciones_academicas_json: Option<String>,
-    /// Grupo de investigación al que pertenece el docente (opcional).
     #[serde(default)]
     pub grupo_investigacion_id: Option<String>,
 }
@@ -75,21 +71,29 @@ pub struct CreateDocenteRequest {
     pub nombres: String,
     pub apellido_paterno: String,
     pub apellido_materno: Option<String>,
+    pub correo: Option<String>,
+    pub telefono: Option<String>,
+    pub direccion: Option<String>,
+    pub sexo: Option<String>,
+    pub fecha_nacimiento: Option<i64>,
     pub renacyt: Option<CreateDocenteRenacytRequest>,
 }
 
-// New: Docente with detail data for reports
 #[derive(Debug, Serialize)]
 pub struct DocenteDetalle {
     pub id_docente: String,
+    pub persona_id: String,
     pub dni: String,
     pub nombres_apellidos: String,
     pub nombres: Option<String>,
     pub apellido_paterno: Option<String>,
     pub apellido_materno: Option<String>,
+    pub correo: Option<String>,
+    pub telefono: Option<String>,
+    pub direccion: Option<String>,
     pub grado: String,
     pub cantidad_proyectos: i64,
-    pub proyectos: Option<String>, // JSON array of project titles, comma-separated
+    pub proyectos: Option<String>,
     pub activo: i64,
     pub renacyt_codigo_registro: Option<String>,
     pub renacyt_id_investigador: Option<String>,
@@ -106,16 +110,20 @@ pub struct DocenteDetalle {
     pub renacyt_formaciones_academicas_json: Option<String>,
 }
 
-impl From<(Docente, String, Vec<String>)> for DocenteDetalle {
-    fn from((docente, grado, proyectos): (Docente, String, Vec<String>)) -> Self {
+impl From<(Docente, Persona, String, Vec<String>)> for DocenteDetalle {
+    fn from((docente, persona, grado, proyectos): (Docente, Persona, String, Vec<String>)) -> Self {
         let cantidad_proyectos = proyectos.len() as i64;
         DocenteDetalle {
             id_docente: docente.id_docente,
-            dni: docente.dni,
-            nombres_apellidos: docente.nombres_apellidos,
-            nombres: docente.nombres,
-            apellido_paterno: docente.apellido_paterno,
-            apellido_materno: docente.apellido_materno,
+            persona_id: docente.persona_id,
+            dni: persona.dni,
+            nombres_apellidos: persona.nombre_completo,
+            nombres: persona.nombres,
+            apellido_paterno: persona.apellido_paterno,
+            apellido_materno: persona.apellido_materno,
+            correo: persona.correo,
+            telefono: persona.telefono,
+            direccion: persona.direccion,
             grado,
             cantidad_proyectos,
             proyectos: if proyectos.is_empty() {
@@ -152,7 +160,7 @@ pub struct ReniecDniLookupResult {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EliminarDocenteResultado {
-    pub accion: String, // "desactivado"
+    pub accion: String,
     pub mensaje: String,
 }
 
@@ -164,34 +172,14 @@ pub struct RefreshDocenteRenacytFormacionResultado {
 }
 
 impl Docente {
-    pub fn new(request: CreateDocenteRequest) -> Self {
-        let apellido_materno = request
-            .apellido_materno
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty());
-        let nombres = request.nombres.trim().to_string();
-        let apellido_paterno = request.apellido_paterno.trim().to_string();
-        let nombres_apellidos = [
-            Some(nombres.clone()),
-            Some(apellido_paterno.clone()),
-            apellido_materno.clone(),
-        ]
-        .into_iter()
-        .flatten()
-        .filter(|value| !value.trim().is_empty())
-        .collect::<Vec<_>>()
-        .join(" ");
-        let renacyt = request.renacyt;
+    pub fn new(persona_id: String, request: &CreateDocenteRequest) -> Self {
+        let renacyt = &request.renacyt;
         let fecha_ultima_sincronizacion = renacyt.as_ref().map(|_| time::now_ms());
 
         Self {
             id_docente: Uuid::new_v4().to_string(),
-            dni: request.dni,
-            id_grado: request.id_grado,
-            nombres_apellidos,
-            nombres: Some(nombres),
-            apellido_paterno: Some(apellido_paterno),
-            apellido_materno,
+            persona_id,
+            id_grado: request.id_grado.clone(),
             activo: 1,
             updated_at: Some(time::now_ms()),
             renacyt_codigo_registro: renacyt
@@ -274,12 +262,11 @@ impl Docente {
     }
 }
 
-/// Publicación científica sincronizada desde Pure (Elsevier) por Scopus Author ID.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Publicacion {
     pub id_publicacion: String,
     pub pure_uuid: String,
-    pub docente_id: String,
+    pub persona_id: String,
     #[serde(default)]
     pub proyecto_id: Option<String>,
     pub titulo: String,
@@ -309,7 +296,7 @@ pub struct Publicacion {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SyncPublicacionesResult {
-    pub docente_id: String,
+    pub persona_id: String,
     pub scopus_author_id: String,
     pub pure_person_uuid: Option<String>,
     pub total_encontradas: usize,
@@ -322,6 +309,11 @@ pub struct UpdateDocenteRequest {
     pub nombres: Option<String>,
     pub apellido_paterno: Option<String>,
     pub apellido_materno: Option<String>,
+    pub correo: Option<String>,
+    pub telefono: Option<String>,
+    pub direccion: Option<String>,
+    pub sexo: Option<String>,
+    pub fecha_nacimiento: Option<i64>,
     pub id_grado: Option<String>,
     pub grupo_investigacion_id: Option<String>,
 }
