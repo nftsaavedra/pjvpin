@@ -1,4 +1,6 @@
-use crate::grupos::models::{GrupoInvestigacion, CreateGrupoInvestigacionRequest, UpdateGrupoInvestigacionRequest};
+use crate::grupos::models::{
+    CreateGrupoInvestigacionRequest, GrupoInvestigacion, UpdateGrupoInvestigacionRequest,
+};
 use crate::grupos::repository;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
@@ -8,7 +10,10 @@ pub async fn get_all(state: &AppState) -> Result<Vec<GrupoInvestigacion>, AppErr
     repository::get_all_grupos(mongo).await
 }
 
-pub async fn create(state: &AppState, request: CreateGrupoInvestigacionRequest) -> Result<GrupoInvestigacion, AppError> {
+pub async fn create(
+    state: &AppState,
+    request: CreateGrupoInvestigacionRequest,
+) -> Result<GrupoInvestigacion, AppError> {
     let mongo = state.mongo_db()?;
 
     let now_ms = crate::shared::time::now_ms();
@@ -25,7 +30,11 @@ pub async fn get_by_id(state: &AppState, id_grupo: &str) -> Result<GrupoInvestig
     repository::get_grupo_by_id(mongo, id_grupo).await
 }
 
-pub async fn update(state: &AppState, id_grupo: &str, request: UpdateGrupoInvestigacionRequest) -> Result<GrupoInvestigacion, AppError> {
+pub async fn update(
+    state: &AppState,
+    id_grupo: &str,
+    request: UpdateGrupoInvestigacionRequest,
+) -> Result<GrupoInvestigacion, AppError> {
     let mongo = state.mongo_db()?;
     repository::update_grupo(mongo, id_grupo, request).await
 }

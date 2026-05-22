@@ -441,14 +441,14 @@ fn build_resumen_financiero(
             })
             .unwrap_or_else(|| "Sin moneda".to_string());
 
-        let entry = moneda_groups.entry(moneda_key.clone()).or_insert_with(|| {
-            MonedaDesglose {
+        let entry = moneda_groups
+            .entry(moneda_key.clone())
+            .or_insert_with(|| MonedaDesglose {
                 moneda_codigo: moneda_key.clone(),
                 moneda_nombre: moneda_nombre.clone(),
                 cantidad: 0,
                 monto_total: 0.0,
-            }
-        });
+            });
         entry.cantidad += 1;
         entry.monto_total += f.monto.unwrap_or(0.0);
 
@@ -462,9 +462,7 @@ fn build_resumen_financiero(
             .or_else(|| {
                 f.estado_financiero_codigo
                     .as_ref()
-                    .and_then(|c| {
-                        catalogo_map.get(&("estado_financiero".to_string(), c.clone()))
-                    })
+                    .and_then(|c| catalogo_map.get(&("estado_financiero".to_string(), c.clone())))
                     .map(|i| i.nombre.clone())
             })
             .unwrap_or_else(|| "Sin estado".to_string());

@@ -8,12 +8,19 @@ pub async fn get_all(state: &AppState) -> Result<Vec<GradoAcademico>, AppError> 
     repository::get_all_grados(db).await
 }
 
-pub async fn create(state: &AppState, request: CreateGradoRequest) -> Result<GradoAcademico, AppError> {
+pub async fn create(
+    state: &AppState,
+    request: CreateGradoRequest,
+) -> Result<GradoAcademico, AppError> {
     let db = state.mongo_db()?;
     repository::create_grado(db, request).await
 }
 
-pub async fn update(state: &AppState, id_grado: &str, request: CreateGradoRequest) -> Result<GradoAcademico, AppError> {
+pub async fn update(
+    state: &AppState,
+    id_grado: &str,
+    request: CreateGradoRequest,
+) -> Result<GradoAcademico, AppError> {
     let db = state.mongo_db()?;
     repository::update_grado(db, id_grado, request).await
 }

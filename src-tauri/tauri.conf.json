@@ -18,16 +18,14 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: https://asset.localhost data:; font-src 'self' data:; connect-src 'self' https://api.decolecta.com https://renacyt.concytec.gob.pe https://servicio-renacyt.concytec.gob.pe https://pure.unf.edu.pe"
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; base-uri 'self'; img-src 'self' asset: https://asset.localhost data:; font-src 'self' data:; connect-src 'self' https://api.decolecta.com https://renacyt.concytec.gob.pe https://servicio-renacyt.concytec.gob.pe https://pure.unf.edu.pe"
     }
   },
   "bundle": {
     "active": true,
     "targets": "nsis",
     "useLocalToolsDir": true,
-    "resources": {
-      "../.env": "config/default.env"
-    },
+    "resources": {},
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

@@ -1,6 +1,10 @@
 # === Dependencias ===
 node_modules/
 
+# === Cache ===
+.cache/
+.vite/
+
 # === Build / Distribucion ===
 dist/
 dist-ssr/
@@ -67,3 +71,6 @@ lerna-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+
+.opencode

@@ -1,53 +1,57 @@
-use tauri::{path::BaseDirectory, Manager};
+use tauri::Manager;
 
-mod shared;
 mod catalogos;
 mod docentes;
-mod proyectos;
+mod eventos;
 mod grados;
-mod usuarios;
 mod grupos;
+mod proyectos;
+mod publicaciones;
 mod recursos;
 mod reportes;
 mod seguridad;
+mod shared;
+mod usuarios;
 
-use docentes::commands as docente_cmds;
 use catalogos::commands as catalogo_cmds;
-use proyectos::commands as proyecto_cmds;
-use reportes::commands as reporte_cmds;
+use docentes::commands as docente_cmds;
+use eventos::commands as evento_cmds;
 use grados::commands as grado_cmds;
-use usuarios::commands as usuario_cmds;
-use seguridad::commands as security_cmds;
 use grupos::commands as grupo_cmds;
+use proyectos::commands as proyecto_cmds;
+use publicaciones::commands as publicacion_cmds;
 use recursos::commands as recurso_cmds;
+use reportes::commands as reporte_cmds;
+use seguridad::commands as security_cmds;
+use usuarios::commands as usuario_cmds;
 
-// Keep config/config_validator via shared
 use shared::config::load_runtime_config;
 use shared::config_validator::validate_database_config;
 use shared::state::AppState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    dotenvy::dotenv().ok();
     shared::logging::init_logging();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let bundled_default_env_path = app.path()
-                .resolve("config/default.env", BaseDirectory::Resource)
-                .ok();
-            let user_config_path = app.path()
+            let user_config_path = app
+                .path()
                 .app_config_dir()
-                .unwrap_or_else(|_| app.path().app_data_dir().unwrap_or_else(|_| std::env::temp_dir()))
+                .unwrap_or_else(|_| {
+                    app.path()
+                        .app_data_dir()
+                        .unwrap_or_else(|_| std::env::temp_dir())
+                })
                 .join("pjupi.config.json");
 
-            let runtime_config = load_runtime_config(&user_config_path, bundled_default_env_path.as_deref())?;
+            let runtime_config = load_runtime_config(&user_config_path)?;
 
             if let Err(error) = validate_database_config(&runtime_config.database) {
                 let error_msg = format!(
-                    "Error de configuración: {}\n\nArchivo de configuración: {:?}\n\nPara re-configurar la aplicación, elimine el archivo de configuración y reinicie.",
+                    "Error de configuracion: {}\n\nArchivo de configuracion: {:?}\n\nPara re-configurar la aplicacion, elimine el archivo de configuracion y reinicie.",
                     error,
                     user_config_path
                 );
@@ -58,15 +62,16 @@ pub fn run() {
             let mongo_db = if runtime_config.database.requires_mongodb() {
                 let database = tauri::async_runtime::block_on(async {
                     shared::db::init_mongo(&runtime_config.database).await
-                }).map_err(|error| {
+                })
+                .map_err(|error| {
                     std::io::Error::other(format!(
                         "No se pudo conectar a MongoDB.\n\n\
                         Error: {}\n\n\
                         Verifique:\n\
                         1. La URI de MongoDB es correcta (configurada en {:?})\n\
-                        2. El servidor MongoDB está ejecutándose\n\
+                        2. El servidor MongoDB esta ejecutandose\n\
                         3. Las credenciales son correctas\n\
-                        4. La base de datos es accesible desde esta máquina",
+                        4. La base de datos es accesible desde esta maquina",
                         error,
                         user_config_path
                     ))
@@ -80,7 +85,10 @@ pub fn run() {
             if let Some(ref db) = mongo_db {
                 tauri::async_runtime::block_on(async {
                     catalogos::repository::seed_catalogos(db).await
-                }).map_err(|e| std::io::Error::other(format!("Error sembrando catálogos: {}", e)))?;
+                })
+                .map_err(|e| {
+                    std::io::Error::other(format!("Error sembrando catalogos: {}", e))
+                })?;
             }
 
             app.manage(AppState::new(
@@ -101,6 +109,7 @@ pub fn run() {
             docente_cmds::get_all_docentes_con_proyectos,
             docente_cmds::eliminar_docente,
             docente_cmds::reactivar_docente,
+            docente_cmds::actualizar_docente,
             docente_cmds::consultar_dni_reniec,
             docente_cmds::consultar_renacyt_docente,
             docente_cmds::refrescar_formacion_academica_renacyt_docente,
@@ -134,7 +143,7 @@ pub fn run() {
             grado_cmds::actualizar_grado,
             grado_cmds::eliminar_grado,
             grado_cmds::reactivar_grado,
-            // Catálogos
+            // Catalogos
             catalogo_cmds::get_catalogos,
             catalogo_cmds::get_all_catalogos_admin,
             catalogo_cmds::crear_catalogo,
@@ -156,6 +165,14 @@ pub fn run() {
             security_cmds::get_security_status,
             security_cmds::get_setup_guide,
             security_cmds::get_security_recommendations,
+            // Wizard de configuracion
+            security_cmds::wizard_has_config,
+            security_cmds::wizard_test_mongodb,
+            security_cmds::wizard_test_reniec,
+            security_cmds::wizard_test_renacyt,
+            security_cmds::wizard_test_pure,
+            security_cmds::wizard_save_config,
+            security_cmds::wizard_validate_master_password,
             // Pure (moved to shared/external)
             crate::shared::external::pure_cmd::sincronizar_publicaciones_pure,
             crate::shared::external::pure_cmd::get_publicaciones_docente,
@@ -170,18 +187,39 @@ pub fn run() {
             recurso_cmds::get_patentes_proyecto,
             recurso_cmds::actualizar_patente,
             recurso_cmds::eliminar_patente,
+            recurso_cmds::reactivar_patente,
             recurso_cmds::crear_producto,
             recurso_cmds::get_productos_proyecto,
             recurso_cmds::actualizar_producto,
             recurso_cmds::eliminar_producto,
+            recurso_cmds::reactivar_producto,
             recurso_cmds::crear_equipamiento,
             recurso_cmds::get_equipamientos_proyecto,
             recurso_cmds::actualizar_equipamiento,
             recurso_cmds::eliminar_equipamiento,
+            recurso_cmds::reactivar_equipamiento,
             recurso_cmds::crear_financiamiento,
             recurso_cmds::get_financiamientos_proyecto,
             recurso_cmds::actualizar_financiamiento,
             recurso_cmds::eliminar_financiamiento,
+            recurso_cmds::reactivar_financiamiento,
+            // Publicaciones Cientificas
+            publicacion_cmds::crear_publicacion,
+            publicacion_cmds::get_all_publicaciones,
+            publicacion_cmds::get_publicacion_by_id,
+            publicacion_cmds::get_publicaciones_by_docente,
+            publicacion_cmds::get_publicaciones_by_anio,
+            publicacion_cmds::actualizar_publicacion,
+            publicacion_cmds::eliminar_publicacion,
+            publicacion_cmds::reactivar_publicacion,
+            // Eventos Academicos
+            evento_cmds::crear_evento,
+            evento_cmds::get_all_eventos,
+            evento_cmds::get_evento_by_id,
+            evento_cmds::get_eventos_by_docente,
+            evento_cmds::actualizar_evento,
+            evento_cmds::eliminar_evento,
+            evento_cmds::reactivar_evento,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,9 +1,9 @@
 use tauri::{State, Window};
 
 use crate::catalogos::models::{CatalogoItem, CreateCatalogoRequest, EliminarCatalogoResultado};
+use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
-use crate::shared::access_control;
 
 #[tauri::command]
 pub async fn get_catalogos(

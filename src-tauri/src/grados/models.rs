@@ -26,7 +26,7 @@ pub struct CreateGradoRequest {
 impl GradoAcademico {
     pub fn new(request: CreateGradoRequest) -> Self {
         let now = crate::shared::time::now_ms();
-        
+
         Self {
             id_grado: Uuid::new_v4().to_string(),
             nombre: request.nombre,

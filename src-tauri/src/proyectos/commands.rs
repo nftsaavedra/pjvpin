@@ -1,14 +1,11 @@
-use tauri::{State, Window};
 use crate::proyectos::models::{
-    Proyecto,
-    CreateProyectoConParticipantesRequest,
+    CreateProyectoConParticipantesRequest, EliminarProyectoResultado, Proyecto, ProyectoDetalle,
     UpdateProyectoConParticipantesRequest,
-    ProyectoDetalle,
-    EliminarProyectoResultado,
 };
+use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
-use crate::shared::access_control;
+use tauri::{State, Window};
 
 #[tauri::command]
 pub async fn crear_proyecto_con_participantes(
@@ -35,7 +32,8 @@ pub async fn actualizar_proyecto_con_participantes(
     id_proyecto: String,
     request: UpdateProyectoConParticipantesRequest,
 ) -> Result<Proyecto, AppError> {
-    access_control::update_proyecto_con_participantes(&state, window.label(), &id_proyecto, request).await
+    access_control::update_proyecto_con_participantes(&state, window.label(), &id_proyecto, request)
+        .await
 }
 
 #[tauri::command]
@@ -53,7 +51,13 @@ pub async fn eliminar_relacion_proyecto_docente(
     id_proyecto: String,
     id_docente: String,
 ) -> Result<(), AppError> {
-    access_control::eliminar_relacion_proyecto_docente(&state, window.label(), &id_proyecto, &id_docente).await
+    access_control::eliminar_relacion_proyecto_docente(
+        &state,
+        window.label(),
+        &id_proyecto,
+        &id_docente,
+    )
+    .await
 }
 
 #[tauri::command]

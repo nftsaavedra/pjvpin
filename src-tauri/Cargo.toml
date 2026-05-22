@@ -26,7 +26,6 @@ serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 futures-util = "0.3.31"
-dotenvy = "0.15.7"
 argon2 = "0.5.3"
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
@@ -34,6 +33,10 @@ chrono = { version = "0.4.42", default-features = false, features = ["clock"] } 
 tauri-plugin-dialog = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+aes-gcm = "0.10"
+pbkdf2 = { version = "0.12", features = ["simple"] }
+sha2 = "0.10"
+hex = "0.4"
 
 [profile.dev]
 debug = 0

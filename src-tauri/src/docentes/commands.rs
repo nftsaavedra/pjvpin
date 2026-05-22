@@ -1,11 +1,16 @@
 use tauri::{State, Window};
-use crate::docentes::models::{CreateDocenteRequest, Docente, DocenteDetalle, EliminarDocenteResultado, RefreshDocenteRenacytFormacionResultado, RenacytLookupResult, ReniecDniLookupResult};
+
+use crate::docentes::models::{
+    CreateDocenteRequest, Docente, DocenteDetalle, EliminarDocenteResultado,
+    RefreshDocenteRenacytFormacionResultado, RenacytLookupResult, ReniecDniLookupResult,
+    UpdateDocenteRequest,
+};
+use crate::shared::access_control;
 use crate::shared::error::AppError;
-use crate::shared::pagination::PaginatedResult;
 use crate::shared::external::renacyt_client;
 use crate::shared::external::reniec_client;
+use crate::shared::pagination::PaginatedResult;
 use crate::shared::state::AppState;
-use crate::shared::access_control;
 
 #[tauri::command]
 pub async fn crear_docente(
@@ -71,6 +76,16 @@ pub async fn reactivar_docente(
 }
 
 #[tauri::command]
+pub async fn actualizar_docente(
+    window: Window,
+    state: State<'_, AppState>,
+    id_docente: String,
+    request: UpdateDocenteRequest,
+) -> Result<Docente, AppError> {
+    access_control::actualizar_docente(&state, window.label(), &id_docente, request).await
+}
+
+#[tauri::command]
 pub async fn consultar_dni_reniec(
     window: Window,
     state: State<'_, AppState>,
@@ -96,5 +111,10 @@ pub async fn refrescar_formacion_academica_renacyt_docente(
     state: State<'_, AppState>,
     id_docente: String,
 ) -> Result<RefreshDocenteRenacytFormacionResultado, AppError> {
-    access_control::refrescar_formacion_academica_renacyt_docente(&state, window.label(), &id_docente).await
+    access_control::refrescar_formacion_academica_renacyt_docente(
+        &state,
+        window.label(),
+        &id_docente,
+    )
+    .await
 }

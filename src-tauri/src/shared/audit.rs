@@ -54,12 +54,18 @@ fn append_audit_line(path: &PathBuf, json_line: &str) {
     let mut file = match OpenOptions::new().create(true).append(true).open(path) {
         Ok(file) => file,
         Err(error) => {
-            tracing::error!("No se pudo abrir el archivo de auditoría {}: {error}", path.display());
+            tracing::error!(
+                "No se pudo abrir el archivo de auditoría {}: {error}",
+                path.display()
+            );
             return;
         }
     };
     if let Err(error) = writeln!(file, "{json_line}") {
-        tracing::error!("No se pudo escribir en el archivo de auditoría {}: {error}", path.display());
+        tracing::error!(
+            "No se pudo escribir en el archivo de auditoría {}: {error}",
+            path.display()
+        );
     }
 }
 

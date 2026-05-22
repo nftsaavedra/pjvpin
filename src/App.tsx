@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BookOpen, ChevronLeft, ChevronRight, FileSpreadsheet, FolderOpen, GraduationCap, LayoutDashboard, LogOut, Settings2, Users } from 'lucide-react';
 import { AppIcon } from './shared/ui/AppIcon';
 import { type Usuario } from './features/auth/api';
@@ -10,6 +10,8 @@ import { AuthShell } from './app/AuthShell';
 import { TabRenderers } from './app/TabRenderers';
 import { useAuth } from './app/hooks/useAuth';
 import { useAutoRefresh } from './app/hooks/useAutoRefresh';
+import { WizardScreen } from './features/wizard';
+import { wizardHasConfig } from './services/tauri/wizard';
 import './App.css';
 
 function App() {
@@ -23,6 +25,26 @@ function App() {
     return window.innerWidth <= 1360 && window.innerWidth > 1024;
   });
   const [docenteFormOpen, setDocenteFormOpen] = useState(false);
+  const [checkingWizard, setCheckingWizard] = useState(true);
+  const [showWizard, setShowWizard] = useState(false);
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const hasConfig = await wizardHasConfig();
+        setShowWizard(!hasConfig);
+      } catch {
+        setShowWizard(true);
+      } finally {
+        setCheckingWizard(false);
+      }
+    };
+    void check();
+  }, []);
+
+  const handleWizardDone = (_usuario: Usuario) => {
+    window.location.reload();
+  };
 
   const handleDataModified = useCallback(() => {
     setRefreshTrigger((prev) => prev + 1);
@@ -106,6 +128,51 @@ function App() {
       return next;
     });
   };
+
+  if (checkingWizard) {
+    return (
+      <div className="app-container">
+        <header className="app-header">
+          <div className="header-content">
+            <div>
+              <h1 className="app-title title-with-icon">
+                <AppIcon icon={BookOpen} size={24} />
+                <span>UPI Research</span>
+              </h1>
+              <p className="app-subtitle">Verificando configuracion del sistema</p>
+            </div>
+          </div>
+        </header>
+        <main className="main-content auth-main">
+          <div className="auth-shell">
+            <div className="auth-card auth-card-loading" aria-hidden="true">
+              <div className="auth-card-header">
+                <SkeletonBlock className="skeleton skeleton-line skeleton-title-md" />
+                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
+              </div>
+              <div className="form auth-loading-form">
+                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
+                <SkeletonBlock className="skeleton skeleton-input" />
+                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
+                <SkeletonBlock className="skeleton skeleton-input" />
+                <SkeletonBlock className="skeleton skeleton-button" />
+              </div>
+            </div>
+          </div>
+        </main>
+        <ToastContainer />
+      </div>
+    );
+  }
+
+  if (showWizard) {
+    return (
+      <div className="app-container">
+        <WizardScreen onDone={handleWizardDone} />
+        <ToastContainer />
+      </div>
+    );
+  }
 
   if (authLoading) {
     return (

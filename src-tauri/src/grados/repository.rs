@@ -6,14 +6,20 @@ use mongodb::Database;
 use crate::grados::models::{CreateGradoRequest, EliminarGradoResultado, GradoAcademico};
 use crate::shared::error::AppError;
 
-pub async fn create_grado(db: &Database, request: CreateGradoRequest) -> Result<GradoAcademico, AppError> {
+pub async fn create_grado(
+    db: &Database,
+    request: CreateGradoRequest,
+) -> Result<GradoAcademico, AppError> {
     let grado = GradoAcademico::new(request);
-    db.collection::<GradoAcademico>("grados").insert_one(&grado).await?;
+    db.collection::<GradoAcademico>("grados")
+        .insert_one(&grado)
+        .await?;
     Ok(grado)
 }
 
 pub async fn get_all_grados(db: &Database) -> Result<Vec<GradoAcademico>, AppError> {
-    let mut grados = db.collection::<GradoAcademico>("grados")
+    let mut grados = db
+        .collection::<GradoAcademico>("grados")
         .find(doc! {})
         .await?
         .try_collect::<Vec<_>>()
@@ -29,7 +35,11 @@ pub async fn get_grado_by_id(db: &Database, id_grado: &str) -> Result<GradoAcade
         .ok_or_else(|| AppError::NotFound("Grado no encontrado.".to_string()))
 }
 
-pub async fn update_grado(db: &Database, id_grado: &str, request: CreateGradoRequest) -> Result<GradoAcademico, AppError> {
+pub async fn update_grado(
+    db: &Database,
+    id_grado: &str,
+    request: CreateGradoRequest,
+) -> Result<GradoAcademico, AppError> {
     db.collection::<GradoAcademico>("grados")
         .update_one(
             doc! { "id_grado": id_grado },
@@ -39,18 +49,26 @@ pub async fn update_grado(db: &Database, id_grado: &str, request: CreateGradoReq
     get_grado_by_id(db, id_grado).await
 }
 
-pub async fn delete_grado(db: &Database, id_grado: &str) -> Result<EliminarGradoResultado, AppError> {
-    let docentes_relacionados = db.collection::<Document>("docentes")
+pub async fn delete_grado(
+    db: &Database,
+    id_grado: &str,
+) -> Result<EliminarGradoResultado, AppError> {
+    let docentes_relacionados = db
+        .collection::<Document>("docentes")
         .count_documents(doc! { "id_grado": id_grado })
         .await?;
 
     if docentes_relacionados > 0 {
         db.collection::<Document>("grados")
-            .update_one(doc! { "id_grado": id_grado }, doc! { "$set": { "activo": 0i64 } })
+            .update_one(
+                doc! { "id_grado": id_grado },
+                doc! { "$set": { "activo": 0i64 } },
+            )
             .await?;
         return Ok(EliminarGradoResultado {
             accion: "desactivado".to_string(),
-            mensaje: "El grado está relacionado con docentes. Se desactivó en lugar de eliminarse.".to_string(),
+            mensaje: "El grado está relacionado con docentes. Se desactivó en lugar de eliminarse."
+                .to_string(),
         });
     }
 
@@ -66,7 +84,10 @@ pub async fn delete_grado(db: &Database, id_grado: &str) -> Result<EliminarGrado
 
 pub async fn reactivar_grado(db: &Database, id_grado: &str) -> Result<GradoAcademico, AppError> {
     db.collection::<Document>("grados")
-        .update_one(doc! { "id_grado": id_grado }, doc! { "$set": { "activo": 1i64 } })
+        .update_one(
+            doc! { "id_grado": id_grado },
+            doc! { "$set": { "activo": 1i64 } },
+        )
         .await?;
     get_grado_by_id(db, id_grado).await
 }

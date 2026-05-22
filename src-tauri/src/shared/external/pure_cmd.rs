@@ -1,10 +1,10 @@
 use tauri::{State, Window};
 
 use crate::docentes::models::{Publicacion, SyncPublicacionesResult};
-use crate::shared::error::AppError;
-use crate::shared::state::AppState;
 use crate::shared::access_control;
+use crate::shared::error::AppError;
 use crate::shared::external::pure_service;
+use crate::shared::state::AppState;
 
 #[tauri::command]
 pub async fn sincronizar_publicaciones_pure(

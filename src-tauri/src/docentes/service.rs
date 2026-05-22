@@ -1,14 +1,19 @@
-use crate::docentes::models::{CreateDocenteRequest, Docente, DocenteDetalle, EliminarDocenteResultado, RefreshDocenteRenacytFormacionResultado};
+use crate::docentes::models::{
+    CreateDocenteRequest, Docente, DocenteDetalle, EliminarDocenteResultado,
+    RefreshDocenteRenacytFormacionResultado,
+};
+use crate::docentes::repository;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
-use crate::docentes::repository;
 use crate::shared::state::AppState;
 
 pub fn build_delete_result(has_related_projects: bool) -> EliminarDocenteResultado {
     if has_related_projects {
         return EliminarDocenteResultado {
             accion: "desactivado".to_string(),
-            mensaje: "Docente desactivado. Mantiene trazabilidad porque tiene proyectos relacionados.".to_string(),
+            mensaje:
+                "Docente desactivado. Mantiene trazabilidad porque tiene proyectos relacionados."
+                    .to_string(),
         };
     }
 
@@ -28,7 +33,11 @@ pub async fn get_all(state: &AppState) -> Result<Vec<Docente>, AppError> {
     repository::get_all_docentes(db).await
 }
 
-pub async fn get_all_paginated(state: &AppState, page: u32, limit: u32) -> Result<PaginatedResult<Docente>, AppError> {
+pub async fn get_all_paginated(
+    state: &AppState,
+    page: u32,
+    limit: u32,
+) -> Result<PaginatedResult<Docente>, AppError> {
     let db = state.mongo_db()?;
     repository::get_all_docentes_paginated(db, page, limit).await
 }
@@ -43,7 +52,10 @@ pub async fn get_all_detalle(state: &AppState) -> Result<Vec<DocenteDetalle>, Ap
     repository::get_all_docentes_con_proyectos(db).await
 }
 
-pub async fn delete(state: &AppState, id_docente: &str) -> Result<EliminarDocenteResultado, AppError> {
+pub async fn delete(
+    state: &AppState,
+    id_docente: &str,
+) -> Result<EliminarDocenteResultado, AppError> {
     let db = state.mongo_db()?;
     repository::delete_docente(db, id_docente).await
 }
@@ -63,7 +75,10 @@ pub async fn update_renacyt(state: &AppState, docente: &Docente) -> Result<(), A
     repository::update_docente_renacyt(db, docente).await
 }
 
-pub async fn get_detalle_by_id(state: &AppState, id_docente: &str) -> Result<DocenteDetalle, AppError> {
+pub async fn get_detalle_by_id(
+    state: &AppState,
+    id_docente: &str,
+) -> Result<DocenteDetalle, AppError> {
     let db = state.mongo_db()?;
     repository::get_docente_detalle_by_id(db, id_docente).await
 }
@@ -77,12 +92,21 @@ pub async fn refresh_renacyt_formacion(
         .renacyt_id_investigador
         .clone()
         .or_else(|| docente.renacyt_codigo_registro.clone())
-        .ok_or_else(|| AppError::ExternalServiceError("El docente no tiene un vínculo RENACYT para refrescar su formación académica.".to_string()))?;
+        .ok_or_else(|| {
+            AppError::ExternalServiceError(
+                "El docente no tiene un vínculo RENACYT para refrescar su formación académica."
+                    .to_string(),
+            )
+        })?;
     let tenia_formaciones = docente
         .renacyt_formaciones_academicas_json
         .as_ref()
         .is_some_and(|value| !value.trim().is_empty());
-    let lookup = crate::shared::external::renacyt_client::consultar_investigador(state.renacyt_config(), &codigo_o_id).await?;
+    let lookup = crate::shared::external::renacyt_client::consultar_investigador(
+        state.renacyt_config(),
+        &codigo_o_id,
+    )
+    .await?;
     let actualizada = docente.apply_renacyt_refresh(lookup);
     update_renacyt(state, &docente).await?;
     let docente_detalle = get_detalle_by_id(state, id_docente).await?;
@@ -98,4 +122,13 @@ pub async fn refresh_renacyt_formacion(
         actualizada,
         mensaje,
     })
+}
+
+pub async fn update(
+    state: &AppState,
+    id_docente: &str,
+    request: crate::docentes::models::UpdateDocenteRequest,
+) -> Result<Docente, AppError> {
+    let db = state.mongo_db()?;
+    repository::update_docente(db, id_docente, &request).await
 }

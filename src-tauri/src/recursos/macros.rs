@@ -1,5 +1,5 @@
-/// Generates 6 CRUD repository functions for one resource entity type.
-/// The update functions use `stringify!($field)` to map Rust field names to MongoDB document keys.
+/// Generates 8 CRUD repository functions for one resource entity type.
+/// Delete is soft-delete (activo = 0). Reactivate restores (activo = 1).
 #[macro_export]
 macro_rules! impl_resource_repository {
     (
@@ -14,6 +14,7 @@ macro_rules! impl_resource_repository {
         $fn_update:ident,
         $fn_delete:ident,
         $fn_delete_by_proj:ident,
+        $fn_reactivate:ident,
         $error_label:expr,
         $( $upd_field:ident ),* $(,)?
     ) => {
@@ -31,7 +32,7 @@ macro_rules! impl_resource_repository {
             proyecto_id: &str,
         ) -> Result<Vec<$entity>, $crate::shared::error::AppError> {
             db.collection::<$entity>($collection)
-                .find(mongodb::bson::doc! { "proyecto_id": proyecto_id })
+                .find(mongodb::bson::doc! { "proyecto_id": proyecto_id, "activo": 1 })
                 .await?
                 .try_collect::<Vec<_>>()
                 .await
@@ -43,7 +44,7 @@ macro_rules! impl_resource_repository {
             $id_field: &str,
         ) -> Result<$entity, $crate::shared::error::AppError> {
             db.collection::<$entity>($collection)
-                .find_one(mongodb::bson::doc! { stringify!($id_field): $id_field })
+                .find_one(mongodb::bson::doc! { stringify!($id_field): $id_field, "activo": 1 })
                 .await?
                 .ok_or_else(|| $crate::shared::error::AppError::NotFound($error_label.to_string()))
         }
@@ -74,7 +75,10 @@ macro_rules! impl_resource_repository {
             $id_field: &str,
         ) -> Result<(), $crate::shared::error::AppError> {
             db.collection::<mongodb::bson::Document>($collection)
-                .delete_one(mongodb::bson::doc! { stringify!($id_field): $id_field })
+                .update_one(
+                    mongodb::bson::doc! { stringify!($id_field): $id_field },
+                    mongodb::bson::doc! { "$set": { "activo": 0, "updated_at": $crate::shared::time::now_ms() } },
+                )
                 .await?;
             Ok(())
         }
@@ -84,9 +88,28 @@ macro_rules! impl_resource_repository {
             proyecto_id: &str,
         ) -> Result<(), $crate::shared::error::AppError> {
             db.collection::<mongodb::bson::Document>($collection)
-                .delete_many(mongodb::bson::doc! { "proyecto_id": proyecto_id })
+                .update_many(
+                    mongodb::bson::doc! { "proyecto_id": proyecto_id },
+                    mongodb::bson::doc! { "$set": { "activo": 0, "updated_at": $crate::shared::time::now_ms() } },
+                )
                 .await?;
             Ok(())
+        }
+
+        pub async fn $fn_reactivate(
+            db: &mongodb::Database,
+            $id_field: &str,
+        ) -> Result<$entity, $crate::shared::error::AppError> {
+            db.collection::<mongodb::bson::Document>($collection)
+                .update_one(
+                    mongodb::bson::doc! { stringify!($id_field): $id_field },
+                    mongodb::bson::doc! { "$set": { "activo": 1, "updated_at": $crate::shared::time::now_ms() } },
+                )
+                .await?;
+            db.collection::<$entity>($collection)
+                .find_one(mongodb::bson::doc! { stringify!($id_field): $id_field })
+                .await?
+                .ok_or_else(|| $crate::shared::error::AppError::NotFound($error_label.to_string()))
         }
     };
 }

@@ -1,22 +1,11 @@
 use crate::proyectos::models::{
-    CreateProyectoConParticipantesRequest,
-    EliminarProyectoResultado,
-    ExportDataConProjectos,
-    ExportDataDocentePerfil,
-    ExportDataGrupo,
-    ExportDataProyectoArea,
-    ExportDataRecurso,
-    Proyecto,
-    ProyectoDetalle,
-    UpdateProyectoConParticipantesRequest,
-    DocenteProyectosCount,
-    ExportData,
-    KpisDashboard,
-    ProyectosTrendItem,
-    RenacytDistribucionItem,
+    CreateProyectoConParticipantesRequest, DocenteProyectosCount, EliminarProyectoResultado,
+    ExportData, ExportDataConProjectos, ExportDataDocentePerfil, ExportDataGrupo,
+    ExportDataProyectoArea, ExportDataRecurso, KpisDashboard, Proyecto, ProyectoDetalle,
+    ProyectosTrendItem, RenacytDistribucionItem, UpdateProyectoConParticipantesRequest,
 };
-use crate::shared::error::AppError;
 use crate::proyectos::repository;
+use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 
 #[derive(Debug, Clone)]
@@ -26,10 +15,14 @@ pub struct ProyectoParticipantesInput {
     pub docente_responsable_id: Option<String>,
 }
 
-pub fn prepare_create_input(request: CreateProyectoConParticipantesRequest) -> Result<ProyectoParticipantesInput, AppError> {
+pub fn prepare_create_input(
+    request: CreateProyectoConParticipantesRequest,
+) -> Result<ProyectoParticipantesInput, AppError> {
     let docentes_ids = normalize_docente_ids(&request.docentes_ids)?;
     if docentes_ids.is_empty() {
-        return Err(AppError::InternalError("Seleccione al menos un docente para crear el proyecto.".to_string()));
+        return Err(AppError::InternalError(
+            "Seleccione al menos un docente para crear el proyecto.".to_string(),
+        ));
     }
 
     let docente_responsable_id = normalize_responsable_id(request.docente_responsable_id);
@@ -42,7 +35,9 @@ pub fn prepare_create_input(request: CreateProyectoConParticipantesRequest) -> R
     })
 }
 
-pub fn prepare_update_input(request: UpdateProyectoConParticipantesRequest) -> Result<ProyectoParticipantesInput, AppError> {
+pub fn prepare_update_input(
+    request: UpdateProyectoConParticipantesRequest,
+) -> Result<ProyectoParticipantesInput, AppError> {
     let docentes_ids = normalize_docente_ids(&request.docentes_ids)?;
     let docente_responsable_id = normalize_responsable_id(request.docente_responsable_id);
 
@@ -55,7 +50,10 @@ pub fn prepare_update_input(request: UpdateProyectoConParticipantesRequest) -> R
     })
 }
 
-pub async fn create(state: &AppState, request: CreateProyectoConParticipantesRequest) -> Result<Proyecto, AppError> {
+pub async fn create(
+    state: &AppState,
+    request: CreateProyectoConParticipantesRequest,
+) -> Result<Proyecto, AppError> {
     let db = state.mongo_db()?;
     repository::create_proyecto_con_participantes(db, request).await
 }
@@ -69,7 +67,10 @@ pub async fn update(
     repository::update_proyecto_con_participantes(db, id_proyecto, request).await
 }
 
-pub async fn find_by_docente(state: &AppState, id_docente: &str) -> Result<Vec<Proyecto>, AppError> {
+pub async fn find_by_docente(
+    state: &AppState,
+    id_docente: &str,
+) -> Result<Vec<Proyecto>, AppError> {
     let db = state.mongo_db()?;
     repository::buscar_proyectos_por_docente(db, id_docente).await
 }
@@ -79,7 +80,11 @@ pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalle>, A
     repository::get_all_proyectos_detalle(db).await
 }
 
-pub async fn delete_relation(state: &AppState, id_proyecto: &str, id_docente: &str) -> Result<(), AppError> {
+pub async fn delete_relation(
+    state: &AppState,
+    id_proyecto: &str,
+    id_docente: &str,
+) -> Result<(), AppError> {
     let db = state.mongo_db()?;
     repository::eliminar_relacion_proyecto_docente(db, id_proyecto, id_docente).await
 }
@@ -89,7 +94,10 @@ pub async fn delete_relations(state: &AppState, id_proyecto: &str) -> Result<(),
     repository::eliminar_relaciones_proyecto(db, id_proyecto).await
 }
 
-pub async fn delete(state: &AppState, id_proyecto: &str) -> Result<EliminarProyectoResultado, AppError> {
+pub async fn delete(
+    state: &AppState,
+    id_proyecto: &str,
+) -> Result<EliminarProyectoResultado, AppError> {
     let db = state.mongo_db()?;
     repository::eliminar_proyecto(db, id_proyecto).await
 }
@@ -99,7 +107,9 @@ pub async fn reactivate(state: &AppState, id_proyecto: &str) -> Result<Proyecto,
     repository::reactivar_proyecto(db, id_proyecto).await
 }
 
-pub async fn get_estadisticas_x_docente(state: &AppState) -> Result<Vec<DocenteProyectosCount>, AppError> {
+pub async fn get_estadisticas_x_docente(
+    state: &AppState,
+) -> Result<Vec<DocenteProyectosCount>, AppError> {
     let db = state.mongo_db()?;
     repository::get_estadisticas_proyectos_x_docente(db).await
 }
@@ -114,7 +124,9 @@ pub async fn get_exportacion_plana(state: &AppState) -> Result<Vec<ExportData>, 
     repository::get_data_exportacion_plana(db).await
 }
 
-pub async fn get_exportacion_agrupada(state: &AppState) -> Result<Vec<ExportDataConProjectos>, AppError> {
+pub async fn get_exportacion_agrupada(
+    state: &AppState,
+) -> Result<Vec<ExportDataConProjectos>, AppError> {
     let db = state.mongo_db()?;
     repository::get_data_exportacion_agrupada_docente(db).await
 }
@@ -124,17 +136,23 @@ pub async fn get_exportacion_grupos(state: &AppState) -> Result<Vec<ExportDataGr
     repository::get_data_exportacion_grupos(db).await
 }
 
-pub async fn get_exportacion_recursos(state: &AppState) -> Result<Vec<ExportDataRecurso>, AppError> {
+pub async fn get_exportacion_recursos(
+    state: &AppState,
+) -> Result<Vec<ExportDataRecurso>, AppError> {
     let db = state.mongo_db()?;
     repository::get_data_exportacion_recursos(db).await
 }
 
-pub async fn get_exportacion_docentes_perfil(state: &AppState) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
+pub async fn get_exportacion_docentes_perfil(
+    state: &AppState,
+) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
     let db = state.mongo_db()?;
     repository::get_data_exportacion_docentes_perfil(db).await
 }
 
-pub async fn get_exportacion_proyectos_area(state: &AppState) -> Result<Vec<ExportDataProyectoArea>, AppError> {
+pub async fn get_exportacion_proyectos_area(
+    state: &AppState,
+) -> Result<Vec<ExportDataProyectoArea>, AppError> {
     let db = state.mongo_db()?;
     repository::get_data_exportacion_proyectos_area(db).await
 }
@@ -144,7 +162,9 @@ pub async fn get_proyectos_trend(state: &AppState) -> Result<Vec<ProyectosTrendI
     repository::get_proyectos_trend(db).await
 }
 
-pub async fn get_renacyt_distribucion(state: &AppState) -> Result<Vec<RenacytDistribucionItem>, AppError> {
+pub async fn get_renacyt_distribucion(
+    state: &AppState,
+) -> Result<Vec<RenacytDistribucionItem>, AppError> {
     let db = state.mongo_db()?;
     repository::get_renacyt_distribucion(db).await
 }
@@ -156,7 +176,9 @@ fn normalize_docente_ids(docentes_ids: &[String]) -> Result<Vec<String>, AppErro
     for docente_id in docentes_ids {
         let normalized = docente_id.trim();
         if normalized.is_empty() {
-            return Err(AppError::InternalError("La lista de docentes contiene valores invalidos.".to_string()));
+            return Err(AppError::InternalError(
+                "La lista de docentes contiene valores invalidos.".to_string(),
+            ));
         }
 
         if seen.insert(normalized.to_string()) {
@@ -173,7 +195,10 @@ fn normalize_responsable_id(docente_responsable_id: Option<String>) -> Option<St
         .filter(|value| !value.is_empty())
 }
 
-fn validate_responsable(docentes_ids: &[String], docente_responsable_id: &Option<String>) -> Result<(), AppError> {
+fn validate_responsable(
+    docentes_ids: &[String],
+    docente_responsable_id: &Option<String>,
+) -> Result<(), AppError> {
     if docentes_ids.is_empty() {
         if docente_responsable_id.is_some() {
             return Err(AppError::InternalError(
@@ -189,11 +214,20 @@ fn validate_responsable(docentes_ids: &[String], docente_responsable_id: &Option
         ));
     };
 
-    if !docentes_ids.iter().any(|docente_id| docente_id == responsable_id) {
+    if !docentes_ids
+        .iter()
+        .any(|docente_id| docente_id == responsable_id)
+    {
         return Err(AppError::InternalError(
-            "El docente responsable debe formar parte de los docentes asignados al proyecto.".to_string(),
+            "El docente responsable debe formar parte de los docentes asignados al proyecto."
+                .to_string(),
         ));
     }
 
     Ok(())
+}
+
+pub async fn get_by_id(state: &AppState, id_proyecto: &str) -> Result<Proyecto, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_proyecto_by_id(db, id_proyecto).await
 }

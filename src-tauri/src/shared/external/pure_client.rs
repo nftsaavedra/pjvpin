@@ -162,7 +162,10 @@ pub async fn resolve_person_uuid(
         )
     })?;
 
-    let url = format!("{}/persons/search", config.api_base_url.trim_end_matches('/'));
+    let url = format!(
+        "{}/persons/search",
+        config.api_base_url.trim_end_matches('/')
+    );
 
     let body = PersonsQuery {
         size: 5,
@@ -202,10 +205,12 @@ pub async fn resolve_person_uuid(
         )));
     }
 
-    let result: PurePagedResult<PurePerson> = response
-        .json()
-        .await
-        .map_err(|e| AppError::InternalError(format!("Pure /persons/search: respuesta JSON inválida: {}", e)))?;
+    let result: PurePagedResult<PurePerson> = response.json().await.map_err(|e| {
+        AppError::InternalError(format!(
+            "Pure /persons/search: respuesta JSON inválida: {}",
+            e
+        ))
+    })?;
 
     Ok(result.items.into_iter().next().map(|p| p.uuid))
 }
@@ -271,15 +276,12 @@ pub async fn fetch_research_outputs_by_scopus_id(
             )));
         }
 
-        let page: PurePagedResult<PureResearchOutput> = response
-            .json()
-            .await
-            .map_err(|e| {
-                AppError::InternalError(format!(
-                    "Pure /research-outputs/search: respuesta JSON inválida: {}",
-                    e
-                ))
-            })?;
+        let page: PurePagedResult<PureResearchOutput> = response.json().await.map_err(|e| {
+            AppError::InternalError(format!(
+                "Pure /research-outputs/search: respuesta JSON inválida: {}",
+                e
+            ))
+        })?;
 
         let total = page.count;
         let items_len = page.items.len();

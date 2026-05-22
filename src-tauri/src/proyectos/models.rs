@@ -78,7 +78,7 @@ pub struct ExportDataConProjectos {
 impl Proyecto {
     pub fn new(request: CreateProyectoRequest) -> Self {
         let now = time::now_ms();
-        
+
         Self {
             id_proyecto: Uuid::new_v4().to_string(),
             titulo_proyecto: request.titulo_proyecto,

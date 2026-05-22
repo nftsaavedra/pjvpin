@@ -1,9 +1,13 @@
-use tauri::{State, Window};
-use crate::reportes::models::{DocenteProyectosCount, ExportData, ExportDataConProjectos, ExportDataDocentePerfil, ExportDataGrupo, ExportDataProyectoArea, ExportDataRecurso, KpisDashboard, ProyectosTrendItem, RenacytDistribucionItem};
-use crate::reportes::entity_reports::{ReporteProyectoIntegral, ReporteDocenteIntegral};
+use crate::reportes::entity_reports::{ReporteDocenteIntegral, ReporteProyectoIntegral};
+use crate::reportes::models::{
+    DocenteProyectosCount, ExportData, ExportDataConProjectos, ExportDataDocentePerfil,
+    ExportDataGrupo, ExportDataProyectoArea, ExportDataRecurso, KpisDashboard, ProyectosTrendItem,
+    RenacytDistribucionItem,
+};
+use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
-use crate::shared::access_control;
+use tauri::{State, Window};
 
 #[tauri::command]
 pub async fn get_estadisticas_proyectos_x_docente(

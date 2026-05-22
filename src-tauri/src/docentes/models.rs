@@ -118,7 +118,11 @@ impl From<(Docente, String, Vec<String>)> for DocenteDetalle {
             apellido_materno: docente.apellido_materno,
             grado,
             cantidad_proyectos,
-            proyectos: if proyectos.is_empty() { None } else { Some(proyectos.join(" | ")) },
+            proyectos: if proyectos.is_empty() {
+                None
+            } else {
+                Some(proyectos.join(" | "))
+            },
             activo: docente.activo,
             renacyt_codigo_registro: docente.renacyt_codigo_registro,
             renacyt_id_investigador: docente.renacyt_id_investigador,
@@ -190,19 +194,50 @@ impl Docente {
             apellido_materno,
             activo: 1,
             updated_at: Some(time::now_ms()),
-            renacyt_codigo_registro: renacyt.as_ref().map(|value| value.codigo_registro.trim().to_string()).filter(|value| !value.is_empty()),
-            renacyt_id_investigador: renacyt.as_ref().map(|value| value.id_investigador.trim().to_string()).filter(|value| !value.is_empty()),
-            renacyt_nivel: renacyt.as_ref().and_then(|value| value.nivel.clone()).filter(|value| !value.trim().is_empty()),
-            renacyt_grupo: renacyt.as_ref().and_then(|value| value.grupo.clone()).filter(|value| !value.trim().is_empty()),
-            renacyt_condicion: renacyt.as_ref().and_then(|value| value.condicion.clone()).filter(|value| !value.trim().is_empty()),
-            renacyt_fecha_informe_calificacion: renacyt.as_ref().and_then(|value| value.fecha_informe_calificacion),
+            renacyt_codigo_registro: renacyt
+                .as_ref()
+                .map(|value| value.codigo_registro.trim().to_string())
+                .filter(|value| !value.is_empty()),
+            renacyt_id_investigador: renacyt
+                .as_ref()
+                .map(|value| value.id_investigador.trim().to_string())
+                .filter(|value| !value.is_empty()),
+            renacyt_nivel: renacyt
+                .as_ref()
+                .and_then(|value| value.nivel.clone())
+                .filter(|value| !value.trim().is_empty()),
+            renacyt_grupo: renacyt
+                .as_ref()
+                .and_then(|value| value.grupo.clone())
+                .filter(|value| !value.trim().is_empty()),
+            renacyt_condicion: renacyt
+                .as_ref()
+                .and_then(|value| value.condicion.clone())
+                .filter(|value| !value.trim().is_empty()),
+            renacyt_fecha_informe_calificacion: renacyt
+                .as_ref()
+                .and_then(|value| value.fecha_informe_calificacion),
             renacyt_fecha_registro: renacyt.as_ref().and_then(|value| value.fecha_registro),
-            renacyt_fecha_ultima_revision: renacyt.as_ref().and_then(|value| value.fecha_ultima_revision),
-            renacyt_orcid: renacyt.as_ref().and_then(|value| value.orcid.clone()).filter(|value| !value.trim().is_empty()),
-            renacyt_scopus_author_id: renacyt.as_ref().and_then(|value| value.scopus_author_id.clone()).filter(|value| !value.trim().is_empty()),
+            renacyt_fecha_ultima_revision: renacyt
+                .as_ref()
+                .and_then(|value| value.fecha_ultima_revision),
+            renacyt_orcid: renacyt
+                .as_ref()
+                .and_then(|value| value.orcid.clone())
+                .filter(|value| !value.trim().is_empty()),
+            renacyt_scopus_author_id: renacyt
+                .as_ref()
+                .and_then(|value| value.scopus_author_id.clone())
+                .filter(|value| !value.trim().is_empty()),
             renacyt_fecha_ultima_sincronizacion: fecha_ultima_sincronizacion,
-            renacyt_ficha_url: renacyt.as_ref().map(|value| value.ficha_url.trim().to_string()).filter(|value| !value.is_empty()),
-            renacyt_formaciones_academicas_json: renacyt.as_ref().and_then(|value| value.formaciones_academicas_json.clone()).filter(|value| !value.trim().is_empty()),
+            renacyt_ficha_url: renacyt
+                .as_ref()
+                .map(|value| value.ficha_url.trim().to_string())
+                .filter(|value| !value.is_empty()),
+            renacyt_formaciones_academicas_json: renacyt
+                .as_ref()
+                .and_then(|value| value.formaciones_academicas_json.clone())
+                .filter(|value| !value.trim().is_empty()),
             grupo_investigacion_id: None,
         }
     }
@@ -213,8 +248,10 @@ impl Docente {
             .filter(|value| !value.trim().is_empty());
         let tiene_nuevas_formaciones = nuevas_formaciones.is_some();
 
-        self.renacyt_codigo_registro = Some(lookup.codigo_registro.trim().to_string()).filter(|value| !value.is_empty());
-        self.renacyt_id_investigador = Some(lookup.id_investigador.trim().to_string()).filter(|value| !value.is_empty());
+        self.renacyt_codigo_registro =
+            Some(lookup.codigo_registro.trim().to_string()).filter(|value| !value.is_empty());
+        self.renacyt_id_investigador =
+            Some(lookup.id_investigador.trim().to_string()).filter(|value| !value.is_empty());
         self.renacyt_nivel = lookup.nivel.filter(|value| !value.trim().is_empty());
         self.renacyt_grupo = lookup.grupo.filter(|value| !value.trim().is_empty());
         self.renacyt_condicion = lookup.condicion.filter(|value| !value.trim().is_empty());
@@ -222,8 +259,11 @@ impl Docente {
         self.renacyt_fecha_registro = lookup.fecha_registro;
         self.renacyt_fecha_ultima_revision = lookup.fecha_ultima_revision;
         self.renacyt_orcid = lookup.orcid.filter(|value| !value.trim().is_empty());
-        self.renacyt_scopus_author_id = lookup.scopus_author_id.filter(|value| !value.trim().is_empty());
-        self.renacyt_ficha_url = Some(lookup.ficha_url.trim().to_string()).filter(|value| !value.is_empty());
+        self.renacyt_scopus_author_id = lookup
+            .scopus_author_id
+            .filter(|value| !value.trim().is_empty());
+        self.renacyt_ficha_url =
+            Some(lookup.ficha_url.trim().to_string()).filter(|value| !value.is_empty());
         self.renacyt_fecha_ultima_sincronizacion = Some(time::now_ms());
 
         if let Some(formaciones) = nuevas_formaciones {
@@ -232,7 +272,6 @@ impl Docente {
 
         tiene_nuevas_formaciones
     }
-
 }
 
 /// Publicación científica sincronizada desde Pure (Elsevier) por Scopus Author ID.
@@ -276,4 +315,13 @@ pub struct SyncPublicacionesResult {
     pub total_encontradas: usize,
     pub nuevas: usize,
     pub actualizadas: usize,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateDocenteRequest {
+    pub nombres: Option<String>,
+    pub apellido_paterno: Option<String>,
+    pub apellido_materno: Option<String>,
+    pub id_grado: Option<String>,
+    pub grupo_investigacion_id: Option<String>,
 }

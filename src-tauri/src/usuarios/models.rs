@@ -9,6 +9,8 @@ pub struct Usuario {
     pub rol: String,
     pub activo: i64,
     #[serde(default)]
+    pub docente_id: Option<String>,
+    #[serde(default)]
     pub updated_at: Option<i64>,
 }
 
@@ -21,6 +23,8 @@ pub struct UsuarioConPassword {
     pub password_hash: String,
     pub activo: i64,
     #[serde(default)]
+    pub docente_id: Option<String>,
+    #[serde(default)]
     pub updated_at: Option<i64>,
 }
 
@@ -30,6 +34,8 @@ pub struct CreateUsuarioRequest {
     pub nombre_completo: String,
     pub rol: String,
     pub password: String,
+    #[serde(default)]
+    pub docente_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -37,6 +43,8 @@ pub struct BootstrapUsuarioRequest {
     pub username: String,
     pub nombre_completo: String,
     pub password: String,
+    #[serde(default)]
+    pub rol: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -45,6 +53,8 @@ pub struct UpdateUsuarioRequest {
     pub nombre_completo: String,
     pub rol: String,
     pub password: Option<String>,
+    #[serde(default)]
+    pub docente_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -62,7 +72,7 @@ pub struct AuthStatus {
 impl UsuarioConPassword {
     pub fn new(request: CreateUsuarioRequest, password_hash: String) -> Self {
         let now = crate::shared::time::now_ms();
-        
+
         Self {
             id_usuario: Uuid::new_v4().to_string(),
             username: request.username.trim().to_lowercase(),
@@ -70,6 +80,7 @@ impl UsuarioConPassword {
             rol: request.rol.trim().to_string(),
             password_hash,
             activo: 1,
+            docente_id: request.docente_id,
             updated_at: Some(now),
         }
     }
@@ -81,6 +92,7 @@ impl UsuarioConPassword {
             nombre_completo: self.nombre_completo.clone(),
             rol: self.rol.clone(),
             activo: self.activo,
+            docente_id: self.docente_id.clone(),
             updated_at: self.updated_at,
         }
     }

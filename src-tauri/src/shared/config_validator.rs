@@ -2,7 +2,6 @@
 ///
 /// Validates database configuration completeness and URI format, returning
 /// user-friendly `AppError::ConfigurationError` messages on failure.
-
 use crate::shared::config::DatabaseConfig;
 use crate::shared::error::AppError;
 

@@ -1,6 +1,38 @@
+# =========================================================================
+# CONFIGURACIÓN DE EXCLUSIÓN GLOBAL PARA OPENCODE (STACK: TAURI + VITE)
+# =========================================================================
+
+# Dependencias físicas de paquetes
 node_modules/
-dist/
+/src-tauri/target/
 target/
-src-tauri/target/
+
+# Archivos de bloqueo masivos (Causantes directos del error Failed to Fetch)
+package-lock.json
+Cargo.lock
+pnpm-lock.yaml
+yarn.lock
+
+# Carpetas de metadatos, caché y estados de agentes
+.cache/
+.opencode/
 .git/
+.vscode/
+.idea/
+.continue/
+.agents/
+
+# Binarios de distribución y compilación final
+dist/
+dist-ssr/
+build/
+src-tauri/bundle/
+
+# Volúmenes de persistencia local y registros de ejecución
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+logs/
 *.log
+.opencode

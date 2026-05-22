@@ -239,33 +239,134 @@ pub struct PublicacionConEtiquetas {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 impl PatenteConEtiquetas {
-    pub fn from_patente(p: &crate::recursos::models::Patente, catalogo_map: &std::collections::HashMap<(String, String), crate::catalogos::models::CatalogoItem>) -> Self {
-        let tipo_lbl = p.tipo.as_ref().and_then(|c| catalogo_map.get(&("tipo_patente".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        let estado_lbl = p.estado.as_ref().and_then(|c| catalogo_map.get(&("estado_patente".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        Self { id_patente: p.id_patente.clone(), titulo: p.titulo.clone(), numero_patente: p.numero_patente.clone(), tipo_codigo: p.tipo.clone(), tipo_nombre: tipo_lbl, estado_codigo: p.estado.clone(), estado_nombre: estado_lbl, fecha_solicitud: p.fecha_solicitud, fecha_concesion: p.fecha_concesion, pais: p.pais.clone(), entidad_concedente: p.entidad_concedente.clone(), descripcion: p.descripcion.clone() }
+    pub fn from_patente(
+        p: &crate::recursos::models::Patente,
+        catalogo_map: &std::collections::HashMap<
+            (String, String),
+            crate::catalogos::models::CatalogoItem,
+        >,
+    ) -> Self {
+        let tipo_lbl = p.tipo.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("tipo_patente".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        let estado_lbl = p.estado.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("estado_patente".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        Self {
+            id_patente: p.id_patente.clone(),
+            titulo: p.titulo.clone(),
+            numero_patente: p.numero_patente.clone(),
+            tipo_codigo: p.tipo.clone(),
+            tipo_nombre: tipo_lbl,
+            estado_codigo: p.estado.clone(),
+            estado_nombre: estado_lbl,
+            fecha_solicitud: p.fecha_solicitud,
+            fecha_concesion: p.fecha_concesion,
+            pais: p.pais.clone(),
+            entidad_concedente: p.entidad_concedente.clone(),
+            descripcion: p.descripcion.clone(),
+        }
     }
 }
 
 impl ProductoConEtiquetas {
-    pub fn from_producto(p: &crate::recursos::models::Producto, catalogo_map: &std::collections::HashMap<(String, String), crate::catalogos::models::CatalogoItem>) -> Self {
-        let tipo_lbl = p.tipo.as_ref().and_then(|c| catalogo_map.get(&("tipo_producto".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        let etapa_lbl = p.etapa.as_ref().and_then(|c| catalogo_map.get(&("etapa_producto".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        Self { id_producto: p.id_producto.clone(), nombre: p.nombre.clone(), tipo_codigo: p.tipo.clone(), tipo_nombre: tipo_lbl, etapa_codigo: p.etapa.clone(), etapa_nombre: etapa_lbl, descripcion: p.descripcion.clone(), fecha_registro: p.fecha_registro }
+    pub fn from_producto(
+        p: &crate::recursos::models::Producto,
+        catalogo_map: &std::collections::HashMap<
+            (String, String),
+            crate::catalogos::models::CatalogoItem,
+        >,
+    ) -> Self {
+        let tipo_lbl = p.tipo.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("tipo_producto".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        let etapa_lbl = p.etapa.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("etapa_producto".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        Self {
+            id_producto: p.id_producto.clone(),
+            nombre: p.nombre.clone(),
+            tipo_codigo: p.tipo.clone(),
+            tipo_nombre: tipo_lbl,
+            etapa_codigo: p.etapa.clone(),
+            etapa_nombre: etapa_lbl,
+            descripcion: p.descripcion.clone(),
+            fecha_registro: p.fecha_registro,
+        }
     }
 }
 
 impl EquipamientoConEtiquetas {
-    pub fn from_equipamiento(e: &crate::recursos::models::Equipamiento, catalogo_map: &std::collections::HashMap<(String, String), crate::catalogos::models::CatalogoItem>) -> Self {
-        let moneda_lbl = e.moneda.as_ref().and_then(|c| catalogo_map.get(&("moneda".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        Self { id_equipamiento: e.id_equipamiento.clone(), nombre: e.nombre.clone(), descripcion: e.descripcion.clone(), especificaciones: e.especificaciones.clone(), valor_estimado: e.valor_estimado, moneda_codigo: e.moneda.clone(), moneda_nombre: moneda_lbl, proveedor: e.proveedor.clone(), fecha_adquisicion: e.fecha_adquisicion }
+    pub fn from_equipamiento(
+        e: &crate::recursos::models::Equipamiento,
+        catalogo_map: &std::collections::HashMap<
+            (String, String),
+            crate::catalogos::models::CatalogoItem,
+        >,
+    ) -> Self {
+        let moneda_lbl = e.moneda.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("moneda".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        Self {
+            id_equipamiento: e.id_equipamiento.clone(),
+            nombre: e.nombre.clone(),
+            descripcion: e.descripcion.clone(),
+            especificaciones: e.especificaciones.clone(),
+            valor_estimado: e.valor_estimado,
+            moneda_codigo: e.moneda.clone(),
+            moneda_nombre: moneda_lbl,
+            proveedor: e.proveedor.clone(),
+            fecha_adquisicion: e.fecha_adquisicion,
+        }
     }
 }
 
 impl FinanciamientoConEtiquetas {
-    pub fn from_financiamiento(f: &crate::recursos::models::Financiamiento, catalogo_map: &std::collections::HashMap<(String, String), crate::catalogos::models::CatalogoItem>) -> Self {
-        let tipo_lbl = f.tipo.as_ref().and_then(|c| catalogo_map.get(&("tipo_financiamiento".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        let moneda_lbl = f.moneda.as_ref().and_then(|c| catalogo_map.get(&("moneda".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        let estado_lbl = f.estado_financiero.as_ref().and_then(|c| catalogo_map.get(&("estado_financiero".to_string(), c.clone())).map(|i| i.nombre.clone()));
-        Self { id_financiamiento: f.id_financiamiento.clone(), entidad_financiadora: f.entidad_financiadora.clone(), tipo_codigo: f.tipo.clone(), tipo_nombre: tipo_lbl, monto: f.monto, moneda_codigo: f.moneda.clone(), moneda_nombre: moneda_lbl, fecha_inicio: f.fecha_inicio, fecha_fin: f.fecha_fin, descripcion: f.descripcion.clone(), estado_financiero_codigo: f.estado_financiero.clone(), estado_financiero_nombre: estado_lbl }
+    pub fn from_financiamiento(
+        f: &crate::recursos::models::Financiamiento,
+        catalogo_map: &std::collections::HashMap<
+            (String, String),
+            crate::catalogos::models::CatalogoItem,
+        >,
+    ) -> Self {
+        let tipo_lbl = f.tipo.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("tipo_financiamiento".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        let moneda_lbl = f.moneda.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("moneda".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        let estado_lbl = f.estado_financiero.as_ref().and_then(|c| {
+            catalogo_map
+                .get(&("estado_financiero".to_string(), c.clone()))
+                .map(|i| i.nombre.clone())
+        });
+        Self {
+            id_financiamiento: f.id_financiamiento.clone(),
+            entidad_financiadora: f.entidad_financiadora.clone(),
+            tipo_codigo: f.tipo.clone(),
+            tipo_nombre: tipo_lbl,
+            monto: f.monto,
+            moneda_codigo: f.moneda.clone(),
+            moneda_nombre: moneda_lbl,
+            fecha_inicio: f.fecha_inicio,
+            fecha_fin: f.fecha_fin,
+            descripcion: f.descripcion.clone(),
+            estado_financiero_codigo: f.estado_financiero.clone(),
+            estado_financiero_nombre: estado_lbl,
+        }
     }
 }

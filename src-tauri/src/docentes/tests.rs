@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::docentes::models::{CreateDocenteRequest, CreateDocenteRenacytRequest, Docente};
+    use crate::docentes::models::{CreateDocenteRenacytRequest, CreateDocenteRequest, Docente};
 
     #[test]
     fn test_docente_new_builds_full_name_correctly() {
@@ -103,7 +103,10 @@ mod tests {
         assert!(updated, "Debe reportar que hubo actualización");
         assert_eq!(docente.renacyt_nivel, Some("I".to_string()));
         assert_eq!(docente.renacyt_grupo, Some("B".to_string()));
-        assert_eq!(docente.renacyt_orcid, Some("0000-0002-0000-0000".to_string()));
+        assert_eq!(
+            docente.renacyt_orcid,
+            Some("0000-0002-0000-0000".to_string())
+        );
         assert!(docente.renacyt_formaciones_academicas_json.is_some());
     }
 }

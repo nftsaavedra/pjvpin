@@ -1,10 +1,13 @@
 use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 
-use crate::shared::config::ReniecConfig;
 use crate::docentes::models::ReniecDniLookupResult;
+use crate::shared::config::ReniecConfig;
 use crate::shared::error::{sanitize_external_detail, AppError};
 
-pub async fn consultar_dni(config: &ReniecConfig, numero: &str) -> Result<ReniecDniLookupResult, AppError> {
+pub async fn consultar_dni(
+    config: &ReniecConfig,
+    numero: &str,
+) -> Result<ReniecDniLookupResult, AppError> {
     let numero_limpio = numero.trim();
     if !numero_limpio.chars().all(|char| char.is_ascii_digit()) || numero_limpio.len() != 8 {
         return Err(AppError::ExternalServiceError(
@@ -31,7 +34,10 @@ pub async fn consultar_dni(config: &ReniecConfig, numero: &str) -> Result<Reniec
 
     let status = response.status();
     if status.is_success() {
-        return response.json::<ReniecDniLookupResult>().await.map_err(Into::into);
+        return response
+            .json::<ReniecDniLookupResult>()
+            .await
+            .map_err(Into::into);
     }
 
     if status.as_u16() == 400 || status.as_u16() == 404 {
@@ -40,7 +46,10 @@ pub async fn consultar_dni(config: &ReniecConfig, numero: &str) -> Result<Reniec
         ));
     }
 
-    let detalle = response.text().await.unwrap_or_else(|_| "Sin detalle adicional".to_string());
+    let detalle = response
+        .text()
+        .await
+        .unwrap_or_else(|_| "Sin detalle adicional".to_string());
     let safe_detalle = sanitize_external_detail(&detalle);
     Err(AppError::ExternalServiceError(format!(
         "La consulta RENIEC no pudo completarse en este momento ({status}). {safe_detalle}"

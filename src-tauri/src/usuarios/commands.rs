@@ -1,9 +1,12 @@
 use tauri::{State, Window};
 
+use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
-use crate::shared::access_control;
-use crate::usuarios::models::{AuthStatus, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest, UpdateUsuarioRequest, Usuario};
+use crate::usuarios::models::{
+    AuthStatus, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
+    UpdateUsuarioRequest, Usuario,
+};
 
 #[tauri::command]
 pub async fn crear_usuario(
@@ -15,9 +18,7 @@ pub async fn crear_usuario(
 }
 
 #[tauri::command]
-pub async fn get_auth_status(
-    state: State<'_, AppState>,
-) -> Result<AuthStatus, AppError> {
+pub async fn get_auth_status(state: State<'_, AppState>) -> Result<AuthStatus, AppError> {
     access_control::get_auth_status(&state).await
 }
 
@@ -48,10 +49,7 @@ pub async fn get_current_session(
 }
 
 #[tauri::command]
-pub async fn logout_usuario(
-    window: Window,
-    state: State<'_, AppState>,
-) -> Result<(), AppError> {
+pub async fn logout_usuario(window: Window, state: State<'_, AppState>) -> Result<(), AppError> {
     access_control::logout_usuario(&state, window.label()).await
 }
 

@@ -1,8 +1,10 @@
-use tauri::{State, Window};
-use crate::grupos::models::{GrupoInvestigacion, CreateGrupoInvestigacionRequest, UpdateGrupoInvestigacionRequest};
+use crate::grupos::models::{
+    CreateGrupoInvestigacionRequest, GrupoInvestigacion, UpdateGrupoInvestigacionRequest,
+};
+use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
-use crate::shared::access_control;
+use tauri::{State, Window};
 
 #[tauri::command]
 pub async fn get_all_grupos(

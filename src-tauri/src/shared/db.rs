@@ -9,7 +9,9 @@ use crate::shared::error::AppError;
 
 pub async fn init_mongo(config: &DatabaseConfig) -> Result<Database, AppError> {
     let uri = config.mongodb_uri.as_deref().ok_or_else(|| {
-        AppError::ConfigurationError("Falta configurar PJUPI_MONGODB_URI para usar MongoDB.".to_string())
+        AppError::ConfigurationError(
+            "Falta configurar PJUPI_MONGODB_URI para usar MongoDB.".to_string(),
+        )
     })?;
 
     let client = Client::with_uri_str(uri).await?;
@@ -53,10 +55,18 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     db.collection::<Document>("docentes")
-        .create_index(IndexModel::builder().keys(doc! { "renacyt_id_investigador": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "renacyt_id_investigador": 1 })
+                .build(),
+        )
         .await?;
     db.collection::<Document>("docentes")
-        .create_index(IndexModel::builder().keys(doc! { "renacyt_codigo_registro": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "renacyt_codigo_registro": 1 })
+                .build(),
+        )
         .await?;
 
     db.collection::<Document>("proyectos")
@@ -69,7 +79,11 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
 
     db.collection::<Document>("participaciones")
-        .create_index(IndexModel::builder().keys(doc! { "id_proyecto": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_proyecto": 1 })
+                .build(),
+        )
         .await?;
     db.collection::<Document>("participaciones")
         .create_index(IndexModel::builder().keys(doc! { "id_docente": 1 }).build())
@@ -105,23 +119,39 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .create_index(IndexModel::builder().keys(doc! { "docente_id": 1 }).build())
         .await?;
     db.collection::<Document>("publicaciones")
-        .create_index(IndexModel::builder().keys(doc! { "proyecto_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "proyecto_id": 1 })
+                .build(),
+        )
         .await?;
 
     // --- Patentes ---
     db.collection::<Document>("patentes")
-        .create_index(IndexModel::builder().keys(doc! { "proyecto_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "proyecto_id": 1 })
+                .build(),
+        )
         .await?;
     db.collection::<Document>("patentes")
         .create_index(IndexModel::builder().keys(doc! { "docente_id": 1 }).build())
         .await?;
     db.collection::<Document>("patentes")
-        .create_index(IndexModel::builder().keys(doc! { "numero_patente": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "numero_patente": 1 })
+                .build(),
+        )
         .await?;
 
     // --- Productos ---
     db.collection::<Document>("productos")
-        .create_index(IndexModel::builder().keys(doc! { "proyecto_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "proyecto_id": 1 })
+                .build(),
+        )
         .await?;
     db.collection::<Document>("productos")
         .create_index(IndexModel::builder().keys(doc! { "docente_id": 1 }).build())
@@ -129,12 +159,20 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
 
     // --- Equipamientos ---
     db.collection::<Document>("equipamientos")
-        .create_index(IndexModel::builder().keys(doc! { "proyecto_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "proyecto_id": 1 })
+                .build(),
+        )
         .await?;
 
     // --- Financiamientos ---
     db.collection::<Document>("financiamientos")
-        .create_index(IndexModel::builder().keys(doc! { "proyecto_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "proyecto_id": 1 })
+                .build(),
+        )
         .await?;
 
     // --- Grupos de investigación ---
@@ -147,7 +185,51 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     db.collection::<Document>("grupos_investigacion")
-        .create_index(IndexModel::builder().keys(doc! { "coordinador_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "coordinador_id": 1 })
+                .build(),
+        )
+        .await?;
+
+    // --- Publicaciones Científicas ---
+    db.collection::<Document>("publicaciones_cientificas")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_publicacion": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("publicaciones_cientificas")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "autores_ids": 1 })
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("publicaciones_cientificas")
+        .create_index(IndexModel::builder().keys(doc! { "anio": 1 }).build())
+        .await?;
+    db.collection::<Document>("publicaciones_cientificas")
+        .create_index(IndexModel::builder().keys(doc! { "doi": 1 }).build())
+        .await?;
+
+    // --- Eventos Academicos ---
+    db.collection::<Document>("eventos_academicos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_evento": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("eventos_academicos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "participantes.docente_id": 1 })
+                .build(),
+        )
         .await?;
 
     Ok(())

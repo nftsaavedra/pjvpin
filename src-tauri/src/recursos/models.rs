@@ -3,6 +3,10 @@ use uuid::Uuid;
 
 use crate::shared::time;
 
+fn default_activo() -> i64 {
+    1
+}
+
 // ── Patentes ──────────────────────────────────────────────────────────────────
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,6 +28,8 @@ pub struct Patente {
     pub descripcion: Option<String>,
     pub created_at: Option<i64>,
     pub updated_at: Option<i64>,
+    #[serde(default = "default_activo")]
+    pub activo: i64,
 }
 
 impl Patente {
@@ -46,6 +52,7 @@ impl Patente {
             descripcion: request.descripcion,
             created_at: Some(now),
             updated_at: Some(now),
+            activo: 1,
         }
     }
 }
@@ -95,6 +102,8 @@ pub struct Producto {
     pub fecha_registro: Option<i64>,
     pub created_at: Option<i64>,
     pub updated_at: Option<i64>,
+    #[serde(default = "default_activo")]
+    pub activo: i64,
 }
 
 impl Producto {
@@ -113,6 +122,7 @@ impl Producto {
             fecha_registro: request.fecha_registro,
             created_at: Some(now),
             updated_at: Some(now),
+            activo: 1,
         }
     }
 }
@@ -154,6 +164,8 @@ pub struct Equipamiento {
     pub fecha_adquisicion: Option<i64>,
     pub created_at: Option<i64>,
     pub updated_at: Option<i64>,
+    #[serde(default = "default_activo")]
+    pub activo: i64,
 }
 
 impl Equipamiento {
@@ -173,6 +185,7 @@ impl Equipamiento {
             fecha_adquisicion: request.fecha_adquisicion,
             created_at: Some(now),
             updated_at: Some(now),
+            activo: 1,
         }
     }
 }
@@ -219,6 +232,8 @@ pub struct Financiamiento {
     pub estado_financiero: Option<String>,
     pub created_at: Option<i64>,
     pub updated_at: Option<i64>,
+    #[serde(default = "default_activo")]
+    pub activo: i64,
 }
 
 impl Financiamiento {
@@ -239,6 +254,7 @@ impl Financiamiento {
             estado_financiero: request.estado_financiero,
             created_at: Some(now),
             updated_at: Some(now),
+            activo: 1,
         }
     }
 }

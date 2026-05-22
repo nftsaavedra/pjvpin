@@ -1,18 +1,22 @@
+use crate::seguridad::models::{
+    ConfigurationGuide, ConfigurationStep, SecurityRecommendation, SecurityRecommendations,
+    SecurityStatus,
+};
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
-use crate::seguridad::models::{
-    ConfigurationGuide, ConfigurationStep, SecurityRecommendation, SecurityRecommendations, SecurityStatus,
-};
 
 #[tauri::command]
-pub async fn get_security_status(state: tauri::State<'_, AppState>) -> Result<SecurityStatus, AppError> {
+pub async fn get_security_status(
+    state: tauri::State<'_, AppState>,
+) -> Result<SecurityStatus, AppError> {
     let mongodb_configured = state.mongo.is_some();
 
     let mut recommendations = Vec::new();
 
     if !mongodb_configured {
         recommendations.push(
-            "⚠️ MongoDB no está disponible. Verifique la configuración de PJUPI_MONGODB_URI.".to_string()
+            "⚠️ MongoDB no está disponible. Verifique la configuración de PJUPI_MONGODB_URI."
+                .to_string(),
         );
     }
 
@@ -94,4 +98,52 @@ pub async fn get_security_recommendations() -> Result<SecurityRecommendations, A
     ];
 
     Ok(SecurityRecommendations { recommendations })
+}
+
+#[tauri::command]
+pub async fn wizard_has_config() -> Result<bool, AppError> {
+    Ok(crate::shared::config_wizard::has_existing_config())
+}
+
+#[tauri::command]
+pub async fn wizard_test_mongodb(
+    uri: String,
+) -> Result<crate::shared::config_wizard::ConnectivityResult, AppError> {
+    Ok(crate::shared::config_wizard::test_mongodb_connectivity(&uri).await)
+}
+
+#[tauri::command]
+pub async fn wizard_test_reniec(
+    token: String,
+) -> Result<crate::shared::config_wizard::ConnectivityResult, AppError> {
+    Ok(crate::shared::config_wizard::test_reniec_connectivity(&token).await)
+}
+
+#[tauri::command]
+pub async fn wizard_test_renacyt(
+    base_url: String,
+) -> Result<crate::shared::config_wizard::ConnectivityResult, AppError> {
+    Ok(crate::shared::config_wizard::test_renacyt_connectivity(&base_url).await)
+}
+
+#[tauri::command]
+pub async fn wizard_test_pure(
+    base_url: String,
+    api_key: String,
+) -> Result<crate::shared::config_wizard::ConnectivityResult, AppError> {
+    Ok(crate::shared::config_wizard::test_pure_connectivity(&base_url, &api_key).await)
+}
+
+#[tauri::command]
+pub async fn wizard_save_config(
+    request: crate::shared::config_wizard::WizardConfigRequest,
+) -> Result<(), AppError> {
+    crate::shared::config_wizard::validate_master_password(&request.master_password)?;
+    let config_path = crate::shared::config_wizard::get_config_path();
+    crate::shared::config_wizard::save_wizard_config(request, &config_path)
+}
+
+#[tauri::command]
+pub async fn wizard_validate_master_password(password: String) -> Result<(), AppError> {
+    crate::shared::config_wizard::validate_master_password(&password)
 }
