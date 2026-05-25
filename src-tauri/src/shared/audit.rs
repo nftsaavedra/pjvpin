@@ -33,7 +33,7 @@ struct AuditGenericEntry<'a> {
 }
 
 fn resolve_audit_log_path() -> PathBuf {
-    if let Ok(path) = std::env::var("PJUPI_AUDIT_LOG_PATH") {
+    if let Ok(path) = std::env::var("PJVPIN_AUDIT_LOG_PATH") {
         let trimmed = path.trim();
         if !trimmed.is_empty() {
             return PathBuf::from(trimmed);
@@ -41,7 +41,7 @@ fn resolve_audit_log_path() -> PathBuf {
     }
     std::env::current_dir()
         .unwrap_or_else(|_| std::env::temp_dir())
-        .join("pjupi-audit.log")
+        .join("pjvpin-audit.log")
 }
 
 fn append_audit_line(path: &PathBuf, json_line: &str) {

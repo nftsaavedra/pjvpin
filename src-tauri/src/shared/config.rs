@@ -39,18 +39,18 @@ pub struct RuntimeConfig {
 
 impl DatabaseConfig {
     pub fn from_values(values: &HashMap<String, String>) -> Self {
-        let mongodb_uri = env::var("PJUPI_MONGODB_URI").ok();
+        let mongodb_uri = env::var("PJVPIN_MONGODB_URI").ok();
         let mongodb_uri = values
-            .get("PJUPI_MONGODB_URI")
+            .get("PJVPIN_MONGODB_URI")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .or(mongodb_uri);
 
         let mongodb_db_name = values
-            .get("PJUPI_MONGODB_DB")
+            .get("PJVPIN_MONGODB_DB")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| "pjupi".to_string());
+            .unwrap_or_else(|| "pjvpin".to_string());
 
         Self {
             mongodb_uri,
@@ -66,14 +66,14 @@ impl DatabaseConfig {
 impl ReniecConfig {
     pub fn from_values(values: &HashMap<String, String>) -> Self {
         let api_base_url = values
-            .get("PJUPI_RENIEC_API_BASE_URL")
+            .get("PJVPIN_RENIEC_API_BASE_URL")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .unwrap_or_else(|| "https://api.decolecta.com/v1".to_string());
         let token = values
-            .get("PJUPI_RENIEC_TOKEN")
+            .get("PJVPIN_RENIEC_TOKEN")
             .cloned()
-            .or_else(|| env::var("PJUPI_RENIEC_TOKEN").ok())
+            .or_else(|| env::var("PJVPIN_RENIEC_TOKEN").ok())
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty());
 
@@ -87,17 +87,17 @@ impl ReniecConfig {
 impl RenacytConfig {
     pub fn from_values(values: &HashMap<String, String>) -> Self {
         let api_base_url = values
-            .get("PJUPI_RENACYT_API_BASE_URL")
+            .get("PJVPIN_RENACYT_API_BASE_URL")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .unwrap_or_else(|| "https://renacyt.concytec.gob.pe/renacyt-backend".to_string());
         let acto_version = values
-            .get("PJUPI_RENACYT_ACTO_VERSION")
+            .get("PJVPIN_RENACYT_ACTO_VERSION")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .unwrap_or_else(|| "2021".to_string());
         let ficha_base_url = values
-            .get("PJUPI_RENACYT_FICHA_BASE_URL")
+            .get("PJVPIN_RENACYT_FICHA_BASE_URL")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
             .unwrap_or_else(|| {
@@ -115,15 +115,15 @@ impl RenacytConfig {
 impl PureConfig {
     pub fn from_values(values: &HashMap<String, String>) -> Self {
         let api_base_url = values
-            .get("PJUPI_PURE_API_BASE_URL")
+            .get("PJVPIN_PURE_API_BASE_URL")
             .map(|v| v.trim().to_string())
             .filter(|v| !v.is_empty())
             .unwrap_or_else(|| "https://pure.unf.edu.pe/ws/api".to_string());
         let api_key = values
-            .get("PJUPI_PURE_API_KEY")
+            .get("PJVPIN_PURE_API_KEY")
             .cloned()
             .or_else(|| values.get("PURE_API_KEY").cloned())
-            .or_else(|| env::var("PJUPI_PURE_API_KEY").ok())
+            .or_else(|| env::var("PJVPIN_PURE_API_KEY").ok())
             .or_else(|| env::var("PURE_API_KEY").ok())
             .map(|v| v.trim().to_string())
             .filter(|v| !v.is_empty());
@@ -160,7 +160,7 @@ pub fn load_runtime_config(user_config_path: &Path) -> Result<RuntimeConfig, App
         merge_json_file(&mut values, user_config_path)?;
     }
 
-    let legacy_env_path = user_config_path.with_file_name("pjupi.env");
+    let legacy_env_path = user_config_path.with_file_name("pjvpin.env");
     if legacy_env_path.exists() {
         merge_env_file(&mut values, &legacy_env_path)?;
     }
@@ -177,16 +177,16 @@ pub fn load_runtime_config(user_config_path: &Path) -> Result<RuntimeConfig, App
 
 fn merge_process_env(values: &mut HashMap<String, String>) {
     for key in [
-        "PJUPI_DB_BACKEND",
-        "PJUPI_MONGODB_URI",
-        "PJUPI_MONGODB_DB",
-        "PJUPI_RENIEC_API_BASE_URL",
-        "PJUPI_RENIEC_TOKEN",
-        "PJUPI_RENACYT_API_BASE_URL",
-        "PJUPI_RENACYT_ACTO_VERSION",
-        "PJUPI_RENACYT_FICHA_BASE_URL",
-        "PJUPI_PURE_API_BASE_URL",
-        "PJUPI_PURE_API_KEY",
+        "PJVPIN_DB_BACKEND",
+        "PJVPIN_MONGODB_URI",
+        "PJVPIN_MONGODB_DB",
+        "PJVPIN_RENIEC_API_BASE_URL",
+        "PJVPIN_RENIEC_TOKEN",
+        "PJVPIN_RENACYT_API_BASE_URL",
+        "PJVPIN_RENACYT_ACTO_VERSION",
+        "PJVPIN_RENACYT_FICHA_BASE_URL",
+        "PJVPIN_PURE_API_BASE_URL",
+        "PJVPIN_PURE_API_KEY",
         "PURE_API_KEY",
     ] {
         if let Ok(value) = env::var(key) {
@@ -252,29 +252,29 @@ fn merge_json_file(values: &mut HashMap<String, String>, path: &Path) -> Result<
     })?;
 
     if let Some(database) = parsed.database {
-        insert_if_non_empty(values, "PJUPI_DB_BACKEND", Some("mongodb".to_string()));
-        insert_if_non_empty(values, "PJUPI_MONGODB_URI", database.mongodb_uri);
-        insert_if_non_empty(values, "PJUPI_MONGODB_DB", database.mongodb_db);
+        insert_if_non_empty(values, "PJVPIN_DB_BACKEND", Some("mongodb".to_string()));
+        insert_if_non_empty(values, "PJVPIN_MONGODB_URI", database.mongodb_uri);
+        insert_if_non_empty(values, "PJVPIN_MONGODB_DB", database.mongodb_db);
     }
 
     if let Some(reniec) = parsed.reniec {
-        insert_if_non_empty(values, "PJUPI_RENIEC_API_BASE_URL", reniec.api_base_url);
-        insert_if_non_empty(values, "PJUPI_RENIEC_TOKEN", reniec.token);
+        insert_if_non_empty(values, "PJVPIN_RENIEC_API_BASE_URL", reniec.api_base_url);
+        insert_if_non_empty(values, "PJVPIN_RENIEC_TOKEN", reniec.token);
     }
 
     if let Some(renacyt) = parsed.renacyt {
-        insert_if_non_empty(values, "PJUPI_RENACYT_API_BASE_URL", renacyt.api_base_url);
-        insert_if_non_empty(values, "PJUPI_RENACYT_ACTO_VERSION", renacyt.acto_version);
+        insert_if_non_empty(values, "PJVPIN_RENACYT_API_BASE_URL", renacyt.api_base_url);
+        insert_if_non_empty(values, "PJVPIN_RENACYT_ACTO_VERSION", renacyt.acto_version);
         insert_if_non_empty(
             values,
-            "PJUPI_RENACYT_FICHA_BASE_URL",
+            "PJVPIN_RENACYT_FICHA_BASE_URL",
             renacyt.ficha_base_url,
         );
     }
 
     if let Some(pure) = parsed.pure {
-        insert_if_non_empty(values, "PJUPI_PURE_API_BASE_URL", pure.api_base_url);
-        insert_if_non_empty(values, "PJUPI_PURE_API_KEY", pure.api_key);
+        insert_if_non_empty(values, "PJVPIN_PURE_API_BASE_URL", pure.api_base_url);
+        insert_if_non_empty(values, "PJVPIN_PURE_API_KEY", pure.api_key);
     }
 
     Ok(())
@@ -329,5 +329,5 @@ fn merge_env_file(values: &mut HashMap<String, String>, path: &Path) -> Result<(
 }
 
 fn default_json_config_template() -> &'static str {
-    "{\n  \"database\": {\n    \"mongodbUri\": \"\",\n    \"mongodbDb\": \"pjupi\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
+    "{\n  \"database\": {\n    \"mongodbUri\": \"\",\n    \"mongodbDb\": \"pjvpin\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
 }

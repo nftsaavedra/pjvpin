@@ -15,9 +15,9 @@ pub fn sanitize_external_detail(input: &str) -> String {
         "token",
         "password",
         "secret",
-        "PJUPI_PURE_API_KEY",
+        "PJVPIN_PURE_API_KEY",
         "PURE_API_KEY",
-        "PJUPI_RENIEC_TOKEN",
+        "PJVPIN_RENIEC_TOKEN",
     ] {
         sanitized = redact_after_marker(&sanitized, marker);
     }

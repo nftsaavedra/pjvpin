@@ -34,7 +34,7 @@ pub async fn get_setup_guide() -> Result<ConfigurationGuide, AppError> {
             step_number: 1,
             title: "Crear archivo de configuración".to_string(),
             description: "El archivo de configuración se encuentra en:\n- Windows: %APPDATA%/com.upic.pjupi/pjupi.config.json\n- macOS: ~/Library/Application Support/com.upic.pjupi/pjupi.config.json\n- Linux: ~/.local/share/com.upic.pjupi/pjupi.config.json".to_string(),
-            example: Some("{\n  \"database\": {\n    \"mongodbUri\": \"mongodb://localhost:27017\",\n    \"mongodbDb\": \"pjupi\"\n  }\n}".to_string()),
+            example: Some("{\n  \"database\": {\n    \"mongodbUri\": \"mongodb://localhost:27017\",\n    \"mongodbDb\": \"pjvpin\"\n  }\n}".to_string()),
         },
         ConfigurationStep {
             step_number: 2,

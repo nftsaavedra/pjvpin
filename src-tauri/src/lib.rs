@@ -46,7 +46,7 @@ pub fn run() {
                         .app_data_dir()
                         .unwrap_or_else(|_| std::env::temp_dir())
                 })
-                .join("pjupi.config.json");
+                .join("pjvpin.config.json");
 
             let runtime_config = load_runtime_config(&user_config_path)?;
 

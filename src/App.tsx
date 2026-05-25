@@ -29,7 +29,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    const savedValue = window.localStorage.getItem("pjupi.sidebarCollapsed");
+    const savedValue = window.localStorage.getItem("pjvpin.sidebarCollapsed");
     if (savedValue === "true" || savedValue === "false") {
       return savedValue === "true";
     }
@@ -186,7 +186,7 @@ function App() {
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => {
       const next = !prev;
-      window.localStorage.setItem("pjupi.sidebarCollapsed", String(next));
+      window.localStorage.setItem("pjvpin.sidebarCollapsed", String(next));
       return next;
     });
   };

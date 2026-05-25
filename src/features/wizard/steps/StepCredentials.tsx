@@ -40,7 +40,7 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
             label="Nombre de la base de datos"
             value={state.mongodbDb}
             onChange={(v) => { update('mongodbDb', v); }}
-            placeholder="pjupi"
+            placeholder="pjvpin"
           />
         </div>
 

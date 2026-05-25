@@ -33,7 +33,7 @@ fn resolve_config_dir() -> PathBuf {
 }
 
 pub fn get_config_path() -> PathBuf {
-    resolve_config_dir().join("pjupi.config.json")
+    resolve_config_dir().join("pjvpin.config.json")
 }
 
 pub fn has_existing_config() -> bool {
@@ -48,7 +48,7 @@ pub fn save_wizard_config(
     let config_json = serde_json::json!({
         "database": {
             "mongodbUri": request.mongodb_uri,
-            "mongodbDb": request.mongodb_db.unwrap_or_else(|| "pjupi".to_string())
+            "mongodbDb": request.mongodb_db.unwrap_or_else(|| "pjvpin".to_string())
         },
         "reniec": {
             "apiBaseUrl": "https://api.decolecta.com/v1",
