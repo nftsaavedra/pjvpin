@@ -110,7 +110,7 @@ export interface ProyectoDetalle {
   docente_responsable?: string | null;
   docentes: string | null;
   participantes_json?: string | null;
-  activo: number;
+  activo: boolean;
 }
 
 export interface ProyectoParticipanteResumen {

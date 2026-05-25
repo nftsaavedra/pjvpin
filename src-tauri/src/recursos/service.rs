@@ -22,6 +22,10 @@ pub async fn get_patentes_by_proyecto(
     let db = state.mongo_db()?;
     repository::get_patentes_by_proyecto(db, proyecto_id).await
 }
+pub async fn get_patente_by_id(state: &AppState, id_patente: &str) -> Result<Patente, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_patente_by_id(db, id_patente).await
+}
 pub async fn update_patente(
     state: &AppState,
     id_patente: &str,
@@ -52,6 +56,10 @@ pub async fn get_productos_by_proyecto(
 ) -> Result<Vec<Producto>, AppError> {
     let db = state.mongo_db()?;
     repository::get_productos_by_proyecto(db, proyecto_id).await
+}
+pub async fn get_producto_by_id(state: &AppState, id_producto: &str) -> Result<Producto, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_producto_by_id(db, id_producto).await
 }
 pub async fn update_producto(
     state: &AppState,
@@ -87,6 +95,13 @@ pub async fn get_equipamientos_by_proyecto(
     let db = state.mongo_db()?;
     repository::get_equipamientos_by_proyecto(db, proyecto_id).await
 }
+pub async fn get_equipamiento_by_id(
+    state: &AppState,
+    id_equipamiento: &str,
+) -> Result<Equipamiento, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_equipamiento_by_id(db, id_equipamiento).await
+}
 pub async fn update_equipamiento(
     state: &AppState,
     id_equipamiento: &str,
@@ -120,6 +135,13 @@ pub async fn get_financiamientos_by_proyecto(
 ) -> Result<Vec<Financiamiento>, AppError> {
     let db = state.mongo_db()?;
     repository::get_financiamientos_by_proyecto(db, proyecto_id).await
+}
+pub async fn get_financiamiento_by_id(
+    state: &AppState,
+    id_financiamiento: &str,
+) -> Result<Financiamiento, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_financiamiento_by_id(db, id_financiamiento).await
 }
 pub async fn update_financiamiento(
     state: &AppState,

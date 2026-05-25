@@ -11,8 +11,7 @@ import {
   DashboardTab,
   ProyectosTab,
   GruposTab,
-  DocenteCreateModal,
-  DocentesTable,
+  DocentesTab,
   ReportesTab,
   ConfiguracionTab,
 } from "@/app/lazyImports";
@@ -23,8 +22,6 @@ interface TabRenderersProps {
   currentRole: string | null;
   refreshTrigger: number;
   onDataModified: () => void;
-  docenteFormOpen: boolean;
-  setDocenteFormOpen: (open: boolean) => void;
 }
 
 export function TabRenderers({
@@ -33,8 +30,6 @@ export function TabRenderers({
   currentRole,
   refreshTrigger,
   onDataModified,
-  docenteFormOpen,
-  setDocenteFormOpen,
 }: TabRenderersProps) {
   if (!currentUser) {
     return null;
@@ -65,27 +60,11 @@ export function TabRenderers({
       return (
         <ErrorBoundary fallbackTitle="Error en Docentes">
           <Suspense fallback={<FormAndTableFallback columns={6} />}>
-            <div className="module-shell docentes-module">
-              <DocentesTable
-                canManage={hasPermission(currentRole, "docentes.manage")}
-                onCreateClick={() => {
-                  setDocenteFormOpen(true);
-                }}
-                refreshTrigger={refreshTrigger}
-              />
-              {docenteFormOpen && hasPermission(currentRole, "docentes.manage") && (
-                <Suspense fallback={null}>
-                  <DocenteCreateModal
-                    open={docenteFormOpen}
-                    onClose={() => {
-                      setDocenteFormOpen(false);
-                    }}
-                    onDocenteCreated={onDataModified}
-                    refreshTrigger={refreshTrigger}
-                  />
-                </Suspense>
-              )}
-            </div>
+            <DocentesTab
+              canManage={hasPermission(currentRole, "docentes.manage")}
+              refreshTrigger={refreshTrigger}
+              onDataModified={onDataModified}
+            />
           </Suspense>
         </ErrorBoundary>
       );

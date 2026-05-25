@@ -12,7 +12,7 @@
   },
   "formatter": {
     "prettier": {
-      "extensions": [".js", ".jsx", ".ts", ".tsx", ".json", ".md"]
+      "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"]
     }
   },
   "mcp": {

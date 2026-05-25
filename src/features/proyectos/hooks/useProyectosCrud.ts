@@ -44,16 +44,6 @@ export const useProyectosCrud = (refreshTrigger: number, onProyectoCreated: () =
     idProyecto: string,
     payload: ProyectoParticipantesPayload,
   ): Promise<void> => {
-    if (!payload.titulo_proyecto.trim()) {
-      toast.warning("Ingrese el título del proyecto");
-      return;
-    }
-
-    if (payload.docentes_ids.length > 0 && !payload.docente_responsable_id) {
-      toast.warning("Seleccione un docente responsable antes de guardar los cambios");
-      return;
-    }
-
     await actualizarProyectoConParticipantes(idProyecto, payload);
     toast.success("Proyecto actualizado correctamente");
     await cargarProyectos();

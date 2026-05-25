@@ -1,18 +1,18 @@
 @layer components {
-  .project-diff-card { @apply flex flex-col gap-3.5 p-4 border border-[#dbe7f3] rounded-2xl; background: linear-gradient(180deg, #fbfdff 0%, #f4f9ff 100%); }
+  .project-diff-card { @apply flex flex-col gap-3.5 p-4 rounded-2xl; border: 1px solid var(--primary-light); background: linear-gradient(180deg, var(--bg-color) 0%, var(--primary-light) 100%); }
   .project-diff-header { @apply flex items-center justify-between gap-3; }
-  .project-diff-empty { @apply m-0 text-gray-500 text-sm; }
+  .project-diff-empty { @apply m-0 text-sm; color: var(--gray-500, #6b7280); }
   .project-diff-list { @apply flex flex-col gap-2.5; }
-  .project-diff-row { @apply flex items-start gap-4 px-3.5 py-3 rounded-xl border border-[#dbe7f3] bg-white/90; }
-  .project-diff-label { @apply flex-[0_0_96px] text-[#475569] text-xs font-extrabold uppercase tracking-[0.04em]; }
+  .project-diff-row { @apply flex items-start gap-4 px-3.5 py-3 rounded-xl; border: 1px solid var(--primary-light); background-color: var(--bg-color); }
+  .project-diff-label { @apply flex-[0_0_96px] text-xs font-extrabold uppercase tracking-[0.04em]; color: var(--gray-600, #475569); }
   .project-diff-values { @apply flex items-center flex-1 flex-wrap gap-2 min-w-0; }
   .project-diff-old, .project-diff-new { @apply min-w-0 text-sm leading-5 break-words; }
-  .project-diff-old { @apply text-slate-500; }
-  .project-diff-new { @apply text-gray-900 font-bold; }
-  .project-diff-arrow { @apply text-slate-400 font-extrabold; }
+  .project-diff-old { color: var(--gray-500, #6b7280); }
+  .project-diff-new { @apply font-bold; color: var(--gray-900, #111827); }
+  .project-diff-arrow { @apply font-extrabold; color: var(--gray-400, #9ca3af); }
   .project-diff-chip-row { @apply flex flex-wrap gap-2; }
   .project-diff-chip { @apply inline-flex items-center px-2.5 py-1.5 rounded-full text-xs font-bold; }
-  .project-diff-chip.is-added { @apply bg-green-50 text-green-700 border border-green-200; }
-  .project-diff-chip.is-removed { @apply bg-red-50 text-red-700 border border-red-200; }
-  .project-diff-muted { @apply text-slate-500 text-sm; }
+  .project-diff-chip.is-added { @apply border; background-color: var(--success-light, #f0fdf4); color: var(--success, #15803d); border-color: var(--success-light, #bbf7d0); }
+  .project-diff-chip.is-removed { @apply border; background-color: var(--error-light, #fef2f2); color: var(--error, #b91c1c); border-color: var(--error-light, #fecaca); }
+  .project-diff-muted { @apply text-sm; color: var(--gray-500, #6b7280); }
 }

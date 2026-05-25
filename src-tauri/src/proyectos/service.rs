@@ -77,7 +77,15 @@ pub async fn find_by_docente(
 
 pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalle>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_all_proyectos_detalle(db).await
+    repository::get_all_proyectos_detalle(db, None).await
+}
+
+pub async fn get_all_detalle_for_responsable(
+    state: &AppState,
+    responsable_id: &str,
+) -> Result<Vec<ProyectoDetalle>, AppError> {
+    let db = state.mongo_db()?;
+    repository::get_all_proyectos_detalle(db, Some(responsable_id)).await
 }
 
 pub async fn delete_relation(
@@ -236,7 +244,8 @@ pub async fn get_all_paginated(
     state: &AppState,
     page: u32,
     limit: u32,
+    responsable_id: Option<&str>,
 ) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_all_proyectos_paginated(db, page, limit).await
+    repository::get_all_proyectos_paginated(db, page, limit, responsable_id).await
 }

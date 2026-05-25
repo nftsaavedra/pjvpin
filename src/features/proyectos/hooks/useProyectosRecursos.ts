@@ -151,6 +151,16 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     productos: productosCrud.items,
     equipamientos: equipamientosCrud.items,
     financiamientos: financiamientosCrud.items,
+    patentesNormalizados: patentesCrud.items.map((p) => ({ ...p, id: p.id_patente })),
+    productosNormalizados: productosCrud.items.map((p) => ({ ...p, id: p.id_producto })),
+    equipamientosNormalizados: equipamientosCrud.items.map((e) => ({
+      ...e,
+      id: e.id_equipamiento,
+    })),
+    financiamientosNormalizados: financiamientosCrud.items.map((f) => ({
+      ...f,
+      id: f.id_financiamiento,
+    })),
     handlePatentesChange: patentesCrud.handleChange,
     handleProductosChange: productosCrud.handleChange,
     handleEquipamientosChange: equipamientosCrud.handleChange,

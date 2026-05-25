@@ -128,7 +128,7 @@ pub async fn get_all_docentes_con_proyectos(
     let mut proyectos_por_docente: HashMap<String, Vec<String>> = HashMap::new();
     for participacion in participaciones {
         if let Some(proyecto) = proyectos.get(&participacion.id_proyecto) {
-            if proyecto.activo == 1 {
+            if proyecto.activo {
                 proyectos_por_docente
                     .entry(participacion.id_docente)
                     .or_default()
@@ -168,7 +168,7 @@ pub async fn get_docente_detalle_by_id(
         .into_iter()
         .filter(|participacion| participacion.id_docente == docente.id_docente)
         .filter_map(|participacion| proyectos.get(&participacion.id_proyecto))
-        .filter(|proyecto| proyecto.activo == 1)
+        .filter(|proyecto| proyecto.activo)
         .map(|proyecto| proyecto.titulo_proyecto.clone())
         .collect::<Vec<_>>();
 

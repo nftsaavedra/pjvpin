@@ -32,7 +32,7 @@ pub async fn build_reporte_proyecto_integral(
     let cabecera = ProyectoCabeceraReporte {
         id_proyecto: proyecto.id_proyecto.clone(),
         titulo_proyecto: proyecto.titulo_proyecto.clone(),
-        activo: proyecto.activo == 1,
+        activo: proyecto.activo,
         campo_ocde: proyecto.campo_ocde.clone(),
         programas_relacionados: proyecto.programas_relacionados.clone(),
         fecha_creacion: None,
@@ -282,7 +282,7 @@ pub async fn build_reporte_docente_integral(
             id_proyecto: proyecto.id_proyecto.clone(),
             titulo_proyecto: proyecto.titulo_proyecto.clone(),
             es_responsable: participacion.es_responsable,
-            activo: proyecto.activo == 1,
+            activo: proyecto.activo,
             campo_ocde: proyecto.campo_ocde.clone(),
             programas_relacionados: proyecto.programas_relacionados.clone(),
             colegas,

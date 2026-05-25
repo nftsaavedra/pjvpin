@@ -1,9 +1,9 @@
-import React from 'react';
-import { Eye, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
-import type { DocenteDetalle } from '../api';
-import { SkeletonTable } from '@/shared/ui/Skeleton';
-import { TableActionButton } from '@/shared/ui/TableActionButton';
-import { formatRenacytNivel } from '@/shared/utils/renacyt';
+import React from "react";
+import { Eye, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
+import type { DocenteDetalle } from "../api";
+import { SkeletonTable } from "@/shared/ui/Skeleton";
+import { TableActionButton } from "@/shared/ui/TableActionButton";
+import { formatRenacytNivel } from "@/shared/utils/renacyt";
 
 interface DocentesTableGridProps {
   canManage: boolean;
@@ -47,82 +47,100 @@ export const DocentesTableGrid: React.FC<DocentesTableGridProps> = ({
         </tr>
       </thead>
       <tbody>
-        {docentes.map((docente) => (
+        {docentes.map((docente) =>
           (() => {
-            const tieneRenacyt = Boolean(docente.renacyt_codigo_registro || docente.renacyt_id_investigador);
+            const tieneRenacyt = Boolean(
+              docente.renacyt_codigo_registro || docente.renacyt_id_investigador,
+            );
             const tieneFormaciones = Boolean(docente.renacyt_formaciones_academicas_json?.trim());
             const estaActualizando = refreshingRenacytDocenteId === docente.id_docente;
             const nivelRenacyt = formatRenacytNivel(docente.renacyt_nivel);
 
             return (
-          <tr
-            key={docente.id_docente}
-            className={docente.cantidad_proyectos === 0 ? 'unassigned' : ''}
-          >
-            <td>{docente.dni || 'Sin DNI'}</td>
-            <td>
-              <div className="docente-profile-cell">
-                <strong>{docente.grado || 'Sin grado'}</strong>
-                <span className={`badge ${nivelRenacyt ? 'badge-info' : 'badge-warning'}`}>
-                  {nivelRenacyt ? `RENACYT ${nivelRenacyt}` : 'Sin nivel RENACYT'}
-                </span>
-              </div>
-            </td>
-            <td className="font-semibold">{docente.nombres_apellidos || 'Sin nombre registrado'}</td>
-            <td>
-              <span
-                className={`badge badge-${
-                  docente.cantidad_proyectos === 0 ? 'warning' : 'success'
-                }`}
+              <tr
+                key={docente.id_docente}
+                className={docente.cantidad_proyectos === 0 ? "unassigned" : ""}
               >
-                {docente.cantidad_proyectos}
-              </span>
-            </td>
-            <td>
-              {docente.activo === 1 ? (
-                <span className="badge badge-success">Activo</span>
-              ) : (
-                <span className="badge badge-warning">Inactivo</span>
-              )}
-            </td>
-            <td className="table-actions">
-              <TableActionButton
-                className="btn-view"
-                icon={Eye}
-                label="Ver detalles"
-                onClick={() => { onView(docente); }}
-              />
-              {canManage && tieneRenacyt && (
-                <TableActionButton
-                  className="btn-secondary"
-                  icon={RefreshCw}
-                  label={estaActualizando ? 'Actualizando formación RENACYT' : tieneFormaciones ? 'Actualizar formación RENACYT' : 'Reintentar formación RENACYT'}
-                  onClick={() => { onRefreshRenacyt(docente.id_docente); }}
-                  disabled={estaActualizando}
-                />
-              )}
-              {canManage && docente.activo === 0 && (
-                <TableActionButton
-                  className="btn-primary"
-                  icon={RotateCcw}
-                  iconSize={18}
-                  label="Reactivar docente"
-                  onClick={() => { onReactivate(docente.id_docente); }}
-                />
-              )}
-              {canManage && docente.activo === 1 && (
-                <TableActionButton
-                  className="btn-delete"
-                  icon={Trash2}
-                  label="Desactivar docente"
-                  onClick={() => { onDeactivate(docente); }}
-                />
-              )}
-            </td>
-          </tr>
+                <td>{docente.dni || "Sin DNI"}</td>
+                <td>
+                  <div className="docente-profile-cell">
+                    <strong>{docente.grado || "Sin grado"}</strong>
+                    <span className={`badge ${nivelRenacyt ? "badge-info" : "badge-warning"}`}>
+                      {nivelRenacyt ? `RENACYT ${nivelRenacyt}` : "Sin nivel RENACYT"}
+                    </span>
+                  </div>
+                </td>
+                <td className="font-semibold">
+                  {docente.nombres_apellidos || "Sin nombre registrado"}
+                </td>
+                <td>
+                  <span
+                    className={`badge badge-${
+                      docente.cantidad_proyectos === 0 ? "warning" : "success"
+                    }`}
+                  >
+                    {docente.cantidad_proyectos}
+                  </span>
+                </td>
+                <td>
+                  {docente.activo === 1 ? (
+                    <span className="badge badge-success">Activo</span>
+                  ) : (
+                    <span className="badge badge-warning">Inactivo</span>
+                  )}
+                </td>
+                <td className="table-actions">
+                  <TableActionButton
+                    className="btn-view"
+                    icon={Eye}
+                    label="Ver detalles"
+                    onClick={() => {
+                      onView(docente);
+                    }}
+                  />
+                  {canManage && tieneRenacyt && (
+                    <TableActionButton
+                      className="btn-secondary"
+                      icon={RefreshCw}
+                      label={
+                        estaActualizando
+                          ? "Actualizando formación RENACYT"
+                          : tieneFormaciones
+                            ? "Actualizar formación RENACYT"
+                            : "Reintentar formación RENACYT"
+                      }
+                      onClick={() => {
+                        onRefreshRenacyt(docente.id_docente);
+                      }}
+                      disabled={estaActualizando}
+                    />
+                  )}
+                  {canManage && docente.activo === 0 && (
+                    <TableActionButton
+                      className="btn-primary"
+                      icon={RotateCcw}
+                      iconSize={18}
+                      label="Reactivar docente"
+                      onClick={() => {
+                        onReactivate(docente.id_docente);
+                      }}
+                    />
+                  )}
+                  {canManage && docente.activo === 1 && (
+                    <TableActionButton
+                      className="btn-delete"
+                      icon={Trash2}
+                      label="Desactivar docente"
+                      onClick={() => {
+                        onDeactivate(docente);
+                      }}
+                    />
+                  )}
+                </td>
+              </tr>
             );
-          })()
-        ))}
+          })(),
+        )}
       </tbody>
     </table>
   );

@@ -227,8 +227,17 @@ pub async fn crear_proyecto_con_participantes(
     window_label: &str,
     request: CreateProyectoConParticipantesRequest,
 ) -> Result<Proyecto, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::create(state, request).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    let proyecto = proyecto_service::create(state, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "proyecto.create",
+        "proyecto",
+        &proyecto.id_proyecto,
+        proyecto.titulo_proyecto.clone(),
+    );
+    Ok(proyecto)
 }
 
 pub async fn update_proyecto_con_participantes(
@@ -237,8 +246,17 @@ pub async fn update_proyecto_con_participantes(
     id_proyecto: &str,
     request: UpdateProyectoConParticipantesRequest,
 ) -> Result<Proyecto, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::update(state, id_proyecto, request).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    let proyecto = proyecto_service::update(state, id_proyecto, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "proyecto.update",
+        "proyecto",
+        id_proyecto,
+        proyecto.titulo_proyecto.clone(),
+    );
+    Ok(proyecto)
 }
 
 pub async fn buscar_proyectos_por_docente(
@@ -254,8 +272,18 @@ pub async fn get_all_proyectos_detalle(
     state: &AppState,
     window_label: &str,
 ) -> Result<Vec<ProyectoDetalle>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    proyecto_service::get_all_detalle(state).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
+    if actor.rol.trim() == "responsable_proyecto" {
+        let docente_id = actor.docente_id.as_ref().ok_or_else(|| {
+            AppError::InternalError(
+                "Usuario responsable_proyecto no tiene un docente asociado.".to_string(),
+            )
+        })?;
+        proyecto_service::get_all_detalle_for_responsable(state, docente_id).await
+    } else {
+        proyecto_service::get_all_detalle(state).await
+    }
 }
 
 pub async fn get_all_proyectos_paginated(
@@ -264,8 +292,19 @@ pub async fn get_all_proyectos_paginated(
     page: u32,
     limit: u32,
 ) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    proyecto_service::get_all_paginated(state, page, limit).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
+    let responsable_id = if actor.rol.trim() == "responsable_proyecto" {
+        let docente_id = actor.docente_id.as_ref().ok_or_else(|| {
+            AppError::InternalError(
+                "Usuario responsable_proyecto no tiene un docente asociado.".to_string(),
+            )
+        })?;
+        Some(docente_id.as_str())
+    } else {
+        None
+    };
+    proyecto_service::get_all_paginated(state, page, limit, responsable_id).await
 }
 
 pub async fn eliminar_relacion_proyecto_docente(
@@ -274,8 +313,17 @@ pub async fn eliminar_relacion_proyecto_docente(
     id_proyecto: &str,
     id_docente: &str,
 ) -> Result<(), AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::delete_relation(state, id_proyecto, id_docente).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    proyecto_service::delete_relation(state, id_proyecto, id_docente).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "proyecto.delete_relation",
+        "proyecto",
+        id_proyecto,
+        format!("docente: {}", id_docente),
+    );
+    Ok(())
 }
 
 pub async fn eliminar_relaciones_proyecto(
@@ -283,8 +331,17 @@ pub async fn eliminar_relaciones_proyecto(
     window_label: &str,
     id_proyecto: &str,
 ) -> Result<(), AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::delete_relations(state, id_proyecto).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    proyecto_service::delete_relations(state, id_proyecto).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "proyecto.delete_relations",
+        "proyecto",
+        id_proyecto,
+        "all".to_string(),
+    );
+    Ok(())
 }
 
 pub async fn eliminar_proyecto(
@@ -310,8 +367,17 @@ pub async fn reactivar_proyecto(
     window_label: &str,
     id_proyecto: &str,
 ) -> Result<Proyecto, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::reactivate(state, id_proyecto).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    let proyecto = proyecto_service::reactivate(state, id_proyecto).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "proyecto.reactivate",
+        "proyecto",
+        id_proyecto,
+        "activo=1".to_string(),
+    );
+    Ok(proyecto)
 }
 
 pub async fn get_estadisticas_proyectos_x_docente(
@@ -437,12 +503,48 @@ pub async fn logout_usuario(state: &AppState, window_label: &str) -> Result<(), 
 
 // ── Patentes ──────────────────────────────────────────────────────────────────
 
+/// Verifica que el actor tenga permiso para operar sobre recursos.
+/// Si es responsable_proyecto, solo puede operar si el proyecto es suyo.
+async fn require_recursos_manage_or_responsable(
+    state: &AppState,
+    actor: &Usuario,
+    proyecto_id: Option<&str>,
+) -> Result<(), AppError> {
+    if rbac::role_has_permission(&actor.rol, &rbac::AppPermission::RecursosManage) {
+        return Ok(());
+    }
+    if actor.rol.trim() == "responsable_proyecto" {
+        if let Some(pid) = proyecto_id {
+            let docente_id = actor.docente_id.as_ref().ok_or_else(|| {
+                AppError::InternalError(
+                    "Usuario responsable_proyecto no tiene un docente asociado.".to_string(),
+                )
+            })?;
+            let db = state.mongo_db()?;
+            let es_responsable =
+                crate::proyectos::repository::es_responsable_del_proyecto(db, docente_id, pid)
+                    .await?;
+            if es_responsable {
+                return Ok(());
+            }
+            return Err(AppError::InternalError(
+                "No tiene acceso a este proyecto.".to_string(),
+            ));
+        }
+        return Ok(());
+    }
+    Err(AppError::InternalError(
+        "No tiene permisos para ejecutar esta operacion.".to_string(),
+    ))
+}
+
 pub async fn crear_patente(
     state: &AppState,
     window_label: &str,
     request: CreatePatenteRequest,
 ) -> Result<Patente, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
     recurso_service::create_patente(state, request).await
 }
 
@@ -461,7 +563,11 @@ pub async fn actualizar_patente(
     id_patente: &str,
     request: UpdatePatenteRequest,
 ) -> Result<Patente, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let proyecto_id = recurso_service::get_patente_by_id(state, id_patente)
+        .await?
+        .proyecto_id;
+    require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
     recurso_service::update_patente(state, id_patente, request).await
 }
 
@@ -508,7 +614,8 @@ pub async fn crear_producto(
     window_label: &str,
     request: CreateProductoRequest,
 ) -> Result<Producto, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
     recurso_service::create_producto(state, request).await
 }
 
@@ -527,7 +634,11 @@ pub async fn actualizar_producto(
     id_producto: &str,
     request: UpdateProductoRequest,
 ) -> Result<Producto, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let proyecto_id = recurso_service::get_producto_by_id(state, id_producto)
+        .await?
+        .proyecto_id;
+    require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
     recurso_service::update_producto(state, id_producto, request).await
 }
 
@@ -574,7 +685,8 @@ pub async fn crear_equipamiento(
     window_label: &str,
     request: CreateEquipamientoRequest,
 ) -> Result<Equipamiento, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
     recurso_service::create_equipamiento(state, request).await
 }
 
@@ -593,7 +705,11 @@ pub async fn actualizar_equipamiento(
     id_equipamiento: &str,
     request: UpdateEquipamientoRequest,
 ) -> Result<Equipamiento, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let proyecto_id = recurso_service::get_equipamiento_by_id(state, id_equipamiento)
+        .await?
+        .proyecto_id;
+    require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
     recurso_service::update_equipamiento(state, id_equipamiento, request).await
 }
 
@@ -640,7 +756,8 @@ pub async fn crear_financiamiento(
     window_label: &str,
     request: CreateFinanciamientoRequest,
 ) -> Result<Financiamiento, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
     recurso_service::create_financiamiento(state, request).await
 }
 
@@ -659,7 +776,11 @@ pub async fn actualizar_financiamiento(
     id_financiamiento: &str,
     request: UpdateFinanciamientoRequest,
 ) -> Result<Financiamiento, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
+    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let proyecto_id = recurso_service::get_financiamiento_by_id(state, id_financiamiento)
+        .await?
+        .proyecto_id;
+    require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
     recurso_service::update_financiamiento(state, id_financiamiento, request).await
 }
 
@@ -1127,7 +1248,7 @@ pub async fn crear_publicacion(
     window_label: &str,
     request: CreatePublicacionRequest,
 ) -> Result<PublicacionCientifica, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::DocentesView).await?;
+    rbac::require_permission(state, window_label, rbac::AppPermission::DocentesManage).await?;
     publicacion_service::create(state, request).await
 }
 

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Pencil, RotateCcw, Trash2, Users, X } from 'lucide-react';
-import type { ProyectoDetalle, ProyectoParticipanteResumen } from '../api';
-import { SkeletonTable } from '@/shared/ui/Skeleton';
-import { TableActionButton } from '@/shared/ui/TableActionButton';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { formatRenacytNivel } from '@/shared/utils/renacyt';
-import { getResponsableProyecto, parseParticipantesProyecto } from '../participantes';
+import React, { useState } from "react";
+import { Eye, Pencil, RotateCcw, Trash2, Users, X } from "lucide-react";
+import type { ProyectoDetalle, ProyectoParticipanteResumen } from "../api";
+import { SkeletonTable } from "@/shared/ui/Skeleton";
+import { TableActionButton } from "@/shared/ui/TableActionButton";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { formatRenacytNivel } from "@/shared/utils/renacyt";
+import { getResponsableProyecto, parseParticipantesProyecto } from "../participantes";
 
 interface ProyectosTableGridProps {
   canManage: boolean;
@@ -14,6 +14,7 @@ interface ProyectosTableGridProps {
   onDeactivate: (proyecto: ProyectoDetalle) => void;
   onEdit: (proyecto: ProyectoDetalle) => void;
   onReactivate: (id: string) => void;
+  onOpenDetail?: (proyecto: ProyectoDetalle) => void;
 }
 
 export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
@@ -23,6 +24,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
   onDeactivate,
   onEdit,
   onReactivate,
+  onOpenDetail,
 }) => {
   const [selectedProyecto, setSelectedProyecto] = useState<{
     titulo: string;
@@ -70,46 +72,69 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                   <button
                     type="button"
                     className="project-docentes-trigger"
-                    onClick={() => { setSelectedProyecto({ titulo: proyecto.titulo_proyecto, participantes }); }}
+                    onClick={() => {
+                      setSelectedProyecto({ titulo: proyecto.titulo_proyecto, participantes });
+                    }}
                     disabled={participantes.length === 0}
                   >
                     <span className="button-with-icon">
                       <AppIcon icon={Users} size={15} />
-                      <span>{proyecto.cantidad_docentes} docente{proyecto.cantidad_docentes === 1 ? '' : 's'}</span>
+                      <span>
+                        {proyecto.cantidad_docentes} docente
+                        {proyecto.cantidad_docentes === 1 ? "" : "s"}
+                      </span>
                     </span>
                   </button>
                 </td>
                 <td>
-                  {proyecto.activo === 1 ? (
+                  {proyecto.activo ? (
                     <span className="badge badge-success">Activo</span>
                   ) : (
                     <span className="badge badge-warning">Inactivo</span>
                   )}
                 </td>
                 <td className="table-actions">
+                  {onOpenDetail && (
+                    <TableActionButton
+                      className="btn-secondary"
+                      icon={Eye}
+                      label="Ver detalle del proyecto"
+                      onClick={() => {
+                        onOpenDetail(proyecto);
+                      }}
+                    />
+                  )}
                   {canManage ? (
                     <>
-                      {proyecto.activo === 1 && (
+                      {proyecto.activo && (
                         <TableActionButton
                           className="btn-secondary"
                           icon={Pencil}
                           label="Editar proyecto"
-                          onClick={() => { onEdit(proyecto); }}
+                          onClick={() => {
+                            onEdit(proyecto);
+                          }}
                         />
                       )}
-                      {proyecto.activo === 0 && (
+                      {!proyecto.activo && (
                         <TableActionButton
                           className="btn-primary"
                           icon={RotateCcw}
                           label="Reactivar proyecto"
-                          onClick={() => { onReactivate(proyecto.id_proyecto); }}
+                          onClick={() => {
+                            onReactivate(proyecto.id_proyecto);
+                          }}
                         />
                       )}
                       <TableActionButton
                         className="btn-delete"
                         icon={Trash2}
-                        label={proyecto.activo === 1 ? 'Desactivar proyecto' : 'Mantener proyecto inactivo'}
-                        onClick={() => { onDeactivate(proyecto); }}
+                        label={
+                          proyecto.activo ? "Desactivar proyecto" : "Mantener proyecto inactivo"
+                        }
+                        onClick={() => {
+                          onDeactivate(proyecto);
+                        }}
                       />
                     </>
                   ) : (
@@ -123,14 +148,31 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
       </table>
 
       {selectedProyecto && (
-        <div className="modal-overlay" onClick={() => { setSelectedProyecto(null); }}>
-          <div className="modal-content project-participants-modal" onClick={(event) => { event.stopPropagation(); }}>
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            setSelectedProyecto(null);
+          }}
+        >
+          <div
+            className="modal-content project-participants-modal"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
             <div className="modal-header">
               <h2 className="title-with-icon">
                 <AppIcon icon={Users} size={20} />
                 <span>Participantes del proyecto</span>
               </h2>
-              <button type="button" className="modal-close" onClick={() => { setSelectedProyecto(null); }} aria-label="Cerrar participantes del proyecto">
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => {
+                  setSelectedProyecto(null);
+                }}
+                aria-label="Cerrar participantes del proyecto"
+              >
                 <AppIcon icon={X} size={18} />
               </button>
             </div>
@@ -142,20 +184,33 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
               </div>
               <div className="project-participants-list">
                 {selectedProyecto.participantes.map((participante, index) => (
-                  <article key={`${selectedProyecto.titulo}-${participante.nombre}-${index}`} className="project-participant-card">
+                  <article
+                    key={`${selectedProyecto.titulo}-${participante.nombre}-${index}`}
+                    className="project-participant-card"
+                  >
                     <div className="project-participant-card-head">
                       <strong>{participante.nombre}</strong>
-                      {participante.es_responsable && <span className="badge badge-info">Responsable</span>}
+                      {participante.es_responsable && (
+                        <span className="badge badge-info">Responsable</span>
+                      )}
                     </div>
                     <span>{participante.grado}</span>
-                    <span>{formatRenacytNivel(participante.renacyt_nivel) ?? 'Sin nivel RENACYT'}</span>
+                    <span>
+                      {formatRenacytNivel(participante.renacyt_nivel) ?? "Sin nivel RENACYT"}
+                    </span>
                   </article>
                 ))}
               </div>
             </div>
 
             <div className="modal-footer">
-              <button type="button" className="btn-secondary" onClick={() => { setSelectedProyecto(null); }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setSelectedProyecto(null);
+                }}
+              >
                 Cerrar
               </button>
             </div>

@@ -1,26 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
-import { useFetchDocentes } from "../../docentes/hooks/useFetchDocentes";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useProyectosListado } from "./useProyectosListado";
 import { useProyectosCrud } from "./useProyectosCrud";
 import { useProyectosRecursos } from "./useProyectosRecursos";
+import { useFetchDocentes } from "../../docentes/hooks/useFetchDocentes";
+import { useCatalogosProyectos } from "./useCatalogosProyectos";
 import { toast } from "@/services/toast";
 import { getTauriErrorMessage } from "@/services/tauri/error";
 import type { ProyectoDetalle, ProyectoParticipantesPayload } from "../api";
 
+export type ProyectosView = "list" | "create" | "edit" | "detail";
+
 export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => void) => {
-  const [titulo, setTitulo] = useState("");
-  const [docentesSeleccionados, setDocentesSeleccionados] = useState<string[]>([]);
-  const [docenteResponsableId, setDocenteResponsableId] = useState<string | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [view, setView] = useState<ProyectosView>("list");
+  const [selectedProyectoId, setSelectedProyectoId] = useState<string | null>(null);
+  const [selectedProyecto, setSelectedProyecto] = useState<ProyectoDetalle | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [proyectoToDelete, setProyectoToDelete] = useState<ProyectoDetalle | null>(null);
-  const [proyectoToEdit, setProyectoToEdit] = useState<ProyectoDetalle | null>(null);
-  const [estadoFiltro, setEstadoFiltro] = useState<"todos" | "activos" | "inactivos">("activos");
-  const [busqueda, setBusqueda] = useState("");
 
   const {
     proyectos,
     loading: loadingProyectos,
-    refreshing: _refreshingProyectos,
     proyectosError,
     cargarProyectos,
     handleCreate: crudHandleCreate,
@@ -29,17 +28,22 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
     handleReactivate: crudHandleReactivate,
   } = useProyectosCrud(refreshTrigger, onProyectoCreated);
 
-  const recursos = useProyectosRecursos(proyectoToEdit?.id_proyecto);
+  const listado = useProyectosListado(proyectos);
+  const recursos = useProyectosRecursos(selectedProyectoId ?? undefined);
+  const recursosRef = useRef(recursos);
+  useEffect(() => {
+    recursosRef.current = recursos;
+  });
+
+  const catalogos = useCatalogosProyectos();
 
   useEffect(() => {
-    const pid = proyectoToEdit?.id_proyecto;
-    if (!pid) {
-      recursos.resetearRecursos();
+    if (!selectedProyectoId) {
+      recursosRef.current.resetearRecursos();
       return;
     }
-    void recursos.cargarRecursos(pid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [proyectoToEdit?.id_proyecto]);
+    void recursosRef.current.cargarRecursos(selectedProyectoId);
+  }, [selectedProyectoId]);
 
   const {
     docentes,
@@ -47,65 +51,70 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
     refreshing: refreshingDocentes,
   } = useFetchDocentes(refreshTrigger);
 
-  const resetForm = (): void => {
-    setTitulo("");
-    setDocentesSeleccionados([]);
-    setDocenteResponsableId(null);
-    recursos.resetearRecursos();
-  };
+  const handleBackToList = useCallback((): void => {
+    setView("list");
+    setSelectedProyectoId(null);
+    setSelectedProyecto(null);
+    recursosRef.current.resetearRecursos();
+  }, []);
 
-  const handleChangeDocentesSeleccionados = (ids: string[]): void => {
-    setDocentesSeleccionados(ids);
-    setDocenteResponsableId((current) => {
-      if (ids.length === 0) {
-        return null;
+  const handleOpenCreate = useCallback((): void => {
+    recursosRef.current.resetearRecursos();
+    setSelectedProyectoId(null);
+    setSelectedProyecto(null);
+    setView("create");
+  }, []);
+
+  const handleOpenEdit = useCallback((proyecto: ProyectoDetalle): void => {
+    setSelectedProyecto(proyecto);
+    setSelectedProyectoId(proyecto.id_proyecto);
+    setView("edit");
+  }, []);
+
+  const handleOpenDetail = useCallback((proyecto: ProyectoDetalle): void => {
+    setSelectedProyecto(proyecto);
+    setSelectedProyectoId(proyecto.id_proyecto);
+    setView("detail");
+  }, []);
+
+  const navigateToProyectoDetail = useCallback(
+    (idProyecto: string) => {
+      if (!idProyecto) {
+        handleBackToList();
+        return;
       }
-      if (current && ids.includes(current)) {
-        return current;
-      }
-      return ids[0] ?? null;
-    });
-  };
+      cargarProyectos()
+        .then(() => {
+          const encontrado = proyectos.find((p) => p.id_proyecto === idProyecto);
+          if (encontrado) {
+            setSelectedProyecto(encontrado);
+            setSelectedProyectoId(encontrado.id_proyecto);
+            setView("detail");
+          } else {
+            handleBackToList();
+          }
+        })
+        .catch(() => {
+          handleBackToList();
+        });
+    },
+    [cargarProyectos, proyectos, handleBackToList],
+  );
 
-  const handleOpenCreate = (): void => {
-    resetForm();
-    setIsFormOpen(true);
-  };
-
-  const handleCloseForm = (): void => {
-    if (isLoading) return;
-    resetForm();
-    setIsFormOpen(false);
-  };
-
-  const handleSubmit = async (e: React.SyntheticEvent): Promise<void> => {
-    e.preventDefault();
-
-    if (!titulo.trim()) {
-      toast.warning("Ingrese el título del proyecto");
-      return;
-    }
-
-    if (docentesSeleccionados.length === 0) {
-      toast.warning("Seleccione al menos un docente");
-      return;
-    }
-
-    if (!docenteResponsableId) {
-      toast.warning("Seleccione un docente responsable para el proyecto");
-      return;
-    }
-
+  const handleSubmit = async (
+    titulo: string,
+    docentesSeleccionados: string[],
+    docenteResponsableId: string,
+  ): Promise<void> => {
     setIsLoading(true);
     try {
       const proyecto = await crudHandleCreate(titulo, docentesSeleccionados, docenteResponsableId);
-      await recursos.crearRecursosParaProyecto(proyecto.id_proyecto);
+      await recursosRef.current.crearRecursosParaProyecto(proyecto.id_proyecto);
 
       toast.success("Proyecto creado exitosamente");
-      resetForm();
-      setIsFormOpen(false);
+      recursosRef.current.resetearRecursos();
       onProyectoCreated();
-      await cargarProyectos();
+      navigateToProyectoDetail(proyecto.id_proyecto);
     } catch (error) {
       toast.error("Error al crear proyecto: " + getTauriErrorMessage(error));
     } finally {
@@ -118,7 +127,7 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
     payload: ProyectoParticipantesPayload,
   ): Promise<void> => {
     await crudHandleUpdate(idProyecto, payload);
-    setProyectoToEdit(null);
+    navigateToProyectoDetail(idProyecto);
   };
 
   const handleEliminarProyecto = async (): Promise<void> => {
@@ -139,75 +148,30 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
     }
   };
 
-  const totalActivos = useMemo(
-    () => proyectos.filter((proyecto) => proyecto.activo === 1).length,
-    [proyectos],
-  );
-  const totalInactivos = useMemo(
-    () => proyectos.filter((proyecto) => proyecto.activo === 0).length,
-    [proyectos],
-  );
-
-  const proyectosFiltrados = useMemo(
-    () =>
-      proyectos
-        .filter((proyecto) => {
-          if (estadoFiltro === "activos") return proyecto.activo === 1;
-          if (estadoFiltro === "inactivos") return proyecto.activo === 0;
-          return true;
-        })
-        .filter((proyecto) => {
-          const texto = busqueda.trim().toLowerCase();
-          if (!texto) return true;
-          return (
-            proyecto.titulo_proyecto.toLowerCase().includes(texto) ||
-            (proyecto.docente_responsable || "").toLowerCase().includes(texto) ||
-            (proyecto.docentes || "").toLowerCase().includes(texto)
-          );
-        }),
-    [busqueda, estadoFiltro, proyectos],
-  );
-
   return {
-    busqueda,
-    docentes,
-    docenteResponsableId,
-    docentesSeleccionados,
-    estadoFiltro,
-    handleCloseForm,
-    handleActualizarProyecto,
-    handleChangeDocentesSeleccionados,
-    handleEliminarProyecto,
-    handleOpenCreate,
-    handleReactivarProyecto,
-    handleSubmit,
-    isFormOpen,
-    isLoading,
-    loadingDocentes,
-    loadingProyectos,
-    proyectoToDelete,
-    proyectoToEdit,
+    catalogos,
+    listado,
     proyectos,
+    loadingProyectos,
     proyectosError,
-    proyectosFiltrados,
-    refreshingDocentes,
-    setBusqueda,
-    setDocenteResponsableId,
-    setEstadoFiltro,
-    setProyectoToDelete,
-    setProyectoToEdit,
-    setTitulo,
-    titulo,
-    totalActivos,
-    totalInactivos,
     cargarProyectos,
-    patentes: recursos.patentes,
-    productos: recursos.productos,
-    equipamientos: recursos.equipamientos,
-    financiamientos: recursos.financiamientos,
-    handlePatentesChange: recursos.handlePatentesChange,
-    handleProductosChange: recursos.handleProductosChange,
-    handleEquipamientosChange: recursos.handleEquipamientosChange,
-    handleFinanciamientosChange: recursos.handleFinanciamientosChange,
+    docentes,
+    loadingDocentes,
+    refreshingDocentes,
+    recursos,
+    view,
+    selectedProyectoId,
+    selectedProyecto,
+    isLoading,
+    proyectoToDelete,
+    handleOpenCreate,
+    handleOpenEdit,
+    handleOpenDetail,
+    handleBackToList,
+    handleSubmit,
+    handleActualizarProyecto,
+    handleEliminarProyecto,
+    handleReactivarProyecto,
+    setProyectoToDelete,
   };
 };

@@ -170,4 +170,5 @@ a:focus-visible {
 @import "./error-boundary.css";
 @import "./animations.css";
 @import "./scrollbar.css";
+@import "./screens.css";
 @import "./responsive.css";

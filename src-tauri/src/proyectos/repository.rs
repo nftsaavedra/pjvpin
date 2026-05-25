@@ -1,7 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
+use crate::catalogos::models::CatalogoItem;
 use crate::docentes::models::{Docente, Publicacion};
 use crate::docentes::repository as docentes_repo;
+use crate::grupos::models::GrupoInvestigacion;
 use crate::proyectos::models::ParticipacionRecord;
 use crate::proyectos::models::{
     CreateProyectoConParticipantesRequest, CreateProyectoRequest, DocenteProyectosCount,
@@ -11,7 +13,7 @@ use crate::proyectos::models::{
     UpdateProyectoConParticipantesRequest,
 };
 use crate::proyectos::service;
-use crate::recursos::repository as recursos_repo;
+use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
 use futures_util::TryStreamExt;
@@ -24,12 +26,59 @@ pub async fn get_proyecto_by_id(db: &Database, id_proyecto: &str) -> Result<Proy
         .ok_or_else(|| AppError::NotFound("Proyecto no encontrado.".to_string()))
 }
 
+pub async fn es_responsable_del_proyecto(
+    db: &Database,
+    docente_id: &str,
+    id_proyecto: &str,
+) -> Result<bool, AppError> {
+    let count = db
+        .collection::<ParticipacionRecord>("participaciones")
+        .count_documents(doc! {
+            "id_proyecto": id_proyecto,
+            "id_docente": docente_id,
+            "es_responsable": true,
+        })
+        .await?;
+    Ok(count > 0)
+}
+
+pub async fn get_ids_proyectos_como_responsable(
+    db: &Database,
+    docente_id: &str,
+) -> Result<Vec<String>, AppError> {
+    let participaciones = db
+        .collection::<ParticipacionRecord>("participaciones")
+        .find(doc! { "id_docente": docente_id, "es_responsable": true })
+        .await?
+        .try_collect::<Vec<_>>()
+        .await?;
+    let mut ids: Vec<String> = participaciones.into_iter().map(|p| p.id_proyecto).collect();
+    ids.sort();
+    ids.dedup();
+    Ok(ids)
+}
+
 pub async fn get_all_proyectos_paginated(
     db: &Database,
     page: u32,
     limit: u32,
+    responsable_id: Option<&str>,
 ) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
-    let filter = doc! {};
+    let filter = if let Some(docente_id) = responsable_id {
+        let proyecto_ids = get_ids_proyectos_como_responsable(db, docente_id).await?;
+        if proyecto_ids.is_empty() {
+            return Ok(crate::shared::pagination::PaginatedResult {
+                items: vec![],
+                total: 0,
+                page,
+                limit,
+                total_pages: 0,
+            });
+        }
+        doc! { "id_proyecto": { "$in": proyecto_ids }, "activo": 1i64 }
+    } else {
+        doc! { "activo": 1i64 }
+    };
     let total = db
         .collection::<Proyecto>("proyectos")
         .count_documents(filter.clone())
@@ -59,9 +108,6 @@ pub async fn get_all_proyectos_paginated(
         total_pages,
     })
 }
-use crate::catalogos::models::CatalogoItem;
-use crate::grupos::models::GrupoInvestigacion;
-use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 
 async fn validate_docentes_activos(db: &Database, docentes_ids: &[String]) -> Result<(), AppError> {
     let docentes_activos = db
@@ -144,28 +190,53 @@ pub async fn update_proyecto_con_participantes(
         return Err(AppError::NotFound("Proyecto no encontrado.".to_string()));
     }
 
-    db.collection::<mongodb::bson::Document>("proyectos")
-        .update_one(
-            doc! { "id_proyecto": id_proyecto },
-            doc! { "$set": { "titulo_proyecto": &prepared.titulo_proyecto } },
-        )
-        .await?;
+    let now = crate::shared::time::now_ms();
 
-    db.collection::<mongodb::bson::Document>("participaciones")
-        .delete_many(doc! { "id_proyecto": id_proyecto })
-        .await?;
+    let mut session = db.client().start_session().await?;
+    session.start_transaction().await?;
 
-    let participaciones_collection = db.collection::<ParticipacionRecord>("participaciones");
-    for docente_id in prepared.docentes_ids {
-        participaciones_collection
-            .insert_one(ParticipacionRecord {
-                id: format!("{}:{}", id_proyecto, docente_id),
-                id_proyecto: id_proyecto.to_string(),
-                es_responsable: prepared.docente_responsable_id.as_deref()
-                    == Some(docente_id.as_str()),
-                id_docente: docente_id,
-            })
+    let result = async {
+        db.collection::<mongodb::bson::Document>("proyectos")
+            .update_one(
+                doc! { "id_proyecto": id_proyecto },
+                doc! { "$set": {
+                    "titulo_proyecto": &prepared.titulo_proyecto,
+                    "updated_at": now,
+                } },
+            )
+            .session(&mut session)
             .await?;
+
+        db.collection::<mongodb::bson::Document>("participaciones")
+            .delete_many(doc! { "id_proyecto": id_proyecto })
+            .session(&mut session)
+            .await?;
+
+        let participaciones_collection = db.collection::<ParticipacionRecord>("participaciones");
+        for docente_id in prepared.docentes_ids {
+            participaciones_collection
+                .insert_one(ParticipacionRecord {
+                    id: format!("{}:{}", id_proyecto, docente_id),
+                    id_proyecto: id_proyecto.to_string(),
+                    es_responsable: prepared.docente_responsable_id.as_deref()
+                        == Some(docente_id.as_str()),
+                    id_docente: docente_id,
+                })
+                .session(&mut session)
+                .await?;
+        }
+
+        session.commit_transaction().await?;
+        Ok(())
+    }
+    .await;
+
+    match result {
+        Ok(()) => {}
+        Err(error) => {
+            let _ = session.abort_transaction().await;
+            return Err(error);
+        }
     }
 
     db.collection::<Proyecto>("proyectos")
@@ -207,10 +278,22 @@ pub async fn buscar_proyectos_por_docente(
     Ok(proyectos)
 }
 
-pub async fn get_all_proyectos_detalle(db: &Database) -> Result<Vec<ProyectoDetalle>, AppError> {
+pub async fn get_all_proyectos_detalle(
+    db: &Database,
+    responsable_id: Option<&str>,
+) -> Result<Vec<ProyectoDetalle>, AppError> {
+    let filter = if let Some(docente_id) = responsable_id {
+        let proyecto_ids = get_ids_proyectos_como_responsable(db, docente_id).await?;
+        if proyecto_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        doc! { "id_proyecto": { "$in": proyecto_ids }, "activo": 1i64 }
+    } else {
+        doc! { "activo": 1i64 }
+    };
     let mut proyectos = db
         .collection::<Proyecto>("proyectos")
-        .find(doc! {})
+        .find(filter)
         .await?
         .try_collect::<Vec<_>>()
         .await?;
@@ -230,15 +313,8 @@ pub async fn get_all_proyectos_detalle(db: &Database) -> Result<Vec<ProyectoDeta
     for participacion in participaciones {
         if let Some(docente) = docentes.get(&participacion.id_docente) {
             let proyecto_id = participacion.id_proyecto.clone();
-            let grado = grados
-                .get(&docente.id_grado)
-                .map(|item| item.nombre.clone())
-                .unwrap_or_else(|| "Sin grado".to_string());
-            let nivel_renacyt = docente
-                .renacyt_nivel
-                .clone()
-                .filter(|value| !value.trim().is_empty())
-                .unwrap_or_else(|| "No registrado".to_string());
+            let grado = data_loader::resolve_grado_nombre(&grados, &docente.id_grado);
+            let nivel_renacyt = data_loader::resolve_renacyt_nivel(docente);
             docentes_por_proyecto
                 .entry(proyecto_id.clone())
                 .or_default()
@@ -283,11 +359,7 @@ pub async fn get_all_proyectos_detalle(db: &Database) -> Result<Vec<ProyectoDeta
                 titulo_proyecto: proyecto.titulo_proyecto,
                 cantidad_docentes: docentes_proyecto.len() as i64,
                 docente_responsable,
-                docentes: if docentes_proyecto.is_empty() {
-                    None
-                } else {
-                    Some(docentes_proyecto.join(" | "))
-                },
+                docentes: data_loader::join_or_none(&docentes_proyecto, " | "),
                 participantes_json: if docentes_proyecto.is_empty() {
                     None
                 } else {
@@ -338,29 +410,85 @@ pub async fn eliminar_proyecto(
         ));
     }
 
-    recursos_repo::delete_patentes_by_proyecto(db, id_proyecto).await?;
-    recursos_repo::delete_productos_by_proyecto(db, id_proyecto).await?;
-    recursos_repo::delete_equipamientos_by_proyecto(db, id_proyecto).await?;
-    recursos_repo::delete_financiamientos_by_proyecto(db, id_proyecto).await?;
+    let now = crate::shared::time::now_ms();
+    let mut recursos_desc = Vec::new();
 
-    db.collection::<mongodb::bson::Document>("proyectos")
-        .update_one(
-            doc! { "id_proyecto": id_proyecto },
-            doc! { "$set": { "activo": 0i64 } },
-        )
-        .await?;
+    let mut session = db.client().start_session().await?;
+    session.start_transaction().await?;
+
+    let result = async {
+        let set_doc = doc! { "$set": { "activo": 0i64, "updated_at": now } };
+
+        db.collection::<mongodb::bson::Document>("patentes")
+            .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())
+            .session(&mut session)
+            .await?;
+        recursos_desc.push("patentes");
+
+        db.collection::<mongodb::bson::Document>("productos")
+            .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())
+            .session(&mut session)
+            .await?;
+        recursos_desc.push("productos");
+
+        db.collection::<mongodb::bson::Document>("equipamientos")
+            .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())
+            .session(&mut session)
+            .await?;
+        recursos_desc.push("equipamientos");
+
+        db.collection::<mongodb::bson::Document>("financiamientos")
+            .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())
+            .session(&mut session)
+            .await?;
+        recursos_desc.push("financiamientos");
+
+        db.collection::<mongodb::bson::Document>("proyectos")
+            .update_one(
+                doc! { "id_proyecto": id_proyecto },
+                doc! { "$set": { "activo": 0i64, "updated_at": now } },
+            )
+            .session(&mut session)
+            .await?;
+
+        session.commit_transaction().await?;
+        Ok(())
+    }
+    .await;
+
+    match result {
+        Ok(()) => {}
+        Err(error) => {
+            let _ = session.abort_transaction().await;
+            return Err(error);
+        }
+    }
+
+    let recursos_str = if recursos_desc.is_empty() {
+        String::new()
+    } else {
+        recursos_desc.join(", ")
+    };
 
     Ok(EliminarProyectoResultado {
         accion: "desactivado".to_string(),
-        mensaje: "Proyecto desactivado correctamente.".to_string(),
+        mensaje: if recursos_str.is_empty() {
+            "Proyecto desactivado correctamente.".to_string()
+        } else {
+            format!(
+                "Proyecto desactivado correctamente. Recursos relacionados desactivados: {}.",
+                recursos_str
+            )
+        },
     })
 }
 
 pub async fn reactivar_proyecto(db: &Database, id_proyecto: &str) -> Result<Proyecto, AppError> {
+    let now = crate::shared::time::now_ms();
     db.collection::<mongodb::bson::Document>("proyectos")
         .update_one(
             doc! { "id_proyecto": id_proyecto },
-            doc! { "$set": { "activo": 1i64 } },
+            doc! { "$set": { "activo": 1i64, "updated_at": now } },
         )
         .await?;
 
@@ -384,7 +512,7 @@ pub async fn get_estadisticas_proyectos_x_docente(
 
     for participacion in participaciones {
         if let Some(proyecto) = proyectos.get(&participacion.id_proyecto) {
-            if proyecto.activo == 1 {
+            if proyecto.activo {
                 if let Some(contador) = activos_por_docente.get_mut(&participacion.id_docente) {
                     *contador += 1;
                 }
@@ -440,22 +568,15 @@ pub async fn get_data_exportacion_plana(db: &Database) -> Result<Vec<ExportData>
         let Some(docente) = docentes.get(&participacion.id_docente) else {
             continue;
         };
-        if proyecto.activo != 1 || docente.activo != 1 {
+        if !proyecto.activo || docente.activo != 1 {
             continue;
         }
-        let grado = grados
-            .get(&docente.id_grado)
-            .map(|item| item.nombre.clone())
-            .unwrap_or_else(|| "Sin grado".to_string());
+        let grado = data_loader::resolve_grado_nombre(&grados, &docente.id_grado);
 
         data.push(ExportData {
             proyecto: proyecto.titulo_proyecto.clone(),
             grado,
-            renacyt_nivel: docente
-                .renacyt_nivel
-                .clone()
-                .filter(|value| !value.trim().is_empty())
-                .unwrap_or_else(|| "No registrado".to_string()),
+            renacyt_nivel: data_loader::resolve_renacyt_nivel(docente),
             docente: docente.nombres_apellidos.clone(),
             dni: docente.dni.clone(),
         });
@@ -489,7 +610,7 @@ pub async fn get_data_exportacion_agrupada_docente(
             continue;
         }
         if let Some(proyecto) = proyectos.get(&participacion.id_proyecto) {
-            if proyecto.activo == 1 {
+            if proyecto.activo {
                 proyectos_por_docente
                     .entry(participacion.id_docente)
                     .or_default()
@@ -507,25 +628,15 @@ pub async fn get_data_exportacion_agrupada_docente(
             ExportDataConProjectos {
                 docente: docente.nombres_apellidos,
                 dni: docente.dni,
-                grado: grados
-                    .get(&docente.id_grado)
-                    .map(|grado| grado.nombre.clone())
-                    .unwrap_or_else(|| "Sin grado".to_string()),
-                renacyt_nivel: docente
-                    .renacyt_nivel
-                    .filter(|value| !value.trim().is_empty())
-                    .unwrap_or_else(|| "No registrado".to_string()),
+                grado: data_loader::resolve_grado_nombre(&grados, &docente.id_grado),
+                renacyt_nivel: data_loader::resolve_renacyt_nivel(&docente),
                 grupo_investigacion: docente
                     .grupo_investigacion_id
                     .as_ref()
                     .and_then(|gid| grupos.get(gid))
                     .map(|g| g.nombre.clone()),
                 cantidad_proyectos: proyectos_docente.len() as i64,
-                proyectos: if proyectos_docente.is_empty() {
-                    None
-                } else {
-                    Some(proyectos_docente.join(" | "))
-                },
+                proyectos: data_loader::join_or_none(&proyectos_docente, " | "),
             }
         })
         .collect();
@@ -583,7 +694,7 @@ pub async fn get_data_exportacion_grupos(db: &Database) -> Result<Vec<ExportData
         let mut proyecto_titles: Vec<String> = all_proyecto_ids
             .iter()
             .filter_map(|pid| proyectos.get(pid))
-            .filter(|p| p.activo == 1)
+            .filter(|p| p.activo)
             .map(|p| p.titulo_proyecto.clone())
             .collect();
         proyecto_titles.sort();
@@ -593,18 +704,10 @@ pub async fn get_data_exportacion_grupos(db: &Database) -> Result<Vec<ExportData
             descripcion: grupo.descripcion.clone(),
             coordinador,
             cantidad_miembros: miembros.len() as i64,
-            miembros: if miembros_nombres.is_empty() {
-                None
-            } else {
-                Some(miembros_nombres.join(" | "))
-            },
+            miembros: data_loader::join_or_none(&miembros_nombres, " | "),
             lineas_investigacion: grupo.lineas_investigacion.clone(),
             cantidad_proyectos: proyecto_titles.len() as i64,
-            proyectos: if proyecto_titles.is_empty() {
-                None
-            } else {
-                Some(proyecto_titles.join(" | "))
-            },
+            proyectos: data_loader::join_or_none(&proyecto_titles, " | "),
         });
     }
 
@@ -784,10 +887,7 @@ pub async fn get_data_exportacion_docentes_perfil(
 
     let mut data = Vec::new();
     for docente in docentes {
-        let grado = grados
-            .get(&docente.id_grado)
-            .map(|g| g.nombre.clone())
-            .unwrap_or_else(|| "Sin grado".to_string());
+        let grado = data_loader::resolve_grado_nombre(&grados, &docente.id_grado);
 
         let grupo_nombre = docente
             .grupo_investigacion_id
@@ -800,7 +900,7 @@ pub async fn get_data_exportacion_docentes_perfil(
             .map(|ids| {
                 ids.iter()
                     .filter_map(|pid| proyectos.get(pid))
-                    .filter(|p| p.activo == 1)
+                    .filter(|p| p.activo)
                     .map(|p| p.titulo_proyecto.clone())
                     .collect()
             })
@@ -824,11 +924,7 @@ pub async fn get_data_exportacion_docentes_perfil(
             grupo_investigacion: grupo_nombre,
             cantidad_proyectos,
             cantidad_publicaciones,
-            proyectos: if proyecto_titles.is_empty() {
-                None
-            } else {
-                Some(proyecto_titles.join(" | "))
-            },
+            proyectos: data_loader::join_or_none(&proyecto_titles, " | "),
             activo: docente.activo == 1,
         });
     }
@@ -882,11 +978,7 @@ pub async fn get_data_exportacion_proyectos_area(
             |(area, (proyectos_list, docentes_set))| ExportDataProyectoArea {
                 area,
                 cantidad_proyectos: proyectos_list.len() as i64,
-                proyectos: if proyectos_list.is_empty() {
-                    None
-                } else {
-                    Some(proyectos_list.join(" | "))
-                },
+                proyectos: data_loader::join_or_none(&proyectos_list, " | "),
                 cantidad_docentes: docentes_set.len() as i64,
             },
         )
@@ -911,12 +1003,12 @@ pub async fn get_proyectos_trend(db: &Database) -> Result<Vec<ProyectosTrendItem
         if millis == 0 {
             continue;
         }
-        let total_months = millis / 2_628_000_000;
-        let year = 1970 + (total_months / 12) as i32;
-        let month = ((total_months % 12) + 1) as u32;
-        if month > 12 {
-            continue;
-        }
+        let dt = match chrono::DateTime::from_timestamp_millis(millis) {
+            Some(dt) => dt,
+            None => continue,
+        };
+        let year = dt.year();
+        let month = dt.month();
         *trend.entry((year, month)).or_default() += 1;
     }
 
@@ -948,7 +1040,7 @@ pub async fn get_renacyt_distribucion(
     let mut docentes_con_proyectos: HashSet<String> = HashSet::new();
     for p in &participaciones {
         if let Some(proj) = proyectos.get(&p.id_proyecto) {
-            if proj.activo == 1 {
+            if proj.activo {
                 docentes_con_proyectos.insert(p.id_docente.clone());
             }
         }
@@ -956,12 +1048,7 @@ pub async fn get_renacyt_distribucion(
 
     let mut grupos: HashMap<String, RenacytDistribucionItem> = HashMap::new();
     for docente in &docentes {
-        let nivel = docente
-            .renacyt_nivel
-            .as_deref()
-            .filter(|v| !v.trim().is_empty())
-            .unwrap_or("No registrado")
-            .to_string();
+        let nivel = data_loader::resolve_renacyt_nivel(docente);
 
         let entry = grupos
             .entry(nivel.clone())

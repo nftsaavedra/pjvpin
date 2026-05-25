@@ -12,11 +12,49 @@ pub struct ProyectoParticipanteResumen {
     pub es_responsable: bool,
 }
 
+fn deserialize_activo_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de;
+    struct BoolishVisitor;
+    impl<'de> de::Visitor<'de> for BoolishVisitor {
+        type Value = bool;
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("boolean or integer 0/1")
+        }
+        fn visit_bool<E: de::Error>(self, v: bool) -> Result<bool, E> {
+            Ok(v)
+        }
+        fn visit_i64<E: de::Error>(self, v: i64) -> Result<bool, E> {
+            Ok(v != 0)
+        }
+        fn visit_u64<E: de::Error>(self, v: u64) -> Result<bool, E> {
+            Ok(v != 0)
+        }
+    }
+    deserializer.deserialize_any(BoolishVisitor)
+}
+
+fn serialize_activo_bool<S>(value: &bool, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serializer.serialize_i64(if *value { 1 } else { 0 })
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Proyecto {
     pub id_proyecto: String,
     pub titulo_proyecto: String,
-    pub activo: i64,
+    #[serde(
+        deserialize_with = "deserialize_activo_bool",
+        serialize_with = "serialize_activo_bool"
+    )]
+    #[serde(default = "default_activo_true")]
+    pub activo: bool,
+    #[serde(default)]
+    pub created_at: Option<i64>,
     #[serde(default)]
     pub updated_at: Option<i64>,
     /// Código OCDE del área temática del proyecto (ej. "1.1 Matemáticas").
@@ -25,6 +63,10 @@ pub struct Proyecto {
     /// Programas de investigación institucionales relacionados.
     #[serde(default)]
     pub programas_relacionados: Vec<String>,
+}
+
+fn default_activo_true() -> bool {
+    true
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,7 +96,7 @@ pub struct ProyectoDetalle {
     pub docente_responsable: Option<String>,
     pub docentes: Option<String>,
     pub participantes_json: Option<String>,
-    pub activo: i64,
+    pub activo: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -82,7 +124,8 @@ impl Proyecto {
         Self {
             id_proyecto: Uuid::new_v4().to_string(),
             titulo_proyecto: request.titulo_proyecto,
-            activo: 1,
+            activo: true,
+            created_at: Some(now),
             updated_at: Some(now),
             campo_ocde: None,
             programas_relacionados: Vec::new(),

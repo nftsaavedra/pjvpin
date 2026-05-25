@@ -35,7 +35,6 @@ function App() {
     }
     return window.innerWidth <= 1360 && window.innerWidth > 1024;
   });
-  const [docenteFormOpen, setDocenteFormOpen] = useState(false);
   const [checkingWizard, setCheckingWizard] = useState(true);
   const [showWizard, setShowWizard] = useState(false);
 
@@ -367,8 +366,6 @@ function App() {
                 currentRole={currentRole}
                 refreshTrigger={refreshTrigger}
                 onDataModified={handleDataModified}
-                docenteFormOpen={docenteFormOpen}
-                setDocenteFormOpen={setDocenteFormOpen}
               />
             </main>
           </div>

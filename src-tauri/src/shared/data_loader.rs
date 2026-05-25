@@ -10,6 +10,30 @@ use crate::grupos::models::GrupoInvestigacion;
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::shared::error::AppError;
 
+pub fn resolve_grado_nombre(grados: &HashMap<String, GradoAcademico>, id_grado: &str) -> String {
+    grados
+        .get(id_grado)
+        .map(|g| g.nombre.clone())
+        .unwrap_or_else(|| "Sin grado".to_string())
+}
+
+pub fn resolve_renacyt_nivel(docente: &Docente) -> String {
+    docente
+        .renacyt_nivel
+        .as_ref()
+        .filter(|v| !v.trim().is_empty())
+        .cloned()
+        .unwrap_or_else(|| "No registrado".to_string())
+}
+
+pub fn join_or_none(items: &[String], separator: &str) -> Option<String> {
+    if items.is_empty() {
+        None
+    } else {
+        Some(items.join(separator))
+    }
+}
+
 pub async fn load_grados_map(db: &Database) -> Result<HashMap<String, GradoAcademico>, AppError> {
     let grados = db
         .collection::<GradoAcademico>("grados")

@@ -70,10 +70,8 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
             AppPermission::DashboardView
                 | AppPermission::DocentesView
                 | AppPermission::ProyectosView
-                | AppPermission::ProyectosManage
                 | AppPermission::ReportesView
-                | AppPermission::ReportesExport
-                | AppPermission::RecursosManage
+                | AppPermission::GruposView
         ),
         _ => false,
     }
