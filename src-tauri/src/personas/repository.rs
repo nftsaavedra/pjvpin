@@ -1,4 +1,3 @@
-use futures_util::TryStreamExt;
 use mongodb::bson::doc;
 use mongodb::Database;
 
@@ -24,15 +23,6 @@ pub async fn find_by_id(db: &Database, id: &str) -> Result<Persona, AppError> {
 pub async fn find_by_dni(db: &Database, dni: &str) -> Result<Option<Persona>, AppError> {
     db.collection::<Persona>("personas")
         .find_one(doc! { "dni": dni.trim(), "activo": 1 })
-        .await
-        .map_err(Into::into)
-}
-
-pub async fn get_all(db: &Database) -> Result<Vec<Persona>, AppError> {
-    db.collection::<Persona>("personas")
-        .find(doc! { "activo": 1 })
-        .await?
-        .try_collect::<Vec<_>>()
         .await
         .map_err(Into::into)
 }
@@ -109,17 +99,6 @@ pub async fn update(
 
     db.collection::<Persona>("personas")
         .find_one_and_update(doc! { "id_persona": id, "activo": 1 }, doc! { "$set": set })
-        .await?
-        .ok_or_else(|| AppError::NotFound(format!("Persona con id {} no encontrada", id)))
-}
-
-pub async fn soft_delete(db: &Database, id: &str) -> Result<Persona, AppError> {
-    let now = time::now_ms();
-    db.collection::<Persona>("personas")
-        .find_one_and_update(
-            doc! { "id_persona": id, "activo": 1 },
-            doc! { "$set": { "activo": 0, "updated_at": now } },
-        )
         .await?
         .ok_or_else(|| AppError::NotFound(format!("Persona con id {} no encontrada", id)))
 }

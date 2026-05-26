@@ -82,25 +82,6 @@ pub fn save_wizard_config(
     Ok(())
 }
 
-pub fn load_decrypted_config(
-    user_config_path: &std::path::Path,
-    master_password: &str,
-) -> Result<String, AppError> {
-    let enc_path = user_config_path.with_extension("json.enc");
-    if !enc_path.exists() {
-        return Err(AppError::ConfigurationError(
-            "No se encontro configuracion cifrada. Ejecute el asistente de configuracion."
-                .to_string(),
-        ));
-    }
-
-    let encrypted_hex = std::fs::read_to_string(&enc_path).map_err(|e| {
-        AppError::ConfigurationError(format!("No se pudo leer configuracion cifrada: {}", e))
-    })?;
-
-    encryption::decrypt_config(&encrypted_hex, master_password)
-}
-
 pub async fn test_mongodb_connectivity(uri: &str) -> ConnectivityResult {
     match test_mongodb_impl(uri).await {
         Ok(msg) => ConnectivityResult {

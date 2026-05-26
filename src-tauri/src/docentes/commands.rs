@@ -92,7 +92,14 @@ pub async fn consultar_dni_reniec(
     numero: String,
 ) -> Result<ReniecDniLookupResult, AppError> {
     crate::shared::rbac::require_docentes_manage_permission(&state, window.label()).await?;
-    reniec_client::consultar_dni(state.reniec_config(), &numero).await
+
+    if let Some(cached) = state.reniec_cache.get(&numero).await {
+        return Ok(cached);
+    }
+
+    let result = reniec_client::consultar_dni(state.reniec_config(), &numero).await?;
+    state.reniec_cache.put(&numero, result.clone()).await;
+    Ok(result)
 }
 
 #[tauri::command]

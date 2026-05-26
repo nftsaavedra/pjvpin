@@ -9,13 +9,6 @@ use crate::shared::error::AppError;
 use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
-pub async fn get_proyecto_by_id(db: &Database, id_proyecto: &str) -> Result<Proyecto, AppError> {
-    db.collection::<Proyecto>("proyectos")
-        .find_one(doc! { "id_proyecto": id_proyecto })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Proyecto no encontrado.".to_string()))
-}
-
 pub async fn es_responsable_del_proyecto(
     db: &Database,
     docente_id: &str,

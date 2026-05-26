@@ -337,6 +337,12 @@ fn merge_env_file(values: &mut HashMap<String, String>, path: &Path) -> Result<(
     Ok(())
 }
 
+#[cfg(not(test))]
 fn default_json_config_template() -> &'static str {
     "{\n  \"database\": {\n    \"mongodbUri\": \"mongodb://localhost:27017\",\n    \"mongodbDb\": \"pjvpin\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
+}
+
+#[cfg(test)]
+fn default_json_config_template() -> &'static str {
+    "{\n  \"database\": {\n    \"mongodbUri\": \"\",\n    \"mongodbDb\": \"pjvpin_test\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
 }

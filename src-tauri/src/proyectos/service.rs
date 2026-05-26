@@ -110,6 +110,12 @@ pub async fn delete(
     id_proyecto: &str,
 ) -> Result<EliminarProyectoResultado, AppError> {
     let db = state.mongo_db()?;
+
+    let _ = crate::recursos::repository::delete_patentes_by_proyecto(db, id_proyecto).await;
+    let _ = crate::recursos::repository::delete_productos_by_proyecto(db, id_proyecto).await;
+    let _ = crate::recursos::repository::delete_equipamientos_by_proyecto(db, id_proyecto).await;
+    let _ = crate::recursos::repository::delete_financiamientos_by_proyecto(db, id_proyecto).await;
+
     repository::eliminar_proyecto(db, id_proyecto).await
 }
 
@@ -236,11 +242,6 @@ fn validate_responsable(
     }
 
     Ok(())
-}
-
-pub async fn get_by_id(state: &AppState, id_proyecto: &str) -> Result<Proyecto, AppError> {
-    let db = state.mongo_db()?;
-    repository::get_proyecto_by_id(db, id_proyecto).await
 }
 
 pub async fn get_all_paginated(

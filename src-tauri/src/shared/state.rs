@@ -13,7 +13,6 @@ const SESSION_TIMEOUT_MS: i64 = 30 * 60 * 1000;
 #[derive(Clone)]
 pub struct SessionEntry {
     pub user_id: String,
-    pub session_token: String,
     pub last_activity_at: i64,
     pub created_at: i64,
 }
@@ -46,7 +45,6 @@ impl SessionStore {
             token.clone(),
             SessionEntry {
                 user_id: user_id.clone(),
-                session_token: token.clone(),
                 last_activity_at: now,
                 created_at: now,
             },
@@ -68,17 +66,24 @@ impl SessionStore {
         .ok_or("No hay sesion activa")?;
 
         let mut sessions = self.sessions.write().await;
-        let entry = sessions
-            .get_mut(&token)
-            .ok_or("Sesion invalida o expirada")?;
+        let user_id = {
+            let entry = sessions
+                .get_mut(&token)
+                .ok_or("Sesion invalida o expirada")?;
 
-        if now - entry.last_activity_at > SESSION_TIMEOUT_MS {
-            sessions.remove(&token);
-            return Err("Sesion expirada por inactividad");
-        }
+            if now - entry.last_activity_at > SESSION_TIMEOUT_MS
+                || now - entry.created_at > SESSION_TIMEOUT_MS * 8
+            {
+                return Err("Sesion expirada por inactividad");
+            }
 
-        entry.last_activity_at = now;
-        Ok(entry.user_id.clone())
+            entry.last_activity_at = now;
+            entry.user_id.clone()
+        };
+
+        self.cleanup_expired_locked(&mut sessions).await;
+
+        Ok(user_id)
     }
 
     pub async fn touch_session(&self, window_label: &str) {
@@ -99,25 +104,26 @@ impl SessionStore {
         }
     }
 
-    pub async fn cleanup_expired(&self) {
+    async fn cleanup_expired_locked(&self, sessions: &mut HashMap<String, SessionEntry>) {
         let now = time::now_ms();
-        let mut expired_tokens: Vec<String> = Vec::new();
-        {
-            let sessions = self.sessions.read().await;
-            for (token, entry) in sessions.iter() {
-                if now - entry.last_activity_at > SESSION_TIMEOUT_MS {
-                    expired_tokens.push(token.clone());
-                }
-            }
-        }
-        if !expired_tokens.is_empty() {
-            let mut sessions = self.sessions.write().await;
-            let mut wmap = self.window_map.write().await;
-            for token in &expired_tokens {
+        let expired: Vec<String> = sessions
+            .iter()
+            .filter(|(_, entry)| now - entry.last_activity_at > SESSION_TIMEOUT_MS)
+            .map(|(token, _)| token.clone())
+            .collect();
+
+        if !expired.is_empty() {
+            for token in &expired {
                 sessions.remove(token);
             }
-            wmap.retain(|_, t| !expired_tokens.contains(t));
+            let mut wmap = self.window_map.write().await;
+            wmap.retain(|_, t| !expired.contains(t));
         }
+    }
+
+    pub async fn cleanup_expired(&self) {
+        let mut sessions = self.sessions.write().await;
+        self.cleanup_expired_locked(&mut sessions).await;
     }
 }
 
@@ -202,10 +208,6 @@ impl AppState {
 
     pub fn renacyt_config(&self) -> &RenacytConfig {
         &self.renacyt
-    }
-
-    pub async fn create_user_session(&self, window_label: &str, user_id: String) -> String {
-        self.sessions.create_session(window_label, user_id).await
     }
 
     pub async fn set_current_session(&self, window_label: &str, user_id: String) {

@@ -13,7 +13,8 @@ pub async fn crear_usuario(
     window_label: &str,
     request: CreateUsuarioRequest,
 ) -> Result<Usuario, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
     let usuario = usuario_service::create(state, &actor.id_usuario, request).await?;
 
     crate::shared::audit::write_user_audit(
@@ -68,6 +69,9 @@ pub async fn login_usuario(
     state
         .set_current_session(window_label, usuario.id_usuario.clone())
         .await;
+
+    state.cleanup_sessions().await;
+
     Ok(usuario)
 }
 
@@ -121,7 +125,8 @@ pub async fn actualizar_usuario(
     id_usuario: &str,
     request: UpdateUsuarioRequest,
 ) -> Result<Usuario, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
     let previous_user = rbac::get_user_by_id(state, id_usuario).await?;
     let usuario = usuario_service::update(state, &actor.id_usuario, id_usuario, request).await?;
 
@@ -146,7 +151,8 @@ pub async fn desactivar_usuario(
     window_label: &str,
     id_usuario: &str,
 ) -> Result<Usuario, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
     let usuario = usuario_service::deactivate(state, &actor.id_usuario, id_usuario).await?;
 
     crate::shared::audit::write_user_audit(
@@ -163,7 +169,8 @@ pub async fn reactivar_usuario(
     window_label: &str,
     id_usuario: &str,
 ) -> Result<Usuario, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
     let usuario = usuario_service::reactivate(state, &actor.id_usuario, id_usuario).await?;
 
     crate::shared::audit::write_user_audit(

@@ -45,38 +45,3 @@ pub fn encrypt_config(plaintext: &str, master_password: &str) -> Result<String, 
 
     Ok(hex::encode(output))
 }
-
-pub fn decrypt_config(encrypted_hex: &str, master_password: &str) -> Result<String, AppError> {
-    use aes_gcm::{
-        aead::{Aead, KeyInit},
-        Aes256Gcm, Nonce,
-    };
-
-    let data = hex::decode(encrypted_hex).map_err(|_| {
-        AppError::InternalError("Formato de configuracion cifrada invalido.".to_string())
-    })?;
-
-    if data.len() < 32 + NONCE_SIZE + 1 {
-        return Err(AppError::InternalError(
-            "Configuracion cifrada corrupta o incompleta.".to_string(),
-        ));
-    }
-
-    let salt = &data[..32];
-    let nonce_bytes = &data[32..32 + NONCE_SIZE];
-    let ciphertext = &data[32 + NONCE_SIZE..];
-
-    let key = derive_key(master_password, salt);
-    let cipher = Aes256Gcm::new_from_slice(&key)
-        .map_err(|_| AppError::InternalError("Error al inicializar descifrado.".to_string()))?;
-    let nonce = Nonce::from_slice(nonce_bytes);
-
-    let plaintext = cipher.decrypt(nonce, ciphertext).map_err(|_| {
-        AppError::InternalError(
-            "Contraseña maestra incorrecta o configuracion corrupta.".to_string(),
-        )
-    })?;
-
-    String::from_utf8(plaintext)
-        .map_err(|_| AppError::InternalError("Error al leer configuracion descifrada.".to_string()))
-}

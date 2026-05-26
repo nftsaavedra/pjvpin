@@ -158,6 +158,12 @@ cargo clippy             # Linter Rust
 - **Formato**: `rustfmt.toml` (100 chars, edition 2021, group_imports)
 - **Dependencias**: Mínimas, evitar crates innecesarios
 - **Timestamps**: Usar `shared::time::now_ms()` (unificado, basado en `std::time`)
+- **Dead code**: Cero tolerancia a `#[allow(dead_code)]`. Todo código DEBE estar integrado y usado. Si una función no se usa, se elimina o se integra donde corresponde. Si un struct/field/método no se lee, se elimina o se usa. Ejemplos:
+  - Funciones de repositorio no usadas → eliminarlas o integrarlas en handlers/service
+  - Permisos no asignados → agregarlos a la matriz de roles que corresponda
+  - Cachés no usados → integrarlos en el flujo de consulta externa
+  - Campos redundantes → eliminarlos del struct
+- **Seguridad**: Nunca hardcodear credenciales, URIs reales ni tokens en el código fuente. Usar `localhost` o placeholders vacíos en templates por defecto. Las credenciales reales solo en `.env` (gitignorado).
 
 ---
 

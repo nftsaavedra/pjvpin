@@ -50,8 +50,13 @@ pub fn run() {
 
             let project_env_path = std::env::current_dir()
                 .ok()
-                .map(|dir| dir.join(".env"))
-                .filter(|path| path.exists());
+                .and_then(|dir| {
+                    let candidates = [
+                        dir.join(".env"),
+                        dir.parent().map(|p| p.join(".env")).unwrap_or_default(),
+                    ];
+                    candidates.into_iter().find(|path| path.exists())
+                });
 
             let runtime_config = load_runtime_config(
                 &user_config_path,

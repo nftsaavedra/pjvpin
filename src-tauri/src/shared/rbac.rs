@@ -18,7 +18,6 @@ pub enum AppPermission {
     GruposManage,
     RecursosManage,
     CatalogosManage,
-    ConfiguracionServicios,
     UsuariosManage,
 }
 
@@ -77,47 +76,12 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
     }
 }
 
-pub fn is_admin_or_higher(role: &str) -> bool {
-    matches!(role.trim(), "superuser" | "admin")
-}
-
 pub async fn require_permission(
     state: &AppState,
     window_label: &str,
     permission: AppPermission,
 ) -> Result<Usuario, AppError> {
     let actor = get_session_actor_user(state, window_label).await?;
-
-    if !role_has_permission(&actor.rol, &permission) {
-        return Err(AppError::InternalError(
-            "No tiene permisos para ejecutar esta operacion.".to_string(),
-        ));
-    }
-
-    Ok(actor)
-}
-
-pub async fn require_permission_proyecto(
-    state: &AppState,
-    window_label: &str,
-    permission: AppPermission,
-    id_proyecto: &str,
-) -> Result<Usuario, AppError> {
-    let actor = get_session_actor_user(state, window_label).await?;
-
-    if actor.rol.trim() == "responsable_proyecto" {
-        let tiene_acceso = crate::shared::access_control::verificar_acceso_proyecto_responsable(
-            state,
-            &actor,
-            id_proyecto,
-        )
-        .await?;
-        if !tiene_acceso {
-            return Err(AppError::InternalError(
-                "No tiene acceso a este proyecto.".to_string(),
-            ));
-        }
-    }
 
     if !role_has_permission(&actor.rol, &permission) {
         return Err(AppError::InternalError(

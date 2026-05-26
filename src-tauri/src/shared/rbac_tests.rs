@@ -18,7 +18,6 @@ mod tests {
             AppPermission::GruposManage,
             AppPermission::RecursosManage,
             AppPermission::CatalogosManage,
-            AppPermission::ConfiguracionServicios,
             AppPermission::UsuariosManage,
         ];
 
@@ -32,7 +31,7 @@ mod tests {
     }
 
     #[test]
-    fn test_admin_has_operational_permissions() {
+    fn test_admin_has_operational_permissions_and_usuarios_manage() {
         assert!(role_has_permission("admin", &AppPermission::DashboardView));
         assert!(role_has_permission("admin", &AppPermission::DocentesManage));
         assert!(role_has_permission(
@@ -48,19 +47,15 @@ mod tests {
     }
 
     #[test]
-    fn test_admin_cannot_access_configuracion_servicios() {
+    fn test_admin_cannot_access_usuarios_manage() {
         assert!(!role_has_permission(
-            "admin",
-            &AppPermission::ConfiguracionServicios
+            "operador",
+            &AppPermission::UsuariosManage
         ));
     }
 
     #[test]
-    fn test_responsable_proyecto_can_manage_proyectos() {
-        assert!(role_has_permission(
-            "responsable_proyecto",
-            &AppPermission::ProyectosManage
-        ));
+    fn test_responsable_proyecto_can_view_proyectos() {
         assert!(role_has_permission(
             "responsable_proyecto",
             &AppPermission::ProyectosView
@@ -68,6 +63,14 @@ mod tests {
         assert!(role_has_permission(
             "responsable_proyecto",
             &AppPermission::DashboardView
+        ));
+    }
+
+    #[test]
+    fn test_responsable_proyecto_cannot_manage_proyectos() {
+        assert!(!role_has_permission(
+            "responsable_proyecto",
+            &AppPermission::ProyectosManage
         ));
     }
 

@@ -312,6 +312,10 @@ pub async fn update_usuario(
         updates.insert("password_hash", hash_password(password)?);
     }
 
+    if let Some(ref docente) = request.docente_id {
+        updates.insert("docente_id", docente.trim());
+    }
+
     db.collection::<Document>("usuarios")
         .update_one(doc! { "id_usuario": id_usuario }, doc! { "$set": updates })
         .await?;

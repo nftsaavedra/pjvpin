@@ -18,6 +18,12 @@ pub fn sanitize_external_detail(input: &str) -> String {
         "PJVPIN_PURE_API_KEY",
         "PURE_API_KEY",
         "PJVPIN_RENIEC_TOKEN",
+        "mongodb_uri",
+        "mongodbUri",
+        "MONGODB_URI",
+        "PJVPIN_MONGODB_URI",
+        "mongodb+srv://",
+        "mongodb://",
     ] {
         sanitized = redact_after_marker(&sanitized, marker);
     }
