@@ -9,7 +9,7 @@ use crate::shared::error::AppError;
 pub fn validate_database_config(config: &DatabaseConfig) -> Result<(), AppError> {
     if config.requires_mongodb() && config.mongodb_uri.is_none() {
         return Err(AppError::ConfigurationError(
-            "MongoDB URI no configurada. Configure PJUPI_MONGODB_URI en su archivo de configuración o variable de entorno.".to_string(),
+            "MongoDB URI no configurada. Configure PJVPIN_MONGODB_URI en su archivo de configuración o variable de entorno.".to_string(),
         ));
     }
 

@@ -1,5 +1,7 @@
 use crate::reportes::entity_reports::{ReporteDocenteIntegral, ReporteProyectoIntegral};
-use crate::reportes::entity_repository;
+use crate::reportes::repository_docente;
+use crate::reportes::repository_export;
+use crate::reportes::repository_proyecto;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 
@@ -8,7 +10,7 @@ pub async fn get_reporte_proyecto(
     id_proyecto: &str,
 ) -> Result<ReporteProyectoIntegral, AppError> {
     let db = state.mongo_db()?;
-    entity_repository::build_reporte_proyecto_integral(db, id_proyecto).await
+    repository_proyecto::build_reporte_proyecto_integral(db, id_proyecto).await
 }
 
 pub async fn get_reporte_docente(
@@ -16,12 +18,12 @@ pub async fn get_reporte_docente(
     id_docente: &str,
 ) -> Result<ReporteDocenteIntegral, AppError> {
     let db = state.mongo_db()?;
-    entity_repository::build_reporte_docente_integral(db, id_docente).await
+    repository_docente::build_reporte_docente_integral(db, id_docente).await
 }
 
 pub async fn get_reportes_docentes(
     state: &AppState,
 ) -> Result<Vec<ReporteDocenteIntegral>, AppError> {
     let db = state.mongo_db()?;
-    entity_repository::build_reportes_docentes_integral(db).await
+    repository_export::build_reportes_docentes_integral(db).await
 }

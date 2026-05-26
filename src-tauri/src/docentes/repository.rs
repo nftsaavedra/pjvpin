@@ -4,6 +4,8 @@ use crate::docentes::models::{
     CreateDocenteRequest, Docente, DocenteDetalle, EliminarDocenteResultado,
 };
 use crate::docentes::service::build_delete_result;
+use crate::personas;
+use crate::personas::models::CreatePersonaRequest;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use futures_util::TryStreamExt;
@@ -15,6 +17,22 @@ pub async fn create_docente(
     db: &Database,
     request: CreateDocenteRequest,
 ) -> Result<Docente, AppError> {
+    let persona = personas::repository::create(
+        db,
+        CreatePersonaRequest {
+            dni: request.dni.clone(),
+            nombres: request.nombres.clone(),
+            apellido_paterno: request.apellido_paterno.clone(),
+            apellido_materno: request.apellido_materno.clone(),
+            correo: request.correo.clone(),
+            telefono: request.telefono.clone(),
+            direccion: request.direccion.clone(),
+            sexo: request.sexo.clone(),
+            fecha_nacimiento: request.fecha_nacimiento,
+        },
+    )
+    .await?;
+
     let grado_existente = db
         .collection::<mongodb::bson::Document>("grados")
         .find_one(doc! { "id_grado": &request.id_grado })
@@ -25,7 +43,7 @@ pub async fn create_docente(
         ));
     }
 
-    let docente = Docente::new(request);
+    let docente = Docente::new(persona.id_persona, &request);
     db.collection::<Docente>("docentes")
         .insert_one(&docente)
         .await?;
@@ -39,10 +57,17 @@ pub async fn get_all_docentes(db: &Database) -> Result<Vec<Docente>, AppError> {
         .await?
         .try_collect::<Vec<_>>()
         .await?;
+    let personas = data_loader::load_personas_map(db).await?;
     docentes.sort_by(|a, b| {
-        a.nombres_apellidos
-            .to_lowercase()
-            .cmp(&b.nombres_apellidos.to_lowercase())
+        let na = personas
+            .get(&a.persona_id)
+            .map(|p| p.nombre_completo.to_lowercase())
+            .unwrap_or_default();
+        let nb = personas
+            .get(&b.persona_id)
+            .map(|p| p.nombre_completo.to_lowercase())
+            .unwrap_or_default();
+        na.cmp(&nb)
     });
     Ok(docentes)
 }
@@ -64,7 +89,7 @@ pub async fn get_all_docentes_paginated(
     let mut cursor = db
         .collection::<Docente>("docentes")
         .find(filter)
-        .sort(doc! { "nombres_apellidos": 1 })
+        .sort(doc! { "id_docente": 1 })
         .skip(skip)
         .limit(limit_i64)
         .await?;
@@ -85,10 +110,15 @@ pub async fn get_all_docentes_paginated(
 }
 
 pub async fn get_docente_by_dni(db: &Database, dni: &str) -> Result<Option<Docente>, AppError> {
-    db.collection::<Docente>("docentes")
-        .find_one(doc! { "dni": dni })
-        .await
-        .map_err(Into::into)
+    let persona = personas::repository::find_by_dni(db, dni).await?;
+    match persona {
+        Some(p) => db
+            .collection::<Docente>("docentes")
+            .find_one(doc! { "persona_id": &p.id_persona })
+            .await
+            .map_err(Into::into),
+        None => Ok(None),
+    }
 }
 
 pub async fn get_docente_by_id(db: &Database, id_docente: &str) -> Result<Docente, AppError> {
@@ -115,10 +145,17 @@ pub async fn get_all_docentes_con_proyectos(
         .await?
         .try_collect::<Vec<_>>()
         .await?;
+    let personas = data_loader::load_personas_map(db).await?;
     docentes.sort_by(|a, b| {
-        a.nombres_apellidos
-            .to_lowercase()
-            .cmp(&b.nombres_apellidos.to_lowercase())
+        let na = personas
+            .get(&a.persona_id)
+            .map(|p| p.nombre_completo.to_lowercase())
+            .unwrap_or_default();
+        let nb = personas
+            .get(&b.persona_id)
+            .map(|p| p.nombre_completo.to_lowercase())
+            .unwrap_or_default();
+        na.cmp(&nb)
     });
 
     let grados = data_loader::load_grados_map(db).await?;
@@ -147,8 +184,12 @@ pub async fn get_all_docentes_con_proyectos(
                 .get(&docente.id_grado)
                 .map(|grado| grado.nombre.clone())
                 .unwrap_or_else(|| "Sin grado".to_string());
+            let persona = personas
+                .get(&docente.persona_id)
+                .cloned()
+                .expect("Persona must exist for docente");
 
-            DocenteDetalle::from((docente, grado, proyectos_docente))
+            DocenteDetalle::from((docente, persona, grado, proyectos_docente))
         })
         .collect();
 
@@ -160,6 +201,7 @@ pub async fn get_docente_detalle_by_id(
     id_docente: &str,
 ) -> Result<DocenteDetalle, AppError> {
     let docente = get_docente_by_id(db, id_docente).await?;
+    let persona = personas::repository::find_by_id(db, &docente.persona_id).await?;
     let grados = data_loader::load_grados_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
@@ -177,7 +219,12 @@ pub async fn get_docente_detalle_by_id(
         .map(|grado| grado.nombre.clone())
         .unwrap_or_else(|| "Sin grado".to_string());
 
-    Ok(DocenteDetalle::from((docente, grado, proyectos_docente)))
+    Ok(DocenteDetalle::from((
+        docente,
+        persona,
+        grado,
+        proyectos_docente,
+    )))
 }
 
 pub async fn delete_docente(
@@ -218,18 +265,36 @@ pub async fn update_docente(
     id_docente: &str,
     request: &crate::docentes::models::UpdateDocenteRequest,
 ) -> Result<Docente, AppError> {
+    let docente = get_docente_by_id(db, id_docente).await?;
+
+    if request.nombres.is_some()
+        || request.apellido_paterno.is_some()
+        || request.apellido_materno.is_some()
+        || request.correo.is_some()
+        || request.telefono.is_some()
+        || request.direccion.is_some()
+    {
+        use crate::personas::models::UpdatePersonaRequest;
+        personas::repository::update(
+            db,
+            &docente.persona_id,
+            UpdatePersonaRequest {
+                nombres: request.nombres.clone(),
+                apellido_paterno: request.apellido_paterno.clone(),
+                apellido_materno: request.apellido_materno.clone(),
+                correo: request.correo.clone(),
+                telefono: request.telefono.clone(),
+                direccion: request.direccion.clone(),
+                sexo: request.sexo.clone(),
+                fecha_nacimiento: request.fecha_nacimiento,
+            },
+        )
+        .await?;
+    }
+
     let now = crate::shared::time::now_ms();
     let mut set = doc! { "updated_at": now };
 
-    if let Some(ref v) = request.nombres {
-        set.insert("nombres", v);
-    }
-    if let Some(ref v) = request.apellido_paterno {
-        set.insert("apellido_paterno", v);
-    }
-    if let Some(ref v) = request.apellido_materno {
-        set.insert("apellido_materno", v);
-    }
     if let Some(ref v) = request.id_grado {
         set.insert("id_grado", v);
     }
@@ -237,18 +302,12 @@ pub async fn update_docente(
         set.insert("grupo_investigacion_id", v);
     }
 
-    if let (Some(nombres), Some(apellido_paterno)) = (&request.nombres, &request.apellido_paterno) {
-        let apellidos = if let Some(ref materno) = request.apellido_materno {
-            format!("{} {}", apellido_paterno, materno)
-        } else {
-            apellido_paterno.to_string()
-        };
-        set.insert("nombres_apellidos", format!("{}, {}", apellidos, nombres));
+    let has_changes = request.id_grado.is_some() || request.grupo_investigacion_id.is_some();
+    if has_changes {
+        db.collection::<mongodb::bson::Document>("docentes")
+            .update_one(doc! { "id_docente": id_docente }, doc! { "$set": set })
+            .await?;
     }
-
-    db.collection::<mongodb::bson::Document>("docentes")
-        .update_one(doc! { "id_docente": id_docente }, doc! { "$set": set })
-        .await?;
 
     db.collection::<Docente>("docentes")
         .find_one(doc! { "id_docente": id_docente })

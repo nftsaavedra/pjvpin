@@ -135,7 +135,10 @@ impl PureConfig {
     }
 }
 
-pub fn load_runtime_config(user_config_path: &Path) -> Result<RuntimeConfig, AppError> {
+pub fn load_runtime_config(
+    user_config_path: &Path,
+    project_env_path: Option<&Path>,
+) -> Result<RuntimeConfig, AppError> {
     if let Some(parent) = user_config_path.parent() {
         fs::create_dir_all(parent).map_err(|error| {
             AppError::ConfigurationError(format!(
@@ -155,6 +158,12 @@ pub fn load_runtime_config(user_config_path: &Path) -> Result<RuntimeConfig, App
     }
 
     let mut values = HashMap::new();
+
+    if let Some(env_path) = project_env_path {
+        if env_path.exists() {
+            let _ = merge_env_file(&mut values, env_path);
+        }
+    }
 
     if user_config_path.exists() {
         merge_json_file(&mut values, user_config_path)?;
@@ -329,5 +338,5 @@ fn merge_env_file(values: &mut HashMap<String, String>, path: &Path) -> Result<(
 }
 
 fn default_json_config_template() -> &'static str {
-    "{\n  \"database\": {\n    \"mongodbUri\": \"\",\n    \"mongodbDb\": \"pjvpin\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
+    "{\n  \"database\": {\n    \"mongodbUri\": \"mongodb://localhost:27017\",\n    \"mongodbDb\": \"pjvpin\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
 }

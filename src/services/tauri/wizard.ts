@@ -37,9 +37,9 @@ export const wizardTestPure = async (baseUrl: string, apiKey: string): Promise<C
 };
 
 export const wizardSaveConfig = async (request: WizardConfigRequest): Promise<void> => {
-  return await invoke('wizard_save_config', { request });
+  await invoke('wizard_save_config', { request });
 };
 
 export const wizardValidateMasterPassword = async (password: string): Promise<void> => {
-  return await invoke('wizard_validate_master_password', { password });
+  await invoke('wizard_validate_master_password', { password });
 };

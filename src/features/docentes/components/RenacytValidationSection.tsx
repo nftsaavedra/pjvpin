@@ -1,0 +1,132 @@
+import React from "react";
+import { BadgeCheck } from "lucide-react";
+import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { formatRenacytNivel } from "@/shared/utils/renacyt";
+
+const formatDate = (value?: number | null) => {
+  if (!value) return "No disponible";
+  return new Intl.DateTimeFormat("es-PE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(value);
+};
+
+const countFormacionesAcademicas = (value?: string | null) => {
+  if (!value) return 0;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
+};
+
+interface RenacytData {
+  codigo_registro: string;
+  nivel?: string | null;
+  condicion?: string | null;
+  orcid?: string | null;
+  scopus_author_id?: string | null;
+  fecha_informe_calificacion?: number | null;
+  fecha_ultima_revision?: number | null;
+  formaciones_academicas_json?: string | null;
+}
+
+interface RenacytValidationSectionProps {
+  renacytQuery: string;
+  onRenacytChange: (value: string) => void;
+  onValidate: () => void;
+  isChecking: boolean;
+  canValidate: boolean;
+  validationStatus: string | null;
+  validationMessage: string;
+  isLoading: boolean;
+  dniFueValidado: boolean;
+  renacytData: RenacytData | null;
+}
+
+export const RenacytValidationSection: React.FC<RenacytValidationSectionProps> = ({
+  renacytQuery,
+  onRenacytChange,
+  onValidate,
+  isChecking,
+  canValidate,
+  validationStatus,
+  validationMessage,
+  isLoading,
+  dniFueValidado,
+  renacytData,
+}) => (
+  <div className="form-group docente-form-span-2 docente-renacyt-card">
+    <div className="form-label-row">
+      <label htmlFor="docente-renacyt" className="form-label-text">
+        Validación RENACYT
+      </label>
+      <FieldHelpTooltip
+        label="Ayuda para RENACYT"
+        content="Puede ingresar el código de registro RENACYT o el ID del investigador. La validación confirma que ese registro corresponde al mismo DNI ya validado para el docente."
+      />
+    </div>
+    <div className="form-input-action-group docente-dni-input-row">
+      <input
+        id="docente-renacyt"
+        type="text"
+        value={renacytQuery}
+        onChange={(event) => { onRenacytChange(event.target.value); }}
+        placeholder="Ej: P0013866 o 13866"
+        className="form-input"
+        autoComplete="off"
+        disabled={isLoading || isChecking || !dniFueValidado}
+      />
+      <button
+        type="button"
+        className="btn-secondary form-input-action-button"
+        onClick={() => { onValidate(); }}
+        disabled={!canValidate}
+      >
+        <span className="button-with-icon">
+          <AppIcon icon={BadgeCheck} size={16} />
+          <span>{isChecking ? "Validando..." : "Validar RENACYT"}</span>
+        </span>
+      </button>
+    </div>
+    <div className={`form-inline-status form-inline-status-${validationStatus}`} aria-live="polite">
+      {validationMessage}
+    </div>
+
+    {renacytData && validationStatus === "validated" && (
+      <div className="renacyt-summary-card" aria-live="polite">
+        <div className="renacyt-summary-header">
+          <strong>RENACYT vinculado</strong>
+          <span className="badge badge-info">{renacytData.codigo_registro}</span>
+        </div>
+        <div className="renacyt-summary-grid">
+          <span>
+            <strong>Nivel:</strong> {formatRenacytNivel(renacytData.nivel) ?? "No disponible"}
+          </span>
+          <span>
+            <strong>Condición:</strong> {renacytData.condicion ?? "No disponible"}
+          </span>
+          <span>
+            <strong>ORCID:</strong> {renacytData.orcid ?? "No disponible"}
+          </span>
+          <span>
+            <strong>Scopus:</strong> {renacytData.scopus_author_id ?? "No disponible"}
+          </span>
+          <span>
+            <strong>Informe:</strong> {formatDate(renacytData.fecha_informe_calificacion)}
+          </span>
+          <span>
+            <strong>Última revisión:</strong> {formatDate(renacytData.fecha_ultima_revision)}
+          </span>
+          <span>
+            <strong>Formaciones:</strong>{" "}
+            {countFormacionesAcademicas(renacytData.formaciones_academicas_json)}
+          </span>
+        </div>
+      </div>
+    )}
+  </div>
+);

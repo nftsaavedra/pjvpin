@@ -1,6 +1,6 @@
 use tauri::{State, Window};
 
-use crate::shared::access_control;
+use super::handlers;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 use crate::usuarios::models::{
@@ -14,12 +14,12 @@ pub async fn crear_usuario(
     state: State<'_, AppState>,
     request: CreateUsuarioRequest,
 ) -> Result<Usuario, AppError> {
-    access_control::crear_usuario(&state, window.label(), request).await
+    handlers::crear_usuario(&state, window.label(), request).await
 }
 
 #[tauri::command]
 pub async fn get_auth_status(state: State<'_, AppState>) -> Result<AuthStatus, AppError> {
-    access_control::get_auth_status(&state).await
+    handlers::get_auth_status(&state).await
 }
 
 #[tauri::command]
@@ -28,7 +28,7 @@ pub async fn registrar_primer_usuario(
     state: State<'_, AppState>,
     request: BootstrapUsuarioRequest,
 ) -> Result<Usuario, AppError> {
-    access_control::registrar_primer_usuario(&state, window.label(), request).await
+    handlers::registrar_primer_usuario(&state, window.label(), request).await
 }
 
 #[tauri::command]
@@ -37,7 +37,7 @@ pub async fn login_usuario(
     state: State<'_, AppState>,
     request: LoginUsuarioRequest,
 ) -> Result<Usuario, AppError> {
-    access_control::login_usuario(&state, window.label(), request).await
+    handlers::login_usuario(&state, window.label(), request).await
 }
 
 #[tauri::command]
@@ -45,12 +45,12 @@ pub async fn get_current_session(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Option<Usuario>, AppError> {
-    access_control::get_current_session(&state, window.label()).await
+    handlers::get_current_session(&state, window.label()).await
 }
 
 #[tauri::command]
 pub async fn logout_usuario(window: Window, state: State<'_, AppState>) -> Result<(), AppError> {
-    access_control::logout_usuario(&state, window.label()).await
+    handlers::logout_usuario(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -58,7 +58,7 @@ pub async fn get_all_usuarios(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<Usuario>, AppError> {
-    access_control::get_all_usuarios(&state, window.label()).await
+    handlers::get_all_usuarios(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -68,7 +68,7 @@ pub async fn get_all_usuarios_paginated(
     page: u32,
     limit: u32,
 ) -> Result<crate::shared::pagination::PaginatedResult<Usuario>, AppError> {
-    access_control::get_all_usuarios_paginated(&state, window.label(), page, limit).await
+    handlers::get_all_usuarios_paginated(&state, window.label(), page, limit).await
 }
 
 #[tauri::command]
@@ -78,7 +78,7 @@ pub async fn actualizar_usuario(
     id_usuario: String,
     request: UpdateUsuarioRequest,
 ) -> Result<Usuario, AppError> {
-    access_control::actualizar_usuario(&state, window.label(), &id_usuario, request).await
+    handlers::actualizar_usuario(&state, window.label(), &id_usuario, request).await
 }
 
 #[tauri::command]
@@ -87,7 +87,7 @@ pub async fn desactivar_usuario(
     state: State<'_, AppState>,
     id_usuario: String,
 ) -> Result<Usuario, AppError> {
-    access_control::desactivar_usuario(&state, window.label(), &id_usuario).await
+    handlers::desactivar_usuario(&state, window.label(), &id_usuario).await
 }
 
 #[tauri::command]
@@ -96,5 +96,5 @@ pub async fn reactivar_usuario(
     state: State<'_, AppState>,
     id_usuario: String,
 ) -> Result<Usuario, AppError> {
-    access_control::reactivar_usuario(&state, window.label(), &id_usuario).await
+    handlers::reactivar_usuario(&state, window.label(), &id_usuario).await
 }

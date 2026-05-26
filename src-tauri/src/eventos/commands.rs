@@ -1,7 +1,7 @@
 use tauri::{State, Window};
 
+use super::handlers;
 use crate::eventos::models::{CreateEventoRequest, EventoAcademico, UpdateEventoRequest};
-use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 
@@ -11,7 +11,7 @@ pub async fn crear_evento(
     state: State<'_, AppState>,
     request: CreateEventoRequest,
 ) -> Result<EventoAcademico, AppError> {
-    access_control::crear_evento(&state, window.label(), request).await
+    handlers::crear_evento(&state, window.label(), request).await
 }
 
 #[tauri::command]
@@ -19,7 +19,7 @@ pub async fn get_all_eventos(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<EventoAcademico>, AppError> {
-    access_control::get_all_eventos(&state, window.label()).await
+    handlers::get_all_eventos(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -28,7 +28,7 @@ pub async fn get_evento_by_id(
     state: State<'_, AppState>,
     id: String,
 ) -> Result<EventoAcademico, AppError> {
-    access_control::get_evento_by_id(&state, window.label(), &id).await
+    handlers::get_evento_by_id(&state, window.label(), &id).await
 }
 
 #[tauri::command]
@@ -37,7 +37,7 @@ pub async fn get_eventos_by_docente(
     state: State<'_, AppState>,
     docente_id: String,
 ) -> Result<Vec<EventoAcademico>, AppError> {
-    access_control::get_eventos_by_docente(&state, window.label(), &docente_id).await
+    handlers::get_eventos_by_docente(&state, window.label(), &docente_id).await
 }
 
 #[tauri::command]
@@ -47,7 +47,7 @@ pub async fn actualizar_evento(
     id: String,
     request: UpdateEventoRequest,
 ) -> Result<EventoAcademico, AppError> {
-    access_control::actualizar_evento(&state, window.label(), &id, request).await
+    handlers::actualizar_evento(&state, window.label(), &id, request).await
 }
 
 #[tauri::command]
@@ -56,7 +56,7 @@ pub async fn eliminar_evento(
     state: State<'_, AppState>,
     id: String,
 ) -> Result<(), AppError> {
-    access_control::eliminar_evento(&state, window.label(), &id).await
+    handlers::eliminar_evento(&state, window.label(), &id).await
 }
 
 #[tauri::command]
@@ -65,5 +65,5 @@ pub async fn reactivar_evento(
     state: State<'_, AppState>,
     id: String,
 ) -> Result<EventoAcademico, AppError> {
-    access_control::reactivar_evento(&state, window.label(), &id).await
+    handlers::reactivar_evento(&state, window.label(), &id).await
 }

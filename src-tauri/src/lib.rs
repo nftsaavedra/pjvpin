@@ -48,7 +48,15 @@ pub fn run() {
                 })
                 .join("pjvpin.config.json");
 
-            let runtime_config = load_runtime_config(&user_config_path)?;
+            let project_env_path = std::env::current_dir()
+                .ok()
+                .map(|dir| dir.join(".env"))
+                .filter(|path| path.exists());
+
+            let runtime_config = load_runtime_config(
+                &user_config_path,
+                project_env_path.as_deref(),
+            )?;
 
             if let Err(error) = validate_database_config(&runtime_config.database) {
                 let error_msg = format!(

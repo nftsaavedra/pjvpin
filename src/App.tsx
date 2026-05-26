@@ -1,24 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  FileSpreadsheet,
-  FolderOpen,
-  GraduationCap,
-  LayoutDashboard,
-  LogOut,
-  Settings2,
-  Users,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { AppIcon } from "./shared/ui/AppIcon";
 import { type Usuario } from "./features/auth/api";
-import { SkeletonBlock } from "./shared/ui/Skeleton";
 import { ToastContainer } from "./shared/feedback/ToastContainer";
 import { TabNavigation, type Tab } from "./shared/navigation/TabNavigation";
-import { getRoleLabel, hasPermission } from "./shared/auth/permissions";
+import { getRoleLabel, hasPermission, type AppPermission } from "./shared/auth/permissions";
 import { AuthShell } from "./app/AuthShell";
 import { TabRenderers } from "./app/TabRenderers";
+import { AppLoadingScreen } from "./app/components/AppLoadingScreen";
+import { TAB_DEFINITIONS, TAB_HEADER_META } from "./app/tabDefinitions";
 import { useAuth } from "./app/hooks/useAuth";
 import { useAutoRefresh } from "./app/hooks/useAutoRefresh";
 import { WizardScreen } from "./features/wizard";
@@ -83,96 +73,17 @@ function App() {
   const currentRole = currentUser?.rol ?? null;
 
   const tabs: Tab[] = useMemo(
-    () => [
-      ...(hasPermission(currentRole, "dashboard.view")
-        ? [
-            {
-              id: "dashboard",
-              label: "Dashboard",
-              icon: LayoutDashboard,
-              description: "Indicadores clave",
-            },
-          ]
-        : []),
-      ...(hasPermission(currentRole, "proyectos.view")
-        ? [
-            {
-              id: "proyectos",
-              label: "Proyectos",
-              icon: FolderOpen,
-              description: "Alta y seguimiento",
-            },
-          ]
-        : []),
-      ...(hasPermission(currentRole, "docentes.view")
-        ? [
-            {
-              id: "docentes",
-              label: "Docentes",
-              icon: GraduationCap,
-              description: "Registro y estado",
-            },
-          ]
-        : []),
-      ...(hasPermission(currentRole, "grupos.view")
-        ? [{ id: "grupos", label: "Grupos", icon: Users, description: "Investigación coordinada" }]
-        : []),
-      ...(hasPermission(currentRole, "reportes.view")
-        ? [
-            {
-              id: "reportes",
-              label: "Reportes",
-              icon: FileSpreadsheet,
-              description: "Vista previa y exportación",
-            },
-          ]
-        : []),
-      ...(hasPermission(currentRole, "configuracion.view")
-        ? [
-            {
-              id: "configuracion",
-              label: "Configuración",
-              icon: Settings2,
-              description: "Accesos y catálogos",
-            },
-          ]
-        : []),
-    ],
+    () =>
+      TAB_DEFINITIONS.filter((def) =>
+        hasPermission(currentRole, def.permission as AppPermission),
+      ).map((def) => ({
+        id: def.id,
+        label: def.label,
+        icon: def.icon,
+        description: def.description,
+      })),
     [currentRole],
   );
-
-  const tabHeaderMeta: Record<string, { kicker: string; title: string; subtitle: string }> = {
-    dashboard: {
-      kicker: "Indicadores clave",
-      title: "Dashboard",
-      subtitle: "Carga docente y proyectos en una sola vista.",
-    },
-    proyectos: {
-      kicker: "Gestión operativa",
-      title: "Proyectos",
-      subtitle: "Alta, asignación y seguimiento de proyectos.",
-    },
-    docentes: {
-      kicker: "Gestión operativa",
-      title: "Docentes",
-      subtitle: "Registro, estado y trazabilidad docente.",
-    },
-    grupos: {
-      kicker: "Investigación",
-      title: "Grupos de Investigación",
-      subtitle: "Coordinación y líneas de investigación.",
-    },
-    reportes: {
-      kicker: "Análisis y salida",
-      title: "Reportes",
-      subtitle: "Vista previa, filtros y exportación.",
-    },
-    configuracion: {
-      kicker: "Administración base",
-      title: "Configuración",
-      subtitle: "Accesos y catálogos del sistema.",
-    },
-  };
 
   const validActiveTab =
     !currentUser || tabs.length === 0 || tabs.some((tab) => tab.id === activeTab)
@@ -180,7 +91,7 @@ function App() {
       : tabs[0].id;
 
   const activeTabMeta = tabs.find((tab) => tab.id === validActiveTab) ?? tabs[0];
-  const activeHeaderMeta = tabHeaderMeta[activeTabMeta.id] ?? tabHeaderMeta.dashboard;
+  const activeHeaderMeta = TAB_HEADER_META[activeTabMeta.id] ?? TAB_HEADER_META.dashboard;
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed((prev) => {
@@ -192,37 +103,10 @@ function App() {
 
   if (checkingWizard) {
     return (
-      <div className="app-container">
-        <header className="app-header">
-          <div className="header-content">
-            <div>
-              <h1 className="app-title title-with-icon">
-                <AppIcon icon={BookOpen} size={24} />
-                <span>UPI Research</span>
-              </h1>
-              <p className="app-subtitle">Verificando configuracion del sistema</p>
-            </div>
-          </div>
-        </header>
-        <main className="main-content auth-main">
-          <div className="auth-shell">
-            <div className="auth-card auth-card-loading" aria-hidden="true">
-              <div className="auth-card-header">
-                <SkeletonBlock className="skeleton skeleton-line skeleton-title-md" />
-                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
-              </div>
-              <div className="form auth-loading-form">
-                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
-                <SkeletonBlock className="skeleton skeleton-input" />
-                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
-                <SkeletonBlock className="skeleton skeleton-input" />
-                <SkeletonBlock className="skeleton skeleton-button" />
-              </div>
-            </div>
-          </div>
-        </main>
+      <>
+        <AppLoadingScreen subtitle="Verificando configuracion del sistema" />
         <ToastContainer />
-      </div>
+      </>
     );
   }
 
@@ -237,37 +121,10 @@ function App() {
 
   if (authLoading) {
     return (
-      <div className="app-container">
-        <header className="app-header">
-          <div className="header-content">
-            <div>
-              <h1 className="app-title title-with-icon">
-                <AppIcon icon={BookOpen} size={24} />
-                <span>UPI Research</span>
-              </h1>
-              <p className="app-subtitle">Verificando acceso al sistema</p>
-            </div>
-          </div>
-        </header>
-        <main className="main-content auth-main">
-          <div className="auth-shell">
-            <div className="auth-card auth-card-loading" aria-hidden="true">
-              <div className="auth-card-header">
-                <SkeletonBlock className="skeleton skeleton-line skeleton-title-md" />
-                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
-              </div>
-              <div className="form auth-loading-form">
-                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
-                <SkeletonBlock className="skeleton skeleton-input" />
-                <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
-                <SkeletonBlock className="skeleton skeleton-input" />
-                <SkeletonBlock className="skeleton skeleton-button" />
-              </div>
-            </div>
-          </div>
-        </main>
+      <>
+        <AppLoadingScreen subtitle="Verificando acceso al sistema" />
         <ToastContainer />
-      </div>
+      </>
     );
   }
 

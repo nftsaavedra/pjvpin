@@ -5,6 +5,9 @@ use crate::proyectos::models::{
     ProyectosTrendItem, RenacytDistribucionItem, UpdateProyectoConParticipantesRequest,
 };
 use crate::proyectos::repository;
+use crate::proyectos::repository_export;
+use crate::proyectos::repository_queries;
+use crate::proyectos::repository_stats;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 
@@ -72,12 +75,12 @@ pub async fn find_by_docente(
     id_docente: &str,
 ) -> Result<Vec<Proyecto>, AppError> {
     let db = state.mongo_db()?;
-    repository::buscar_proyectos_por_docente(db, id_docente).await
+    repository_queries::buscar_proyectos_por_docente(db, id_docente).await
 }
 
 pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalle>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_all_proyectos_detalle(db, None).await
+    repository_queries::get_all_proyectos_detalle(db, None).await
 }
 
 pub async fn get_all_detalle_for_responsable(
@@ -85,7 +88,7 @@ pub async fn get_all_detalle_for_responsable(
     responsable_id: &str,
 ) -> Result<Vec<ProyectoDetalle>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_all_proyectos_detalle(db, Some(responsable_id)).await
+    repository_queries::get_all_proyectos_detalle(db, Some(responsable_id)).await
 }
 
 pub async fn delete_relation(
@@ -119,62 +122,62 @@ pub async fn get_estadisticas_x_docente(
     state: &AppState,
 ) -> Result<Vec<DocenteProyectosCount>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_estadisticas_proyectos_x_docente(db).await
+    repository_stats::get_estadisticas_proyectos_x_docente(db).await
 }
 
 pub async fn get_kpis(state: &AppState) -> Result<KpisDashboard, AppError> {
     let db = state.mongo_db()?;
-    repository::get_kpis_dashboard(db).await
+    repository_stats::get_kpis_dashboard(db).await
 }
 
 pub async fn get_exportacion_plana(state: &AppState) -> Result<Vec<ExportData>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_data_exportacion_plana(db).await
+    repository_export::get_data_exportacion_plana(db).await
 }
 
 pub async fn get_exportacion_agrupada(
     state: &AppState,
 ) -> Result<Vec<ExportDataConProjectos>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_data_exportacion_agrupada_docente(db).await
+    repository_export::get_data_exportacion_agrupada_docente(db).await
 }
 
 pub async fn get_exportacion_grupos(state: &AppState) -> Result<Vec<ExportDataGrupo>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_data_exportacion_grupos(db).await
+    repository_export::get_data_exportacion_grupos(db).await
 }
 
 pub async fn get_exportacion_recursos(
     state: &AppState,
 ) -> Result<Vec<ExportDataRecurso>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_data_exportacion_recursos(db).await
+    repository_export::get_data_exportacion_recursos(db).await
 }
 
 pub async fn get_exportacion_docentes_perfil(
     state: &AppState,
 ) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_data_exportacion_docentes_perfil(db).await
+    repository_export::get_data_exportacion_docentes_perfil(db).await
 }
 
 pub async fn get_exportacion_proyectos_area(
     state: &AppState,
 ) -> Result<Vec<ExportDataProyectoArea>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_data_exportacion_proyectos_area(db).await
+    repository_export::get_data_exportacion_proyectos_area(db).await
 }
 
 pub async fn get_proyectos_trend(state: &AppState) -> Result<Vec<ProyectosTrendItem>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_proyectos_trend(db).await
+    repository_stats::get_proyectos_trend(db).await
 }
 
 pub async fn get_renacyt_distribucion(
     state: &AppState,
 ) -> Result<Vec<RenacytDistribucionItem>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_renacyt_distribucion(db).await
+    repository_stats::get_renacyt_distribucion(db).await
 }
 
 fn normalize_docente_ids(docentes_ids: &[String]) -> Result<Vec<String>, AppError> {

@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    pjupi_lib::run()
+    pjvpin_lib::run()
 }

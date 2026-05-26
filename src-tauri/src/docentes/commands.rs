@@ -1,11 +1,11 @@
 use tauri::{State, Window};
 
+use super::handlers;
 use crate::docentes::models::{
     CreateDocenteRequest, Docente, DocenteDetalle, EliminarDocenteResultado,
     RefreshDocenteRenacytFormacionResultado, RenacytLookupResult, ReniecDniLookupResult,
     UpdateDocenteRequest,
 };
-use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::external::renacyt_client;
 use crate::shared::external::reniec_client;
@@ -18,7 +18,7 @@ pub async fn crear_docente(
     state: State<'_, AppState>,
     request: CreateDocenteRequest,
 ) -> Result<Docente, AppError> {
-    access_control::crear_docente(&state, window.label(), request).await
+    handlers::crear_docente(&state, window.label(), request).await
 }
 
 #[tauri::command]
@@ -26,7 +26,7 @@ pub async fn get_all_docentes(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<Docente>, AppError> {
-    access_control::get_all_docentes(&state, window.label()).await
+    handlers::get_all_docentes(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -36,7 +36,7 @@ pub async fn get_all_docentes_paginated(
     page: u32,
     limit: u32,
 ) -> Result<PaginatedResult<Docente>, AppError> {
-    access_control::get_all_docentes_paginated(&state, window.label(), page, limit).await
+    handlers::get_all_docentes_paginated(&state, window.label(), page, limit).await
 }
 
 #[tauri::command]
@@ -45,7 +45,7 @@ pub async fn buscar_docente_por_dni(
     state: State<'_, AppState>,
     dni: String,
 ) -> Result<Option<Docente>, AppError> {
-    access_control::buscar_docente_por_dni(&state, window.label(), &dni).await
+    handlers::buscar_docente_por_dni(&state, window.label(), &dni).await
 }
 
 // NEW: Get docentes with project details
@@ -54,7 +54,7 @@ pub async fn get_all_docentes_con_proyectos(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<DocenteDetalle>, AppError> {
-    access_control::get_all_docentes_con_proyectos(&state, window.label()).await
+    handlers::get_all_docentes_con_proyectos(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -63,7 +63,7 @@ pub async fn eliminar_docente(
     state: State<'_, AppState>,
     id_docente: String,
 ) -> Result<EliminarDocenteResultado, AppError> {
-    access_control::eliminar_docente(&state, window.label(), &id_docente).await
+    handlers::eliminar_docente(&state, window.label(), &id_docente).await
 }
 
 #[tauri::command]
@@ -72,7 +72,7 @@ pub async fn reactivar_docente(
     state: State<'_, AppState>,
     id_docente: String,
 ) -> Result<Docente, AppError> {
-    access_control::reactivar_docente(&state, window.label(), &id_docente).await
+    handlers::reactivar_docente(&state, window.label(), &id_docente).await
 }
 
 #[tauri::command]
@@ -82,7 +82,7 @@ pub async fn actualizar_docente(
     id_docente: String,
     request: UpdateDocenteRequest,
 ) -> Result<Docente, AppError> {
-    access_control::actualizar_docente(&state, window.label(), &id_docente, request).await
+    handlers::actualizar_docente(&state, window.label(), &id_docente, request).await
 }
 
 #[tauri::command]
@@ -91,7 +91,7 @@ pub async fn consultar_dni_reniec(
     state: State<'_, AppState>,
     numero: String,
 ) -> Result<ReniecDniLookupResult, AppError> {
-    access_control::require_docentes_manage_permission(&state, window.label()).await?;
+    crate::shared::rbac::require_docentes_manage_permission(&state, window.label()).await?;
     reniec_client::consultar_dni(state.reniec_config(), &numero).await
 }
 
@@ -101,7 +101,7 @@ pub async fn consultar_renacyt_docente(
     state: State<'_, AppState>,
     codigo_o_id: String,
 ) -> Result<RenacytLookupResult, AppError> {
-    access_control::require_docentes_manage_permission(&state, window.label()).await?;
+    crate::shared::rbac::require_docentes_manage_permission(&state, window.label()).await?;
     renacyt_client::consultar_investigador(state.renacyt_config(), &codigo_o_id).await
 }
 
@@ -111,10 +111,6 @@ pub async fn refrescar_formacion_academica_renacyt_docente(
     state: State<'_, AppState>,
     id_docente: String,
 ) -> Result<RefreshDocenteRenacytFormacionResultado, AppError> {
-    access_control::refrescar_formacion_academica_renacyt_docente(
-        &state,
-        window.label(),
-        &id_docente,
-    )
-    .await
+    handlers::refrescar_formacion_academica_renacyt_docente(&state, window.label(), &id_docente)
+        .await
 }

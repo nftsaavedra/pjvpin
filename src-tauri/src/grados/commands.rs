@@ -1,5 +1,5 @@
+use super::handlers;
 use crate::grados::models::{CreateGradoRequest, EliminarGradoResultado, GradoAcademico};
-use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 use tauri::{State, Window};
@@ -9,7 +9,7 @@ pub async fn get_all_grados(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<GradoAcademico>, AppError> {
-    access_control::get_all_grados(&state, window.label()).await
+    handlers::get_all_grados(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -19,7 +19,7 @@ pub async fn get_all_grados_paginated(
     page: u32,
     limit: u32,
 ) -> Result<crate::shared::pagination::PaginatedResult<GradoAcademico>, AppError> {
-    access_control::get_all_grados_paginated(&state, window.label(), page, limit).await
+    handlers::get_all_grados_paginated(&state, window.label(), page, limit).await
 }
 
 #[tauri::command]
@@ -28,7 +28,7 @@ pub async fn crear_grado(
     state: State<'_, AppState>,
     request: CreateGradoRequest,
 ) -> Result<GradoAcademico, AppError> {
-    access_control::crear_grado(&state, window.label(), request).await
+    handlers::crear_grado(&state, window.label(), request).await
 }
 
 #[tauri::command]
@@ -38,7 +38,7 @@ pub async fn actualizar_grado(
     id_grado: String,
     request: CreateGradoRequest,
 ) -> Result<GradoAcademico, AppError> {
-    access_control::actualizar_grado(&state, window.label(), &id_grado, request).await
+    handlers::actualizar_grado(&state, window.label(), &id_grado, request).await
 }
 
 #[tauri::command]
@@ -47,7 +47,7 @@ pub async fn eliminar_grado(
     state: State<'_, AppState>,
     id_grado: String,
 ) -> Result<EliminarGradoResultado, AppError> {
-    access_control::eliminar_grado(&state, window.label(), &id_grado).await
+    handlers::eliminar_grado(&state, window.label(), &id_grado).await
 }
 
 #[tauri::command]
@@ -56,5 +56,5 @@ pub async fn reactivar_grado(
     state: State<'_, AppState>,
     id_grado: String,
 ) -> Result<GradoAcademico, AppError> {
-    access_control::reactivar_grado(&state, window.label(), &id_grado).await
+    handlers::reactivar_grado(&state, window.label(), &id_grado).await
 }

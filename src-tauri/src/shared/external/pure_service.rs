@@ -89,7 +89,7 @@ pub async fn sync_publicaciones(
     }
 
     Ok(SyncPublicacionesResult {
-        docente_id: docente_id.to_string(),
+        persona_id: docente_id.to_string(),
         scopus_author_id: scopus_author_id.to_string(),
         pure_person_uuid,
         total_encontradas,

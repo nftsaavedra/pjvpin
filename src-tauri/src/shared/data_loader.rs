@@ -7,6 +7,7 @@ use crate::catalogos::models::CatalogoItem;
 use crate::docentes::models::Docente;
 use crate::grados::models::GradoAcademico;
 use crate::grupos::models::GrupoInvestigacion;
+use crate::personas::models::Persona;
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::shared::error::AppError;
 
@@ -57,6 +58,19 @@ pub async fn load_docentes_map(db: &Database) -> Result<HashMap<String, Docente>
     Ok(docentes
         .into_iter()
         .map(|docente| (docente.id_docente.clone(), docente))
+        .collect())
+}
+
+pub async fn load_personas_map(db: &Database) -> Result<HashMap<String, Persona>, AppError> {
+    let personas = db
+        .collection::<Persona>("personas")
+        .find(doc! {})
+        .await?
+        .try_collect::<Vec<_>>()
+        .await?;
+    Ok(personas
+        .into_iter()
+        .map(|p| (p.id_persona.clone(), p))
         .collect())
 }
 
