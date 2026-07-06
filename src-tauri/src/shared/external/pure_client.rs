@@ -1,6 +1,6 @@
 /// Cliente HTTP para la API REST de Pure (Elsevier).
 ///
-/// Autenticación: header `api-key` con clave configurada en `PJUPI_PURE_API_KEY`.
+/// Autenticación: header `api-key` con clave configurada en `PJVPIN_PURE_API_KEY`.
 /// Endpoint principal: POST /research-outputs/search (paginado por size/offset).
 /// Endpoint de personas: POST /persons/search (resolución de UUID de persona por Scopus Author ID).
 use serde::{Deserialize, Serialize};
@@ -158,7 +158,7 @@ pub async fn resolve_person_uuid(
 ) -> Result<Option<String>, AppError> {
     let api_key = config.api_key.as_deref().ok_or_else(|| {
         AppError::ConfigurationError(
-            "No se encontró la API key de Pure. Configure PJUPI_PURE_API_KEY (o PURE_API_KEY) en .env (desarrollo) o en pjupi.env (producción).".to_string(),
+            "No se encontró la API key de Pure. Configure PJVPIN_PURE_API_KEY (o PURE_API_KEY) en .env (desarrollo) o en pjvpin.env (producción).".to_string(),
         )
     })?;
 
@@ -223,7 +223,7 @@ pub async fn fetch_research_outputs_by_scopus_id(
 ) -> Result<Vec<FetchedPublication>, AppError> {
     let api_key = config.api_key.as_deref().ok_or_else(|| {
         AppError::ConfigurationError(
-            "No se encontró la API key de Pure. Configure PJUPI_PURE_API_KEY (o PURE_API_KEY) en .env (desarrollo) o en pjupi.env (producción).".to_string(),
+            "No se encontró la API key de Pure. Configure PJVPIN_PURE_API_KEY (o PURE_API_KEY) en .env (desarrollo) o en pjvpin.env (producción).".to_string(),
         )
     })?;
 
@@ -266,7 +266,7 @@ pub async fn fetch_research_outputs_by_scopus_id(
                 return Err(AppError::ConfigurationError(
                     "La API key de Pure no tiene permiso para acceder a /research-outputs. \
                     El administrador del servidor Pure debe habilitar el rol 'Research outputs' \
-                    para la API key configurada en PJUPI_PURE_API_KEY."
+                    para la API key configurada en PJVPIN_PURE_API_KEY."
                         .to_string(),
                 ));
             }

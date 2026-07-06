@@ -65,7 +65,7 @@ export const StepSummary: React.FC<Props> = ({ request, usuario, onDone }) => {
             <div className="flex items-baseline justify-between gap-3 py-1.5 text-sm">
               <span className="text-text-secondary shrink-0">Base de datos</span>
               <code className="text-xs break-all text-right max-w-[28ch] text-text-primary">
-                {request.mongodbDb ?? "pjupi"}
+                {request.mongodbDb ?? "pjvpin"}
               </code>
             </div>
           </div>

@@ -30,9 +30,9 @@ fn resolve_config_dir() -> PathBuf {
         return PathBuf::from(dir);
     }
     if let Ok(appdata) = std::env::var("APPDATA") {
-        return PathBuf::from(appdata).join("com.upic.pjupi");
+        return PathBuf::from(appdata).join("com.vpin.pjvpin");
     }
-    std::env::temp_dir().join("com.upic.pjupi")
+    std::env::temp_dir().join("com.vpin.pjvpin")
 }
 
 pub fn get_config_path() -> PathBuf {

@@ -17,7 +17,7 @@ pub async fn consultar_dni(
 
     let token = config.token.as_ref().ok_or_else(|| {
         AppError::ConfigurationError(
-            "La integración RENIEC no está configurada. Defina PJUPI_RENIEC_TOKEN en .env (desarrollo) o en pjupi.env (producción).".to_string(),
+            "La integración RENIEC no está configurada. Defina PJVPIN_RENIEC_TOKEN en .env (desarrollo) o en pjvpin.env (producción).".to_string(),
         )
     })?;
 

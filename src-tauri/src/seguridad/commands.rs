@@ -15,7 +15,7 @@ pub async fn get_security_status(
 
     if !mongodb_configured {
         recommendations.push(
-            "⚠️ MongoDB no está disponible. Verifique la configuración de PJUPI_MONGODB_URI."
+            "⚠️ MongoDB no está disponible. Verifique la configuración de PJVPIN_MONGODB_URI."
                 .to_string(),
         );
     }
@@ -33,31 +33,31 @@ pub async fn get_setup_guide() -> Result<ConfigurationGuide, AppError> {
         ConfigurationStep {
             step_number: 1,
             title: "Crear archivo de configuración".to_string(),
-            description: "El archivo de configuración se encuentra en:\n- Windows: %APPDATA%/com.upic.pjupi/pjupi.config.json\n- macOS: ~/Library/Application Support/com.upic.pjupi/pjupi.config.json\n- Linux: ~/.local/share/com.upic.pjupi/pjupi.config.json".to_string(),
+            description: "El archivo de configuración se encuentra en:\n- Windows: %APPDATA%/com.vpin.pjvpin/pjvpin.config.json\n- macOS: ~/Library/Application Support/com.vpin.pjvpin/pjvpin.config.json\n- Linux: ~/.local/share/com.vpin.pjvpin/pjvpin.config.json".to_string(),
             example: Some("{\n  \"database\": {\n    \"mongodbUri\": \"mongodb://localhost:27017\",\n    \"mongodbDb\": \"pjvpin\"\n  }\n}".to_string()),
         },
         ConfigurationStep {
             step_number: 2,
             title: "Configurar base de datos".to_string(),
-            description: "MongoDB es el backend obligatorio en esta versión. Configure la URI y el nombre de la base en pjupi.config.json.".to_string(),
+            description: "MongoDB es el backend obligatorio en esta versión. Configure la URI y el nombre de la base en pjvpin.config.json.".to_string(),
             example: None,
         },
         ConfigurationStep {
             step_number: 3,
             title: "Configurar API externos (opcional)".to_string(),
-            description: "Agregue credenciales externas según funcionalidades usadas:\nPJUPI_RENIEC_TOKEN=su_token_aqui\nPJUPI_PURE_API_KEY=su_api_key_pure".to_string(),
+            description: "Agregue credenciales externas según funcionalidades usadas:\nPJVPIN_RENIEC_TOKEN=su_token_aqui\nPJVPIN_PURE_API_KEY=su_api_key_pure".to_string(),
             example: None,
         },
         ConfigurationStep {
             step_number: 4,
             title: "Reiniciar la aplicación".to_string(),
-            description: "Los cambios se aplicarán al reiniciar PJUPI.".to_string(),
+            description: "Los cambios se aplicarán al reiniciar PJVPI.".to_string(),
             example: None,
         },
     ];
 
     Ok(ConfigurationGuide {
-        title: "Guía de Configuración de PJUPI".to_string(),
+        title: "Guía de Configuración de PJVPI".to_string(),
         steps,
     })
 }
@@ -68,13 +68,13 @@ pub async fn get_security_recommendations() -> Result<SecurityRecommendations, A
         SecurityRecommendation {
             category: "Configuración".to_string(),
             title: "Proteger archivo de configuración".to_string(),
-            description: "El archivo pjupi.config.json contiene credenciales sensibles. Asegúrese de que solo el usuario actual pueda acceder.\nEn Linux/macOS: chmod 600 ~/.local/share/com.upic.pjupi/pjupi.config.json".to_string(),
+            description: "El archivo pjvpin.config.json contiene credenciales sensibles. Asegúrese de que solo el usuario actual pueda acceder.\nEn Linux/macOS: chmod 600 ~/.local/share/com.vpin.pjvpin/pjvpin.config.json".to_string(),
             priority: "high".to_string(),
         },
         SecurityRecommendation {
             category: "MongoDB".to_string(),
             title: "Usar conexión segura (SSL/TLS)".to_string(),
-            description: "Para MongoDB en producción, use mongodb+srv:// con SSL/TLS habilitado:\nmongodb+srv://usuario:contraseña@cluster.mongodb.net/pjupi".to_string(),
+            description: "Para MongoDB en producción, use mongodb+srv:// con SSL/TLS habilitado:\nmongodb+srv://usuario:contraseña@cluster.mongodb.net/pjvpin".to_string(),
             priority: "high".to_string(),
         },
         SecurityRecommendation {

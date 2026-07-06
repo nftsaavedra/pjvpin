@@ -1,5 +1,5 @@
 ﻿---
-name: PJUPI
+name: PJVPI
 colors:
   primary: "#3b82f6"
   primary-dark: "#1e40af"
@@ -258,7 +258,7 @@ mediaQueries:
 
 ## Overview
 
-PJUPI is a Tauri v2 + React desktop application for university research management
+PJVPI is a Tauri v2 + React desktop application for university research management
 (UNF/UPIC). The design system is implemented in a single CSS file
 (`src/App.css`, 4118 lines) using CSS custom properties on `:root` plus component
 classes. No CSS-in-JS, no preprocessor -- all styles are vanilla CSS with one level
@@ -960,7 +960,7 @@ several components have their own transition overrides:
 
 ## Notes
 
-- This DESIGN.md reflects the **current state** (v0.1.0) of PJUPI's CSS.
+- This DESIGN.md reflects the **current state** (v0.1.0) of PJVPI's CSS.
   All token values come directly from `src/App.css` (4118 lines).
 - The project uses a single CSS file with no preprocessor, no CSS modules,
   and no CSS-in-JS. All styles are vanilla CSS.

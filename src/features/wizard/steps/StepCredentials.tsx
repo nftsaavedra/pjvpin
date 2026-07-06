@@ -26,7 +26,7 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
             Credenciales de servicios
           </h2>
           <p className="text-sm leading-6 max-w-[44ch] mx-auto text-text-secondary">
-            Configure los servicios que PJUPI necesita para funcionar. Los servicios marcados con *
+            Configure los servicios que PJVPI necesita para funcionar. Los servicios marcados con *
             son obligatorios.
           </p>
         </div>

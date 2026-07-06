@@ -1,4 +1,4 @@
-# PJUPI
+# PJVPI
 
 Aplicación de escritorio para gestión de grados académicos, docentes y proyectos de investigación. Construida con Tauri v2, React y TypeScript, con backend en Rust.
 
@@ -10,25 +10,25 @@ Aplicación de escritorio para gestión de grados académicos, docentes y proyec
 
 ## Configuración
 
-En desarrollo use `.env` en la raíz. En producción, edite `%APPDATA%\com.upic.pjupi\pjupi.env`.
+En desarrollo use `.env` en la raíz. En producción, edite `%APPDATA%\com.vpin.pjvpin\pjvpin.env`.
 
 ```env
-PJUPI_MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/?appName=pjupi
-PJUPI_MONGODB_DB=pjupi
-PJUPI_RENIEC_API_BASE_URL=https://api.decolecta.com/v1
-PJUPI_RENIEC_TOKEN=<token_opcional>
-PJUPI_PURE_API_BASE_URL=https://pure.unf.edu.pe/ws/api
-PJUPI_PURE_API_KEY=<tu_api_key_pure>
+PJVPIN_MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/?appName=pjvpin
+PJVPIN_MONGODB_DB=pjvpin
+PJVPIN_RENIEC_API_BASE_URL=https://api.decolecta.com/v1
+PJVPIN_RENIEC_TOKEN=<token_opcional>
+PJVPIN_PURE_API_BASE_URL=https://pure.unf.edu.pe/ws/api
+PJVPIN_PURE_API_KEY=<tu_api_key_pure>
 ```
 
 | Variable | Descripción | Requerida |
 |----------|-------------|-----------|
-| `PJUPI_MONGODB_URI` | URI de conexión a MongoDB | Sí |
-| `PJUPI_MONGODB_DB` | Nombre de la base de datos | No (default: `pjupi`) |
-| `PJUPI_PURE_API_BASE_URL` | URL base API de Pure | No (default: `https://pure.unf.edu.pe/ws/api`) |
-| `PJUPI_PURE_API_KEY` | API key para sincronización con Pure | Sí (solo para sync Pure) |
-| `PJUPI_RENIEC_API_BASE_URL` | URL base API RENIEC | No (default: `https://api.decolecta.com/v1`) |
-| `PJUPI_RENIEC_TOKEN` | Token API para consulta de DNI | No |
+| `PJVPIN_MONGODB_URI` | URI de conexión a MongoDB | Sí |
+| `PJVPIN_MONGODB_DB` | Nombre de la base de datos | No (default: `pjvpin`) |
+| `PJVPIN_PURE_API_BASE_URL` | URL base API de Pure | No (default: `https://pure.unf.edu.pe/ws/api`) |
+| `PJVPIN_PURE_API_KEY` | API key para sincronización con Pure | Sí (solo para sync Pure) |
+| `PJVPIN_RENIEC_API_BASE_URL` | URL base API RENIEC | No (default: `https://api.decolecta.com/v1`) |
+| `PJVPIN_RENIEC_TOKEN` | Token API para consulta de DNI | No |
 
 ## Desarrollo
 

@@ -1,14 +1,14 @@
-# PJUPI — Agentes de Desarrollo
+# PJVPI — Agentes de Desarrollo
 
 ## Identidad del Proyecto
 
 Sistema de escritorio para gestión de investigación universitaria (docentes, proyectos, grados
 académicos, grupos de investigación, reportes). Construido con Tauri v2 + React + Rust.
 
-- **Nombre**: PJUPI (UPIC/UNF)
+- **Nombre**: PJVPI (VPIN/UNF)
 - **Tipo**: Desktop app (Windows)
 - **Versión**: 0.1.0 — etapa de construcción/consolidación
-- **Identificador**: `com.upic.pjupi`
+- **Identificador**: `com.vpin.pjvpin`
 
 ---
 
@@ -35,7 +35,7 @@ académicos, grupos de investigación, reportes). Construido con Tauri v2 + Reac
 ## Estructura del Proyecto (Screaming Architecture)
 
 ```
-pjupi/
+pjvpin/
 ├── src/                          # Frontend React
 │   ├── features/                 # Módulos de dominio (vertical slicing)
 │   │   ├── auth/                 #   Login / primer arranque

@@ -1,8 +1,8 @@
-import { dirname, join } from '@tauri-apps/api/path';
-import { save } from '@tauri-apps/plugin-dialog';
-import { writeExportFile } from '@/services/tauri/files';
+import { dirname, join } from "@tauri-apps/api/path";
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeExportFile } from "@/services/tauri/files";
 
-const LAST_EXPORT_DIRECTORY_KEY = 'pjupi.exports.lastDirectory';
+const LAST_EXPORT_DIRECTORY_KEY = "pjvpin.exports.lastDirectory";
 
 interface SaveDesktopFileOptions {
   suggestedName: string;
@@ -15,11 +15,11 @@ interface SaveDesktopFileOptions {
 }
 
 const isTauriRuntime = () => {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 };
 
 const getStoredDirectory = () => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
@@ -27,7 +27,7 @@ const getStoredDirectory = () => {
 };
 
 const setStoredDirectory = (directory: string) => {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -49,10 +49,13 @@ const getDefaultPath = async (suggestedName: string) => {
 };
 
 const downloadInBrowser = ({ suggestedName, bytes, mimeType }: SaveDesktopFileOptions) => {
-  const arrayBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+  const arrayBuffer = bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  ) as ArrayBuffer;
   const blob = new Blob([arrayBuffer], { type: mimeType });
   const objectUrl = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
+  const anchor = document.createElement("a");
   anchor.href = objectUrl;
   anchor.download = suggestedName;
   anchor.click();
