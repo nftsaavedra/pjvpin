@@ -1,29 +1,35 @@
-import { invoke } from './client';
-import type { AuthStatus, Usuario } from './types';
+import { invoke } from "./client";
+import type { AuthStatus, Usuario } from "./types";
 
 export const getAuthStatus = async (): Promise<AuthStatus> => {
-  return await invoke('get_auth_status');
+  return await invoke("get_auth_status");
 };
 
 export const getCurrentSession = async (): Promise<Usuario | null> => {
-  return await invoke('get_current_session');
+  return await invoke("get_current_session");
 };
+
+export interface RegistrarPrimerUsuarioArgs {
+  username: string;
+  password: string;
+  dni: string;
+  nombres?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
+  mongodbUri?: string;
+  mongodbDb?: string;
+}
 
 export const registrarPrimerUsuario = async (
-  username: string,
-  nombre_completo: string,
-  password: string,
+  args: RegistrarPrimerUsuarioArgs,
 ): Promise<Usuario> => {
-  return await invoke('registrar_primer_usuario', { request: { username, nombre_completo, password } });
+  return await invoke("registrar_primer_usuario", { request: args });
 };
 
-export const loginUsuario = async (
-  username: string,
-  password: string,
-): Promise<Usuario> => {
-  return await invoke('login_usuario', { request: { username, password } });
+export const loginUsuario = async (username: string, password: string): Promise<Usuario> => {
+  return await invoke("login_usuario", { request: { username, password } });
 };
 
 export const logoutUsuario = async (): Promise<void> => {
-  await invoke('logout_usuario');
+  await invoke("logout_usuario");
 };

@@ -1,5 +1,5 @@
-import React, { useId } from 'react';
-import { FieldHelpTooltip } from './FieldHelpTooltip';
+import React, { useId } from "react";
+import { FieldHelpTooltip } from "./FieldHelpTooltip";
 
 interface FormSelectProps {
   label: string;
@@ -18,7 +18,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   value,
   onChange,
   options,
-  placeholder = '-- Seleccionar --',
+  placeholder = "-- Seleccionar --",
   required = false,
   help,
   disabled = false,
@@ -28,18 +28,20 @@ export const FormSelect: React.FC<FormSelectProps> = ({
   const helpId = help ? `${selectId}-help` : undefined;
 
   return (
-    <div className={containerClassName ? `form-group ${containerClassName}` : 'form-group'}>
+    <div className={containerClassName ? `form-group ${containerClassName}` : "form-group"}>
       <div className="form-label-row">
         <label htmlFor={selectId} className="form-label-text">
           {label}
-          {required && ' *'}
+          {required && " *"}
         </label>
         {help && <FieldHelpTooltip content={help} label={`Ayuda para ${label}`} />}
       </div>
       <select
         id={selectId}
         value={value}
-        onChange={(e) => { onChange(e.target.value); }}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
         required={required}
         className="form-input"
         aria-describedby={helpId}
@@ -52,7 +54,11 @@ export const FormSelect: React.FC<FormSelectProps> = ({
           </option>
         ))}
       </select>
-      {help && <span id={helpId} className="visually-hidden">{help}</span>}
+      {help && (
+        <span id={helpId} className="sr-only">
+          {help}
+        </span>
+      )}
     </div>
   );
 };

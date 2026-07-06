@@ -2,6 +2,7 @@ export {
   actualizarCatalogo,
   actualizarGrado,
   actualizarUsuario,
+  consultarDniParaUsuario,
   crearCatalogo,
   crearGrado,
   crearUsuario,
@@ -15,8 +16,14 @@ export {
   reactivarCatalogo,
   reactivarGrado,
   reactivarUsuario,
-} from '@/services/tauri/configuracion';
+  type CrearUsuarioArgs,
+} from "@/services/tauri/configuracion";
 
-export { getTauriErrorMessage } from '@/services/tauri/error';
+export { getTauriErrorMessage } from "@/services/tauri/error";
 
-export type { CatalogoItem, EliminarCatalogoResultado, GradoAcademico, Usuario } from '@/services/tauri/types';
+export type {
+  CatalogoItem,
+  EliminarCatalogoResultado,
+  GradoAcademico,
+  Usuario,
+} from "@/services/tauri/types";

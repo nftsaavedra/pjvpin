@@ -1,14 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CheckCircle, Loader2, Wifi, XCircle } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { CheckCircle, Loader2, Minus, Wifi, XCircle } from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
 import {
   wizardTestMongo,
   wizardTestReniec,
   wizardTestRenacyt,
   wizardTestPure,
   type ConnectivityResult,
-} from '@/services/tauri/wizard';
-import type { WizardState } from '../useWizardState';
+} from "@/services/tauri/wizard";
+import { DEFAULT_PURE_API_BASE_URL } from "@/shared/config/defaults";
+import type { WizardState } from "../useWizardState";
 
 interface Props {
   state: WizardState;
@@ -17,7 +18,7 @@ interface Props {
   onBack: () => void;
 }
 
-type TestStatus = 'idle' | 'running' | 'ok' | 'fail';
+type TestStatus = "idle" | "running" | "ok" | "fail" | "skipped";
 
 interface TestEntry {
   label: string;
@@ -25,112 +26,168 @@ interface TestEntry {
   message: string;
 }
 
+const TEST_ROW: Record<TestStatus, string> = {
+  idle: "border-border bg-bg",
+  running: "border-blue-300 bg-blue-50",
+  ok: "border-green-300 bg-green-50",
+  fail: "border-red-300 bg-red-50",
+  skipped: "border-border bg-bg opacity-70",
+};
+
 export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, onBack }) => {
   const [tests, setTests] = useState<TestEntry[]>(() => [
-    { label: 'MongoDB', status: 'idle', message: '' },
-    { label: 'RENIEC', status: 'idle', message: '' },
-    { label: 'RENACYT', status: 'idle', message: '' },
-    { label: 'Pure', status: 'idle', message: '' },
+    { label: "MongoDB", status: "idle", message: "" },
+    { label: "RENIEC", status: "idle", message: "" },
+    { label: "RENACYT", status: "idle", message: "" },
+    { label: "Pure", status: "idle", message: "" },
   ]);
   const [allDone, setAllDone] = useState(false);
   const startedRef = useRef(false);
 
-  const updateTest = useCallback((label: string, result: ConnectivityResult) => {
-    setTests((prev) =>
-      prev.map((t) =>
-        t.label === label ? { ...t, status: result.success ? 'ok' : 'fail', message: result.message } : t,
-      ),
-    );
+  const setEntry = useCallback((label: string, status: TestStatus, message: string) => {
+    setTests((prev) => prev.map((t) => (t.label === label ? { ...t, status, message } : t)));
   }, []);
 
+  const applyResult = useCallback(
+    (label: string, result: ConnectivityResult) => {
+      setEntry(label, result.success ? "ok" : "fail", result.message);
+      return result;
+    },
+    [setEntry],
+  );
+
   const runTests = useCallback(async () => {
-    if (startedRef.current) return;
     startedRef.current = true;
 
-    setTests((prev) => prev.map((t) => ({ ...t, status: 'running', message: 'Probando...' })));
+    setTests((prev) => prev.map((t) => ({ ...t, status: "running", message: "Probando..." })));
 
-    const mongoResult = await wizardTestMongo(state.mongodbUri);
-    updateTest('MongoDB', mongoResult);
+    const mongoResult: ConnectivityResult = applyResult(
+      "MongoDB",
+      await wizardTestMongo(state.mongodbUri),
+    );
 
-    if (state.reniecToken) {
-      const reniecResult = await wizardTestReniec(state.reniecToken);
-      updateTest('RENIEC', reniecResult);
+    let reniecResult: ConnectivityResult | null = null;
+    if (state.reniecToken.trim()) {
+      reniecResult = applyResult("RENIEC", await wizardTestReniec(state.reniecToken));
     } else {
-      updateTest('RENIEC', { service: 'RENIEC', success: false, message: 'Sin token configurado' });
+      setEntry("RENIEC", "skipped", "Sin token configurado (opcional)");
     }
 
-    if (state.renacytBaseUrl) {
-      const renacytResult = await wizardTestRenacyt(state.renacytBaseUrl);
-      updateTest('RENACYT', renacytResult);
+    let renacytResult: ConnectivityResult | null = null;
+    if (state.renacytBaseUrl.trim()) {
+      renacytResult = applyResult("RENACYT", await wizardTestRenacyt(state.renacytBaseUrl));
     } else {
-      updateTest('RENACYT', { service: 'RENACYT', success: false, message: 'Sin URL configurada' });
+      setEntry("RENACYT", "skipped", "Sin URL configurada (opcional)");
     }
 
-    if (state.pureApiKey) {
-      const pureResult = await wizardTestPure(
-        state.renacytBaseUrl ? state.renacytBaseUrl.replace('renacyt-backend', '') + 'pure.unf.edu.pe/ws/api' : 'https://pure.unf.edu.pe/ws/api',
-        state.pureApiKey,
+    let pureResult: ConnectivityResult | null = null;
+    if (state.pureApiKey.trim()) {
+      pureResult = applyResult(
+        "Pure",
+        await wizardTestPure(DEFAULT_PURE_API_BASE_URL, state.pureApiKey),
       );
-      updateTest('Pure', pureResult);
     } else {
-      updateTest('Pure', { service: 'Pure', success: false, message: 'Sin API key configurada' });
+      setEntry("Pure", "skipped", "Sin API key configurada (opcional)");
     }
 
     setAllDone(true);
-    update('results', { mongo: mongoResult?.success });
-  }, [state.mongodbUri, state.reniecToken, state.renacytBaseUrl, state.pureApiKey, update, updateTest]);
+    update("results", {
+      mongo: mongoResult.success,
+      reniec: reniecResult?.success ?? false,
+      renacyt: renacytResult?.success ?? false,
+      pure: pureResult?.success ?? false,
+    });
+  }, [
+    state.mongodbUri,
+    state.reniecToken,
+    state.renacytBaseUrl,
+    state.pureApiKey,
+    applyResult,
+    setEntry,
+    update,
+  ]);
 
   useEffect(() => {
+    if (startedRef.current) return;
     void runTests();
-  }, []);
+  }, [runTests]);
 
-  const mongoOk = tests.find((t) => t.label === 'MongoDB')?.status === 'ok';
+  const handleRetry = () => {
+    startedRef.current = false;
+    setAllDone(false);
+    setTests((prev) => prev.map((t) => ({ ...t, status: "running", message: "Probando..." })));
+    void runTests();
+  };
+
+  const mongoOk = tests.find((t) => t.label === "MongoDB")?.status === "ok";
+  const hasAnyFailure = tests.some((t) => t.status === "fail");
 
   const statusIcon = (status: TestStatus) => {
     switch (status) {
-      case 'running':
-        return <AppIcon icon={Loader2} size={18} className="spinning" />;
-      case 'ok':
-        return <AppIcon icon={CheckCircle} size={18} className="test-icon-ok" />;
-      case 'fail':
-        return <AppIcon icon={XCircle} size={18} className="test-icon-fail" />;
+      case "running":
+        return <AppIcon icon={Loader2} size={18} className="animate-spin text-primary" />;
+      case "ok":
+        return <AppIcon icon={CheckCircle} size={18} className="text-green-600" />;
+      case "fail":
+        return <AppIcon icon={XCircle} size={18} className="text-red-600" />;
+      case "skipped":
+        return <AppIcon icon={Minus} size={18} className="text-text-secondary" />;
       default:
         return <AppIcon icon={Wifi} size={18} />;
     }
   };
 
   return (
-    <div className="wizard-step">
-      <div className="wizard-step-header">
-        <AppIcon icon={Wifi} size={32} />
-        <h2>Prueba de conectividad</h2>
-        <p>Verificando conexion con los servicios configurados.</p>
+    <div className="flex flex-col gap-6">
+      <div className="p-6 pb-4 border-b border-border bg-gradient-to-b from-primary-light to-card">
+        <div className="text-center">
+          <AppIcon icon={Wifi} size={32} className="text-primary mb-2" />
+          <h2 className="text-xl font-bold m-0 mb-1.5 text-text-primary">Prueba de conectividad</h2>
+          <p className="text-sm leading-6 max-w-[44ch] mx-auto text-text-secondary">
+            Verificando conexion con los servicios configurados.
+          </p>
+        </div>
       </div>
 
-      <div className="wizard-tests">
-        {tests.map((t) => (
-          <div key={t.label} className={`wizard-test-row wizard-test-${t.status}`}>
-            <span className="wizard-test-icon">{statusIcon(t.status)}</span>
-            <div className="wizard-test-info">
-              <strong>{t.label}</strong>
-              <span className="wizard-test-msg">{t.message}</span>
+      <div className="p-6">
+        <div className="flex flex-col gap-2.5">
+          {tests.map((t) => (
+            <div
+              key={t.label}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${TEST_ROW[t.status]}`}
+            >
+              <span className="shrink-0 flex">{statusIcon(t.status)}</span>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <strong className="text-sm text-text-primary">{t.label}</strong>
+                <span className="text-xs break-words text-text-secondary">{t.message}</span>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className="wizard-nav">
-        <button type="button" className="btn-secondary" onClick={onBack}>
-          Atras
-        </button>
-        <button
-          type="button"
-          className="btn-primary"
-          disabled={!allDone || !mongoOk}
-          onClick={onNext}
-        >
-          {allDone ? 'Continuar' : 'Probando...'}
-        </button>
+        <p className="text-xs text-text-secondary mt-4 leading-5">
+          Solo MongoDB es obligatorio. RENIEC, RENACYT y Pure son opcionales — puede continuar
+          aunque fallen y configurarlos despues desde Configuracion.
+        </p>
+
+        <div className="flex items-center justify-between gap-3 pt-3">
+          <button type="button" className="btn-secondary shrink-0" onClick={onBack}>
+            Atras
+          </button>
+          {allDone && hasAnyFailure && (
+            <button type="button" className="btn-secondary" onClick={handleRetry}>
+              Reintentar
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn-primary ml-auto"
+            disabled={!allDone || !mongoOk}
+            onClick={onNext}
+          >
+            {allDone ? "Continuar" : "Probando..."}
+          </button>
+        </div>
       </div>
     </div>
   );

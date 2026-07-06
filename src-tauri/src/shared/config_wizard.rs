@@ -1,8 +1,11 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::time::Duration;
 
-use crate::shared::encryption;
+use crate::shared::defaults;
 use crate::shared::error::AppError;
+
+const CONNECTIVITY_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Deserialize)]
 pub struct WizardConfigRequest {
@@ -36,11 +39,6 @@ pub fn get_config_path() -> PathBuf {
     resolve_config_dir().join("pjvpin.config.json")
 }
 
-pub fn has_existing_config() -> bool {
-    let enc_path = get_config_path().with_extension("json.enc");
-    enc_path.exists() || get_config_path().exists()
-}
-
 pub fn save_wizard_config(
     request: WizardConfigRequest,
     user_config_path: &std::path::Path,
@@ -48,19 +46,19 @@ pub fn save_wizard_config(
     let config_json = serde_json::json!({
         "database": {
             "mongodbUri": request.mongodb_uri,
-            "mongodbDb": request.mongodb_db.unwrap_or_else(|| "pjvpin".to_string())
+            "mongodbDb": request.mongodb_db.unwrap_or_else(|| defaults::DEFAULT_MONGODB_DB.to_string())
         },
         "reniec": {
-            "apiBaseUrl": "https://api.decolecta.com/v1",
+            "apiBaseUrl": defaults::RENIEC_API_BASE_URL,
             "token": request.reniec_token.unwrap_or_default()
         },
         "renacyt": {
-            "apiBaseUrl": request.renacyt_base_url.unwrap_or_else(|| "https://renacyt.concytec.gob.pe/renacyt-backend".to_string()),
-            "actoVersion": request.renacyt_acto_version.unwrap_or_else(|| "2021".to_string()),
-            "fichaBaseUrl": "https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/"
+            "apiBaseUrl": request.renacyt_base_url.unwrap_or_else(|| defaults::RENACYT_API_BASE_URL.to_string()),
+            "actoVersion": request.renacyt_acto_version.unwrap_or_else(|| defaults::RENACYT_ACTO_VERSION.to_string()),
+            "fichaBaseUrl": defaults::RENACYT_FICHA_BASE_URL
         },
         "pure": {
-            "apiBaseUrl": "https://pure.unf.edu.pe/ws/api",
+            "apiBaseUrl": defaults::PURE_API_BASE_URL,
             "apiKey": request.pure_api_key.unwrap_or_default()
         }
     });
@@ -68,15 +66,13 @@ pub fn save_wizard_config(
     let plaintext = serde_json::to_string_pretty(&config_json)
         .map_err(|e| AppError::InternalError(format!("Error serializando configuracion: {}", e)))?;
 
-    let encrypted = encryption::encrypt_config(&plaintext, &request.master_password)?;
-
     if let Some(parent) = user_config_path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| {
             AppError::InternalError(format!("No se pudo crear directorio de config: {}", e))
         })?;
     }
 
-    std::fs::write(user_config_path.with_extension("json.enc"), &encrypted)
+    std::fs::write(user_config_path, plaintext.as_bytes())
         .map_err(|e| AppError::InternalError(format!("No se pudo guardar configuracion: {}", e)))?;
 
     Ok(())
@@ -118,75 +114,153 @@ async fn test_mongodb_impl(uri: &str) -> Result<String, String> {
 
 pub async fn test_reniec_connectivity(token: &str) -> ConnectivityResult {
     let client = reqwest::Client::new();
+    let endpoint = format!(
+        "{}/reniec/dni?numero={}",
+        defaults::RENIEC_API_BASE_URL,
+        defaults::RENIEC_TEST_DNI
+    );
     match client
-        .get("https://api.decolecta.com/v1/dni/00000000")
+        .get(&endpoint)
+        .header("Content-Type", "application/json")
+        .header("Accept", "application/json")
         .header("Authorization", format!("Bearer {}", token))
-        .timeout(std::time::Duration::from_secs(10))
+        .timeout(CONNECTIVITY_TIMEOUT)
         .send()
         .await
     {
-        Ok(resp) => ConnectivityResult {
-            service: "RENIEC".to_string(),
-            success: resp.status().is_success() || resp.status().as_u16() == 404,
-            message: format!("API responde (HTTP {})", resp.status().as_u16()),
-        },
+        Ok(resp) => {
+            let status = resp.status().as_u16();
+            if resp.status().is_success() {
+                ConnectivityResult {
+                    service: "RENIEC".to_string(),
+                    success: true,
+                    message: format!("Token valido (HTTP {})", status),
+                }
+            } else if status == 404 {
+                ConnectivityResult {
+                    service: "RENIEC".to_string(),
+                    success: true,
+                    message: "API y token validos (DNI de prueba no existe, esperado)".to_string(),
+                }
+            } else if status == 401 || status == 403 {
+                ConnectivityResult {
+                    service: "RENIEC".to_string(),
+                    success: false,
+                    message: format!("Token invalido o sin permisos (HTTP {})", status),
+                }
+            } else {
+                ConnectivityResult {
+                    service: "RENIEC".to_string(),
+                    success: false,
+                    message: format!("Error de API (HTTP {})", status),
+                }
+            }
+        }
         Err(e) => ConnectivityResult {
             service: "RENIEC".to_string(),
             success: false,
-            message: format!("Error: {}", e),
+            message: format!("Sin conexion: {}", e),
         },
     }
 }
 
 pub async fn test_renacyt_connectivity(base_url: &str) -> ConnectivityResult {
     let client = reqwest::Client::new();
-    let url = format!("{}/postulante/listar", base_url.trim_end_matches('/'));
+    let url = format!(
+        "{}/actoRegistral/obtenerActoRegistralActivoCtiVitae/{}/{}",
+        base_url.trim_end_matches('/'),
+        defaults::RENACYT_TEST_ACTO_VERSION,
+        defaults::RENACYT_TEST_CTI_VITAE
+    );
     match client
         .get(&url)
-        .timeout(std::time::Duration::from_secs(10))
+        .header("Accept", "application/json")
+        .timeout(CONNECTIVITY_TIMEOUT)
         .send()
         .await
     {
-        Ok(resp) => ConnectivityResult {
-            service: "RENACYT".to_string(),
-            success: resp.status().is_success(),
-            message: format!("API responde (HTTP {})", resp.status().as_u16()),
-        },
+        Ok(resp) => {
+            let status = resp.status().as_u16();
+            if resp.status().is_success() {
+                ConnectivityResult {
+                    service: "RENACYT".to_string(),
+                    success: true,
+                    message: format!("API RENACYT responde (HTTP {})", status),
+                }
+            } else if status == 404 {
+                ConnectivityResult {
+                    service: "RENACYT".to_string(),
+                    success: false,
+                    message: "Endpoint RENACYT no encontrado. Verifique la URL base.".to_string(),
+                }
+            } else {
+                ConnectivityResult {
+                    service: "RENACYT".to_string(),
+                    success: false,
+                    message: format!("Servidor RENACYT no disponible (HTTP {})", status),
+                }
+            }
+        }
         Err(e) => ConnectivityResult {
             service: "RENACYT".to_string(),
             success: false,
-            message: format!("Error: {}", e),
+            message: format!("Sin conexion: {}", e),
         },
     }
 }
 
 pub async fn test_pure_connectivity(base_url: &str, api_key: &str) -> ConnectivityResult {
     let client = reqwest::Client::new();
+    let url = format!("{}/persons?size=1", base_url.trim_end_matches('/'));
     match client
-        .get(base_url)
+        .get(&url)
         .header("api-key", api_key)
-        .timeout(std::time::Duration::from_secs(10))
+        .header("Accept", "application/json")
+        .timeout(CONNECTIVITY_TIMEOUT)
         .send()
         .await
     {
-        Ok(resp) => ConnectivityResult {
-            service: "Pure".to_string(),
-            success: resp.status().is_success() || resp.status().as_u16() == 401,
-            message: format!("API responde (HTTP {})", resp.status().as_u16()),
-        },
+        Ok(resp) => {
+            let status = resp.status().as_u16();
+            if resp.status().is_success() {
+                ConnectivityResult {
+                    service: "Pure".to_string(),
+                    success: true,
+                    message: format!("Pure API y api-key validos (HTTP {})", status),
+                }
+            } else if status == 401 {
+                ConnectivityResult {
+                    service: "Pure".to_string(),
+                    success: false,
+                    message: "api-key invalida o expirada (HTTP 401)".to_string(),
+                }
+            } else if status == 403 {
+                ConnectivityResult {
+                    service: "Pure".to_string(),
+                    success: false,
+                    message: "api-key sin permisos (HTTP 403)".to_string(),
+                }
+            } else {
+                ConnectivityResult {
+                    service: "Pure".to_string(),
+                    success: false,
+                    message: format!("Servidor Pure no disponible (HTTP {})", status),
+                }
+            }
+        }
         Err(e) => ConnectivityResult {
             service: "Pure".to_string(),
             success: false,
-            message: format!("Error: {}", e),
+            message: format!("Sin conexion: {}", e),
         },
     }
 }
 
 pub fn validate_master_password(password: &str) -> Result<(), AppError> {
     let trimmed = password.trim();
-    if trimmed.len() < 12 {
+    if trimmed.len() < 8 {
         return Err(AppError::InternalError(
-            "La contraseña maestra debe tener al menos 12 caracteres.".to_string(),
+            "La contraseña maestra debe tener al menos 8 caracteres.".to_string(),
         ));
     }
     if !trimmed.chars().any(|c| c.is_uppercase()) {

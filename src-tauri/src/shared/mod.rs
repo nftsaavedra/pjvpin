@@ -5,7 +5,7 @@ pub mod config_validator;
 pub mod config_wizard;
 pub mod data_loader;
 pub mod db;
-pub mod encryption;
+pub mod defaults;
 pub mod error;
 pub mod external;
 pub mod logging;

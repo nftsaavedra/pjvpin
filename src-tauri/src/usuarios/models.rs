@@ -11,6 +11,10 @@ pub struct Usuario {
     #[serde(default)]
     pub docente_id: Option<String>,
     #[serde(default)]
+    pub persona_id: Option<String>,
+    #[serde(default)]
+    pub dni: Option<String>,
+    #[serde(default)]
     pub updated_at: Option<i64>,
 }
 
@@ -25,13 +29,20 @@ pub struct UsuarioConPassword {
     #[serde(default)]
     pub docente_id: Option<String>,
     #[serde(default)]
+    pub persona_id: Option<String>,
+    #[serde(default)]
+    pub dni: Option<String>,
+    #[serde(default)]
     pub updated_at: Option<i64>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CreateUsuarioRequest {
     pub username: String,
-    pub nombre_completo: String,
+    pub dni: String,
+    pub nombres: Option<String>,
+    pub apellido_paterno: Option<String>,
+    pub apellido_materno: Option<String>,
     pub rol: String,
     pub password: String,
     #[serde(default)]
@@ -41,16 +52,22 @@ pub struct CreateUsuarioRequest {
 #[derive(Debug, Deserialize)]
 pub struct BootstrapUsuarioRequest {
     pub username: String,
-    pub nombre_completo: String,
+    pub dni: String,
+    pub nombres: Option<String>,
+    pub apellido_paterno: Option<String>,
+    pub apellido_materno: Option<String>,
     pub password: String,
     #[serde(default)]
     pub rol: Option<String>,
+    #[serde(default)]
+    pub mongodb_uri: Option<String>,
+    #[serde(default)]
+    pub mongodb_db: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateUsuarioRequest {
     pub username: String,
-    pub nombre_completo: String,
     pub rol: String,
     pub password: Option<String>,
     #[serde(default)]
@@ -73,14 +90,22 @@ impl UsuarioConPassword {
     pub fn new(request: CreateUsuarioRequest, password_hash: String) -> Self {
         let now = crate::shared::time::now_ms();
 
+        let nombre_completo = compose_nombre_completo(
+            request.nombres.as_deref(),
+            request.apellido_paterno.as_deref(),
+            request.apellido_materno.as_deref(),
+        );
+
         Self {
             id_usuario: Uuid::new_v4().to_string(),
             username: request.username.trim().to_lowercase(),
-            nombre_completo: request.nombre_completo.trim().to_string(),
+            nombre_completo,
             rol: request.rol.trim().to_string(),
             password_hash,
             activo: 1,
             docente_id: request.docente_id,
+            persona_id: None,
+            dni: Some(request.dni.trim().to_string()),
             updated_at: Some(now),
         }
     }
@@ -93,7 +118,22 @@ impl UsuarioConPassword {
             rol: self.rol.clone(),
             activo: self.activo,
             docente_id: self.docente_id.clone(),
+            persona_id: self.persona_id.clone(),
+            dni: self.dni.clone(),
             updated_at: self.updated_at,
         }
     }
+}
+
+pub fn compose_nombre_completo(
+    nombres: Option<&str>,
+    apellido_paterno: Option<&str>,
+    apellido_materno: Option<&str>,
+) -> String {
+    [nombres, apellido_paterno, apellido_materno]
+        .iter()
+        .filter_map(|s| s.map(|v| v.trim()))
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
 }

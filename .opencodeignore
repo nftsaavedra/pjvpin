@@ -36,3 +36,16 @@ src-tauri/bundle/
 logs/
 *.log
 .opencode
+
+# Documentacion de desarrollo (planes de prueba, analisis, disenos)
+# Se mantienen en docs/ para el humano pero saturan el contexto del modelo
+docs/
+
+# Documentacion interna personal (Obsidian vault con notas extensas)
+_docs/
+
+# Scripts de build PowerShell (solo relevantes al ejecutar builds)
+scripts/
+
+# Esquemas autogenerados por Tauri (regenerables desde tauri.conf.json)
+src-tauri/gen/

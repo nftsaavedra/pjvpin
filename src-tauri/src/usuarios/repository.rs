@@ -4,11 +4,20 @@ use mongodb::bson::Document;
 use mongodb::Database;
 use rand_core::OsRng;
 
+use crate::personas::models::CreatePersonaRequest;
+use crate::personas::repository as personas_repo;
 use crate::shared::error::AppError;
 use crate::usuarios::models::{
     AuthStatus, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
     UpdateUsuarioRequest, Usuario, UsuarioConPassword,
 };
+use crate::usuarios::validations;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ModoCreacion {
+    Bootstrap,
+    Gestion,
+}
 
 async fn load_usuarios(db: &Database) -> Result<Vec<UsuarioConPassword>, AppError> {
     db.collection::<UsuarioConPassword>("usuarios")
@@ -36,20 +45,6 @@ async fn get_usuario_by_username(
         .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))
 }
 
-fn validar_usuario(username: &str, nombre_completo: &str, rol: &str) -> Result<(), AppError> {
-    if username.trim().is_empty() || nombre_completo.trim().is_empty() || rol.trim().is_empty() {
-        return Err(AppError::InternalError(
-            "Complete todos los campos del usuario.".to_string(),
-        ));
-    }
-    if !matches!(rol.trim(), "admin" | "operador" | "consulta") {
-        return Err(AppError::InternalError(
-            "El rol del usuario no es válido.".to_string(),
-        ));
-    }
-    Ok(())
-}
-
 async fn validar_actor_admin(
     db: &Database,
     actor_user_id: &str,
@@ -60,17 +55,7 @@ async fn validar_actor_admin(
         .await?
         .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
 
-    if actor.activo == 0 {
-        return Err(AppError::InternalError(
-            "El usuario actual está inactivo y no puede administrar accesos.".to_string(),
-        ));
-    }
-
-    if actor.rol.trim() != "admin" {
-        return Err(AppError::InternalError(
-            "No tiene permisos para administrar usuarios.".to_string(),
-        ));
-    }
+    validations::assert_actor_can_admin(&actor)?;
 
     Ok(actor)
 }
@@ -140,15 +125,87 @@ pub async fn get_auth_status(db: &Database) -> Result<AuthStatus, AppError> {
     })
 }
 
+async fn obtener_o_crear_persona(
+    db: &Database,
+    dni: &str,
+    nombres: Option<&str>,
+    apellido_paterno: Option<&str>,
+    apellido_materno: Option<&str>,
+    modo: ModoCreacion,
+) -> Result<crate::personas::models::Persona, AppError> {
+    let dni_limpio = dni.trim();
+    if let Some(persona) = personas_repo::find_by_dni(db, dni_limpio).await? {
+        match modo {
+            ModoCreacion::Bootstrap => {
+                return Err(AppError::InternalError(
+                    "Ya existe una persona con ese DNI en la base de datos.".to_string(),
+                ));
+            }
+            ModoCreacion::Gestion => return Ok(persona),
+        }
+    }
+
+    let nombres_trim = nombres
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty());
+    let apellido_paterno_trim = apellido_paterno
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty())
+        .ok_or_else(|| {
+            AppError::InternalError(
+                "Ingrese el apellido paterno para registrar al usuario.".to_string(),
+            )
+        })?;
+    let apellido_materno_trim = apellido_materno
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty());
+    let nombres_req = nombres_trim.ok_or_else(|| {
+        AppError::InternalError("Ingrese los nombres para registrar al usuario.".to_string())
+    })?;
+
+    let request = CreatePersonaRequest {
+        dni: dni_limpio.to_string(),
+        nombres: nombres_req,
+        apellido_paterno: apellido_paterno_trim,
+        apellido_materno: apellido_materno_trim,
+        correo: None,
+        telefono: None,
+        direccion: None,
+        sexo: None,
+        fecha_nacimiento: None,
+    };
+    personas_repo::create(db, request).await
+}
+
 pub async fn create_usuario(
     db: &Database,
     actor_user_id: &str,
     request: CreateUsuarioRequest,
 ) -> Result<Usuario, AppError> {
     validar_actor_admin(db, actor_user_id).await?;
-    validar_usuario(&request.username, &request.nombre_completo, &request.rol)?;
+    validations::assert_create_role_not_superuser(&request.rol)?;
+    validations::validar_usuario_dni_pure(&request.username, &request.dni, &request.rol)?;
+    validations::validar_identidad_manual_pure(
+        request.nombres.as_deref(),
+        request.apellido_paterno.as_deref(),
+    )?;
+
+    let persona = obtener_o_crear_persona(
+        db,
+        &request.dni,
+        request.nombres.as_deref(),
+        request.apellido_paterno.as_deref(),
+        request.apellido_materno.as_deref(),
+        ModoCreacion::Gestion,
+    )
+    .await?;
+
     let password_hash = hash_password(&request.password)?;
-    let usuario = UsuarioConPassword::new(request, password_hash);
+    let mut usuario = UsuarioConPassword::new(request, password_hash);
+    usuario.persona_id = Some(persona.id_persona.clone());
+    usuario.nombre_completo = persona.nombre_completo.clone();
+    usuario.dni = Some(persona.dni.clone());
+
     db.collection::<UsuarioConPassword>("usuarios")
         .insert_one(&usuario)
         .await?;
@@ -159,6 +216,16 @@ pub async fn bootstrap_admin(
     db: &Database,
     request: BootstrapUsuarioRequest,
 ) -> Result<Usuario, AppError> {
+    let existing_superusers = db
+        .collection::<Document>("usuarios")
+        .count_documents(doc! { "rol": "superuser" })
+        .await?;
+    if existing_superusers > 0 {
+        return Err(AppError::InternalError(
+            "Ya existe un usuario superuser en el sistema.".to_string(),
+        ));
+    }
+
     if count_usuarios(db).await? > 0 {
         return Err(AppError::InternalError(
             "La configuracion inicial ya fue completada.".to_string(),
@@ -172,18 +239,39 @@ pub async fn bootstrap_admin(
         ));
     }
 
-    validar_usuario(&request.username, &request.nombre_completo, &rol)?;
+    validations::validar_usuario_dni_pure(&request.username, &request.dni, &rol)?;
+    validations::validar_identidad_manual_pure(
+        request.nombres.as_deref(),
+        request.apellido_paterno.as_deref(),
+    )?;
+
+    let persona = obtener_o_crear_persona(
+        db,
+        &request.dni,
+        request.nombres.as_deref(),
+        request.apellido_paterno.as_deref(),
+        request.apellido_materno.as_deref(),
+        ModoCreacion::Bootstrap,
+    )
+    .await?;
+
     let password_hash = hash_password(&request.password)?;
-    let usuario = UsuarioConPassword::new(
+    let mut usuario = UsuarioConPassword::new(
         CreateUsuarioRequest {
             username: request.username,
-            nombre_completo: request.nombre_completo,
+            dni: request.dni,
+            nombres: request.nombres,
+            apellido_paterno: request.apellido_paterno,
+            apellido_materno: request.apellido_materno,
             rol,
             password: request.password,
             docente_id: None,
         },
         password_hash,
     );
+    usuario.persona_id = Some(persona.id_persona.clone());
+    usuario.nombre_completo = persona.nombre_completo.clone();
+    usuario.dni = Some(persona.dni.clone());
 
     db.collection::<UsuarioConPassword>("usuarios")
         .insert_one(&usuario)
@@ -209,7 +297,63 @@ pub async fn login_usuario(
         ));
     }
 
-    Ok(usuario.public_view())
+    let mut public = usuario.public_view();
+    enrich_usuario_with_persona(db, &mut public).await?;
+    Ok(public)
+}
+
+async fn enrich_usuario_with_persona(db: &Database, usuario: &mut Usuario) -> Result<(), AppError> {
+    if usuario.dni.is_none() || usuario.nombre_completo.is_empty() {
+        if let Some(ref persona_id) = usuario.persona_id {
+            if let Ok(persona) = personas_repo::find_by_id(db, persona_id).await {
+                usuario.dni = Some(persona.dni.clone());
+                usuario.nombre_completo = persona.nombre_completo.clone();
+            }
+        }
+    }
+    Ok(())
+}
+
+async fn enrich_usuarios_with_persona(
+    db: &Database,
+    usuarios: &mut [Usuario],
+) -> Result<(), AppError> {
+    let mut persona_ids: Vec<String> = usuarios
+        .iter()
+        .filter(|u| u.dni.is_none() || u.nombre_completo.is_empty())
+        .filter_map(|u| u.persona_id.clone())
+        .collect();
+    persona_ids.sort();
+    persona_ids.dedup();
+
+    if persona_ids.is_empty() {
+        return Ok(());
+    }
+
+    let cursor = db
+        .collection::<crate::personas::models::Persona>("personas")
+        .find(doc! { "id_persona": { "$in": &persona_ids } })
+        .await?;
+
+    use futures_util::TryStreamExt;
+    let personas: Vec<crate::personas::models::Persona> = cursor
+        .try_collect::<Vec<_>>()
+        .await
+        .map_err(AppError::from)?;
+    let lookup: std::collections::HashMap<String, crate::personas::models::Persona> = personas
+        .into_iter()
+        .map(|p| (p.id_persona.clone(), p))
+        .collect();
+
+    for usuario in usuarios.iter_mut() {
+        if let Some(ref persona_id) = usuario.persona_id {
+            if let Some(persona) = lookup.get(persona_id) {
+                usuario.dni = Some(persona.dni.clone());
+                usuario.nombre_completo = persona.nombre_completo.clone();
+            }
+        }
+    }
+    Ok(())
 }
 
 pub async fn get_all_usuarios(
@@ -222,6 +366,7 @@ pub async fn get_all_usuarios(
         .into_iter()
         .map(|usuario| usuario.public_view())
         .collect();
+    enrich_usuarios_with_persona(db, &mut usuarios).await?;
     usuarios.sort_by(|a, b| a.username.cmp(&b.username));
     Ok(usuarios)
 }
@@ -253,6 +398,7 @@ pub async fn get_all_usuarios_paginated(
     while let Some(u) = cursor.try_next().await? {
         usuarios.push(u.public_view());
     }
+    enrich_usuarios_with_persona(db, &mut usuarios).await?;
 
     let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
     Ok(crate::shared::pagination::PaginatedResult {
@@ -274,6 +420,15 @@ pub async fn get_usuario_by_id(
         .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))
 }
 
+pub async fn get_usuario_by_id_public(
+    db: &Database,
+    id_usuario: &str,
+) -> Result<Usuario, AppError> {
+    let mut usuario = get_usuario_by_id(db, id_usuario).await?.public_view();
+    enrich_usuario_with_persona(db, &mut usuario).await?;
+    Ok(usuario)
+}
+
 pub async fn update_usuario(
     db: &Database,
     actor_user_id: &str,
@@ -281,26 +436,40 @@ pub async fn update_usuario(
     request: UpdateUsuarioRequest,
 ) -> Result<Usuario, AppError> {
     validar_actor_admin(db, actor_user_id).await?;
-    validar_usuario(&request.username, &request.nombre_completo, &request.rol)?;
+    if request.username.trim().is_empty() {
+        return Err(AppError::InternalError(
+            "Ingrese el nombre de usuario.".to_string(),
+        ));
+    }
+    if !matches!(
+        request.rol.trim(),
+        validations::ROL_SUPERUSER
+            | validations::ROL_ADMIN
+            | validations::ROL_OPERADOR
+            | validations::ROL_CONSULTA
+    ) {
+        return Err(AppError::InternalError(
+            "El rol del usuario no es v\u{00e1}lido.".to_string(),
+        ));
+    }
 
-    if actor_user_id == id_usuario {
-        let usuario_actual = db
-            .collection::<UsuarioConPassword>("usuarios")
-            .find_one(doc! { "id_usuario": id_usuario })
-            .await?
-            .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+    let usuario_actual = db
+        .collection::<UsuarioConPassword>("usuarios")
+        .find_one(doc! { "id_usuario": id_usuario })
+        .await?
+        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
 
-        if usuario_actual.rol.trim() != request.rol.trim() {
-            return Err(AppError::InternalError(
-                "No puede cambiar su propio rol. Solicite a otro administrador que lo haga."
-                    .to_string(),
-            ));
-        }
+    validations::assert_no_promote_to_superuser(&usuario_actual.rol, &request.rol)?;
+
+    if actor_user_id == id_usuario && usuario_actual.rol.trim() != request.rol.trim() {
+        return Err(AppError::InternalError(
+            "No puede cambiar su propio rol. Solicite a otro administrador que lo haga."
+                .to_string(),
+        ));
     }
 
     let mut updates = doc! {
         "username": request.username.trim().to_lowercase(),
-        "nombre_completo": request.nombre_completo.trim(),
         "rol": request.rol.trim(),
     };
 
@@ -320,12 +489,9 @@ pub async fn update_usuario(
         .update_one(doc! { "id_usuario": id_usuario }, doc! { "$set": updates })
         .await?;
 
-    let usuario = db
-        .collection::<UsuarioConPassword>("usuarios")
-        .find_one(doc! { "id_usuario": id_usuario })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
-    Ok(usuario.public_view())
+    let mut usuario = get_usuario_by_id(db, id_usuario).await?.public_view();
+    enrich_usuario_with_persona(db, &mut usuario).await?;
+    Ok(usuario)
 }
 
 pub async fn desactivar_usuario(
@@ -341,6 +507,14 @@ pub async fn desactivar_usuario(
         ));
     }
 
+    let target = db
+        .collection::<UsuarioConPassword>("usuarios")
+        .find_one(doc! { "id_usuario": id_usuario })
+        .await?
+        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+
+    validations::assert_target_not_superuser(&target.rol)?;
+
     db.collection::<Document>("usuarios")
         .update_one(
             doc! { "id_usuario": id_usuario },
@@ -348,12 +522,9 @@ pub async fn desactivar_usuario(
         )
         .await?;
 
-    let usuario = db
-        .collection::<UsuarioConPassword>("usuarios")
-        .find_one(doc! { "id_usuario": id_usuario })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
-    Ok(usuario.public_view())
+    let mut usuario = get_usuario_by_id(db, id_usuario).await?.public_view();
+    enrich_usuario_with_persona(db, &mut usuario).await?;
+    Ok(usuario)
 }
 
 pub async fn reactivar_usuario(
@@ -376,10 +547,7 @@ pub async fn reactivar_usuario(
         )
         .await?;
 
-    let usuario = db
-        .collection::<UsuarioConPassword>("usuarios")
-        .find_one(doc! { "id_usuario": id_usuario })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
-    Ok(usuario.public_view())
+    let mut usuario = get_usuario_by_id(db, id_usuario).await?.public_view();
+    enrich_usuario_with_persona(db, &mut usuario).await?;
+    Ok(usuario)
 }

@@ -1,3 +1,4 @@
+use crate::shared::defaults;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use crate::shared::rbac;
@@ -35,12 +36,46 @@ pub async fn registrar_primer_usuario(
     window_label: &str,
     request: BootstrapUsuarioRequest,
 ) -> Result<Usuario, AppError> {
-    let usuario = usuario_service::bootstrap_admin(state, request).await?;
+    let db = resolve_bootstrap_db(
+        state,
+        request.mongodb_uri.as_deref(),
+        request.mongodb_db.as_deref(),
+    )
+    .await?;
+    let usuario = super::repository::bootstrap_admin(&db, request).await?;
 
     state
         .set_current_session(window_label, usuario.id_usuario.clone())
         .await;
     Ok(usuario)
+}
+
+async fn resolve_bootstrap_db(
+    state: &AppState,
+    mongodb_uri: Option<&str>,
+    mongodb_db: Option<&str>,
+) -> Result<mongodb::Database, AppError> {
+    if let Ok(db) = state.mongo_db() {
+        return Ok(db.clone());
+    }
+
+    let uri = mongodb_uri.ok_or_else(|| {
+        AppError::ConfigurationError(
+            "MongoDB no esta inicializado. Proporcione la URI en el asistente de configuracion."
+                .to_string(),
+        )
+    })?;
+    if uri.trim().is_empty() {
+        return Err(AppError::ConfigurationError(
+            "La URI de MongoDB no puede estar vacia.".to_string(),
+        ));
+    }
+
+    let client = mongodb::Client::with_uri_str(uri).await?;
+    let db_name = mongodb_db
+        .filter(|s| !s.trim().is_empty())
+        .unwrap_or(defaults::DEFAULT_MONGODB_DB);
+    Ok(client.database(db_name))
 }
 
 pub async fn login_usuario(

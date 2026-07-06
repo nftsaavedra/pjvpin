@@ -1,10 +1,10 @@
-import React, { useDeferredValue, useId, useState } from 'react';
-import { X } from 'lucide-react';
-import { type DocenteDetalle } from '../../docentes/api';
-import { useRefreshToast } from '@/shared/hooks/useRefreshToast';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { SkeletonChecklist } from '@/shared/ui/Skeleton';
-import { formatRenacytNivel, normalizeRenacytNivelSearch } from '@/shared/utils/renacyt';
+import React, { useDeferredValue, useId, useState } from "react";
+import { X } from "lucide-react";
+import { type DocenteDetalle } from "../../docentes/api";
+import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { SkeletonChecklist } from "@/shared/ui/Skeleton";
+import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
 
 interface DocentesChecklistProps {
   docentes: DocenteDetalle[];
@@ -18,7 +18,7 @@ interface DocentesChecklistProps {
   showRequiredError?: boolean;
 }
 
-const normalizeText = (value: string | null | undefined) => (value ?? '').trim().toLowerCase();
+const normalizeText = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
 
 export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
   docentes,
@@ -34,13 +34,13 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
   const searchId = useId();
   const helperId = useId();
   const resultsId = useId();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(normalizeText(query));
 
   useRefreshToast({
     refreshing,
-    message: 'Actualizando lista de docentes',
-    toastKey: 'docentes-checklist-refresh',
+    message: "Actualizando lista de docentes",
+    toastKey: "docentes-checklist-refresh",
     cooldownMs: 120000,
   });
 
@@ -63,19 +63,27 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
     }
   };
 
-  const docentesSeleccionados = docentes.filter((docente) => selectedIds.includes(docente.id_docente));
+  const docentesSeleccionados = docentes.filter((docente) =>
+    selectedIds.includes(docente.id_docente),
+  );
   const requiereBusquedaMinima = docentes.length > 25 && deferredQuery.length < 2;
   const coincidencias = requiereBusquedaMinima
     ? []
     : docentes.filter((docente) => {
-        if (!deferredQuery) return docentes.length <= 25 && !selectedIds.includes(docente.id_docente);
+        if (!deferredQuery)
+          return docentes.length <= 25 && !selectedIds.includes(docente.id_docente);
 
         const nombre = normalizeText(docente.nombres_apellidos);
         const dni = normalizeText(docente.dni);
         const grado = normalizeText(docente.grado);
         const nivelRenacyt = normalizeRenacytNivelSearch(docente.renacyt_nivel);
 
-        return nombre.includes(deferredQuery) || dni.includes(deferredQuery) || grado.includes(deferredQuery) || nivelRenacyt.includes(deferredQuery);
+        return (
+          nombre.includes(deferredQuery) ||
+          dni.includes(deferredQuery) ||
+          grado.includes(deferredQuery) ||
+          nivelRenacyt.includes(deferredQuery)
+        );
       });
   const docentesVisibles = coincidencias.slice(0, 8);
   const hayMasResultados = coincidencias.length > docentesVisibles.length;
@@ -107,24 +115,33 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
             id={searchId}
             className="form-input docentes-selector-search"
             value={query}
-            onChange={(event) => { setQuery(event.target.value); }}
+            onChange={(event) => {
+              setQuery(event.target.value);
+            }}
             placeholder="Buscar docente por nombre, DNI, grado o nivel RENACYT"
             aria-describedby={helperId}
             aria-controls={resultsId}
           />
           <div className="docentes-selector-meta">
             <span className="status-chip status-chip-total">Disponibles: {docentes.length}</span>
-            <span className="status-chip status-chip-success">Seleccionados: {selectedIds.length}</span>
+            <span className="status-chip status-chip-success">
+              Seleccionados: {selectedIds.length}
+            </span>
             {selectedIds.length > 0 && (
-              <button type="button" className="btn-secondary docentes-selector-clear" onClick={limpiarSeleccion}>
+              <button
+                type="button"
+                className="btn-secondary docentes-selector-clear"
+                onClick={limpiarSeleccion}
+              >
                 Limpiar selección
               </button>
             )}
           </div>
         </div>
 
-        <div id={helperId} className="visually-hidden">
-          Busque docentes por nombre, DNI, grado o nivel RENACYT, y use los botones para agregarlos o quitarlos de la selección.
+        <div id={helperId} className="sr-only">
+          Busque docentes por nombre, DNI, grado o nivel RENACYT, y use los botones para agregarlos
+          o quitarlos de la selección.
         </div>
 
         <div className="docentes-selected-list" aria-live="polite">
@@ -134,19 +151,26 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
                 key={docente.id_docente}
                 type="button"
                 className="docente-chip"
-                onClick={() => { handleToggle(docente.id_docente); }}
+                onClick={() => {
+                  handleToggle(docente.id_docente);
+                }}
                 title="Quitar de la selección"
               >
                 <span className="docente-chip-content">
                   <span className="docente-chip-name">{docente.nombres_apellidos}</span>
                   {showSelectedMeta && (
                     <span className="docente-chip-meta">
-                      {docente.grado || 'Sin grado'} · {formatRenacytNivel(docente.renacyt_nivel) ? `RENACYT ${formatRenacytNivel(docente.renacyt_nivel)}` : 'Sin nivel RENACYT'}
-                      {responsableId === docente.id_docente ? ' · Responsable' : ''}
+                      {docente.grado || "Sin grado"} ·{" "}
+                      {formatRenacytNivel(docente.renacyt_nivel)
+                        ? `RENACYT ${formatRenacytNivel(docente.renacyt_nivel)}`
+                        : "Sin nivel RENACYT"}
+                      {responsableId === docente.id_docente ? " · Responsable" : ""}
                     </span>
                   )}
                   {!showSelectedMeta && responsableId === docente.id_docente && (
-                    <span className="docente-chip-meta docente-chip-meta-compact">Responsable actual</span>
+                    <span className="docente-chip-meta docente-chip-meta-compact">
+                      Responsable actual
+                    </span>
                   )}
                 </span>
                 <span className="docente-chip-remove">
@@ -155,18 +179,25 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
               </button>
             ))
           ) : (
-            <div className="docentes-selector-empty">Aún no ha seleccionado docentes para este proyecto.</div>
+            <div className="docentes-selector-empty">
+              Aún no ha seleccionado docentes para este proyecto.
+            </div>
           )}
         </div>
 
-        <div id={resultsId} className="docentes-checklist docentes-selector-results" aria-label="Resultados de docentes">
+        <div
+          id={resultsId}
+          className="docentes-checklist docentes-selector-results"
+          aria-label="Resultados de docentes"
+        >
           {requiereBusquedaMinima ? (
             <div className="docentes-selector-empty">
               Escriba al menos 2 caracteres para buscar dentro de una lista grande de docentes.
             </div>
           ) : !deferredQuery && docentes.length > 25 ? (
             <div className="docentes-selector-empty">
-              Use el buscador para encontrar docentes y agregarlos al proyecto sin recorrer una lista completa.
+              Use el buscador para encontrar docentes y agregarlos al proyecto sin recorrer una
+              lista completa.
             </div>
           ) : docentesVisibles.length === 0 ? (
             <div className="docentes-selector-empty">
@@ -181,18 +212,25 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
                   <button
                     key={docente.id_docente}
                     type="button"
-                    className={`checkbox-item docente-option ${seleccionado ? 'selected' : ''}`}
-                    onClick={() => { handleToggle(docente.id_docente); }}
+                    className={`checkbox-item docente-option ${seleccionado ? "selected" : ""}`}
+                    onClick={() => {
+                      handleToggle(docente.id_docente);
+                    }}
                     aria-pressed={seleccionado}
                   >
                     <div className="docente-option-main">
                       <span className="docente-option-name">{docente.nombres_apellidos}</span>
                       <span className="docente-option-dni">DNI: {docente.dni}</span>
-                      <span className="docente-option-meta">{docente.grado || 'Sin grado'} · {formatRenacytNivel(docente.renacyt_nivel) ? `RENACYT ${formatRenacytNivel(docente.renacyt_nivel)}` : 'Sin nivel RENACYT'}</span>
+                      <span className="docente-option-meta">
+                        {docente.grado || "Sin grado"} ·{" "}
+                        {formatRenacytNivel(docente.renacyt_nivel)
+                          ? `RENACYT ${formatRenacytNivel(docente.renacyt_nivel)}`
+                          : "Sin nivel RENACYT"}
+                      </span>
                     </div>
                     <div className="docente-option-actions">
-                      <span className={`badge ${seleccionado ? 'badge-success' : 'badge-info'}`}>
-                        {seleccionado ? 'Seleccionado' : 'Agregar'}
+                      <span className={`badge ${seleccionado ? "badge-success" : "badge-info"}`}>
+                        {seleccionado ? "Seleccionado" : "Agregar"}
                       </span>
                     </div>
                   </button>
@@ -200,7 +238,8 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
               })}
               {hayMasResultados && (
                 <div className="docentes-selector-footnote">
-                  Mostrando {docentesVisibles.length} de {coincidencias.length} coincidencias. Refine la búsqueda para acotar resultados.
+                  Mostrando {docentesVisibles.length} de {coincidencias.length} coincidencias.
+                  Refine la búsqueda para acotar resultados.
                 </div>
               )}
             </>
@@ -208,9 +247,7 @@ export const DocentesChecklist: React.FC<DocentesChecklistProps> = ({
         </div>
       </div>
       {showRequiredError && selectedIds.length === 0 && (
-        <small className="field-error">
-          Seleccione al menos un docente
-        </small>
+        <small className="field-error">Seleccione al menos un docente</small>
       )}
     </div>
   );

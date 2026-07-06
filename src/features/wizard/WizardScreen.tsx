@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
-import { BookOpen, Play } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { useWizardState } from './useWizardState';
-import { StepMasterPassword } from './steps/StepMasterPassword';
-import { StepCredentials } from './steps/StepCredentials';
-import { StepTestConnectivity } from './steps/StepTestConnectivity';
-import { StepCreateAdmin } from './steps/StepCreateAdmin';
-import { StepSummary } from './steps/StepSummary';
-import type { Usuario } from '@/services/tauri/types';
+import React, { useState } from "react";
+import { BookOpen, Check, ChevronRight } from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { useWizardState } from "./useWizardState";
+import { StepMasterPassword } from "./steps/StepMasterPassword";
+import { StepCredentials } from "./steps/StepCredentials";
+import { StepTestConnectivity } from "./steps/StepTestConnectivity";
+import { StepCreateAdmin } from "./steps/StepCreateAdmin";
+import { StepSummary } from "./steps/StepSummary";
+import type { Usuario } from "@/services/tauri/types";
 
 interface Props {
   onDone: (usuario: Usuario) => void;
 }
+
+const STEP_META = [
+  { label: "Seguridad", short: "1" },
+  { label: "Servicios", short: "2" },
+  { label: "Conexion", short: "3" },
+  { label: "Usuario", short: "4" },
+  { label: "Resumen", short: "5" },
+];
 
 export const WizardScreen: React.FC<Props> = ({ onDone }) => {
   const { state, update, nextStep, prevStep, buildRequest } = useWizardState();
@@ -22,10 +30,8 @@ export const WizardScreen: React.FC<Props> = ({ onDone }) => {
     nextStep();
   };
 
-  const steps = ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4', 'Paso 5'];
-
   return (
-    <div className="wizard-shell">
+    <div className="flex flex-col min-h-screen bg-bg">
       <header className="app-header">
         <div className="header-content">
           <div>
@@ -39,30 +45,49 @@ export const WizardScreen: React.FC<Props> = ({ onDone }) => {
       </header>
 
       <main className="main-content auth-main">
-        <div className="wizard-container">
-          <div className="wizard-progress">
-            {steps.map((label, i) => (
-              <div
-                key={label}
-                className={`wizard-progress-step ${i + 1 <= state.step ? 'active' : ''} ${i + 1 < state.step ? 'done' : ''}`}
-              >
-                <span className="wizard-dot">{i + 1 < state.step ? <AppIcon icon={Play} size={10} /> : i + 1}</span>
-                <span className="wizard-progress-label">{label}</span>
-              </div>
-            ))}
+        <div className="mx-auto flex w-full max-w-[640px] flex-col items-center px-4 py-8 pb-12">
+          <div className="flex items-center justify-center mb-8 w-full">
+            {STEP_META.map((meta, i) => {
+              const stepNum = i + 1;
+              const isActive = stepNum === state.step;
+              const isDone = stepNum < state.step;
+              return (
+                <div
+                  key={meta.label}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs ${
+                    isActive
+                      ? "text-primary font-semibold"
+                      : isDone
+                        ? "text-secondary"
+                        : "text-text-secondary"
+                  }`}
+                >
+                  <span
+                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold shrink-0 ${
+                      isActive
+                        ? "bg-primary text-white"
+                        : isDone
+                          ? "bg-secondary text-white"
+                          : "bg-border text-text-secondary"
+                    }`}
+                  >
+                    {isDone ? <AppIcon icon={Check} size={10} /> : meta.short}
+                  </span>
+                  <span className="hidden sm:inline">{meta.label}</span>
+                  {i < STEP_META.length - 1 && (
+                    <AppIcon icon={ChevronRight} size={12} className="shrink-0" />
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          <div className="wizard-card">
+          <div className="rounded-xl overflow-hidden w-full bg-card border border-border shadow-xl">
             {state.step === 1 && (
               <StepMasterPassword state={state} update={update} onNext={nextStep} />
             )}
             {state.step === 2 && (
-              <StepCredentials
-                state={state}
-                update={update}
-                onNext={nextStep}
-                onBack={prevStep}
-              />
+              <StepCredentials state={state} update={update} onNext={nextStep} onBack={prevStep} />
             )}
             {state.step === 3 && (
               <StepTestConnectivity
@@ -73,7 +98,14 @@ export const WizardScreen: React.FC<Props> = ({ onDone }) => {
               />
             )}
             {state.step === 4 && (
-              <StepCreateAdmin onNext={handleAdminCreated} onBack={prevStep} />
+              <StepCreateAdmin
+                reniecToken={state.reniecToken}
+                reniecDisponible={state.results.reniec && state.reniecToken.trim() !== ""}
+                mongodbUri={state.mongodbUri}
+                mongodbDb={state.mongodbDb || undefined}
+                onNext={handleAdminCreated}
+                onBack={prevStep}
+              />
             )}
             {state.step === 5 && usuario && (
               <StepSummary request={buildRequest()} usuario={usuario} onDone={onDone} />

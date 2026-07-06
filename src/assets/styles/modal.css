@@ -19,3 +19,4 @@
   .form-modal-footer { @apply bg-gradient-to-b from-gray-50 to-white sticky bottom-0 z-10; }
 }
 @keyframes modalPopIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

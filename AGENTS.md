@@ -171,9 +171,66 @@ cargo clippy             # Linter Rust
 
 | Rol | Permisos |
 |-----|----------|
+| **superuser** | Todo (incluye gestión de usuarios, grados y catálogos). Rol único creado por el asistente de configuración. No se puede crear vía `crear_usuario`, no se puede degradar, no se puede desactivar/eliminar. |
 | **admin** | Todo (incluye gestión de usuarios y grados) |
 | **operador** | CRUD docentes, proyectos, grupos, recursos + reportes export |
 | **consulta** | Solo lectura: dashboard, docentes, proyectos, reportes, grupos |
+| **responsable_proyecto** | Solo lectura: dashboard, docentes, proyectos, reportes, grupos |
+
+### Invariantes del rol `superuser`
+
+1. **Unicidad global**: solo puede existir **un** usuario con `rol="superuser"` y debe estar `activo=1`.
+2. **Origen único**: el único flujo autorizado a crearlo es el asistente de configuración (`bootstrap_admin`), y solo cuando la colección `usuarios` esté vacía.
+3. **No eliminable**: `desactivar_usuario` rechaza cualquier target con `rol="superuser"`.
+4. **No escalable**: `crear_usuario` y `actualizar_usuario` rechazan cambiar el rol a `superuser` desde otro rol.
+5. **No auto-degradable**: `actualizar_usuario` ya bloquea al usuario a cambiarse su propio rol.
+
+Estas invariantes se aplican en `src-tauri/src/usuarios/validations.rs`
+(guards puros) y se prueban en `src-tauri/src/usuarios/validations_tests.rs`.
+
+---
+
+## Identidad y Persona
+
+Cada `Usuario` se vincula a una `Persona` (modelo canónico de identidad, ya
+usado por `docentes`). `Persona` almacena `dni`, `nombres`, `apellido_paterno`,
+`apellido_materno` y `nombre_completo` (compuesto). El `Usuario` referencia a la
+`Persona` por `persona_id` y desnormaliza `dni` y `nombre_completo` para display
+eficiente (el repositorio repuebla desde `Persona` en cada lectura).
+
+### Flujos de creación de usuario
+
+- **Wizard (bootstrap)**: `bootstrap_admin` exige DNI y crea una `Persona`
+  nueva (no se reutiliza DNI existente en la BD vacía). Cuando RENIEC está
+  configurado y la conectividad pasó, los nombres se autocompletan desde
+  RENIEC (`wizard_consultar_dni`). Sin RENIEC, los nombres se ingresan
+  manualmente (DNI obligatorio igualmente para trazabilidad).
+- **Tab Usuarios (gestión)**: `crear_usuario` exige DNI. Si la `Persona` con
+  ese DNI ya existe, se **reutiliza** (vincula); si no, se crea nueva.
+
+### Comandos Tauri
+
+- `wizard_consultar_dni(token, numero)` — RENIEC en contexto de wizard
+  (sin sesión, con token del paso 2).
+- `consultar_dni_para_usuario(numero)` — RENIEC en contexto de gestión
+  (requiere `UsuariosManage`).
+- `consultar_dni_reniec(numero)` — RENIEC en contexto de docentes
+  (requiere `DocentesView`).
+
+### Componente compartido
+
+`src/shared/forms/DniField.tsx` y `src/shared/forms/useDniValidation.ts`
+proveen el patrón DNI + validar + auto-completar, reutilizado por el wizard y
+la tab Usuarios. El flujo de docentes conserva su `DniValidationSection` legacy
+por estabilidad.
+
+### Edición de identidad
+
+La edición del nombre/DNI de un usuario existente está **fuera del scope**
+actual: la pestaña Usuarios muestra DNI/nombre como solo lectura cuando se
+edita un usuario y delega la edición a la ficha de Persona. Esta es una
+decisión consciente: el nombre proviene de Persona; cambiarlo requiere editar
+la Persona, lo cual se cubre en un follow-up dedicado.
 
 ---
 
@@ -181,10 +238,35 @@ cargo clippy             # Linter Rust
 
 | Servicio | Propósito | Configuración |
 |----------|-----------|---------------|
-| MongoDB Atlas | Base de datos principal | `PJUPI_MONGODB_URI` + `PJUPI_MONGODB_DB` |
-| RENIEC | Consulta de DNI | `PJUPI_RENIEC_TOKEN` |
-| RENACYT | Registro de investigadores | URL base + versión de acto |
-| Pure (Elsevier) | Sincronización de publicaciones | `PJUPI_PURE_API_BASE_URL` + `PJUPI_PURE_API_KEY` |
+| MongoDB Atlas | Base de datos principal | `PJVPIN_MONGODB_URI` + `PJVPIN_MONGODB_DB` (default: `pjvpin`) |
+| RENIEC | Consulta de DNI | `PJVPIN_RENIEC_TOKEN` (URL base por defecto: `https://api.decolecta.com/v1`) |
+| RENACYT | Registro de investigadores | `PJVPIN_RENACYT_API_BASE_URL` (default en `shared/defaults.rs`) |
+| Pure (Elsevier) | Sincronización de publicaciones | `PJVPIN_PURE_API_BASE_URL` + `PJVPIN_PURE_API_KEY` |
+
+**URLs por defecto** (single source of truth): `src-tauri/src/shared/defaults.rs` (Rust) y `src/shared/config/defaults.ts` (frontend). No usar literales en otros sitios.
+
+### Asistente de configuración (wizard)
+
+- **Detección**: `wizard_has_config` consulta `AppState.mongo_db` y cuenta usuarios en la colección `usuarios`. Retorna `false` si MongoDB no está conectado O la colección está vacía. El wizard se muestra siempre que falte al menos un usuario.
+- **Auto-creación de config desactivada**: `load_runtime_config` NO crea `pjvpin.config.json` con defaults. Sin config, la app arranca en modo wizard (`mongo: None`, sin `seed_catalogos`).
+- **Re-bootstrap**: si config existe pero `usuarios` está vacío (DB borrada, wizard interrumpido), el wizard se muestra de nuevo.
+- **Conexión temporal en `registrar_primer_usuario`**: si `AppState.mongo` es `None`, el handler crea una conexión `Client::with_uri_str(uri)` desde `request.mongodb_uri` para que el bootstrap funcione en true first-run.
+- **Persistencia**: `wizard_save_config` escribe `pjvpin.config.json` en plaintext (coherente con `load_runtime_config`). Ver "Deuda Técnica" para plan de cifrado.
+
+### Tests de conectividad del wizard
+
+Los tests validan los **endpoints reales** que la app usa en producción. Endpoints centralizados en `src-tauri/src/shared/defaults.rs`.
+
+| Servicio | Endpoint de test | Criterio de éxito | Criterio de fallo |
+|----------|------------------|-------------------|-------------------|
+| **MongoDB** | `admin.runCommand({ping:1})` vía driver | 200 OK sin error | Error de red o auth |
+| **RENIEC** | `GET {base}/reniec/dni?numero={RENIEC_TEST_DNI}` con `Authorization: Bearer {token}` | HTTP 200 o HTTP 404 (DNI de prueba no existe, pero endpoint y token OK) | HTTP 401/403 (token inválido), 5xx u otro 4xx |
+| **RENACYT** | `GET {base}/actoRegistral/obtenerActoRegistralActivoCtiVitae/{RENACYT_TEST_ACTO_VERSION}/{RENACYT_TEST_CTI_VITAE}` (público) | HTTP 200 | HTTP 404 (URL base mal), 5xx |
+| **Pure** | `GET {base}/persons?size=1` con header `api-key` | HTTP 200 con JSON (api-key válida) | HTTP 401 (key inválida), 403 (sin permisos), 5xx |
+
+**Valores de prueba** (`defaults.rs`): `RENIEC_TEST_DNI="00000000"`, `RENACYT_TEST_CTI_VITAE="80203"`, `RENACYT_TEST_ACTO_VERSION="2021"`. Todos son registros públicos (RENIEC y RENACYT/CTI Vitae).
+
+Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y los handlers en `config_wizard.rs` para apuntar al nuevo endpoint.
 
 ---
 
@@ -227,5 +309,10 @@ cargo clippy             # Linter Rust
 | ✅ Resuelto | `pure_cmd.rs` bypassea capa de servicios → pure_service.rs creado |
 | ✅ Resuelto | `chrono` centralizado en `time.rs` y `renacyt_client.rs` |
 | ✅ Resuelto | `access_control.rs` dividido en `rbac.rs` + handlers + auditoría genérica en 11 operaciones |
+| ✅ Resuelto | `has_existing_config` chequeaba solo archivo → `wizard_has_config` ahora consulta usuarios en MongoDB |
+| ✅ Resuelto | `load_runtime_config` auto-creaba config con defaults → ya no auto-crea, arranca en modo wizard |
+| ✅ Resuelto | `save_wizard_config` escribía `.json.enc` (cifrado dead code) → escribe `pjvpin.config.json` plaintext |
+| ✅ Resuelto | URLs hardcoded duplicadas → centralizadas en `src-tauri/src/shared/defaults.rs` y `src/shared/config/defaults.ts` |
+| 🟡 Medio | Cifrado de config en disco: eliminar `encryption.rs` (hecho), re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) |
 | 🟡 Bajo | Auditoría pendiente en recursos (12 operaciones) y update/reactivate de docentes/grados/proyectos |
 | 🟡 Medio | Dropdowns de recursos aún usan placeholders; integrar con catálogos (FormSelect dinámico) |

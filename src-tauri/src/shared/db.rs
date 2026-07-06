@@ -10,7 +10,7 @@ use crate::shared::error::AppError;
 pub async fn init_mongo(config: &DatabaseConfig) -> Result<Database, AppError> {
     let uri = config.mongodb_uri.as_deref().ok_or_else(|| {
         AppError::ConfigurationError(
-            "Falta configurar PJUPI_MONGODB_URI para usar MongoDB.".to_string(),
+            "Falta configurar PJVPIN_MONGODB_URI para usar MongoDB.".to_string(),
         )
     })?;
 

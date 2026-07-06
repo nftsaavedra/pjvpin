@@ -4,6 +4,10 @@ export interface Usuario {
   nombre_completo: string;
   rol: string;
   activo: number;
+  docente_id?: string | null;
+  persona_id?: string | null;
+  dni?: string | null;
+  updated_at?: number | null;
 }
 
 export interface AuthStatus {

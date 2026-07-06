@@ -63,17 +63,17 @@ pub fn run() {
                 project_env_path.as_deref(),
             )?;
 
-            if let Err(error) = validate_database_config(&runtime_config.database) {
-                let error_msg = format!(
-                    "Error de configuracion: {}\n\nArchivo de configuracion: {:?}\n\nPara re-configurar la aplicacion, elimine el archivo de configuracion y reinicie.",
-                    error,
-                    user_config_path
-                );
-                tracing::error!("{}", error_msg);
-                return Err(std::io::Error::other(error_msg).into());
-            }
+            let mongo_db = if runtime_config.database.mongodb_uri.is_some() {
+                if let Err(error) = validate_database_config(&runtime_config.database) {
+                    let error_msg = format!(
+                        "Error de configuracion: {}\n\nArchivo de configuracion: {:?}\n\nPara re-configurar la aplicacion, elimine el archivo de configuracion y reinicie.",
+                        error,
+                        user_config_path
+                    );
+                    tracing::error!("{}", error_msg);
+                    return Err(std::io::Error::other(error_msg).into());
+                }
 
-            let mongo_db = if runtime_config.database.requires_mongodb() {
                 let database = tauri::async_runtime::block_on(async {
                     shared::db::init_mongo(&runtime_config.database).await
                 })
@@ -91,19 +91,20 @@ pub fn run() {
                     ))
                 })?;
 
-                Some(database)
-            } else {
-                None
-            };
-
-            if let Some(ref db) = mongo_db {
                 tauri::async_runtime::block_on(async {
-                    catalogos::repository::seed_catalogos(db).await
+                    catalogos::repository::seed_catalogos(&database).await
                 })
                 .map_err(|e| {
                     std::io::Error::other(format!("Error sembrando catalogos: {}", e))
                 })?;
-            }
+
+                Some(database)
+            } else {
+                tracing::info!(
+                    "Sin configuracion MongoDB. Iniciando en modo wizard (sin conexion a BD)."
+                );
+                None
+            };
 
             app.manage(AppState::new(
                 mongo_db,
@@ -178,6 +179,7 @@ pub fn run() {
             usuario_cmds::actualizar_usuario,
             usuario_cmds::desactivar_usuario,
             usuario_cmds::reactivar_usuario,
+            usuario_cmds::consultar_dni_para_usuario,
             // Seguridad
             security_cmds::get_security_status,
             security_cmds::get_setup_guide,
@@ -190,6 +192,7 @@ pub fn run() {
             security_cmds::wizard_test_pure,
             security_cmds::wizard_save_config,
             security_cmds::wizard_validate_master_password,
+            security_cmds::wizard_consultar_dni,
             // Pure (moved to shared/external)
             crate::shared::external::pure_cmd::sincronizar_publicaciones_pure,
             crate::shared::external::pure_cmd::get_publicaciones_docente,

@@ -1,5 +1,0 @@
-@layer components {
-  .export-controls { @apply flex gap-4 items-center flex-wrap; }
-  .export-controls .form-input { @apply min-w-[300px] px-4 py-3 border border-gray-200 rounded-lg text-base bg-white text-gray-800 cursor-pointer; }
-  .export-controls .btn-primary { @apply whitespace-nowrap; }
-}

@@ -19,6 +19,7 @@ dist-ssr/
 # === Rust / Tauri ===
 /src-tauri/target/
 /src-tauri/bundle/
+/src-tauri/gen/
 
 # === Test / Coverage ===
 coverage/
@@ -39,12 +40,16 @@ coverage/
 scripts/
 .agents/
 .continue/
+.opencode/
 .vscode/*
 !.vscode/extensions.json
 .idea/
 
 # === Documentacion interna (Obsidian vault) ===
 _docs/
+
+# === Documentacion de desarrollo (planes de prueba, analisis, disenos) ===
+docs/
 
 # === Archivos de OS ===
 .DS_Store
@@ -71,6 +76,3 @@ lerna-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
-
-
-.opencode

@@ -52,7 +52,6 @@ function App() {
 
   const {
     authLoading,
-    requiresSetup,
     currentUser,
     handleAuthenticated: baseHandleAuth,
     handleLogout: baseHandleLogout,
@@ -136,7 +135,7 @@ function App() {
         </a>
       )}
       {!currentUser ? (
-        <AuthShell requiresSetup={requiresSetup} onAuthenticated={handleAuthenticated} />
+        <AuthShell onAuthenticated={handleAuthenticated} />
       ) : (
         <div className={`app-shell ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
           <aside id="app-sidebar" className="app-sidebar">

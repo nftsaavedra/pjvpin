@@ -1,5 +1,5 @@
-import React, { useId } from 'react';
-import { FieldHelpTooltip } from './FieldHelpTooltip';
+import React, { useId } from "react";
+import { FieldHelpTooltip } from "./FieldHelpTooltip";
 
 interface FormInputProps {
   label: string;
@@ -13,6 +13,7 @@ interface FormInputProps {
   readOnly?: boolean;
   disabled?: boolean;
   containerClassName?: string;
+  autoComplete?: string;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
@@ -20,23 +21,24 @@ export const FormInput: React.FC<FormInputProps> = ({
   value,
   onChange,
   placeholder,
-  type = 'text',
+  type = "text",
   maxLength,
   required = false,
   help,
   readOnly = false,
   disabled = false,
   containerClassName,
+  autoComplete,
 }) => {
   const inputId = useId();
   const helpId = help ? `${inputId}-help` : undefined;
 
   return (
-    <div className={containerClassName ? `form-group ${containerClassName}` : 'form-group'}>
+    <div className={containerClassName ? `form-group ${containerClassName}` : "form-group"}>
       <div className="form-label-row">
         <label htmlFor={inputId} className="form-label-text">
           {label}
-          {required && ' *'}
+          {required && " *"}
         </label>
         {help && <FieldHelpTooltip content={help} label={`Ayuda para ${label}`} />}
       </div>
@@ -44,7 +46,9 @@ export const FormInput: React.FC<FormInputProps> = ({
         id={inputId}
         type={type}
         value={value}
-        onChange={(e) => { onChange(e.target.value); }}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
         placeholder={placeholder}
         maxLength={maxLength}
         required={required}
@@ -52,8 +56,13 @@ export const FormInput: React.FC<FormInputProps> = ({
         aria-describedby={helpId}
         readOnly={readOnly}
         disabled={disabled}
+        autoComplete={autoComplete}
       />
-      {help && <span id={helpId} className="visually-hidden">{help}</span>}
+      {help && (
+        <span id={helpId} className="sr-only">
+          {help}
+        </span>
+      )}
     </div>
   );
 };

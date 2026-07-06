@@ -2,6 +2,7 @@ use std::{collections::HashMap, env, fs, path::Path};
 
 use serde::Deserialize;
 
+use crate::shared::defaults;
 use crate::shared::error::AppError;
 
 #[derive(Debug, Clone)]
@@ -50,7 +51,7 @@ impl DatabaseConfig {
             .get("PJVPIN_MONGODB_DB")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| "pjvpin".to_string());
+            .unwrap_or_else(|| defaults::DEFAULT_MONGODB_DB.to_string());
 
         Self {
             mongodb_uri,
@@ -69,7 +70,7 @@ impl ReniecConfig {
             .get("PJVPIN_RENIEC_API_BASE_URL")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| "https://api.decolecta.com/v1".to_string());
+            .unwrap_or_else(|| defaults::RENIEC_API_BASE_URL.to_string());
         let token = values
             .get("PJVPIN_RENIEC_TOKEN")
             .cloned()
@@ -90,19 +91,17 @@ impl RenacytConfig {
             .get("PJVPIN_RENACYT_API_BASE_URL")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| "https://renacyt.concytec.gob.pe/renacyt-backend".to_string());
+            .unwrap_or_else(|| defaults::RENACYT_API_BASE_URL.to_string());
         let acto_version = values
             .get("PJVPIN_RENACYT_ACTO_VERSION")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| "2021".to_string());
+            .unwrap_or_else(|| defaults::RENACYT_ACTO_VERSION.to_string());
         let ficha_base_url = values
             .get("PJVPIN_RENACYT_FICHA_BASE_URL")
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| {
-                "https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/".to_string()
-            });
+            .unwrap_or_else(|| defaults::RENACYT_FICHA_BASE_URL.to_string());
 
         Self {
             api_base_url,
@@ -118,7 +117,7 @@ impl PureConfig {
             .get("PJVPIN_PURE_API_BASE_URL")
             .map(|v| v.trim().to_string())
             .filter(|v| !v.is_empty())
-            .unwrap_or_else(|| "https://pure.unf.edu.pe/ws/api".to_string());
+            .unwrap_or_else(|| defaults::PURE_API_BASE_URL.to_string());
         let api_key = values
             .get("PJVPIN_PURE_API_KEY")
             .cloned()
@@ -143,15 +142,6 @@ pub fn load_runtime_config(
         fs::create_dir_all(parent).map_err(|error| {
             AppError::ConfigurationError(format!(
                 "No se pudo preparar el directorio de configuracion local: {}",
-                error
-            ))
-        })?;
-    }
-
-    if !user_config_path.exists() {
-        fs::write(user_config_path, default_json_config_template()).map_err(|error| {
-            AppError::ConfigurationError(format!(
-                "No se pudo crear el archivo de configuracion JSON inicial: {}",
                 error
             ))
         })?;
@@ -335,14 +325,4 @@ fn merge_env_file(values: &mut HashMap<String, String>, path: &Path) -> Result<(
     }
 
     Ok(())
-}
-
-#[cfg(not(test))]
-fn default_json_config_template() -> &'static str {
-    "{\n  \"database\": {\n    \"mongodbUri\": \"mongodb://localhost:27017\",\n    \"mongodbDb\": \"pjvpin\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
-}
-
-#[cfg(test)]
-fn default_json_config_template() -> &'static str {
-    "{\n  \"database\": {\n    \"mongodbUri\": \"\",\n    \"mongodbDb\": \"pjvpin_test\"\n  },\n  \"reniec\": {\n    \"apiBaseUrl\": \"https://api.decolecta.com/v1\",\n    \"token\": \"\"\n  },\n  \"renacyt\": {\n    \"apiBaseUrl\": \"https://renacyt.concytec.gob.pe/renacyt-backend\",\n    \"actoVersion\": \"2021\",\n    \"fichaBaseUrl\": \"https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/\"\n  },\n  \"pure\": {\n    \"apiBaseUrl\": \"https://pure.unf.edu.pe/ws/api\",\n    \"apiKey\": \"\"\n  }\n}\n"
 }

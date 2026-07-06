@@ -1,9 +1,9 @@
-import React, { type ButtonHTMLAttributes } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { FloatingTooltip } from '../overlays/FloatingTooltip';
-import { AppIcon } from './AppIcon';
+import React, { type ButtonHTMLAttributes } from "react";
+import type { LucideIcon } from "lucide-react";
+import { FloatingTooltip } from "../overlays/FloatingTooltip";
+import { AppIcon } from "./AppIcon";
 
-interface InlineIconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+interface InlineIconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   icon: LucideIcon;
   label: string;
   iconSize?: number;
@@ -13,7 +13,7 @@ export const InlineIconButton: React.FC<InlineIconButtonProps> = ({
   icon,
   label,
   className,
-  type = 'button',
+  type = "button",
   iconSize = 14,
   ...buttonProps
 }) => (
@@ -27,13 +27,15 @@ export const InlineIconButton: React.FC<InlineIconButtonProps> = ({
         <button
           type={type}
           ref={ref}
-          className={className ? `renacyt-inline-icon-button ${className}` : 'renacyt-inline-icon-button'}
+          className={
+            className ? `renacyt-inline-icon-button ${className}` : "renacyt-inline-icon-button"
+          }
           aria-label={label}
           {...triggerProps}
           {...buttonProps}
         >
           <AppIcon icon={icon} size={iconSize} />
-          <span className="visually-hidden">{label}</span>
+          <span className="sr-only">{label}</span>
         </button>
       </span>
     )}

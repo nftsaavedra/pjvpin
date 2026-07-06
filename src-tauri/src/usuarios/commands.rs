@@ -1,7 +1,9 @@
 use tauri::{State, Window};
 
 use super::handlers;
+use crate::docentes::models::ReniecDniLookupResult;
 use crate::shared::error::AppError;
+use crate::shared::rbac;
 use crate::shared::state::AppState;
 use crate::usuarios::models::{
     AuthStatus, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
@@ -15,6 +17,17 @@ pub async fn crear_usuario(
     request: CreateUsuarioRequest,
 ) -> Result<Usuario, AppError> {
     handlers::crear_usuario(&state, window.label(), request).await
+}
+
+#[tauri::command]
+pub async fn consultar_dni_para_usuario(
+    window: Window,
+    state: State<'_, AppState>,
+    numero: String,
+) -> Result<ReniecDniLookupResult, AppError> {
+    rbac::require_permission(&state, window.label(), rbac::AppPermission::UsuariosManage).await?;
+    let config = state.reniec_config();
+    crate::shared::external::reniec_client::consultar_dni(config, &numero).await
 }
 
 #[tauri::command]

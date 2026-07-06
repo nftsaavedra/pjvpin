@@ -1,3 +1,16 @@
+# === Normalizacion de line endings ===
+# Detectar texto automaticamente y normalizar a LF en commits cross-platform
+* text=auto eol=lf
+
+# === Scripts de Windows requieren CRLF para ejecucion correcta ===
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# === Shell scripts POSIX requieren LF ===
+*.sh text eol=lf
+
+# === Lockfiles: binarios grandes, no diff-friendly ===
 package-lock.json binary
 Cargo.lock binary
 pnpm-lock.yaml binary

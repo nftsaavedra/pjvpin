@@ -1,14 +1,13 @@
-import { BookOpen } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { AuthScreen } from '@/features/auth/AuthScreen';
-import { type Usuario } from '@/features/auth/api';
+import { BookOpen } from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { AuthScreen } from "@/features/auth/AuthScreen";
+import { type Usuario } from "@/features/auth/api";
 
 interface AuthShellProps {
-  requiresSetup: boolean;
   onAuthenticated: (usuario: Usuario) => void;
 }
 
-export function AuthShell({ requiresSetup, onAuthenticated }: AuthShellProps) {
+export function AuthShell({ onAuthenticated }: AuthShellProps) {
   return (
     <>
       <header className="app-header">
@@ -23,10 +22,7 @@ export function AuthShell({ requiresSetup, onAuthenticated }: AuthShellProps) {
         </div>
       </header>
       <main className="main-content auth-main">
-        <AuthScreen
-          mode={requiresSetup ? 'setup' : 'login'}
-          onAuthenticated={onAuthenticated}
-        />
+        <AuthScreen onAuthenticated={onAuthenticated} />
       </main>
     </>
   );

@@ -33,10 +33,6 @@ chrono = { version = "0.4.42", default-features = false, features = ["clock"] } 
 tauri-plugin-dialog = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-aes-gcm = "0.10"
-pbkdf2 = { version = "0.12", features = ["simple"] }
-sha2 = "0.10"
-hex = "0.4"
 
 [profile.dev]
 debug = 0

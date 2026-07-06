@@ -1,7 +1,7 @@
-import React, { useId, useState } from 'react';
-import { Shield } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import type { WizardState } from '../useWizardState';
+import React, { useId } from "react";
+import { Shield } from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import type { WizardState } from "../useWizardState";
 
 interface Props {
   state: WizardState;
@@ -10,11 +10,11 @@ interface Props {
 }
 
 const requirements = [
-  { test: (p: string) => p.trim().length >= 12, label: 'Al menos 12 caracteres' },
-  { test: (p: string) => /[A-Z]/.test(p), label: 'Al menos una mayuscula' },
-  { test: (p: string) => /[a-z]/.test(p), label: 'Al menos una minuscula' },
-  { test: (p: string) => /\d/.test(p), label: 'Al menos un digito' },
-  { test: (p: string) => /[^a-zA-Z0-9]/.test(p), label: 'Al menos un caracter especial' },
+  { test: (p: string) => p.trim().length >= 8, label: "Al menos 8 caracteres" },
+  { test: (p: string) => /[A-Z]/.test(p), label: "Al menos una mayuscula" },
+  { test: (p: string) => /[a-z]/.test(p), label: "Al menos una minuscula" },
+  { test: (p: string) => /\d/.test(p), label: "Al menos un digito" },
+  { test: (p: string) => /[^a-zA-Z0-9]/.test(p), label: "Al menos un caracter especial" },
 ];
 
 function allRequirementsMet(p: string) {
@@ -24,78 +24,91 @@ function allRequirementsMet(p: string) {
 export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) => {
   const passId = useId();
   const confirmId = useId();
-  const [confirmPassword, setConfirmPassword] = useState('');
 
   const password = state.masterPassword;
+  const confirmPassword = state.confirmPassword;
   const valid = allRequirementsMet(password);
   const match = password === confirmPassword;
   const canContinue = valid && match && confirmPassword.length > 0;
 
   return (
-    <div className="wizard-step">
-      <div className="wizard-step-header">
-        <AppIcon icon={Shield} size={32} />
-        <h2>Contraseña maestra de configuracion</h2>
-        <p>
-          Esta contraseña protege las credenciales del sistema. Solo la necesitara para modificar
-          la configuracion de servicios externos. No se le pedira al iniciar la app diariamente.
-        </p>
+    <div className="flex flex-col gap-6">
+      <div className="p-6 pb-4 border-b border-border bg-gradient-to-b from-primary-light to-card">
+        <div className="text-center">
+          <AppIcon icon={Shield} size={32} className="text-primary mb-2" />
+          <h2 className="text-xl font-bold m-0 mb-1.5 text-text-primary">
+            Contraseña maestra de configuracion
+          </h2>
+          <p className="text-sm leading-6 max-w-[44ch] mx-auto text-text-secondary">
+            Esta contraseña sera la clave de proteccion de credenciales. Actualmente se valida como
+            requisito de seguridad y se usara en una version futura para cifrar la configuracion en
+            disco.
+          </p>
+        </div>
       </div>
 
-      <div className="form">
-        <div className="form-group">
-          <label htmlFor={passId}>Contraseña maestra *</label>
-          <input
-            id={passId}
-            type="password"
-            className="form-input"
-            value={password}
-            onChange={(e) => { update('masterPassword', e.target.value); }}
-            placeholder="Defina su contraseña maestra"
-            autoComplete="new-password"
-            required
-          />
-        </div>
+      <div className="p-6">
+        <div className="form">
+          <div className="form-group">
+            <label htmlFor={passId}>Contraseña maestra *</label>
+            <input
+              id={passId}
+              type="password"
+              className="form-input"
+              value={password}
+              onChange={(e) => {
+                update("masterPassword", e.target.value);
+              }}
+              placeholder="Defina su contraseña maestra"
+              autoComplete="new-password"
+              required
+            />
+          </div>
 
-        <div className="form-group">
-          <label htmlFor={confirmId}>Confirmar contraseña *</label>
-          <input
-            id={confirmId}
-            type="password"
-            className="form-input"
-            value={confirmPassword}
-            onChange={(e) => { setConfirmPassword(e.target.value); }}
-            placeholder="Repita la contraseña"
-            autoComplete="new-password"
-            required
-          />
-          {!match && confirmPassword.length > 0 && (
-            <span className="form-hint form-hint-error">Las contraseñas no coinciden</span>
-          )}
-        </div>
+          <div className="form-group">
+            <label htmlFor={confirmId}>Confirmar contraseña *</label>
+            <input
+              id={confirmId}
+              type="password"
+              className="form-input"
+              value={confirmPassword}
+              onChange={(e) => {
+                update("confirmPassword", e.target.value);
+              }}
+              placeholder="Repita la contraseña"
+              autoComplete="new-password"
+              required
+            />
+            {!match && confirmPassword.length > 0 && (
+              <span className="form-hint form-hint-error">Las contraseñas no coinciden</span>
+            )}
+          </div>
 
-        <div className="wizard-requirements">
-          <p className="wizard-requirements-title">Requisitos:</p>
-          <ul className="wizard-requirements-list">
-            {requirements.map((r) => (
-              <li
-                key={r.label}
-                className={`wizard-req-item ${r.test(password) ? 'wizard-req-met' : ''}`}
-              >
-                {r.test(password) ? '✓' : '○'} {r.label}
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className="rounded-xl px-4 py-3.5 bg-bg border border-border">
+            <p className="text-xs font-bold m-0 mb-2 text-text-secondary">Requisitos:</p>
+            <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
+              {requirements.map((r) => (
+                <li
+                  key={r.label}
+                  className={`text-sm ${
+                    r.test(password) ? "text-secondary font-semibold" : "text-text-secondary"
+                  }`}
+                >
+                  {r.test(password) ? "✓" : "○"} {r.label}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <button
-          type="button"
-          className="btn-primary wizard-next"
-          disabled={!canContinue}
-          onClick={onNext}
-        >
-          Continuar
-        </button>
+          <button
+            type="button"
+            className="btn-primary mt-3 w-full"
+            disabled={!canContinue}
+            onClick={onNext}
+          >
+            Continuar
+          </button>
+        </div>
       </div>
     </div>
   );

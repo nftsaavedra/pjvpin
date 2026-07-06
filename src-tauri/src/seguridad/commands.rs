@@ -101,8 +101,17 @@ pub async fn get_security_recommendations() -> Result<SecurityRecommendations, A
 }
 
 #[tauri::command]
-pub async fn wizard_has_config() -> Result<bool, AppError> {
-    Ok(crate::shared::config_wizard::has_existing_config())
+pub async fn wizard_has_config(state: tauri::State<'_, AppState>) -> Result<bool, AppError> {
+    let db = match state.mongo_db() {
+        Ok(db) => db,
+        Err(_) => return Ok(false),
+    };
+    let count = db
+        .collection::<mongodb::bson::Document>("usuarios")
+        .count_documents(mongodb::bson::doc! {})
+        .await
+        .map_err(AppError::from)?;
+    Ok(count > 0)
 }
 
 #[tauri::command]
@@ -146,4 +155,20 @@ pub async fn wizard_save_config(
 #[tauri::command]
 pub async fn wizard_validate_master_password(password: String) -> Result<(), AppError> {
     crate::shared::config_wizard::validate_master_password(&password)
+}
+
+#[tauri::command]
+pub async fn wizard_consultar_dni(
+    token: String,
+    numero: String,
+) -> Result<crate::docentes::models::ReniecDniLookupResult, AppError> {
+    use crate::shared::config::ReniecConfig;
+    use crate::shared::defaults;
+    use crate::shared::external::reniec_client;
+
+    let config = ReniecConfig {
+        api_base_url: defaults::RENIEC_API_BASE_URL.to_string(),
+        token: Some(token),
+    };
+    reniec_client::consultar_dni(&config, &numero).await
 }
