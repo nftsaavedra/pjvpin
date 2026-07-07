@@ -8,6 +8,7 @@ use crate::shared::error::AppError;
 const CONNECTIVITY_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WizardConfigRequest {
     pub master_password: String,
     pub mongodb_uri: String,

@@ -87,8 +87,8 @@ export const useUsuariosTab = (
           username,
           dni: dni.dniLimpio,
           nombres: dni.nombres,
-          apellido_paterno: dni.apellidoPaterno,
-          apellido_materno: dni.apellidoMaterno,
+          apellidoPaterno: dni.apellidoPaterno,
+          apellidoMaterno: dni.apellidoMaterno,
           rol,
           password,
         });

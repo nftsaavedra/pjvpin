@@ -155,6 +155,7 @@ cargo clippy             # Linter Rust
 - **Módulos**: Un `mod.rs` por feature, exports públicos explícitos
 - **Errores**: Siempre `Result<T, AppError>`, nunca `unwrap()` en producción
 - **Nombres**: snake_case para funciones, CamelCase para tipos
+- **Inter-systema serde con frontend**: Todo struct Rust usado como argumento de `#[tauri::command]` que reciba JSON desde el frontend DEBE llevar `#[serde(rename_all = "camelCase")]` cuando sus fields sean multi-word en snake_case. El frontend TS SIEMPRE envía keys en camelCase (idiomático). Sin este atributo, la deserialización falla con `missing field X` (o silenciosamente pierde datos si el field es `Option<T>` con `#[serde(default)]`). Ejemplos correctos: `WizardConfigRequest`, `BootstrapUsuarioRequest`, `CreateUsuarioRequest`. Excepciones (no requieren rename): structs con fields single-word (`nombre`, `descripcion`) o que el frontend ya envía en snake por convención interna.
 - **Formato**: `rustfmt.toml` (100 chars, edition 2021, group_imports)
 - **Dependencias**: Mínimas, evitar crates innecesarios
 - **Timestamps**: Usar `shared::time::now_ms()` (unificado, basado en `std::time`)

@@ -37,6 +37,7 @@ pub struct UsuarioConPassword {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateUsuarioRequest {
     pub username: String,
     pub dni: String,
@@ -50,6 +51,7 @@ pub struct CreateUsuarioRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BootstrapUsuarioRequest {
     pub username: String,
     pub dni: String,

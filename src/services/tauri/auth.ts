@@ -14,8 +14,8 @@ export interface RegistrarPrimerUsuarioArgs {
   password: string;
   dni: string;
   nombres?: string;
-  apellido_paterno?: string;
-  apellido_materno?: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
   mongodbUri?: string;
   mongodbDb?: string;
 }

@@ -59,8 +59,8 @@ export const useWizardCreateAdmin = (options: UseWizardCreateAdminOptions) => {
         password,
         dni: dni.dniLimpio,
         nombres: dni.nombres,
-        apellido_paterno: dni.apellidoPaterno,
-        apellido_materno: dni.apellidoMaterno,
+        apellidoPaterno: dni.apellidoPaterno,
+        apellidoMaterno: dni.apellidoMaterno,
         mongodbUri,
         mongodbDb,
       });

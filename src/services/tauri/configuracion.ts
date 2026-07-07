@@ -35,8 +35,8 @@ export interface CrearUsuarioArgs {
   username: string;
   dni: string;
   nombres: string;
-  apellido_paterno: string;
-  apellido_materno?: string;
+  apellidoPaterno: string;
+  apellidoMaterno?: string;
   rol: string;
   password: string;
 }
@@ -47,8 +47,8 @@ export const crearUsuario = async (args: CrearUsuarioArgs): Promise<Usuario> => 
       username: args.username,
       dni: args.dni,
       nombres: args.nombres,
-      apellido_paterno: args.apellido_paterno,
-      apellido_materno: args.apellido_materno ?? null,
+      apellidoPaterno: args.apellidoPaterno,
+      apellidoMaterno: args.apellidoMaterno ?? null,
       rol: args.rol,
       password: args.password,
     },

@@ -15,6 +15,8 @@ pub mod state;
 pub mod time;
 
 #[cfg(test)]
+mod config_wizard_tests;
+#[cfg(test)]
 mod rate_limiter_tests;
 #[cfg(test)]
 mod rbac_tests;
