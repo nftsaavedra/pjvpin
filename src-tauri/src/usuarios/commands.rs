@@ -1,7 +1,7 @@
 use tauri::{State, Window};
 
 use super::handlers;
-use crate::docentes::models::ReniecDniLookupResult;
+use crate::investigadores::models::ReniecDniLookupResult;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;

@@ -1,7 +1,7 @@
 use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
-use crate::docentes::models::Docente;
+use crate::investigadores::models::Investigador;
 use crate::reportes::entity_reports::ReporteDocenteIntegral;
 use crate::shared::error::AppError;
 
@@ -13,7 +13,7 @@ pub async fn build_reportes_docentes_integral(
     db: &Database,
 ) -> Result<Vec<ReporteDocenteIntegral>, AppError> {
     let docentes = db
-        .collection::<Docente>("docentes")
+        .collection::<Investigador>("docentes")
         .find(doc! { "activo": 1i64 })
         .await?
         .try_collect::<Vec<_>>()

@@ -1,10 +1,10 @@
 use tauri::Manager;
 
 mod catalogos;
-mod docentes;
 mod eventos;
 mod grados;
 mod grupos;
+mod investigadores;
 mod personas;
 mod proyectos;
 mod publicaciones;
@@ -15,10 +15,10 @@ mod shared;
 mod usuarios;
 
 use catalogos::commands as catalogo_cmds;
-use docentes::commands as docente_cmds;
 use eventos::commands as evento_cmds;
 use grados::commands as grado_cmds;
 use grupos::commands as grupo_cmds;
+use investigadores::commands as investigador_cmds;
 use proyectos::commands as proyecto_cmds;
 use publicaciones::commands as publicacion_cmds;
 use recursos::commands as recurso_cmds;
@@ -116,18 +116,19 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            // Docentes
-            docente_cmds::crear_docente,
-            docente_cmds::get_all_docentes,
-            docente_cmds::get_all_docentes_paginated,
-            docente_cmds::buscar_docente_por_dni,
-            docente_cmds::get_all_docentes_con_proyectos,
-            docente_cmds::eliminar_docente,
-            docente_cmds::reactivar_docente,
-            docente_cmds::actualizar_docente,
-            docente_cmds::consultar_dni_reniec,
-            docente_cmds::consultar_renacyt_docente,
-            docente_cmds::refrescar_formacion_academica_renacyt_docente,
+            // Investigadores
+            investigador_cmds::crear_investigador,
+            investigador_cmds::get_all_investigadores,
+            investigador_cmds::get_all_investigadores_paginated,
+            investigador_cmds::buscar_investigador_por_dni,
+            investigador_cmds::get_all_investigadores_con_proyectos,
+            investigador_cmds::eliminar_investigador,
+            investigador_cmds::reactivar_investigador,
+            investigador_cmds::actualizar_investigador,
+            investigador_cmds::consultar_dni_reniec,
+            investigador_cmds::consultar_renacyt_investigador,
+            investigador_cmds::buscar_investigador_por_dni_con_renacyt,
+            investigador_cmds::refrescar_formacion_academica_renacyt_investigador,
             // Proyectos
             proyecto_cmds::crear_proyecto_con_participantes,
             proyecto_cmds::actualizar_proyecto_con_participantes,
@@ -195,7 +196,7 @@ pub fn run() {
             security_cmds::wizard_consultar_dni,
             // Pure (moved to shared/external)
             crate::shared::external::pure_cmd::sincronizar_publicaciones_pure,
-            crate::shared::external::pure_cmd::get_publicaciones_docente,
+            crate::shared::external::pure_cmd::get_publicaciones_investigador,
             // Grupos
             grupo_cmds::get_all_grupos,
             grupo_cmds::create_grupo,

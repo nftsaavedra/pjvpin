@@ -5,7 +5,7 @@ use crate::personas::models::Persona;
 use crate::shared::time;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CreateDocenteRenacytRequest {
+pub struct CreateInvestigadorRenacytRequest {
     pub codigo_registro: String,
     pub id_investigador: String,
     pub nivel: Option<String>,
@@ -40,13 +40,15 @@ pub struct RenacytLookupResult {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Docente {
+pub struct Investigador {
     pub id_docente: String,
     pub persona_id: String,
     pub id_grado: String,
     pub activo: i64,
     #[serde(default)]
     pub updated_at: Option<i64>,
+    #[serde(default = "default_perfil_docente")]
+    pub perfil: String,
     pub renacyt_codigo_registro: Option<String>,
     pub renacyt_id_investigador: Option<String>,
     pub renacyt_nivel: Option<String>,
@@ -64,8 +66,13 @@ pub struct Docente {
     pub grupo_investigacion_id: Option<String>,
 }
 
+fn default_perfil_docente() -> String {
+    "docente".to_string()
+}
+
 #[derive(Debug, Deserialize)]
-pub struct CreateDocenteRequest {
+#[serde(rename_all = "camelCase")]
+pub struct CreateInvestigadorRequest {
     pub dni: String,
     pub id_grado: String,
     pub nombres: String,
@@ -76,11 +83,13 @@ pub struct CreateDocenteRequest {
     pub direccion: Option<String>,
     pub sexo: Option<String>,
     pub fecha_nacimiento: Option<i64>,
-    pub renacyt: Option<CreateDocenteRenacytRequest>,
+    #[serde(default = "default_perfil_docente")]
+    pub perfil: String,
+    pub renacyt: Option<CreateInvestigadorRenacytRequest>,
 }
 
 #[derive(Debug, Serialize)]
-pub struct DocenteDetalle {
+pub struct InvestigadorDetalle {
     pub id_docente: String,
     pub persona_id: String,
     pub dni: String,
@@ -95,6 +104,7 @@ pub struct DocenteDetalle {
     pub cantidad_proyectos: i64,
     pub proyectos: Option<String>,
     pub activo: i64,
+    pub perfil: String,
     pub renacyt_codigo_registro: Option<String>,
     pub renacyt_id_investigador: Option<String>,
     pub renacyt_nivel: Option<String>,
@@ -110,12 +120,14 @@ pub struct DocenteDetalle {
     pub renacyt_formaciones_academicas_json: Option<String>,
 }
 
-impl From<(Docente, Persona, String, Vec<String>)> for DocenteDetalle {
-    fn from((docente, persona, grado, proyectos): (Docente, Persona, String, Vec<String>)) -> Self {
+impl From<(Investigador, Persona, String, Vec<String>)> for InvestigadorDetalle {
+    fn from(
+        (investigador, persona, grado, proyectos): (Investigador, Persona, String, Vec<String>),
+    ) -> Self {
         let cantidad_proyectos = proyectos.len() as i64;
-        DocenteDetalle {
-            id_docente: docente.id_docente,
-            persona_id: docente.persona_id,
+        InvestigadorDetalle {
+            id_docente: investigador.id_docente,
+            persona_id: investigador.persona_id,
             dni: persona.dni,
             nombres_apellidos: persona.nombre_completo,
             nombres: persona.nombres,
@@ -131,20 +143,21 @@ impl From<(Docente, Persona, String, Vec<String>)> for DocenteDetalle {
             } else {
                 Some(proyectos.join(" | "))
             },
-            activo: docente.activo,
-            renacyt_codigo_registro: docente.renacyt_codigo_registro,
-            renacyt_id_investigador: docente.renacyt_id_investigador,
-            renacyt_nivel: docente.renacyt_nivel,
-            renacyt_grupo: docente.renacyt_grupo,
-            renacyt_condicion: docente.renacyt_condicion,
-            renacyt_fecha_informe_calificacion: docente.renacyt_fecha_informe_calificacion,
-            renacyt_fecha_registro: docente.renacyt_fecha_registro,
-            renacyt_fecha_ultima_revision: docente.renacyt_fecha_ultima_revision,
-            renacyt_orcid: docente.renacyt_orcid,
-            renacyt_scopus_author_id: docente.renacyt_scopus_author_id,
-            renacyt_fecha_ultima_sincronizacion: docente.renacyt_fecha_ultima_sincronizacion,
-            renacyt_ficha_url: docente.renacyt_ficha_url,
-            renacyt_formaciones_academicas_json: docente.renacyt_formaciones_academicas_json,
+            activo: investigador.activo,
+            perfil: investigador.perfil,
+            renacyt_codigo_registro: investigador.renacyt_codigo_registro,
+            renacyt_id_investigador: investigador.renacyt_id_investigador,
+            renacyt_nivel: investigador.renacyt_nivel,
+            renacyt_grupo: investigador.renacyt_grupo,
+            renacyt_condicion: investigador.renacyt_condicion,
+            renacyt_fecha_informe_calificacion: investigador.renacyt_fecha_informe_calificacion,
+            renacyt_fecha_registro: investigador.renacyt_fecha_registro,
+            renacyt_fecha_ultima_revision: investigador.renacyt_fecha_ultima_revision,
+            renacyt_orcid: investigador.renacyt_orcid,
+            renacyt_scopus_author_id: investigador.renacyt_scopus_author_id,
+            renacyt_fecha_ultima_sincronizacion: investigador.renacyt_fecha_ultima_sincronizacion,
+            renacyt_ficha_url: investigador.renacyt_ficha_url,
+            renacyt_formaciones_academicas_json: investigador.renacyt_formaciones_academicas_json,
         }
     }
 }
@@ -159,22 +172,26 @@ pub struct ReniecDniLookupResult {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct EliminarDocenteResultado {
+pub struct EliminarInvestigadorResultado {
     pub accion: String,
     pub mensaje: String,
 }
 
 #[derive(Debug, Serialize)]
-pub struct RefreshDocenteRenacytFormacionResultado {
-    pub docente: DocenteDetalle,
+pub struct RefreshInvestigadorRenacytFormacionResultado {
+    pub investigador: InvestigadorDetalle,
     pub actualizada: bool,
     pub mensaje: String,
 }
 
-impl Docente {
-    pub fn new(persona_id: String, request: &CreateDocenteRequest) -> Self {
+impl Investigador {
+    pub fn new(persona_id: String, request: &CreateInvestigadorRequest) -> Self {
         let renacyt = &request.renacyt;
         let fecha_ultima_sincronizacion = renacyt.as_ref().map(|_| time::now_ms());
+        let perfil = match request.perfil.as_str() {
+            "docente" | "tesista" | "alumno_egresado" => request.perfil.clone(),
+            _ => "docente".to_string(),
+        };
 
         Self {
             id_docente: Uuid::new_v4().to_string(),
@@ -182,6 +199,7 @@ impl Docente {
             id_grado: request.id_grado.clone(),
             activo: 1,
             updated_at: Some(time::now_ms()),
+            perfil,
             renacyt_codigo_registro: renacyt
                 .as_ref()
                 .map(|value| value.codigo_registro.trim().to_string())
@@ -305,7 +323,8 @@ pub struct SyncPublicacionesResult {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct UpdateDocenteRequest {
+#[serde(rename_all = "camelCase")]
+pub struct UpdateInvestigadorRequest {
     pub nombres: Option<String>,
     pub apellido_paterno: Option<String>,
     pub apellido_materno: Option<String>,
@@ -316,4 +335,5 @@ pub struct UpdateDocenteRequest {
     pub fecha_nacimiento: Option<i64>,
     pub id_grado: Option<String>,
     pub grupo_investigacion_id: Option<String>,
+    pub perfil: Option<String>,
 }

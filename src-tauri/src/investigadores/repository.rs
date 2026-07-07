@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::docentes::models::{
-    CreateDocenteRequest, Docente, DocenteDetalle, EliminarDocenteResultado,
+use crate::investigadores::models::{
+    CreateInvestigadorRequest, EliminarInvestigadorResultado, Investigador, InvestigadorDetalle,
 };
-use crate::docentes::service::build_delete_result;
+use crate::investigadores::service::build_delete_result;
 use crate::personas;
 use crate::personas::models::CreatePersonaRequest;
 use crate::shared::error::AppError;
@@ -13,10 +13,12 @@ use mongodb::{bson::doc, Database};
 
 use crate::shared::data_loader;
 
-pub async fn create_docente(
+const COLLECTION_INVESTIGADORES: &str = "docentes";
+
+pub async fn create_investigador(
     db: &Database,
-    request: CreateDocenteRequest,
-) -> Result<Docente, AppError> {
+    request: CreateInvestigadorRequest,
+) -> Result<Investigador, AppError> {
     let persona = personas::repository::create(
         db,
         CreatePersonaRequest {
@@ -43,22 +45,22 @@ pub async fn create_docente(
         ));
     }
 
-    let docente = Docente::new(persona.id_persona, &request);
-    db.collection::<Docente>("docentes")
-        .insert_one(&docente)
+    let investigador = Investigador::new(persona.id_persona, &request);
+    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
+        .insert_one(&investigador)
         .await?;
-    Ok(docente)
+    Ok(investigador)
 }
 
-pub async fn get_all_docentes(db: &Database) -> Result<Vec<Docente>, AppError> {
-    let mut docentes = db
-        .collection::<Docente>("docentes")
+pub async fn get_all_investigadores(db: &Database) -> Result<Vec<Investigador>, AppError> {
+    let mut investigadores = db
+        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .find(doc! { "activo": 1i64 })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
     let personas = data_loader::load_personas_map(db).await?;
-    docentes.sort_by(|a, b| {
+    investigadores.sort_by(|a, b| {
         let na = personas
             .get(&a.persona_id)
             .map(|p| p.nombre_completo.to_lowercase())
@@ -69,39 +71,39 @@ pub async fn get_all_docentes(db: &Database) -> Result<Vec<Docente>, AppError> {
             .unwrap_or_default();
         na.cmp(&nb)
     });
-    Ok(docentes)
+    Ok(investigadores)
 }
 
-pub async fn get_all_docentes_paginated(
+pub async fn get_all_investigadores_paginated(
     db: &Database,
     page: u32,
     limit: u32,
-) -> Result<PaginatedResult<Docente>, AppError> {
+) -> Result<PaginatedResult<Investigador>, AppError> {
     let skip = (page.saturating_sub(1) * limit) as u64;
     let limit_i64 = limit as i64;
     let filter = doc! { "activo": 1i64 };
 
     let total = db
-        .collection::<Docente>("docentes")
+        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .count_documents(filter.clone())
         .await?;
 
     let mut cursor = db
-        .collection::<Docente>("docentes")
+        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .find(filter)
         .sort(doc! { "id_docente": 1 })
         .skip(skip)
         .limit(limit_i64)
         .await?;
 
-    let mut docentes: Vec<Docente> = Vec::new();
-    while let Some(docente) = cursor.try_next().await? {
-        docentes.push(docente);
+    let mut investigadores: Vec<Investigador> = Vec::new();
+    while let Some(investigador) = cursor.try_next().await? {
+        investigadores.push(investigador);
     }
 
     let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
     Ok(PaginatedResult {
-        items: docentes,
+        items: investigadores,
         total,
         page,
         limit,
@@ -109,11 +111,14 @@ pub async fn get_all_docentes_paginated(
     })
 }
 
-pub async fn get_docente_by_dni(db: &Database, dni: &str) -> Result<Option<Docente>, AppError> {
+pub async fn get_investigador_by_dni(
+    db: &Database,
+    dni: &str,
+) -> Result<Option<Investigador>, AppError> {
     let persona = personas::repository::find_by_dni(db, dni).await?;
     match persona {
         Some(p) => db
-            .collection::<Docente>("docentes")
+            .collection::<Investigador>(COLLECTION_INVESTIGADORES)
             .find_one(doc! { "persona_id": &p.id_persona })
             .await
             .map_err(Into::into),
@@ -121,32 +126,41 @@ pub async fn get_docente_by_dni(db: &Database, dni: &str) -> Result<Option<Docen
     }
 }
 
-pub async fn get_docente_by_id(db: &Database, id_docente: &str) -> Result<Docente, AppError> {
-    db.collection::<Docente>("docentes")
+pub async fn get_investigador_by_id(
+    db: &Database,
+    id_docente: &str,
+) -> Result<Investigador, AppError> {
+    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .find_one(doc! { "id_docente": id_docente })
         .await?
-        .ok_or_else(|| AppError::NotFound("Docente no encontrado.".to_string()))
+        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
 }
 
-pub async fn update_docente_renacyt(db: &Database, docente: &Docente) -> Result<(), AppError> {
-    db.collection::<Docente>("docentes")
-        .replace_one(doc! { "id_docente": &docente.id_docente }, docente)
+pub async fn update_investigador_renacyt(
+    db: &Database,
+    investigador: &Investigador,
+) -> Result<(), AppError> {
+    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
+        .replace_one(
+            doc! { "id_docente": &investigador.id_docente },
+            investigador,
+        )
         .await?;
 
     Ok(())
 }
 
-pub async fn get_all_docentes_con_proyectos(
+pub async fn get_all_investigadores_con_proyectos(
     db: &Database,
-) -> Result<Vec<DocenteDetalle>, AppError> {
-    let mut docentes = db
-        .collection::<Docente>("docentes")
+) -> Result<Vec<InvestigadorDetalle>, AppError> {
+    let mut investigadores = db
+        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .find(doc! {})
         .await?
         .try_collect::<Vec<_>>()
         .await?;
     let personas = data_loader::load_personas_map(db).await?;
-    docentes.sort_by(|a, b| {
+    investigadores.sort_by(|a, b| {
         let na = personas
             .get(&a.persona_id)
             .map(|p| p.nombre_completo.to_lowercase())
@@ -162,11 +176,11 @@ pub async fn get_all_docentes_con_proyectos(
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
 
-    let mut proyectos_por_docente: HashMap<String, Vec<String>> = HashMap::new();
+    let mut proyectos_por_investigador: HashMap<String, Vec<String>> = HashMap::new();
     for participacion in participaciones {
         if let Some(proyecto) = proyectos.get(&participacion.id_proyecto) {
             if proyecto.activo {
-                proyectos_por_docente
+                proyectos_por_investigador
                     .entry(participacion.id_docente)
                     .or_default()
                     .push(proyecto.titulo_proyecto.clone());
@@ -174,69 +188,69 @@ pub async fn get_all_docentes_con_proyectos(
         }
     }
 
-    let detalles = docentes
+    let detalles = investigadores
         .into_iter()
-        .map(|docente| {
-            let proyectos_docente = proyectos_por_docente
-                .remove(&docente.id_docente)
+        .map(|investigador| {
+            let proyectos_investigador = proyectos_por_investigador
+                .remove(&investigador.id_docente)
                 .unwrap_or_default();
             let grado = grados
-                .get(&docente.id_grado)
+                .get(&investigador.id_grado)
                 .map(|grado| grado.nombre.clone())
                 .unwrap_or_else(|| "Sin grado".to_string());
             let persona = personas
-                .get(&docente.persona_id)
+                .get(&investigador.persona_id)
                 .cloned()
-                .expect("Persona must exist for docente");
+                .expect("Persona must exist for investigador");
 
-            DocenteDetalle::from((docente, persona, grado, proyectos_docente))
+            InvestigadorDetalle::from((investigador, persona, grado, proyectos_investigador))
         })
         .collect();
 
     Ok(detalles)
 }
 
-pub async fn get_docente_detalle_by_id(
+pub async fn get_investigador_detalle_by_id(
     db: &Database,
     id_docente: &str,
-) -> Result<DocenteDetalle, AppError> {
-    let docente = get_docente_by_id(db, id_docente).await?;
-    let persona = personas::repository::find_by_id(db, &docente.persona_id).await?;
+) -> Result<InvestigadorDetalle, AppError> {
+    let investigador = get_investigador_by_id(db, id_docente).await?;
+    let persona = personas::repository::find_by_id(db, &investigador.persona_id).await?;
     let grados = data_loader::load_grados_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
 
-    let proyectos_docente = participaciones
+    let proyectos_investigador = participaciones
         .into_iter()
-        .filter(|participacion| participacion.id_docente == docente.id_docente)
+        .filter(|participacion| participacion.id_docente == investigador.id_docente)
         .filter_map(|participacion| proyectos.get(&participacion.id_proyecto))
         .filter(|proyecto| proyecto.activo)
         .map(|proyecto| proyecto.titulo_proyecto.clone())
         .collect::<Vec<_>>();
 
     let grado = grados
-        .get(&docente.id_grado)
+        .get(&investigador.id_grado)
         .map(|grado| grado.nombre.clone())
         .unwrap_or_else(|| "Sin grado".to_string());
 
-    Ok(DocenteDetalle::from((
-        docente,
+    Ok(InvestigadorDetalle::from((
+        investigador,
         persona,
         grado,
-        proyectos_docente,
+        proyectos_investigador,
     )))
 }
 
-pub async fn delete_docente(
+pub async fn delete_investigador(
     db: &Database,
     id_docente: &str,
-) -> Result<EliminarDocenteResultado, AppError> {
+) -> Result<EliminarInvestigadorResultado, AppError> {
     let participaciones = db
         .collection::<mongodb::bson::Document>("participaciones")
         .count_documents(doc! { "id_docente": id_docente })
         .await?;
 
-    db.collection::<mongodb::bson::Document>("docentes")
+    db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
         .update_one(
             doc! { "id_docente": id_docente },
             doc! { "$set": { "activo": 0i64 } },
@@ -246,26 +260,29 @@ pub async fn delete_docente(
     Ok(build_delete_result(participaciones > 0))
 }
 
-pub async fn reactivar_docente(db: &Database, id_docente: &str) -> Result<Docente, AppError> {
-    db.collection::<mongodb::bson::Document>("docentes")
+pub async fn reactivar_investigador(
+    db: &Database,
+    id_docente: &str,
+) -> Result<Investigador, AppError> {
+    db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
         .update_one(
             doc! { "id_docente": id_docente },
             doc! { "$set": { "activo": 1i64 } },
         )
         .await?;
 
-    db.collection::<Docente>("docentes")
+    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .find_one(doc! { "id_docente": id_docente })
         .await?
-        .ok_or_else(|| AppError::NotFound("Docente no encontrado.".to_string()))
+        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
 }
 
-pub async fn update_docente(
+pub async fn update_investigador(
     db: &Database,
     id_docente: &str,
-    request: &crate::docentes::models::UpdateDocenteRequest,
-) -> Result<Docente, AppError> {
-    let docente = get_docente_by_id(db, id_docente).await?;
+    request: &crate::investigadores::models::UpdateInvestigadorRequest,
+) -> Result<Investigador, AppError> {
+    let investigador = get_investigador_by_id(db, id_docente).await?;
 
     if request.nombres.is_some()
         || request.apellido_paterno.is_some()
@@ -277,7 +294,7 @@ pub async fn update_docente(
         use crate::personas::models::UpdatePersonaRequest;
         personas::repository::update(
             db,
-            &docente.persona_id,
+            &investigador.persona_id,
             UpdatePersonaRequest {
                 nombres: request.nombres.clone(),
                 apellido_paterno: request.apellido_paterno.clone(),
@@ -301,16 +318,21 @@ pub async fn update_docente(
     if let Some(ref v) = request.grupo_investigacion_id {
         set.insert("grupo_investigacion_id", v);
     }
+    if let Some(ref v) = request.perfil {
+        set.insert("perfil", v);
+    }
 
-    let has_changes = request.id_grado.is_some() || request.grupo_investigacion_id.is_some();
+    let has_changes = request.id_grado.is_some()
+        || request.grupo_investigacion_id.is_some()
+        || request.perfil.is_some();
     if has_changes {
-        db.collection::<mongodb::bson::Document>("docentes")
+        db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
             .update_one(doc! { "id_docente": id_docente }, doc! { "$set": set })
             .await?;
     }
 
-    db.collection::<Docente>("docentes")
+    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .find_one(doc! { "id_docente": id_docente })
         .await?
-        .ok_or_else(|| AppError::NotFound("Docente no encontrado.".to_string()))
+        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
 }

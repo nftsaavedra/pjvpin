@@ -1,4 +1,4 @@
-use crate::docentes::models::Docente;
+use crate::investigadores::models::Investigador as Docente;
 use crate::proyectos::models::ParticipacionRecord;
 use crate::proyectos::models::{
     CreateProyectoConParticipantesRequest, CreateProyectoRequest, EliminarProyectoResultado,

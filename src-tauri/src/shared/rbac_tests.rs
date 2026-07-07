@@ -6,8 +6,8 @@ mod tests {
     fn test_superuser_has_all_permissions() {
         let all_perms = [
             AppPermission::DashboardView,
-            AppPermission::DocentesView,
-            AppPermission::DocentesManage,
+            AppPermission::InvestigadoresView,
+            AppPermission::InvestigadoresManage,
             AppPermission::ProyectosView,
             AppPermission::ProyectosManage,
             AppPermission::ReportesView,
@@ -33,7 +33,10 @@ mod tests {
     #[test]
     fn test_admin_has_operational_permissions_and_usuarios_manage() {
         assert!(role_has_permission("admin", &AppPermission::DashboardView));
-        assert!(role_has_permission("admin", &AppPermission::DocentesManage));
+        assert!(role_has_permission(
+            "admin",
+            &AppPermission::InvestigadoresManage
+        ));
         assert!(role_has_permission(
             "admin",
             &AppPermission::ProyectosManage
@@ -86,15 +89,15 @@ mod tests {
         ));
         assert!(!role_has_permission(
             "responsable_proyecto",
-            &AppPermission::DocentesManage
+            &AppPermission::InvestigadoresManage
         ));
     }
 
     #[test]
-    fn test_responsable_proyecto_can_view_docentes() {
+    fn test_responsable_proyecto_can_view_investigadores() {
         assert!(role_has_permission(
             "responsable_proyecto",
-            &AppPermission::DocentesView
+            &AppPermission::InvestigadoresView
         ));
     }
 

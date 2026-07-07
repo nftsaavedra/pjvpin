@@ -4,7 +4,7 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
 use crate::catalogos::models::CatalogoItem;
-use crate::docentes::models::Docente;
+use crate::investigadores::models::Investigador;
 use crate::grados::models::GradoAcademico;
 use crate::grupos::models::GrupoInvestigacion;
 use crate::personas::models::Persona;
@@ -18,7 +18,7 @@ pub fn resolve_grado_nombre(grados: &HashMap<String, GradoAcademico>, id_grado: 
         .unwrap_or_else(|| "Sin grado".to_string())
 }
 
-pub fn resolve_renacyt_nivel(docente: &Docente) -> String {
+pub fn resolve_renacyt_nivel(docente: &Investigador) -> String {
     docente
         .renacyt_nivel
         .as_ref()
@@ -48,9 +48,9 @@ pub async fn load_grados_map(db: &Database) -> Result<HashMap<String, GradoAcade
         .collect())
 }
 
-pub async fn load_docentes_map(db: &Database) -> Result<HashMap<String, Docente>, AppError> {
+pub async fn load_docentes_map(db: &Database) -> Result<HashMap<String, Investigador>, AppError> {
     let docentes = db
-        .collection::<Docente>("docentes")
+        .collection::<Investigador>("docentes")
         .find(doc! {})
         .await?
         .try_collect::<Vec<_>>()

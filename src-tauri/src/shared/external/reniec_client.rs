@@ -1,6 +1,6 @@
 use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 
-use crate::docentes::models::ReniecDniLookupResult;
+use crate::investigadores::models::ReniecDniLookupResult;
 use crate::shared::config::ReniecConfig;
 use crate::shared::error::{sanitize_external_detail, AppError};
 

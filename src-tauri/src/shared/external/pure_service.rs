@@ -2,7 +2,7 @@ use futures_util::TryStreamExt;
 use mongodb::bson::doc;
 use mongodb::options::UpdateOptions;
 
-use crate::docentes::models::{Docente, Publicacion, SyncPublicacionesResult};
+use crate::investigadores::models::{Investigador, Publicacion, SyncPublicacionesResult};
 use crate::shared::error::AppError;
 use crate::shared::external::pure_client;
 use crate::shared::state::AppState;
@@ -10,24 +10,26 @@ use crate::shared::time;
 
 pub async fn sync_publicaciones(
     state: &AppState,
-    docente_id: &str,
+    investigador_id: &str,
 ) -> Result<SyncPublicacionesResult, AppError> {
     let db = state.mongo_db()?;
 
-    let docente = db
-        .collection::<Docente>("docentes")
-        .find_one(doc! { "id_docente": docente_id })
+    let investigador = db
+        .collection::<Investigador>("docentes")
+        .find_one(doc! { "id_docente": investigador_id })
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Docente '{}' no encontrado.", docente_id)))?;
+        .ok_or_else(|| {
+            AppError::NotFound(format!("Investigador '{}' no encontrado.", investigador_id))
+        })?;
 
-    let scopus_author_id = docente
+    let scopus_author_id = investigador
         .renacyt_scopus_author_id
         .as_deref()
         .filter(|s| !s.is_empty())
         .ok_or_else(|| {
             AppError::InternalError(
-                "El docente no tiene un Scopus Author ID registrado. \
-                Sincronice primero los datos RENACYT del docente para obtenerlo."
+                "El investigador no tiene un Scopus Author ID registrado. \
+                Sincronice primero los datos RENACYT del investigador para obtenerlo."
                     .to_string(),
             )
         })?;
@@ -50,8 +52,11 @@ pub async fn sync_publicaciones(
     for fp in fetched {
         let filter = doc! { "pure_uuid": &fp.pure_uuid };
 
+        // Mantenemos el field name "docente_id" en MongoDB por compatibilidad
+        // con registros existentes. La semántica es "id del investigador
+        // al que pertenece esta publicación".
         let set_doc = doc! {
-            "docente_id":           docente_id,
+            "docente_id":           investigador_id,
             "titulo":               &fp.titulo,
             "tipo_publicacion":     fp.tipo_publicacion.as_deref(),
             "doi":                  fp.doi.as_deref(),
@@ -89,7 +94,7 @@ pub async fn sync_publicaciones(
     }
 
     Ok(SyncPublicacionesResult {
-        persona_id: docente_id.to_string(),
+        persona_id: investigador_id.to_string(),
         scopus_author_id: scopus_author_id.to_string(),
         pure_person_uuid,
         total_encontradas,
@@ -100,12 +105,12 @@ pub async fn sync_publicaciones(
 
 pub async fn get_publicaciones(
     state: &AppState,
-    docente_id: &str,
+    investigador_id: &str,
 ) -> Result<Vec<Publicacion>, AppError> {
     let db = state.mongo_db()?;
     let publicaciones = db
         .collection::<Publicacion>("publicaciones")
-        .find(doc! { "docente_id": docente_id })
+        .find(doc! { "docente_id": investigador_id })
         .await?
         .try_collect::<Vec<_>>()
         .await?;

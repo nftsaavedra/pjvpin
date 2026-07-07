@@ -2,8 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use chrono::Datelike;
 
-use crate::docentes::models::Docente;
-use crate::docentes::repository as docentes_repo;
+use crate::investigadores::models::Investigador;
+use crate::investigadores::repository as docentes_repo;
 use crate::proyectos::models::{
     DocenteProyectosCount, KpisDashboard, Proyecto, ProyectosTrendItem, RenacytDistribucionItem,
 };
@@ -15,7 +15,7 @@ use mongodb::{bson::doc, Database};
 pub async fn get_estadisticas_proyectos_x_docente(
     db: &Database,
 ) -> Result<Vec<DocenteProyectosCount>, AppError> {
-    let docentes = docentes_repo::get_all_docentes(db).await?;
+    let docentes = docentes_repo::get_all_investigadores(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
@@ -57,7 +57,7 @@ pub async fn get_estadisticas_proyectos_x_docente(
 }
 
 pub async fn get_kpis_dashboard(db: &Database) -> Result<KpisDashboard, AppError> {
-    let docentes = docentes_repo::get_all_docentes(db).await?;
+    let docentes = docentes_repo::get_all_investigadores(db).await?;
     let proyectos = db
         .collection::<mongodb::bson::Document>("proyectos")
         .count_documents(doc! { "activo": 1i64 })
@@ -115,7 +115,7 @@ pub async fn get_renacyt_distribucion(
     db: &Database,
 ) -> Result<Vec<RenacytDistribucionItem>, AppError> {
     let docentes = db
-        .collection::<Docente>("docentes")
+        .collection::<Investigador>("docentes")
         .find(doc! { "activo": 1i64 })
         .await?
         .try_collect::<Vec<_>>()

@@ -6,8 +6,8 @@ use crate::usuarios::service as usuario_service;
 #[derive(Debug)]
 pub enum AppPermission {
     DashboardView,
-    DocentesView,
-    DocentesManage,
+    InvestigadoresView,
+    InvestigadoresManage,
     ProyectosView,
     ProyectosManage,
     ReportesView,
@@ -27,8 +27,8 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
         "admin" => matches!(
             permission,
             AppPermission::DashboardView
-                | AppPermission::DocentesView
-                | AppPermission::DocentesManage
+                | AppPermission::InvestigadoresView
+                | AppPermission::InvestigadoresManage
                 | AppPermission::ProyectosView
                 | AppPermission::ProyectosManage
                 | AppPermission::ReportesView
@@ -44,8 +44,8 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
         "operador" => matches!(
             permission,
             AppPermission::DashboardView
-                | AppPermission::DocentesView
-                | AppPermission::DocentesManage
+                | AppPermission::InvestigadoresView
+                | AppPermission::InvestigadoresManage
                 | AppPermission::ProyectosView
                 | AppPermission::ProyectosManage
                 | AppPermission::ReportesView
@@ -59,7 +59,7 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
         "consulta" => matches!(
             permission,
             AppPermission::DashboardView
-                | AppPermission::DocentesView
+                | AppPermission::InvestigadoresView
                 | AppPermission::ProyectosView
                 | AppPermission::ReportesView
                 | AppPermission::GruposView
@@ -67,7 +67,7 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
         "responsable_proyecto" => matches!(
             permission,
             AppPermission::DashboardView
-                | AppPermission::DocentesView
+                | AppPermission::InvestigadoresView
                 | AppPermission::ProyectosView
                 | AppPermission::ReportesView
                 | AppPermission::GruposView
@@ -92,18 +92,18 @@ pub async fn require_permission(
     Ok(actor)
 }
 
-pub async fn require_docentes_manage_permission(
+pub async fn require_investigadores_manage_permission(
     state: &AppState,
     window_label: &str,
 ) -> Result<Usuario, AppError> {
-    require_permission(state, window_label, AppPermission::DocentesManage).await
+    require_permission(state, window_label, AppPermission::InvestigadoresManage).await
 }
 
-pub async fn require_docentes_view_permission(
+pub async fn require_investigadores_view_permission(
     state: &AppState,
     window_label: &str,
 ) -> Result<Usuario, AppError> {
-    require_permission(state, window_label, AppPermission::DocentesView).await
+    require_permission(state, window_label, AppPermission::InvestigadoresView).await
 }
 
 pub async fn get_session_actor_user(

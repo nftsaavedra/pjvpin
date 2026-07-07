@@ -161,7 +161,7 @@ pub async fn wizard_validate_master_password(password: String) -> Result<(), App
 pub async fn wizard_consultar_dni(
     token: String,
     numero: String,
-) -> Result<crate::docentes::models::ReniecDniLookupResult, AppError> {
+) -> Result<crate::investigadores::models::ReniecDniLookupResult, AppError> {
     use crate::shared::config::ReniecConfig;
     use crate::shared::defaults;
     use crate::shared::external::reniec_client;

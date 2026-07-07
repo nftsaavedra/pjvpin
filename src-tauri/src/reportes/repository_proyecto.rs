@@ -4,7 +4,7 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
 use crate::catalogos::models::CatalogoItem;
-use crate::docentes::models::{Docente, Publicacion};
+use crate::investigadores::models::{Investigador, Publicacion};
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 use crate::reportes::entity_reports::*;
@@ -50,7 +50,7 @@ pub async fn build_reporte_proyecto_integral(
     let mut equipo: Vec<MiembroProyectoReporte> = Vec::new();
     for part in &participaciones {
         let docente = db
-            .collection::<Docente>("docentes")
+            .collection::<Investigador>("docentes")
             .find_one(doc! { "id_docente": &part.id_docente })
             .await?
             .ok_or_else(|| {

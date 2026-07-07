@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::docentes::models::RenacytLookupResult;
+use crate::investigadores::models::RenacytLookupResult;
 use crate::shared::config::RenacytConfig;
 use crate::shared::error::{sanitize_external_detail, AppError};
 
@@ -352,4 +352,197 @@ fn first_non_empty_owned(values: Vec<String>) -> Option<String> {
         .into_iter()
         .map(|value| value.trim().to_string())
         .find(|value| !value.is_empty())
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RenacytBusquedaExitoso {
+    pub codigo_registro: String,
+    pub id_investigador: String,
+    pub numero_documento: String,
+    pub solicitud_id: Option<i64>,
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(non_snake_case)]
+struct RenacytBusquedaEnvelope {
+    #[serde(default)]
+    total: i64,
+    #[serde(default)]
+    data: Vec<RenacytBusquedaItem>,
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(non_snake_case)]
+struct RenacytBusquedaItem {
+    #[serde(default)]
+    id: i64,
+    #[serde(default)]
+    codigoRegistro: String,
+    #[serde(default)]
+    numeroDocumento: String,
+    #[serde(default)]
+    tipoDocumento: String,
+    #[serde(default)]
+    ctiVitae: String,
+    #[serde(default)]
+    nivel: String,
+    #[serde(default)]
+    grupo: String,
+    #[serde(default)]
+    condicion: String,
+    #[serde(default)]
+    orcid: String,
+    #[serde(default)]
+    solicitudId: Option<i64>,
+}
+
+pub async fn buscar_por_dni(
+    config: &RenacytConfig,
+    dni: &str,
+) -> Result<Option<RenacytBusquedaExitoso>, AppError> {
+    if dni.len() != 8 || !dni.chars().all(|character| character.is_ascii_digit()) {
+        return Ok(None);
+    }
+
+    let url = format!(
+        "{}/actoRegistral/obtenerActosRegistralesActivos/reglamento/{}/pagina/1/numeroRegistros/10",
+        config.api_base_url.trim_end_matches('/'),
+        config.acto_version.trim(),
+    );
+
+    let payload = serde_json::json!([
+        {
+            "operadorBusqueda": "",
+            "operadorLogico": "and",
+            "id": 21,
+            "valor": config.acto_version.trim(),
+            "campo": ""
+        },
+        {
+            "operadorBusqueda": "=",
+            "operadorLogico": "and",
+            "id": 7,
+            "valor": dni,
+            "campo": "a.numero_documento"
+        }
+    ]);
+
+    let response = reqwest::Client::new()
+        .post(&url)
+        .json(&payload)
+        .send()
+        .await
+        .map_err(|error| {
+            AppError::ExternalServiceError(format!(
+                "No se pudo conectar al servicio de búsqueda RENACYT: {}",
+                sanitize_external_detail(&error.to_string())
+            ))
+        })?;
+
+    if !response.status().is_success() {
+        return Err(AppError::ExternalServiceError(format!(
+            "La búsqueda RENACYT por DNI no pudo completarse ({})",
+            response.status()
+        )));
+    }
+
+    let envelope: RenacytBusquedaEnvelope = response.json().await.map_err(|error| {
+        AppError::ExternalServiceError(format!(
+            "La respuesta de búsqueda RENACYT no es válida: {}",
+            sanitize_external_detail(&error.to_string())
+        ))
+    })?;
+
+    if envelope.data.is_empty() {
+        return Ok(None);
+    }
+
+    let item = envelope
+        .data
+        .into_iter()
+        .next()
+        .expect("data verificado no vacío previamente");
+
+    let id_investigador =
+        first_non_empty_owned(vec![item.ctiVitae, item.id.to_string()]).unwrap_or_default();
+
+    Ok(Some(RenacytBusquedaExitoso {
+        codigo_registro: non_empty(item.codigoRegistro).unwrap_or_default(),
+        id_investigador,
+        numero_documento: item.numeroDocumento,
+        solicitud_id: item.solicitudId,
+    }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::shared::config::RenacytConfig;
+
+    fn config_test() -> RenacytConfig {
+        RenacytConfig {
+            api_base_url: "https://renacyt.concytec.gob.pe/renacyt-backend".to_string(),
+            ficha_base_url: "https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/".to_string(),
+            acto_version: "2021".to_string(),
+        }
+    }
+
+    #[tokio::test]
+    async fn buscar_por_dni_devuelve_none_para_dni_no_numerico() {
+        let config = config_test();
+        let resultado = buscar_por_dni(&config, "abc12345").await;
+        assert!(matches!(resultado, Ok(None)));
+    }
+
+    #[tokio::test]
+    async fn buscar_por_dni_devuelve_none_para_dni_longitud_incorrecta() {
+        let config = config_test();
+        assert!(matches!(buscar_por_dni(&config, "123").await, Ok(None)));
+        assert!(matches!(
+            buscar_por_dni(&config, "123456789").await,
+            Ok(None)
+        ));
+        assert!(matches!(buscar_por_dni(&config, "").await, Ok(None)));
+    }
+
+    #[tokio::test]
+    async fn buscar_por_dni_acepta_dni_8_digitos_valido() {
+        let config = config_test();
+        // Test funcional contra el servicio real. DNI 02884798 está verificado en RENACYT.
+        // Este test requiere conectividad a Internet.
+        match buscar_por_dni(&config, "02884798").await {
+            Ok(Some(encontrado)) => {
+                assert_eq!(encontrado.codigo_registro, "P0016945");
+                assert_eq!(encontrado.numero_documento, "02884798");
+                assert!(!encontrado.id_investigador.is_empty());
+            }
+            Ok(None) => panic!("DNI 02884798 debería existir en RENACYT"),
+            Err(error) => {
+                // Si el servicio no responde, se omite el test funcional
+                eprintln!(
+                    "Test omitido por indisponibilidad del servicio RENACYT: {}",
+                    error
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn buscar_por_dni_devuelve_none_para_dni_inexistente() {
+        let config = config_test();
+        match buscar_por_dni(&config, "00000000").await {
+            Ok(resultado) => {
+                assert!(
+                    resultado.is_none(),
+                    "DNI 00000000 no debería existir en RENACYT"
+                );
+            }
+            Err(error) => {
+                eprintln!(
+                    "Test omitido por indisponibilidad del servicio RENACYT: {}",
+                    error
+                );
+            }
+        }
+    }
 }

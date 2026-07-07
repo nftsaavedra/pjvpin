@@ -1,7 +1,7 @@
 use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
-use crate::docentes::models::Docente;
+use crate::investigadores::models::Investigador;
 use crate::proyectos::models::ParticipacionRecord;
 use crate::recursos::models::{Equipamiento, Producto};
 use crate::reportes::entity_reports::*;
@@ -9,7 +9,7 @@ use crate::shared::data_loader;
 use crate::shared::error::AppError;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Reporte Docente Integral
+// Reporte Investigador Integral
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub async fn build_reporte_docente_integral(
@@ -25,10 +25,10 @@ pub async fn build_reporte_docente_integral(
     let personas = data_loader::load_personas_map(db).await?;
 
     let docente = db
-        .collection::<Docente>("docentes")
+        .collection::<Investigador>("docentes")
         .find_one(doc! { "id_docente": id_docente })
         .await?
-        .ok_or_else(|| AppError::NotFound("Docente no encontrado.".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))?;
 
     let grado_nombre = grados
         .get(&docente.id_grado)
@@ -188,7 +188,7 @@ pub async fn build_reporte_docente_integral(
         .collect();
 
     let publicaciones_raw = db
-        .collection::<crate::docentes::models::Publicacion>("publicaciones")
+        .collection::<crate::investigadores::models::Publicacion>("publicaciones")
         .find(doc! { "docente_id": id_docente })
         .await?
         .try_collect::<Vec<_>>()

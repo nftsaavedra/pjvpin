@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use mongodb::Database;
 use tokio::sync::RwLock;
 
-use crate::docentes::models::ReniecDniLookupResult;
+use crate::investigadores::models::ReniecDniLookupResult;
 use crate::shared::config::{PureConfig, RenacytConfig, ReniecConfig};
 use crate::shared::error::AppError;
 use crate::shared::time;

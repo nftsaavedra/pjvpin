@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::catalogos::models::CatalogoItem;
-use crate::docentes::models::{Docente, Publicacion};
-use crate::docentes::repository as docentes_repo;
 use crate::grupos::models::GrupoInvestigacion;
+use crate::investigadores::models::{Investigador, Publicacion};
+use crate::investigadores::repository as docentes_repo;
 use crate::personas::models::Persona;
 use crate::proyectos::models::{
     ExportData, ExportDataConProjectos, ExportDataDocentePerfil, ExportDataGrupo,
@@ -63,7 +63,7 @@ pub async fn get_data_exportacion_agrupada_docente(
 ) -> Result<Vec<ExportDataConProjectos>, AppError> {
     let grados = data_loader::load_grados_map(db).await?;
     let grupos = data_loader::load_grupos_map(db).await?;
-    let docentes_activos = docentes_repo::get_all_docentes(db).await?;
+    let docentes_activos = docentes_repo::get_all_investigadores(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
@@ -143,7 +143,7 @@ pub async fn get_data_exportacion_grupos(db: &Database) -> Result<Vec<ExportData
 
     let mut data = Vec::new();
     for grupo in grupos {
-        let miembros: Vec<&Docente> = docentes
+        let miembros: Vec<&Investigador> = docentes
             .values()
             .filter(|d| d.grupo_investigacion_id.as_deref() == Some(&grupo.id_grupo))
             .collect();
@@ -257,7 +257,7 @@ pub async fn get_data_exportacion_recursos(
     }
 
     fn resolve_docente(
-        docentes: &HashMap<String, Docente>,
+        docentes: &HashMap<String, Investigador>,
         personas: &HashMap<String, Persona>,
         docente_id: &Option<String>,
     ) -> Option<String> {
@@ -344,7 +344,7 @@ pub async fn get_data_exportacion_docentes_perfil(
     let personas = data_loader::load_personas_map(db).await?;
 
     let mut docentes = db
-        .collection::<Docente>("docentes")
+        .collection::<Investigador>("docentes")
         .find(doc! {})
         .await?
         .try_collect::<Vec<_>>()
