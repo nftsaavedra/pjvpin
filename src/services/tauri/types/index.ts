@@ -1,14 +1,14 @@
 export type { Usuario, AuthStatus } from "./auth.types";
 
 export type {
-  Docente,
-  DocenteDetalle,
+  Investigador,
+  InvestigadorDetalle,
   RenacytFormacionAcademicaResumen,
   RenacytLookupResult,
   ReniecDniLookupResult,
-  EliminarDocenteResultado,
-  RefreshDocenteRenacytFormacionResultado,
-} from "./docente.types";
+  EliminarInvestigadorResultado,
+  RefreshInvestigadorRenacytFormacionResultado,
+} from "./investigador.types";
 
 export type {
   Proyecto,

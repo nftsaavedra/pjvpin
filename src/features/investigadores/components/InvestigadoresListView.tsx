@@ -1,58 +1,58 @@
 import React from "react";
 import { GraduationCap, Plus } from "lucide-react";
-import type { DocenteDetalle } from "../api";
-import { DocentesTableGrid } from "./DocentesTableGrid";
-import { DocentesTableToolbar } from "./DocentesTableToolbar";
+import type { InvestigadorDetalle } from "../api";
+import { InvestigadoresTableGrid } from "./InvestigadoresTableGrid";
+import { InvestigadoresTableToolbar } from "./InvestigadoresTableToolbar";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
 
-interface DocentesListViewProps {
+interface InvestigadoresListViewProps {
   canManage: boolean;
   busqueda: string;
-  cargarDocentes: () => Promise<void>;
-  docenteToDelete: DocenteDetalle | null;
-  docentes: DocenteDetalle[];
-  docentesFiltrados: DocenteDetalle[];
+  cargarInvestigadores: () => Promise<void>;
+  investigadorToDelete: InvestigadorDetalle | null;
+  investigadores: InvestigadorDetalle[];
+  investigadoresFiltrados: InvestigadorDetalle[];
   error: string | null;
   estadoFiltro: "todos" | "activos" | "inactivos";
   gradoFiltro: string;
   gradosDisponibles: string[];
   handleRefreshRenacytFormaciones: (id: string) => void;
-  handleReactivarDocente: (id: string) => void;
+  handleReactivarInvestigador: (id: string) => void;
   loading: boolean;
   nivelesRenacytDisponibles: string[];
   renacytNivelFiltro: string;
-  refreshingRenacytDocenteId: string | null;
+  refreshingRenacytInvestigadorId: string | null;
   totalActivos: number;
   totalInactivos: number;
   onBusquedaChange: (value: string) => void;
   onEstadoFiltroChange: (value: "todos" | "activos" | "inactivos") => void;
   onGradoFiltroChange: (value: string) => void;
   onRenacytNivelFiltroChange: (value: string) => void;
-  onDeactivate: (docente: DocenteDetalle) => void;
+  onDeactivate: (investigador: InvestigadorDetalle) => void;
   onConfirmDelete: () => void;
   onCancelDelete: () => void;
   onCreateClick: () => void;
-  onOpenDetail: (docente: DocenteDetalle) => void;
+  onOpenDetail: (investigador: InvestigadorDetalle) => void;
 }
 
-export const DocentesListView: React.FC<DocentesListViewProps> = ({
+export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
   canManage,
   busqueda,
-  cargarDocentes,
-  docenteToDelete,
-  docentes,
-  docentesFiltrados,
+  cargarInvestigadores,
+  investigadorToDelete,
+  investigadores,
+  investigadoresFiltrados,
   error,
   estadoFiltro,
   gradoFiltro,
   gradosDisponibles,
   handleRefreshRenacytFormaciones,
-  handleReactivarDocente,
+  handleReactivarInvestigador,
   loading,
   nivelesRenacytDisponibles,
   renacytNivelFiltro,
-  refreshingRenacytDocenteId,
+  refreshingRenacytInvestigadorId,
   totalActivos,
   totalInactivos,
   onBusquedaChange,
@@ -66,19 +66,19 @@ export const DocentesListView: React.FC<DocentesListViewProps> = ({
   onOpenDetail,
 }) => {
   return (
-    <div className="tab-panel docentes-list-panel">
+    <div className="tab-panel investigadores-list-panel">
       <div className="table-container">
         <div className="section-header">
           <h2 className="title-with-icon">
             <AppIcon icon={GraduationCap} size={20} />
-            <span>Docentes Registrados</span>
+            <span>Investigadores Registrados</span>
           </h2>
           {canManage && (
             <div className="section-header-actions">
               <button type="button" className="btn-primary" onClick={onCreateClick}>
                 <span className="button-with-icon">
                   <AppIcon icon={Plus} size={18} />
-                  <span>Nuevo docente</span>
+                  <span>Nuevo investigador</span>
                 </span>
               </button>
             </div>
@@ -91,7 +91,7 @@ export const DocentesListView: React.FC<DocentesListViewProps> = ({
               type="button"
               className="btn-secondary"
               onClick={() => {
-                void cargarDocentes();
+                void cargarInvestigadores();
               }}
             >
               Reintentar
@@ -101,20 +101,20 @@ export const DocentesListView: React.FC<DocentesListViewProps> = ({
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
             <span>
-              Modo consulta: puede revisar docentes y su detalle, pero no crear, desactivar,
+              Modo consulta: puede revisar investigadores y su detalle, pero no crear, desactivar,
               reactivar ni refrescar información RENACYT.
             </span>
           </div>
         )}
-        <DocentesTableToolbar
+        <InvestigadoresTableToolbar
           busqueda={busqueda}
           estadoFiltro={estadoFiltro}
           gradoFiltro={gradoFiltro}
           gradosDisponibles={gradosDisponibles}
           nivelesRenacytDisponibles={nivelesRenacytDisponibles}
           renacytNivelFiltro={renacytNivelFiltro}
-          totalVisibles={docentesFiltrados.length}
-          totalTodos={docentes.length}
+          totalVisibles={investigadoresFiltrados.length}
+          totalTodos={investigadores.length}
           totalActivos={totalActivos}
           totalInactivos={totalInactivos}
           onBusquedaChange={onBusquedaChange}
@@ -122,27 +122,27 @@ export const DocentesListView: React.FC<DocentesListViewProps> = ({
           onGradoFiltroChange={onGradoFiltroChange}
           onRenacytNivelFiltroChange={onRenacytNivelFiltroChange}
         />
-        <DocentesTableGrid
-          docentes={docentesFiltrados}
+        <InvestigadoresTableGrid
+          investigadores={investigadoresFiltrados}
           loading={loading}
           onView={onOpenDetail}
           onRefreshRenacyt={(id: string) => {
             handleRefreshRenacytFormaciones(id);
           }}
           onReactivate={(id: string) => {
-            handleReactivarDocente(id);
+            handleReactivarInvestigador(id);
           }}
           onDeactivate={onDeactivate}
-          refreshingRenacytDocenteId={refreshingRenacytDocenteId}
+          refreshingRenacytInvestigadorId={refreshingRenacytInvestigadorId}
           canManage={canManage}
         />
       </div>
 
       {canManage && (
         <ConfirmDialog
-          open={Boolean(docenteToDelete)}
-          title="Desactivar docente"
-          message={`¿Desea desactivar al docente "${docenteToDelete?.nombres_apellidos ?? ""}"? Su historial y relaciones se conservarán para mantener la trazabilidad.`}
+          open={Boolean(investigadorToDelete)}
+          title="Desactivar investigador"
+          message={`¿Desea desactivar al investigador "${investigadorToDelete?.nombres_apellidos ?? ""}"? Su historial y relaciones se conservarán para mantener la trazabilidad.`}
           confirmText="Sí, desactivar"
           cancelText="Cancelar"
           onConfirm={() => {

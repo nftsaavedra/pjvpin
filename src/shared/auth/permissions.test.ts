@@ -36,7 +36,7 @@ describe("hasPermission", () => {
   });
 
   it("operador has operational permissions but not config", () => {
-    expect(hasPermission("operador", "docentes.manage")).toBe(true);
+    expect(hasPermission("operador", "investigadores.manage")).toBe(true);
     expect(hasPermission("operador", "reportes.export")).toBe(true);
     expect(hasPermission("operador", "usuarios.manage")).toBe(false);
     expect(hasPermission("operador", "configuracion.view")).toBe(false);
@@ -44,8 +44,8 @@ describe("hasPermission", () => {
 
   it("consulta has only view permissions", () => {
     expect(hasPermission("consulta", "dashboard.view")).toBe(true);
-    expect(hasPermission("consulta", "docentes.view")).toBe(true);
-    expect(hasPermission("consulta", "docentes.manage")).toBe(false);
+    expect(hasPermission("consulta", "investigadores.view")).toBe(true);
+    expect(hasPermission("consulta", "investigadores.manage")).toBe(false);
     expect(hasPermission("consulta", "reportes.export")).toBe(false);
   });
 });
@@ -63,7 +63,7 @@ describe("getRoleLabel", () => {
 describe("new roles: superuser and responsable_proyecto", () => {
   it("superuser has all permissions", () => {
     expect(hasPermission("superuser", "dashboard.view")).toBe(true);
-    expect(hasPermission("superuser", "docentes.manage")).toBe(true);
+    expect(hasPermission("superuser", "investigadores.manage")).toBe(true);
     expect(hasPermission("superuser", "usuarios.manage")).toBe(true);
     expect(hasPermission("superuser", "configuracion.view")).toBe(true);
   });

@@ -1,21 +1,25 @@
-import { useState } from 'react';
-import { BookOpen, ChevronDown, ChevronUp, ExternalLink, RefreshCw } from 'lucide-react';
-import { openUrl } from '@tauri-apps/plugin-opener';
-import type { Publicacion, SyncPublicacionesResult } from '../api';
-import { getPublicacionesDocente, sincronizarPublicacionesPure, getTauriErrorMessage } from '../api';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { InlineIconButton } from '@/shared/ui/InlineIconButton';
-import { toast } from '@/services/toast';
-import { parseAutores } from '@/shared/utils/docenteUtils';
+import { useState } from "react";
+import { BookOpen, ChevronDown, ChevronUp, ExternalLink, RefreshCw } from "lucide-react";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import type { Publicacion, SyncPublicacionesResult } from "../api";
+import {
+  getPublicacionesInvestigador,
+  sincronizarPublicacionesPure,
+  getTauriErrorMessage,
+} from "../api";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { InlineIconButton } from "@/shared/ui/InlineIconButton";
+import { toast } from "@/services/toast";
+import { parseAutores } from "@/shared/utils/docenteUtils";
 
-interface DocentePublicacionesSectionProps {
-  docenteId: string;
+interface InvestigadorPublicacionesSectionProps {
+  investigadorId: string;
   scopusAuthorId: string | null | undefined;
   canSyncPure: boolean;
 }
 
-export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionProps> = ({
-  docenteId,
+export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacionesSectionProps> = ({
+  investigadorId,
   scopusAuthorId,
   canSyncPure,
 }) => {
@@ -27,7 +31,7 @@ export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionPr
 
   const load = async (): Promise<void> => {
     try {
-      const data = await getPublicacionesDocente(docenteId);
+      const data = await getPublicacionesInvestigador(investigadorId);
       setPublicaciones(data);
     } catch (error) {
       toast.error(getTauriErrorMessage(error));
@@ -48,7 +52,7 @@ export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionPr
   const handleSync = async (): Promise<void> => {
     setIsSyncing(true);
     try {
-      const result: SyncPublicacionesResult = await sincronizarPublicacionesPure(docenteId);
+      const result: SyncPublicacionesResult = await sincronizarPublicacionesPure(investigadorId);
       toast.success(
         `Sincronización Pure completada: ${result.nuevas} nuevas, ${result.actualizadas} actualizadas de ${result.total_encontradas} encontradas.`,
       );
@@ -93,7 +97,8 @@ export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionPr
           {!tieneScopusId && (
             <div className="inline-feedback inline-feedback-warning renacyt-formaciones-feedback">
               <span>
-                Este docente no tiene Scopus Author ID. Sincronice primero los datos RENACYT para obtenerlo.
+                Este investigador no tiene Scopus Author ID. Sincronice primero los datos RENACYT
+                para obtenerlo.
               </span>
             </div>
           )}
@@ -108,7 +113,7 @@ export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionPr
               >
                 <span className="button-with-icon">
                   <AppIcon icon={RefreshCw} size={16} />
-                  <span>{isSyncing ? 'Sincronizando Pure...' : 'Sincronizar desde Pure'}</span>
+                  <span>{isSyncing ? "Sincronizando Pure..." : "Sincronizar desde Pure"}</span>
                 </span>
               </button>
             </div>
@@ -116,8 +121,8 @@ export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionPr
 
           {loaded && publicaciones.length === 0 && (
             <p className="renacyt-detail-empty">
-              No hay publicaciones sincronizadas para este docente.
-              {canSyncPure && tieneScopusId && ' Use el botón para sincronizar desde Pure.'}
+              No hay publicaciones sincronizadas para este investigador.
+              {canSyncPure && tieneScopusId && " Use el botón para sincronizar desde Pure."}
             </p>
           )}
 
@@ -127,22 +132,36 @@ export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionPr
                 <article key={pub.id_publicacion} className="renacyt-formacion-card">
                   <div className="renacyt-formacion-head">
                     <strong>{pub.titulo}</strong>
-                    {pub.anio_publicacion && <span className="badge badge-info">{pub.anio_publicacion}</span>}
+                    {pub.anio_publicacion && (
+                      <span className="badge badge-info">{pub.anio_publicacion}</span>
+                    )}
                   </div>
                   <div className="renacyt-formacion-grid">
-                    {pub.tipo_publicacion && <span><strong>Tipo:</strong> {pub.tipo_publicacion}</span>}
-                    {pub.journal_titulo && <span><strong>Journal:</strong> {pub.journal_titulo}</span>}
-                    {pub.estado_publicacion && <span><strong>Estado:</strong> {pub.estado_publicacion}</span>}
+                    {pub.tipo_publicacion && (
+                      <span>
+                        <strong>Tipo:</strong> {pub.tipo_publicacion}
+                      </span>
+                    )}
+                    {pub.journal_titulo && (
+                      <span>
+                        <strong>Journal:</strong> {pub.journal_titulo}
+                      </span>
+                    )}
+                    {pub.estado_publicacion && (
+                      <span>
+                        <strong>Estado:</strong> {pub.estado_publicacion}
+                      </span>
+                    )}
                     {pub.doi && (
                       <span>
-                        <strong>DOI:</strong>{' '}
+                        <strong>DOI:</strong>{" "}
                         <InlineIconButton
                           icon={ExternalLink}
                           label="Abrir DOI"
                           onClick={() =>
                             void handleOpenExternal(
                               `https://doi.org/${pub.doi}`,
-                              'No se pudo abrir el enlace DOI.',
+                              "No se pudo abrir el enlace DOI.",
                             )
                           }
                         />
@@ -151,7 +170,7 @@ export const DocentePublicacionesSection: React.FC<DocentePublicacionesSectionPr
                     )}
                     {pub.autores_json && parseAutores(pub.autores_json).length > 0 && (
                       <span className="renacyt-formacion-full-col">
-                        <strong>Autores:</strong> {parseAutores(pub.autores_json).join('; ')}
+                        <strong>Autores:</strong> {parseAutores(pub.autores_json).join("; ")}
                       </span>
                     )}
                   </div>

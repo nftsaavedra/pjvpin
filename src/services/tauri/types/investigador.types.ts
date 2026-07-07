@@ -1,4 +1,4 @@
-export interface Docente {
+export interface Investigador {
   id_docente: string;
   dni: string;
   id_grado: string;
@@ -7,6 +7,7 @@ export interface Docente {
   apellido_paterno?: string | null;
   apellido_materno?: string | null;
   activo?: number;
+  perfil?: string;
   renacyt_codigo_registro?: string | null;
   renacyt_id_investigador?: string | null;
   renacyt_nivel?: string | null;
@@ -22,7 +23,7 @@ export interface Docente {
   renacyt_formaciones_academicas_json?: string | null;
 }
 
-export interface DocenteDetalle {
+export interface InvestigadorDetalle {
   id_docente: string;
   dni: string;
   nombres_apellidos: string;
@@ -33,6 +34,7 @@ export interface DocenteDetalle {
   cantidad_proyectos: number;
   proyectos: string | null;
   activo: number;
+  perfil?: string;
   renacyt_codigo_registro?: string | null;
   renacyt_id_investigador?: string | null;
   renacyt_nivel?: string | null;
@@ -75,7 +77,7 @@ export interface RenacytLookupResult {
   orcid?: string | null;
   scopus_author_id?: string | null;
   ficha_url: string;
-  solicitud_id?: number | null;
+  solicitud_id: number | null;
   formaciones_academicas_json?: string | null;
 }
 
@@ -87,13 +89,13 @@ export interface ReniecDniLookupResult {
   document_number: string;
 }
 
-export interface EliminarDocenteResultado {
+export interface EliminarInvestigadorResultado {
   accion: string;
   mensaje: string;
 }
 
-export interface RefreshDocenteRenacytFormacionResultado {
-  docente: DocenteDetalle;
+export interface RefreshInvestigadorRenacytFormacionResultado {
+  investigador: InvestigadorDetalle;
   actualizada: boolean;
   mensaje: string;
 }

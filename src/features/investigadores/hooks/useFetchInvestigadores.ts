@@ -1,16 +1,16 @@
-import { getAllDocentesConProyectos, type DocenteDetalle } from '../api';
-import { useStableFetch } from '@/shared/hooks/useStableFetch';
+import { getAllInvestigadoresConProyectos, type InvestigadorDetalle } from "../api";
+import { useStableFetch } from "@/shared/hooks/useStableFetch";
 
-export const useFetchDocentes = (refreshTrigger = 0) => {
-  const { data, loading, refreshing, error, recargar } = useStableFetch<DocenteDetalle[]>(
-    () => getAllDocentesConProyectos(),
+export const useFetchInvestigadores = (refreshTrigger = 0) => {
+  const { data, loading, refreshing, error, recargar } = useStableFetch<InvestigadorDetalle[]>(
+    () => getAllInvestigadoresConProyectos(),
     refreshTrigger,
-    'Error cargando docentes',
+    "Error cargando investigadores",
     [],
   );
 
   return {
-    docentes: data.filter((docente) => docente.activo === 1),
+    investigadores: data.filter((investigador) => investigador.activo === 1),
     loading,
     refreshing,
     error,

@@ -1,57 +1,59 @@
 import React, { useState } from "react";
-import { useDocentesTable } from "./hooks/useDocentesTable";
-import { DocentesListView } from "./components/DocentesListView";
-import { DocenteFormScreen } from "./components/DocenteFormScreen";
-import { DocenteDetailScreen } from "./components/DocenteDetailScreen";
-import type { DocenteDetalle } from "./api";
+import { useInvestigadoresTable } from "./hooks/useInvestigadoresTable";
+import { InvestigadoresListView } from "./components/InvestigadoresListView";
+import { InvestigadorFormScreen } from "./components/InvestigadorFormScreen";
+import { InvestigadorDetailScreen } from "./components/InvestigadorDetailScreen";
+import type { InvestigadorDetalle } from "./api";
 
-type DocentesView = "list" | "create" | "detail";
+type InvestigadoresView = "list" | "create" | "detail";
 
-interface DocentesTabProps {
+interface InvestigadoresTabProps {
   canManage: boolean;
   refreshTrigger?: number;
   onDataModified: () => void;
 }
 
-export const DocentesTab: React.FC<DocentesTabProps> = ({
+export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
   canManage,
   refreshTrigger = 0,
   onDataModified,
 }) => {
-  const [view, setView] = useState<DocentesView>("list");
-  const [selectedDocente, setSelectedDocente] = useState<DocenteDetalle | null>(null);
+  const [view, setView] = useState<InvestigadoresView>("list");
+  const [selectedInvestigador, setSelectedInvestigador] = useState<InvestigadorDetalle | null>(
+    null,
+  );
 
-  const table = useDocentesTable(refreshTrigger);
+  const table = useInvestigadoresTable(refreshTrigger);
 
   const handleOpenCreate = () => {
-    setSelectedDocente(null);
+    setSelectedInvestigador(null);
     setView("create");
   };
 
-  const handleOpenDetail = (docente: DocenteDetalle) => {
-    setSelectedDocente(docente);
+  const handleOpenDetail = (investigador: InvestigadorDetalle) => {
+    setSelectedInvestigador(investigador);
     setView("detail");
   };
 
   const handleBackToList = () => {
     setView("list");
-    setSelectedDocente(null);
+    setSelectedInvestigador(null);
   };
 
-  const handleDocenteCreated = () => {
+  const handleInvestigadorCreated = () => {
     onDataModified();
     handleBackToList();
   };
 
   if (view === "list") {
     return (
-      <DocentesListView
+      <InvestigadoresListView
         canManage={canManage}
         busqueda={table.busqueda}
-        cargarDocentes={table.cargarDocentes}
-        docenteToDelete={table.docenteToDelete}
-        docentes={table.docentes}
-        docentesFiltrados={table.docentesFiltrados}
+        cargarInvestigadores={table.cargarInvestigadores}
+        investigadorToDelete={table.investigadorToDelete}
+        investigadores={table.investigadores}
+        investigadoresFiltrados={table.investigadoresFiltrados}
         error={table.error}
         estadoFiltro={table.estadoFiltro}
         gradoFiltro={table.gradoFiltro}
@@ -59,25 +61,25 @@ export const DocentesTab: React.FC<DocentesTabProps> = ({
         handleRefreshRenacytFormaciones={(id: string) => {
           void table.handleRefreshRenacytFormaciones(id);
         }}
-        handleReactivarDocente={(id: string) => {
-          void table.handleReactivarDocente(id);
+        handleReactivarInvestigador={(id: string) => {
+          void table.handleReactivarInvestigador(id);
         }}
         loading={table.loading}
         nivelesRenacytDisponibles={table.nivelesRenacytDisponibles}
         renacytNivelFiltro={table.renacytNivelFiltro}
-        refreshingRenacytDocenteId={table.refreshingRenacytDocenteId}
+        refreshingRenacytInvestigadorId={table.refreshingRenacytInvestigadorId}
         totalActivos={table.totalActivos}
         totalInactivos={table.totalInactivos}
         onBusquedaChange={table.setBusqueda}
         onEstadoFiltroChange={table.setEstadoFiltro}
         onGradoFiltroChange={table.setGradoFiltro}
         onRenacytNivelFiltroChange={table.setRenacytNivelFiltro}
-        onDeactivate={table.setDocenteToDelete}
+        onDeactivate={table.setInvestigadorToDelete}
         onConfirmDelete={() => {
-          table.handleEliminarDocente().catch(() => {});
+          table.handleEliminarInvestigador().catch(() => {});
         }}
         onCancelDelete={() => {
-          table.setDocenteToDelete(null);
+          table.setInvestigadorToDelete(null);
         }}
         onCreateClick={handleOpenCreate}
         onOpenDetail={handleOpenDetail}
@@ -87,26 +89,28 @@ export const DocentesTab: React.FC<DocentesTabProps> = ({
 
   if (view === "create") {
     return (
-      <DocenteFormScreen
+      <InvestigadorFormScreen
         refreshTrigger={refreshTrigger}
         onBack={handleBackToList}
-        onDocenteCreated={handleDocenteCreated}
+        onInvestigadorCreated={handleInvestigadorCreated}
       />
     );
   }
 
   // view === "detail"
-  if (selectedDocente) {
+  if (selectedInvestigador) {
     return (
-      <DocenteDetailScreen
-        docente={selectedDocente}
+      <InvestigadorDetailScreen
+        investigador={selectedInvestigador}
         canRefreshRenacyt={canManage}
         canSyncPure={canManage}
         onBack={handleBackToList}
         onRefreshRenacytFormaciones={(id: string) => {
           table.handleRefreshRenacytFormaciones(id).catch(() => {});
         }}
-        isRefreshingRenacyt={table.refreshingRenacytDocenteId === selectedDocente.id_docente}
+        isRefreshingRenacyt={
+          table.refreshingRenacytInvestigadorId === selectedInvestigador.id_docente
+        }
       />
     );
   }

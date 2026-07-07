@@ -1,14 +1,14 @@
 import { invoke } from "./client";
 import type {
-  Docente,
-  DocenteDetalle,
-  EliminarDocenteResultado,
-  RefreshDocenteRenacytFormacionResultado,
+  EliminarInvestigadorResultado,
+  Investigador,
+  InvestigadorDetalle,
+  RefreshInvestigadorRenacytFormacionResultado,
   RenacytLookupResult,
   ReniecDniLookupResult,
 } from "./types";
 
-interface CreateDocenteRenacytPayload {
+interface CreateInvestigadorRenacytPayload {
   codigo_registro: string;
   id_investigador: string;
   nivel?: string | null;
@@ -23,15 +23,15 @@ interface CreateDocenteRenacytPayload {
   formaciones_academicas_json?: string | null;
 }
 
-export const crearDocente = async (
+export const crearInvestigador = async (
   dni: string,
   id_grado: string,
   nombres: string,
   apellido_paterno: string,
   apellido_materno?: string,
-  renacyt?: CreateDocenteRenacytPayload | null,
-): Promise<Docente> => {
-  return await invoke("crear_docente", {
+  renacyt?: CreateInvestigadorRenacytPayload | null,
+): Promise<Investigador> => {
+  return await invoke("crear_investigador", {
     request: {
       dni,
       id_grado,
@@ -43,43 +43,53 @@ export const crearDocente = async (
   });
 };
 
-export const getAllDocentes = async (): Promise<Docente[]> => {
-  return await invoke("get_all_docentes");
+export const getAllInvestigadores = async (): Promise<Investigador[]> => {
+  return await invoke("get_all_investigadores");
 };
 
-export const buscarDocentePorDni = async (dni: string): Promise<Docente | null> => {
-  return await invoke("buscar_docente_por_dni", { dni });
+export const buscarInvestigadorPorDni = async (dni: string): Promise<Investigador | null> => {
+  return await invoke("buscar_investigador_por_dni", { dni });
+};
+
+export const buscarInvestigadorPorDniConRenacyt = async (
+  dni: string,
+): Promise<RenacytLookupResult | null> => {
+  return await invoke("buscar_investigador_por_dni_con_renacyt", { dni });
 };
 
 export const consultarDniReniec = async (numero: string): Promise<ReniecDniLookupResult> => {
   return await invoke("consultar_dni_reniec", { numero });
 };
 
-export const consultarRenacytDocente = async (
+export const consultarRenacytInvestigador = async (
   codigo_o_id: string,
 ): Promise<RenacytLookupResult> => {
-  return await invoke("consultar_renacyt_docente", { codigoOId: codigo_o_id });
+  return await invoke("consultar_renacyt_investigador", { codigoOId: codigo_o_id });
 };
 
-export const getAllDocentesConProyectos = async (): Promise<DocenteDetalle[]> => {
-  return await invoke("get_all_docentes_con_proyectos");
+export const getAllInvestigadoresConProyectos = async (): Promise<InvestigadorDetalle[]> => {
+  return await invoke("get_all_investigadores_con_proyectos");
 };
 
-export const eliminarDocente = async (id_docente: string): Promise<EliminarDocenteResultado> => {
-  return await invoke("eliminar_docente", { idDocente: id_docente });
-};
-
-export const reactivarDocente = async (id_docente: string): Promise<Docente> => {
-  return await invoke("reactivar_docente", { idDocente: id_docente });
-};
-
-export const refrescarFormacionAcademicaRenacytDocente = async (
+export const eliminarInvestigador = async (
   id_docente: string,
-): Promise<RefreshDocenteRenacytFormacionResultado> => {
-  return await invoke("refrescar_formacion_academica_renacyt_docente", { idDocente: id_docente });
+): Promise<EliminarInvestigadorResultado> => {
+  return await invoke("eliminar_investigador", { idDocente: id_docente });
 };
 
-export const actualizarDocente = async (
+export const reactivarInvestigador = async (id_docente: string): Promise<Investigador> => {
+  return await invoke("reactivar_investigador", { idDocente: id_docente });
+};
+
+export const refrescarFormacionAcademicaRenacytInvestigador = async (
+  id_docente: string,
+): Promise<RefreshInvestigadorRenacytFormacionResultado> => {
+  return await invoke("refrescar_formacion_academica_renacyt_investigador", {
+    idDocente: id_docente,
+  });
+};
+
+export const actualizarInvestigador = async (
   id_docente: string,
   request: {
     nombres?: string;
@@ -88,6 +98,6 @@ export const actualizarDocente = async (
     id_grado?: string;
     grupo_investigacion_id?: string;
   },
-): Promise<Docente> => {
-  return await invoke("actualizar_docente", { idDocente: id_docente, request });
+): Promise<Investigador> => {
+  return await invoke("actualizar_investigador", { idDocente: id_docente, request });
 };

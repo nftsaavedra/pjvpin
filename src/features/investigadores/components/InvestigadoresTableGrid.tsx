@@ -1,41 +1,41 @@
 import React from "react";
 import { Eye, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
-import type { DocenteDetalle } from "../api";
+import type { InvestigadorDetalle } from "../api";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 
-interface DocentesTableGridProps {
+interface InvestigadoresTableGridProps {
   canManage: boolean;
-  docentes: DocenteDetalle[];
+  investigadores: InvestigadorDetalle[];
   loading: boolean;
-  onView: (docente: DocenteDetalle) => void;
+  onView: (investigador: InvestigadorDetalle) => void;
   onRefreshRenacyt: (id: string) => void;
   onReactivate: (id: string) => void;
-  onDeactivate: (docente: DocenteDetalle) => void;
-  refreshingRenacytDocenteId: string | null;
+  onDeactivate: (investigador: InvestigadorDetalle) => void;
+  refreshingRenacytInvestigadorId: string | null;
 }
 
-export const DocentesTableGrid: React.FC<DocentesTableGridProps> = ({
+export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = ({
   canManage,
-  docentes,
+  investigadores,
   loading,
   onView,
   onRefreshRenacyt,
   onReactivate,
   onDeactivate,
-  refreshingRenacytDocenteId,
+  refreshingRenacytInvestigadorId,
 }) => {
   if (loading) {
     return <SkeletonTable columns={6} rows={6} />;
   }
 
-  if (docentes.length === 0) {
-    return <div className="empty-state">No hay docentes para el filtro seleccionado</div>;
+  if (investigadores.length === 0) {
+    return <div className="empty-state">No hay investigadores para el filtro seleccionado</div>;
   }
 
   return (
-    <table className="table table-interactive" aria-label="Tabla de docentes registrados">
+    <table className="table table-interactive" aria-label="Tabla de investigadores registrados">
       <thead>
         <tr>
           <th>DNI</th>
@@ -47,43 +47,45 @@ export const DocentesTableGrid: React.FC<DocentesTableGridProps> = ({
         </tr>
       </thead>
       <tbody>
-        {docentes.map((docente) =>
+        {investigadores.map((investigador) =>
           (() => {
             const tieneRenacyt = Boolean(
-              docente.renacyt_codigo_registro || docente.renacyt_id_investigador,
+              investigador.renacyt_codigo_registro || investigador.renacyt_id_investigador,
             );
-            const tieneFormaciones = Boolean(docente.renacyt_formaciones_academicas_json?.trim());
-            const estaActualizando = refreshingRenacytDocenteId === docente.id_docente;
-            const nivelRenacyt = formatRenacytNivel(docente.renacyt_nivel);
+            const tieneFormaciones = Boolean(
+              investigador.renacyt_formaciones_academicas_json?.trim(),
+            );
+            const estaActualizando = refreshingRenacytInvestigadorId === investigador.id_docente;
+            const nivelRenacyt = formatRenacytNivel(investigador.renacyt_nivel);
 
             return (
               <tr
-                key={docente.id_docente}
-                className={docente.cantidad_proyectos === 0 ? "unassigned" : ""}
+                key={investigador.id_docente}
+                className={investigador.cantidad_proyectos === 0 ? "unassigned" : ""}
               >
-                <td>{docente.dni || "Sin DNI"}</td>
+                <td>{investigador.dni || "Sin DNI"}</td>
                 <td>
-                  <div className="docente-profile-cell">
-                    <strong>{docente.grado || "Sin grado"}</strong>
+                  <div className="investigador-profile-cell">
+                    <strong>{investigador.grado || "Sin grado"}</strong>
                     <span className={`badge ${nivelRenacyt ? "badge-info" : "badge-warning"}`}>
                       {nivelRenacyt ? `RENACYT ${nivelRenacyt}` : "Sin nivel RENACYT"}
                     </span>
                   </div>
                 </td>
                 <td className="font-semibold">
-                  {docente.nombres_apellidos || "Sin nombre registrado"}
+                  {investigador.nombres_apellidos || "Sin nombre registrado"}
                 </td>
                 <td>
                   <span
                     className={`badge badge-${
-                      docente.cantidad_proyectos === 0 ? "warning" : "success"
+                      investigador.cantidad_proyectos === 0 ? "warning" : "success"
                     }`}
                   >
-                    {docente.cantidad_proyectos}
+                    {investigador.cantidad_proyectos}
                   </span>
                 </td>
                 <td>
-                  {docente.activo === 1 ? (
+                  {investigador.activo === 1 ? (
                     <span className="badge badge-success">Activo</span>
                   ) : (
                     <span className="badge badge-warning">Inactivo</span>
@@ -95,7 +97,7 @@ export const DocentesTableGrid: React.FC<DocentesTableGridProps> = ({
                     icon={Eye}
                     label="Ver detalles"
                     onClick={() => {
-                      onView(docente);
+                      onView(investigador);
                     }}
                   />
                   {canManage && tieneRenacyt && (
@@ -110,29 +112,29 @@ export const DocentesTableGrid: React.FC<DocentesTableGridProps> = ({
                             : "Reintentar formación RENACYT"
                       }
                       onClick={() => {
-                        onRefreshRenacyt(docente.id_docente);
+                        onRefreshRenacyt(investigador.id_docente);
                       }}
                       disabled={estaActualizando}
                     />
                   )}
-                  {canManage && docente.activo === 0 && (
+                  {canManage && investigador.activo === 0 && (
                     <TableActionButton
                       className="btn-primary"
                       icon={RotateCcw}
                       iconSize={18}
-                      label="Reactivar docente"
+                      label="Reactivar investigador"
                       onClick={() => {
-                        onReactivate(docente.id_docente);
+                        onReactivate(investigador.id_docente);
                       }}
                     />
                   )}
-                  {canManage && docente.activo === 1 && (
+                  {canManage && investigador.activo === 1 && (
                     <TableActionButton
                       className="btn-delete"
                       icon={Trash2}
-                      label="Desactivar docente"
+                      label="Desactivar investigador"
                       onClick={() => {
-                        onDeactivate(docente);
+                        onDeactivate(investigador);
                       }}
                     />
                   )}

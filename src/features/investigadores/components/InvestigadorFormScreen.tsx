@@ -1,6 +1,6 @@
 import React from "react";
 import { Plus } from "lucide-react";
-import { useDocenteCreateForm } from "../hooks/useDocenteCreateForm";
+import { useInvestigadorCreateForm } from "../hooks/useInvestigadorCreateForm";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormSelect } from "@/shared/forms/FormSelect";
 import { ScreenHeader } from "@/shared/ui/ScreenHeader";
@@ -8,16 +8,16 @@ import { ScreenLayout } from "@/shared/ui/ScreenLayout";
 import { DniValidationSection } from "./DniValidationSection";
 import { RenacytValidationSection } from "./RenacytValidationSection";
 
-interface DocenteFormScreenProps {
+interface InvestigadorFormScreenProps {
   refreshTrigger?: number;
   onBack: () => void;
-  onDocenteCreated: () => void;
+  onInvestigadorCreated: () => void;
 }
 
-export const DocenteFormScreen: React.FC<DocenteFormScreenProps> = ({
+export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
   refreshTrigger = 0,
   onBack,
-  onDocenteCreated,
+  onInvestigadorCreated,
 }) => {
   const {
     apellidoMaterno,
@@ -49,14 +49,14 @@ export const DocenteFormScreen: React.FC<DocenteFormScreenProps> = ({
     setApellidoPaterno,
     setIdGrado,
     setNombres,
-  } = useDocenteCreateForm(refreshTrigger, onDocenteCreated, onBack);
+  } = useInvestigadorCreateForm(refreshTrigger, onInvestigadorCreated, onBack);
 
   return (
     <ScreenLayout
       header={
         <ScreenHeader
-          parentLabel="Docentes"
-          currentLabel="Registrar nuevo docente"
+          parentLabel="Investigadores"
+          currentLabel="Registrar nuevo investigador"
           onBack={onBack}
           isLoading={isLoading}
           submitLabel="Registrar"
@@ -66,8 +66,8 @@ export const DocenteFormScreen: React.FC<DocenteFormScreenProps> = ({
         />
       }
     >
-      <div className="docente-form-layout">
-        <div className="docente-form-grid">
+      <div className="investigador-form-layout">
+        <div className="investigador-form-grid">
           <DniValidationSection
             dni={dni}
             onDniChange={handleDniChange}
@@ -100,10 +100,10 @@ export const DocenteFormScreen: React.FC<DocenteFormScreenProps> = ({
             options={grados
               .filter((g) => g.activo !== 0)
               .map((g) => ({ value: g.id_grado, label: g.nombre }))}
-            help="Seleccione el grado vigente del docente. Solo se muestran grados activos para preservar consistencia operativa."
+            help="Seleccione el grado vigente del investigador. Solo se muestran grados activos para preservar consistencia operativa."
             disabled={camposBloqueados}
             required
-            containerClassName="docente-form-span-1"
+            containerClassName="investigador-form-span-1"
           />
 
           <FormInput
@@ -111,11 +111,11 @@ export const DocenteFormScreen: React.FC<DocenteFormScreenProps> = ({
             value={nombres}
             onChange={setNombres}
             placeholder="Ej: Juan Carlos"
-            help="Ingrese los nombres del docente. Este campo se usa junto con los apellidos para construir el nombre mostrado en la aplicación."
+            help="Ingrese los nombres del investigador. Este campo se usa junto con los apellidos para construir el nombre mostrado en la aplicación."
             readOnly
             disabled={camposBloqueados}
             required
-            containerClassName="docente-form-span-1"
+            containerClassName="investigador-form-span-1"
           />
 
           <FormInput
@@ -127,7 +127,7 @@ export const DocenteFormScreen: React.FC<DocenteFormScreenProps> = ({
             readOnly
             disabled={camposBloqueados}
             required
-            containerClassName="docente-form-span-1"
+            containerClassName="investigador-form-span-1"
           />
 
           <FormInput
@@ -138,7 +138,7 @@ export const DocenteFormScreen: React.FC<DocenteFormScreenProps> = ({
             help="Ingrese el apellido materno si corresponde. Puede completarse automáticamente desde RENIEC cuando esté disponible."
             readOnly
             disabled={camposBloqueados}
-            containerClassName="docente-form-span-2"
+            containerClassName="investigador-form-span-2"
           />
         </div>
       </div>

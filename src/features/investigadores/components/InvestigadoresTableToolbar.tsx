@@ -1,8 +1,8 @@
-import React from 'react';
+import React from "react";
 
-interface DocentesTableToolbarProps {
+interface InvestigadoresTableToolbarProps {
   busqueda: string;
-  estadoFiltro: 'todos' | 'activos' | 'inactivos';
+  estadoFiltro: "todos" | "activos" | "inactivos";
   gradoFiltro: string;
   gradosDisponibles: string[];
   nivelesRenacytDisponibles: string[];
@@ -12,12 +12,12 @@ interface DocentesTableToolbarProps {
   totalActivos: number;
   totalInactivos: number;
   onBusquedaChange: (value: string) => void;
-  onEstadoFiltroChange: (value: 'todos' | 'activos' | 'inactivos') => void;
+  onEstadoFiltroChange: (value: "todos" | "activos" | "inactivos") => void;
   onGradoFiltroChange: (value: string) => void;
   onRenacytNivelFiltroChange: (value: string) => void;
 }
 
-export const DocentesTableToolbar: React.FC<DocentesTableToolbarProps> = ({
+export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProps> = ({
   busqueda,
   estadoFiltro,
   gradoFiltro,
@@ -44,36 +44,48 @@ export const DocentesTableToolbar: React.FC<DocentesTableToolbarProps> = ({
       className="form-input filter-search"
       placeholder="Buscar por nombre, DNI, grado o nivel RENACYT"
       value={busqueda}
-      onChange={(e) => { onBusquedaChange(e.target.value); }}
-      aria-label="Buscar docentes por nombre, DNI, grado o nivel RENACYT"
+      onChange={(e) => {
+        onBusquedaChange(e.target.value);
+      }}
+      aria-label="Buscar investigadores por nombre, DNI, grado o nivel RENACYT"
     />
     <select
       className="form-input filter-select"
       value={gradoFiltro}
-      onChange={(e) => { onGradoFiltroChange(e.target.value); }}
-      aria-label="Filtrar docentes por grado"
+      onChange={(e) => {
+        onGradoFiltroChange(e.target.value);
+      }}
+      aria-label="Filtrar investigadores por grado"
     >
       <option value="todos">Todos los grados</option>
       {gradosDisponibles.map((grado) => (
-        <option key={grado} value={grado}>{grado}</option>
+        <option key={grado} value={grado}>
+          {grado}
+        </option>
       ))}
     </select>
     <select
       className="form-input filter-select"
       value={renacytNivelFiltro}
-      onChange={(e) => { onRenacytNivelFiltroChange(e.target.value); }}
-      aria-label="Filtrar docentes por nivel RENACYT"
+      onChange={(e) => {
+        onRenacytNivelFiltroChange(e.target.value);
+      }}
+      aria-label="Filtrar investigadores por nivel RENACYT"
     >
       <option value="todos">Todos los niveles RENACYT</option>
       {nivelesRenacytDisponibles.map((nivel) => (
-        <option key={nivel} value={nivel}>{nivel}</option>
+        <option key={nivel} value={nivel}>
+          {nivel}
+        </option>
       ))}
     </select>
     <select
       className="form-input filter-select"
       value={estadoFiltro}
-      onChange={(e) => { onEstadoFiltroChange(e.target.value as 'todos' | 'activos' | 'inactivos'); }}
-      aria-label="Filtrar docentes por estado"
+      onChange={(e) => {
+        onEstadoFiltroChange(e.target.value as "todos" | "activos" | "inactivos");
+      }}
+      aria-label="Filtrar investigadores por estado"
     >
       <option value="todos">Todos</option>
       <option value="activos">Solo activos</option>

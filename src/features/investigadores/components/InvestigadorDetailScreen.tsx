@@ -11,16 +11,16 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import type { DocenteDetalle } from "../api";
+import type { InvestigadorDetalle } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
 import { toast } from "@/services/toast";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import { formatDate, parseFormacionesAcademicas } from "@/shared/utils/docenteUtils";
-import { DocentePublicacionesSection } from "./DocentePublicacionesSection";
+import { InvestigadorPublicacionesSection } from "./InvestigadorPublicacionesSection";
 
-interface DocenteDetailScreenProps {
-  docente: DocenteDetalle;
+interface InvestigadorDetailScreenProps {
+  investigador: InvestigadorDetalle;
   canRefreshRenacyt: boolean;
   canSyncPure: boolean;
   onBack: () => void;
@@ -30,27 +30,29 @@ interface DocenteDetailScreenProps {
 
 type ExternalBrand = "renacyt" | "orcid" | "scopus";
 
-export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
-  docente,
+export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> = ({
+  investigador,
   canRefreshRenacyt,
   canSyncPure,
   onBack,
   onRefreshRenacytFormaciones,
   isRefreshingRenacyt,
 }) => {
-  const proyectos = docente.proyectos ? docente.proyectos.split(" | ") : [];
-  const tieneRenacyt = Boolean(docente.renacyt_codigo_registro || docente.renacyt_id_investigador);
+  const proyectos = investigador.proyectos ? investigador.proyectos.split(" | ") : [];
+  const tieneRenacyt = Boolean(
+    investigador.renacyt_codigo_registro || investigador.renacyt_id_investigador,
+  );
   const [renacytExpanded, setRenacytExpanded] = useState(true);
   const [formacionesExpanded, setFormacionesExpanded] = useState(false);
   const formacionesAcademicas = parseFormacionesAcademicas(
-    docente.renacyt_formaciones_academicas_json,
+    investigador.renacyt_formaciones_academicas_json,
   );
 
-  const scopusUrl = docente.renacyt_scopus_author_id
-    ? `https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(docente.renacyt_scopus_author_id)}`
+  const scopusUrl = investigador.renacyt_scopus_author_id
+    ? `https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(investigador.renacyt_scopus_author_id)}`
     : null;
-  const orcidUrl = docente.renacyt_orcid
-    ? `https://orcid.org/${encodeURIComponent(docente.renacyt_orcid)}`
+  const orcidUrl = investigador.renacyt_orcid
+    ? `https://orcid.org/${encodeURIComponent(investigador.renacyt_orcid)}`
     : null;
 
   const handleOpenExternalUrl = async (url: string, errorMessage: string): Promise<void> => {
@@ -115,13 +117,13 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
               type="button"
               className="screen-breadcrumb-back"
               onClick={onBack}
-              aria-label="Volver a docentes"
+              aria-label="Volver a investigadores"
             >
               <AppIcon icon={ArrowLeft} size={14} />
             </button>
-            <span>Docentes</span>
+            <span>Investigadores</span>
             <span className="screen-breadcrumb-sep">/</span>
-            <span className="screen-breadcrumb-current">{docente.nombres_apellidos}</span>
+            <span className="screen-breadcrumb-current">{investigador.nombres_apellidos}</span>
           </div>
         </div>
         <div className="screen-header-right">
@@ -141,7 +143,7 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
               <AppIcon icon={GraduationCap} size={18} />
             </div>
             <div className="screen-kpi-copy">
-              <span className="screen-kpi-value">{docente.grado || "Sin grado"}</span>
+              <span className="screen-kpi-value">{investigador.grado || "Sin grado"}</span>
               <span className="screen-kpi-label">Grado Académico</span>
             </div>
           </div>
@@ -151,14 +153,14 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">
-                {formatRenacytNivel(docente.renacyt_nivel) ?? "Sin RENACYT"}
+                {formatRenacytNivel(investigador.renacyt_nivel) ?? "Sin RENACYT"}
               </span>
               <span className="screen-kpi-label">Nivel RENACYT</span>
             </div>
           </div>
           <div className="screen-kpi-card">
             <div className="screen-kpi-icon">
-              {docente.activo === 1 ? (
+              {investigador.activo === 1 ? (
                 <span className="badge badge-success">Activo</span>
               ) : (
                 <span className="badge badge-warning">Inactivo</span>
@@ -166,7 +168,7 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">
-                {docente.activo === 1 ? "Activo" : "Inactivo"}
+                {investigador.activo === 1 ? "Activo" : "Inactivo"}
               </span>
               <span className="screen-kpi-label">Estado</span>
             </div>
@@ -176,7 +178,7 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
               <AppIcon icon={BadgeCheck} size={18} />
             </div>
             <div className="screen-kpi-copy">
-              <span className="screen-kpi-value">{docente.cantidad_proyectos}</span>
+              <span className="screen-kpi-value">{investigador.cantidad_proyectos}</span>
               <span className="screen-kpi-label">Proyectos</span>
             </div>
           </div>
@@ -194,22 +196,22 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
         </div>
 
         <div className="screen-section">
-          <div className="docente-info">
+          <div className="investigador-info">
             <div className="info-row">
               <label>Nombre:</label>
-              <span>{docente.nombres_apellidos}</span>
+              <span>{investigador.nombres_apellidos}</span>
             </div>
             <div className="info-row">
               <label>DNI:</label>
-              <span>{docente.dni}</span>
+              <span>{investigador.dni}</span>
             </div>
             <div className="info-row">
               <label>Grado Académico:</label>
-              <span>{docente.grado}</span>
+              <span>{investigador.grado}</span>
             </div>
             <div className="info-row highlight">
               <label>Proyectos Asignados:</label>
-              <span className="badge">{docente.cantidad_proyectos}</span>
+              <span className="badge">{investigador.cantidad_proyectos}</span>
             </div>
           </div>
         </div>
@@ -246,12 +248,12 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
                   <div className="renacyt-detail-grid">
                     <div className="renacyt-detail-item">
                       {renderBrandLabel("Código", "renacyt")}
-                      <strong>{docente.renacyt_codigo_registro ?? "No disponible"}</strong>
+                      <strong>{investigador.renacyt_codigo_registro ?? "No disponible"}</strong>
                     </div>
                     {renderLinkedIdentifier(
                       "ID investigador",
-                      docente.renacyt_id_investigador,
-                      docente.renacyt_ficha_url ?? null,
+                      investigador.renacyt_id_investigador,
+                      investigador.renacyt_ficha_url ?? null,
                       "Abrir ficha RENACYT",
                       "No se pudo abrir la ficha pública RENACYT.",
                       "renacyt",
@@ -259,36 +261,38 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
                     <div className="renacyt-detail-item">
                       <span className="renacyt-detail-label">Nivel</span>
                       <strong>
-                        {formatRenacytNivel(docente.renacyt_nivel) ?? "No disponible"}
+                        {formatRenacytNivel(investigador.renacyt_nivel) ?? "No disponible"}
                       </strong>
                     </div>
                     <div className="renacyt-detail-item">
                       <span className="renacyt-detail-label">Grupo</span>
-                      <strong>{docente.renacyt_grupo ?? "No disponible"}</strong>
+                      <strong>{investigador.renacyt_grupo ?? "No disponible"}</strong>
                     </div>
                     <div className="renacyt-detail-item">
                       <span className="renacyt-detail-label">Condición</span>
-                      <strong>{docente.renacyt_condicion ?? "No disponible"}</strong>
+                      <strong>{investigador.renacyt_condicion ?? "No disponible"}</strong>
                     </div>
                     <div className="renacyt-detail-item">
                       <span className="renacyt-detail-label">Registro</span>
-                      <strong>{formatDate(docente.renacyt_fecha_registro)}</strong>
+                      <strong>{formatDate(investigador.renacyt_fecha_registro)}</strong>
                     </div>
                     <div className="renacyt-detail-item">
                       <span className="renacyt-detail-label">Informe</span>
-                      <strong>{formatDate(docente.renacyt_fecha_informe_calificacion)}</strong>
+                      <strong>{formatDate(investigador.renacyt_fecha_informe_calificacion)}</strong>
                     </div>
                     <div className="renacyt-detail-item">
                       <span className="renacyt-detail-label">Última revisión</span>
-                      <strong>{formatDate(docente.renacyt_fecha_ultima_revision)}</strong>
+                      <strong>{formatDate(investigador.renacyt_fecha_ultima_revision)}</strong>
                     </div>
                     <div className="renacyt-detail-item">
                       <span className="renacyt-detail-label">Última sincronización</span>
-                      <strong>{formatDate(docente.renacyt_fecha_ultima_sincronizacion)}</strong>
+                      <strong>
+                        {formatDate(investigador.renacyt_fecha_ultima_sincronizacion)}
+                      </strong>
                     </div>
                     {renderLinkedIdentifier(
                       "ORCID",
-                      docente.renacyt_orcid,
+                      investigador.renacyt_orcid,
                       orcidUrl,
                       "Abrir ORCID",
                       "No se pudo abrir el perfil de ORCID.",
@@ -296,7 +300,7 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
                     )}
                     {renderLinkedIdentifier(
                       "Scopus Author ID",
-                      docente.renacyt_scopus_author_id,
+                      investigador.renacyt_scopus_author_id,
                       scopusUrl,
                       "Abrir Scopus",
                       "No se pudo abrir el perfil de Scopus.",
@@ -310,7 +314,7 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
                         type="button"
                         className="btn-secondary"
                         onClick={() => {
-                          onRefreshRenacytFormaciones(docente.id_docente);
+                          onRefreshRenacytFormaciones(investigador.id_docente);
                         }}
                         disabled={isRefreshingRenacyt}
                       >
@@ -331,8 +335,8 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
                   {canRefreshRenacyt && formacionesAcademicas.length === 0 && (
                     <div className="inline-feedback inline-feedback-info renacyt-formaciones-feedback">
                       <span>
-                        No hay formación académica RENACYT sincronizada para este docente. Puede
-                        reintentar la consulta.
+                        No hay formación académica RENACYT sincronizada para este investigador.
+                        Puede reintentar la consulta.
                       </span>
                     </div>
                   )}
@@ -406,19 +410,20 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
                 </>
               ) : (
                 <p className="renacyt-detail-empty">
-                  Este docente no tiene una clasificación RENACYT vinculada en su registro actual.
+                  Este investigador no tiene una clasificación RENACYT vinculada en su registro
+                  actual.
                 </p>
               ))}
           </div>
         </div>
 
-        <DocentePublicacionesSection
-          docenteId={docente.id_docente}
-          scopusAuthorId={docente.renacyt_scopus_author_id}
+        <InvestigadorPublicacionesSection
+          investigadorId={investigador.id_docente}
+          scopusAuthorId={investigador.renacyt_scopus_author_id}
           canSyncPure={canSyncPure}
         />
 
-        {docente.cantidad_proyectos > 0 ? (
+        {investigador.cantidad_proyectos > 0 ? (
           <div className="screen-section">
             <h3 className="screen-section-title">
               <AppIcon icon={GraduationCap} size={18} />
@@ -437,7 +442,7 @@ export const DocenteDetailScreen: React.FC<DocenteDetailScreenProps> = ({
           <div className="screen-placeholder-card">
             <p className="title-with-icon">
               <AppIcon icon={TriangleAlert} size={18} />
-              <span>Este docente no tiene proyectos asignados</span>
+              <span>Este investigador no tiene proyectos asignados</span>
             </p>
           </div>
         )}
