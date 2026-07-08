@@ -23,22 +23,26 @@ interface CreateInvestigadorRenacytPayload {
   formaciones_academicas_json?: string | null;
 }
 
-export const crearInvestigador = async (
-  dni: string,
-  id_grado: string,
-  nombres: string,
-  apellido_paterno: string,
-  apellido_materno?: string,
-  renacyt?: CreateInvestigadorRenacytPayload | null,
-): Promise<Investigador> => {
+export interface CrearInvestigadorArgs {
+  dni: string;
+  id_grado: string;
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno?: string | null;
+  perfil?: "docente" | "tesista" | "alumno_egresado";
+  renacyt?: CreateInvestigadorRenacytPayload | null;
+}
+
+export const crearInvestigador = async (args: CrearInvestigadorArgs): Promise<Investigador> => {
   return await invoke("crear_investigador", {
     request: {
-      dni,
-      id_grado,
-      nombres,
-      apellido_paterno,
-      apellido_materno: apellido_materno?.trim() ? apellido_materno : null,
-      renacyt: renacyt ?? null,
+      dni: args.dni,
+      id_grado: args.id_grado,
+      nombres: args.nombres,
+      apellido_paterno: args.apellido_paterno,
+      apellido_materno: args.apellido_materno ?? null,
+      perfil: args.perfil ?? "docente",
+      renacyt: args.renacyt ?? null,
     },
   });
 };

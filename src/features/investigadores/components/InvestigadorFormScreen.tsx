@@ -34,21 +34,27 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
     handleValidarDni,
     handleValidarRenacyt,
     idGrado,
+    isAutoCheckingRenacyt,
+    isAutoNotFoundRenacyt,
     isCheckingDni,
     isCheckingRenacyt,
     isLoading,
     nombreCompletoPreview,
     nombres,
+    perfil,
+    perfiles,
     puedeValidarDni,
     puedeValidarRenacyt,
     renacytData,
     renacytQuery,
+    renacytSource,
     renacytValidationMessage,
     renacytValidationStatus,
     setApellidoMaterno,
     setApellidoPaterno,
     setIdGrado,
     setNombres,
+    setPerfil,
   } = useInvestigadorCreateForm(refreshTrigger, onInvestigadorCreated, onBack);
 
   return (
@@ -91,6 +97,9 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
             isLoading={isLoading}
             dniFueValidado={dniFueValidado}
             renacytData={renacytData}
+            isAutoChecking={isAutoCheckingRenacyt}
+            isAutoNotFound={isAutoNotFoundRenacyt}
+            renacytSource={renacytSource}
           />
 
           <FormSelect
@@ -101,6 +110,19 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
               .filter((g) => g.activo !== 0)
               .map((g) => ({ value: g.id_grado, label: g.nombre }))}
             help="Seleccione el grado vigente del investigador. Solo se muestran grados activos para preservar consistencia operativa."
+            disabled={camposBloqueados}
+            required
+            containerClassName="investigador-form-span-1"
+          />
+
+          <FormSelect
+            label="Perfil del investigador"
+            value={perfil}
+            onChange={(value) => {
+              setPerfil(value as typeof perfil);
+            }}
+            options={perfiles}
+            help="Define la categoría operativa del investigador. Docente es el perfil por defecto; tesista y alumno egresado se usan para investigadores en formación o recién egresados."
             disabled={camposBloqueados}
             required
             containerClassName="investigador-form-span-1"

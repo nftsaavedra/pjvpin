@@ -3,6 +3,7 @@ import { useFetchGrados } from "../../configuracion/grados/hooks/useFetchGrados"
 import { toast } from "@/services/toast";
 import {
   buscarInvestigadorPorDni,
+  buscarInvestigadorPorDniConRenacyt,
   consultarDniReniec,
   consultarRenacytInvestigador,
   crearInvestigador,
@@ -11,7 +12,17 @@ import {
 } from "../api";
 
 type DniValidationStatus = "idle" | "checking" | "duplicate" | "validated" | "error";
-type RenacytValidationStatus = "idle" | "checking" | "validated" | "error";
+type RenacytValidationStatus =
+  "idle" | "checking" | "auto-checking" | "auto-not-found" | "validated" | "error";
+type RenacytSource = "auto" | "manual" | null;
+
+export type PerfilInvestigador = "docente" | "tesista" | "alumno_egresado";
+
+const PERFILES: { value: PerfilInvestigador; label: string }[] = [
+  { value: "docente", label: "Docente" },
+  { value: "tesista", label: "Tesista" },
+  { value: "alumno_egresado", label: "Alumno egresado" },
+];
 
 export const useInvestigadorCreateForm = (
   refreshTrigger = 0,
@@ -23,18 +34,20 @@ export const useInvestigadorCreateForm = (
   const [nombres, setNombres] = useState("");
   const [apellidoPaterno, setApellidoPaterno] = useState("");
   const [apellidoMaterno, setApellidoMaterno] = useState("");
+  const [perfil, setPerfil] = useState<PerfilInvestigador>("docente");
   const [isLoading, setIsLoading] = useState(false);
   const [dniValidationStatus, setDniValidationStatus] = useState<DniValidationStatus>("idle");
   const [dniValidationMessage, setDniValidationMessage] = useState(
-    "Ingrese el DNI y valide primero para habilitar el resto del registro.",
+    "Ingrese el DNI y presione 'Validar e identificar' para consultar RENIEC y RENACYT.",
   );
   const [validatedDni, setValidatedDni] = useState("");
   const [renacytQuery, setRenacytQuery] = useState("");
   const [renacytValidationStatus, setRenacytValidationStatus] =
     useState<RenacytValidationStatus>("idle");
   const [renacytValidationMessage, setRenacytValidationMessage] = useState(
-    "Opcional: valide el código RENACYT o ID del investigador para adjuntar su clasificación vigente.",
+    "RENACYT se consulta automáticamente tras validar el DNI. Puede sobrescribirlo manualmente si lo desea.",
   );
+  const [renacytSource, setRenacytSource] = useState<RenacytSource>(null);
   const [validatedRenacytQuery, setValidatedRenacytQuery] = useState("");
   const [renacytData, setRenacytData] = useState<RenacytLookupResult | null>(null);
 
@@ -52,7 +65,10 @@ export const useInvestigadorCreateForm = (
   const dniLimpio = dni.trim();
   const renacytQueryNormalizado = renacytQuery.trim().toUpperCase();
   const isCheckingDni = dniValidationStatus === "checking";
-  const isCheckingRenacyt = renacytValidationStatus === "checking";
+  const isCheckingRenacyt =
+    renacytValidationStatus === "checking" || renacytValidationStatus === "auto-checking";
+  const isAutoCheckingRenacyt = renacytValidationStatus === "auto-checking";
+  const isAutoNotFoundRenacyt = renacytValidationStatus === "auto-not-found";
   const dniFueValidado = dniValidationStatus === "validated" && validatedDni === dniLimpio;
   const renacytFueValidado =
     renacytValidationStatus === "validated" && validatedRenacytQuery === renacytQueryNormalizado;
@@ -72,8 +88,9 @@ export const useInvestigadorCreateForm = (
     }
     setRenacytValidationStatus("idle");
     setRenacytValidationMessage(
-      "Opcional: valide el código RENACYT o ID del investigador para adjuntar su clasificación vigente.",
+      "RENACYT se consulta automáticamente tras validar el DNI. Puede sobrescribirlo manualmente si lo desea.",
     );
+    setRenacytSource(null);
     setValidatedRenacytQuery("");
     setRenacytData(null);
   };
@@ -84,10 +101,11 @@ export const useInvestigadorCreateForm = (
     setNombres("");
     setApellidoPaterno("");
     setApellidoMaterno("");
+    setPerfil("docente");
     setValidatedDni("");
     setDniValidationStatus("idle");
     setDniValidationMessage(
-      "Ingrese el DNI y valide primero para habilitar el resto del registro.",
+      "Ingrese el DNI y presione 'Validar e identificar' para consultar RENIEC y RENACYT.",
     );
     resetRenacyt();
   };
@@ -108,7 +126,7 @@ export const useInvestigadorCreateForm = (
       resetRenacyt(true);
       setDniValidationStatus("idle");
       setDniValidationMessage(
-        "Ingrese el DNI y valide primero para habilitar el resto del registro.",
+        "Ingrese el DNI y presione 'Validar e identificar' para consultar RENIEC y RENACYT.",
       );
     }
   };
@@ -149,16 +167,50 @@ export const useInvestigadorCreateForm = (
         return;
       }
 
+      // Paso 1: RENIEC para nombres/apellidos
       const data = await consultarDniReniec(dniLimpio);
       setNombres(formatearTextoReniec(data.first_name));
       setApellidoPaterno(formatearTextoReniec(data.first_last_name));
       setApellidoMaterno(formatearTextoReniec(data.second_last_name));
       setValidatedDni(dniLimpio);
       setDniValidationStatus("validated");
-      setDniValidationMessage(
-        "DNI validado correctamente. Los datos fueron cargados desde RENIEC y el registro está listo para completarse.",
-      );
+      setDniValidationMessage("DNI validado correctamente. Datos RENIEC cargados.");
       toast.success("DNI validado y datos RENIEC cargados correctamente.");
+
+      // Paso 2: auto-RENACYT (sub-paso visible)
+      setRenacytValidationStatus("auto-checking");
+      setRenacytValidationMessage("Buscando automáticamente el código RENACYT por DNI...");
+      try {
+        const lookup = await buscarInvestigadorPorDniConRenacyt(dniLimpio);
+        if (lookup) {
+          setRenacytData(lookup);
+          setRenacytSource("auto");
+          setRenacytValidationStatus("validated");
+          setRenacytValidationMessage(
+            `RENACYT encontrado automáticamente${lookup.nivel ? `. Nivel actual: ${lookup.nivel}` : ""}.`,
+          );
+          toast.success("Investigador identificado en RENACYT.");
+        } else {
+          setRenacytData(null);
+          setRenacytSource(null);
+          setRenacytValidationStatus("auto-not-found");
+          setRenacytValidationMessage(
+            "El DNI no está registrado en RENACYT. Puede registrar al investigador sin RENACYT o ingresarlo manualmente.",
+          );
+        }
+      } catch (renacytError) {
+        // Si falla RENACYT, no bloqueamos el registro: permitimos continuar
+        // con solo RENIEC. Es un fallback amable.
+        setRenacytData(null);
+        setRenacytSource(null);
+        setRenacytValidationStatus("auto-not-found");
+        setRenacytValidationMessage(
+          "No se pudo consultar RENACYT automáticamente. Puede continuar sin RENACYT o ingresarlo manualmente.",
+        );
+        // No mostramos toast.error — la validación DNI ya fue exitosa.
+        // El usuario puede decidir si quiere reintentar RENACYT manualmente.
+        console.warn("Auto-RENACYT lookup failed:", renacytError);
+      }
     } catch (error) {
       clearValidatedIdentity();
       resetRenacyt(true);
@@ -198,6 +250,7 @@ export const useInvestigadorCreateForm = (
       }
 
       setRenacytData(result);
+      setRenacytSource("manual");
       setValidatedRenacytQuery(renacytQueryNormalizado);
       setRenacytValidationStatus("validated");
       setRenacytValidationMessage(
@@ -250,29 +303,31 @@ export const useInvestigadorCreateForm = (
 
     setIsLoading(true);
     try {
-      await crearInvestigador(
-        dniLimpio,
-        idGrado,
-        nombresLimpio,
-        apellidoPaternoLimpio,
-        apellidoMaternoLimpio,
-        renacytFueValidado && renacytData
-          ? {
-              codigo_registro: renacytData.codigo_registro,
-              id_investigador: renacytData.id_investigador,
-              nivel: renacytData.nivel ?? null,
-              grupo: renacytData.grupo ?? null,
-              condicion: renacytData.condicion ?? null,
-              fecha_informe_calificacion: renacytData.fecha_informe_calificacion ?? null,
-              fecha_registro: renacytData.fecha_registro ?? null,
-              fecha_ultima_revision: renacytData.fecha_ultima_revision ?? null,
-              orcid: renacytData.orcid ?? null,
-              scopus_author_id: renacytData.scopus_author_id ?? null,
-              ficha_url: renacytData.ficha_url,
-              formaciones_academicas_json: renacytData.formaciones_academicas_json ?? null,
-            }
-          : null,
-      );
+      await crearInvestigador({
+        dni: dniLimpio,
+        id_grado: idGrado,
+        nombres: nombresLimpio,
+        apellido_paterno: apellidoPaternoLimpio,
+        apellido_materno: apellidoMaternoLimpio || null,
+        perfil,
+        renacyt:
+          renacytFueValidado && renacytData
+            ? {
+                codigo_registro: renacytData.codigo_registro,
+                id_investigador: renacytData.id_investigador,
+                nivel: renacytData.nivel ?? null,
+                grupo: renacytData.grupo ?? null,
+                condicion: renacytData.condicion ?? null,
+                fecha_informe_calificacion: renacytData.fecha_informe_calificacion ?? null,
+                fecha_registro: renacytData.fecha_registro ?? null,
+                fecha_ultima_revision: renacytData.fecha_ultima_revision ?? null,
+                orcid: renacytData.orcid ?? null,
+                scopus_author_id: renacytData.scopus_author_id ?? null,
+                ficha_url: renacytData.ficha_url,
+                formaciones_academicas_json: renacytData.formaciones_academicas_json ?? null,
+              }
+            : null,
+      });
       toast.success("Investigador registrado exitosamente");
       resetForm();
       onInvestigadorCreated();
@@ -299,20 +354,26 @@ export const useInvestigadorCreateForm = (
     handleValidarDni,
     handleValidarRenacyt,
     idGrado,
+    isAutoCheckingRenacyt,
+    isAutoNotFoundRenacyt,
     isCheckingDni,
     isCheckingRenacyt,
     isLoading,
     nombreCompletoPreview,
     nombres,
+    perfiles: PERFILES,
+    perfil,
     puedeValidarDni,
     puedeValidarRenacyt,
     renacytData,
     renacytQuery,
+    renacytSource,
     renacytValidationMessage,
     renacytValidationStatus,
     setApellidoMaterno,
     setApellidoPaterno,
     setIdGrado,
     setNombres,
+    setPerfil,
   };
 };

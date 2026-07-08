@@ -34,7 +34,7 @@ export const DniValidationSection: React.FC<DniValidationSectionProps> = ({
         </label>
         <FieldHelpTooltip
           label="Ayuda para DNI"
-          content="Primero se valida si el DNI ya existe en la base principal. Solo si no existe, se consulta RENIEC para autocompletar los datos y habilitar el registro."
+          content="Primero se valida si el DNI ya existe en la base principal. Si no existe, se consulta RENIEC para autocompletar los datos y, a continuación, se busca automáticamente el código RENACYT asociado. El proceso es transparente: solo debe ingresar el DNI y presionar Validar."
         />
       </div>
       <div className="form-input-action-group docente-dni-input-row">
@@ -42,7 +42,9 @@ export const DniValidationSection: React.FC<DniValidationSectionProps> = ({
           id="docente-dni"
           type="text"
           value={dni}
-          onChange={(event) => { onDniChange(event.target.value); }}
+          onChange={(event) => {
+            onDniChange(event.target.value);
+          }}
           placeholder="Ej: 45678912"
           maxLength={8}
           required
@@ -54,12 +56,14 @@ export const DniValidationSection: React.FC<DniValidationSectionProps> = ({
         <button
           type="button"
           className="btn-secondary form-input-action-button"
-          onClick={() => { onValidate(); }}
+          onClick={() => {
+            onValidate();
+          }}
           disabled={!canValidate}
         >
           <span className="button-with-icon">
             <AppIcon icon={Search} size={16} />
-            <span>{isChecking ? "Validando..." : "Validar DNI"}</span>
+            <span>{isChecking ? "Validando e identificando..." : "Validar e identificar"}</span>
           </span>
         </button>
       </div>
