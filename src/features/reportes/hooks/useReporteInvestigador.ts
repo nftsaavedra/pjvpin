@@ -1,15 +1,15 @@
 import { useCallback, useState } from "react";
 import {
-  getReporteDocenteIntegral,
-  getReportesDocentesIntegral,
+  getReporteInvestigadorIntegral,
+  getReportesInvestigadoresIntegral,
   type ReporteDocenteIntegral,
 } from "../api";
 import { toast } from "@/services/toast";
 import { getTauriErrorMessage } from "@/services/tauri/error";
 
-export function useReporteDocente() {
-  const [docenteReport, setDocenteReport] = useState<ReporteDocenteIntegral | null>(null);
-  const [docenteReports, setDocenteReports] = useState<ReporteDocenteIntegral[]>([]);
+export function useReporteInvestigador() {
+  const [investigadorReport, setInvestigadorReport] = useState<ReporteDocenteIntegral | null>(null);
+  const [investigadorReports, setInvestigadorReports] = useState<ReporteDocenteIntegral[]>([]);
   const [generating, setGenerating] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
@@ -17,23 +17,23 @@ export function useReporteDocente() {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
-  const generate = useCallback(async (docenteId: string) => {
-    if (!docenteId) {
+  const generate = useCallback(async (investigadorId: string) => {
+    if (!investigadorId) {
       toast.info("Seleccione un investigador");
       return;
     }
     setGenerating(true);
-    setDocenteReport(null);
-    setDocenteReports([]);
+    setInvestigadorReport(null);
+    setInvestigadorReports([]);
     try {
-      if (docenteId === "__todos__") {
-        const reports = await getReportesDocentesIntegral();
-        setDocenteReports(reports);
+      if (investigadorId === "__todos__") {
+        const reports = await getReportesInvestigadoresIntegral();
+        setInvestigadorReports(reports);
         setExpandedSections({ "doc-perfil-0": true });
         toast.success(`${reports.length} reportes generados`);
       } else {
-        const report = await getReporteDocenteIntegral(docenteId);
-        setDocenteReport(report);
+        const report = await getReporteInvestigadorIntegral(investigadorId);
+        setInvestigadorReport(report);
         setExpandedSections({ "doc-perfil": true });
         toast.success("Reporte de investigador generado");
       }
@@ -45,8 +45,8 @@ export function useReporteDocente() {
   }, []);
 
   return {
-    docenteReport,
-    docenteReports,
+    investigadorReport,
+    investigadorReports,
     generating,
     expandedSections,
     toggleSection,

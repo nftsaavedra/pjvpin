@@ -180,7 +180,16 @@ export const ProyectoIntegralPdf = ({ report }: { report: ReporteProyectoIntegra
         <View>
           <Text style={pdfDefaults.sectionTitle}>Equipo ({report.total_docentes})</Text>
           <PdfTable
-            columns={["Docente", "DNI", "Grado", "RENACYT", "Nivel", "Grupo", "Resp.", "Pubs."]}
+            columns={[
+              "Investigador",
+              "DNI",
+              "Grado",
+              "RENACYT",
+              "Nivel",
+              "Grupo",
+              "Resp.",
+              "Pubs.",
+            ]}
             widths={["17%", "12%", "12%", "15%", "10%", "12%", "10%", "12%"]}
             rows={equipo.map((m) => [
               m.nombres_apellidos,
@@ -267,7 +276,7 @@ export const ProyectoIntegralPdf = ({ report }: { report: ReporteProyectoIntegra
   );
 };
 
-export const DocenteIntegralPdf = ({ report }: { report: ReporteDocenteIntegral }) => {
+export const InvestigadorIntegralPdf = ({ report }: { report: ReporteDocenteIntegral }) => {
   const { perfil, proyectos, recursos, publicaciones, trazabilidad } = report;
 
   return (

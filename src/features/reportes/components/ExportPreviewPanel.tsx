@@ -8,7 +8,7 @@ import { normalizeText } from "@/shared/utils/text";
 
 const normalizeSearch = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
 
-type TipoReporte = "agrupado_docente" | "plano";
+type TipoReporte = "agrupado_investigador" | "plano";
 
 interface ExportPreviewPanelProps {
   preview: DatosExportDocenteAgrupado[];
@@ -21,7 +21,7 @@ interface ExportPreviewPanelProps {
 }
 
 const columns: ColumnDef<DatosExportDocenteAgrupado>[] = [
-  { key: "docente", label: "Docente", render: (r) => r.docente },
+  { key: "docente", label: "Investigador", render: (r) => r.docente },
   { key: "dni", label: "DNI", render: (r) => r.dni },
   { key: "grado", label: "Grado", render: (r) => r.grado },
   {
@@ -42,7 +42,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
   onExport,
   onRetry,
 }) => {
-  const [tipo, setTipo] = useState<TipoReporte>("agrupado_docente");
+  const [tipo, setTipo] = useState<TipoReporte>("agrupado_investigador");
   const [query, setQuery] = useState("");
 
   const normalizedQuery = normalizeSearch(query);
@@ -65,11 +65,15 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
               <select
                 className="form-input"
                 value={tipo}
-                onChange={(e) => { setTipo(e.target.value as TipoReporte); }}
+                onChange={(e) => {
+                  setTipo(e.target.value as TipoReporte);
+                }}
                 aria-label="Seleccionar tipo de reporte"
               >
-                <option value="agrupado_docente">Docentes con proyectos (agrupado)</option>
-                <option value="plano">Detalle plano (proyecto-docente)</option>
+                <option value="agrupado_investigador">
+                  Investigadores con proyectos (agrupado)
+                </option>
+                <option value="plano">Detalle plano (proyecto-investigador)</option>
               </select>
             </div>
 
@@ -77,7 +81,9 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
               <div className="flex flex-wrap gap-3">
                 <button
                   className="btn-primary"
-                  onClick={() => { onExport("xlsx"); }}
+                  onClick={() => {
+                    onExport("xlsx");
+                  }}
                   disabled={exportingFormat !== null}
                 >
                   <span className="button-with-icon">
@@ -89,7 +95,9 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
                 </button>
                 <button
                   className="btn-secondary"
-                  onClick={() => { onExport("pdf"); }}
+                  onClick={() => {
+                    onExport("pdf");
+                  }}
                   disabled={exportingFormat !== null}
                 >
                   <span className="button-with-icon">
@@ -104,7 +112,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
 
         <aside className="module-aside-card reportes-aside">
           <span className="module-aside-kicker">Resumen rápido</span>
-          <strong>{tipo === "agrupado_docente" ? "Agrupado" : "Plano"}</strong>
+          <strong>{tipo === "agrupado_investigador" ? "Agrupado" : "Plano"}</strong>
           <p>Ajuste el formato antes de exportar.</p>
           <div className="module-aside-meta">
             <span className="badge badge-info">
@@ -119,7 +127,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
 
       <div className="table-container">
         <div className="section-header">
-          <h2>Vista previa: Docentes y trazabilidad de proyectos</h2>
+          <h2>Vista previa: Investigadores y trazabilidad de proyectos</h2>
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
@@ -140,10 +148,12 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
         <div className="form-group" style={{ marginBottom: "1rem" }}>
           <input
             className="form-input"
-            placeholder="Buscar por docente, DNI, grado o nivel RENACYT"
+            placeholder="Buscar por investigador, DNI, grado o nivel RENACYT"
             value={query}
-            onChange={(e) => { setQuery(e.target.value); }}
-            aria-label="Buscar en la vista previa por docente, DNI, grado o nivel RENACYT"
+            onChange={(e) => {
+              setQuery(e.target.value);
+            }}
+            aria-label="Buscar en la vista previa por investigador, DNI, grado o nivel RENACYT"
           />
         </div>
 

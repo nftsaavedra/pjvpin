@@ -5,8 +5,8 @@ import {
   type DatosExportDocenteAgrupado,
 } from "./api";
 import { getAllProyectosDetalle } from "@/services/tauri/proyectos";
-import { getAllDocentes } from "@/services/tauri/docentes";
-import type { Docente, ProyectoDetalle } from "@/services/tauri/types";
+import { getAllInvestigadores } from "@/services/tauri/investigadores";
+import type { Investigador, ProyectoDetalle } from "@/services/tauri/types";
 import { toast } from "@/services/toast";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
@@ -48,21 +48,29 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
 
   const [proyectos, setProyectos] = useState<ProyectoDetalle[]>([]);
   const [proyectosLoading, setProyectosLoading] = useState(true);
-  const [docentes, setDocentes] = useState<Docente[]>([]);
-  const [docentesLoading, setDocentesLoading] = useState(true);
+  const [investigadores, setInvestigadores] = useState<Investigador[]>([]);
+  const [investigadoresLoading, setInvestigadoresLoading] = useState(true);
 
   React.useEffect(() => {
     getAllProyectosDetalle()
       .then(setProyectos)
-      .catch(() => { toast.error("Error cargando proyectos"); })
-      .finally(() => { setProyectosLoading(false); });
+      .catch(() => {
+        toast.error("Error cargando proyectos");
+      })
+      .finally(() => {
+        setProyectosLoading(false);
+      });
   }, []);
 
   React.useEffect(() => {
-    getAllDocentes()
-      .then(setDocentes)
-      .catch(() => { toast.error("Error cargando docentes"); })
-      .finally(() => { setDocentesLoading(false); });
+    getAllInvestigadores()
+      .then(setInvestigadores)
+      .catch(() => {
+        toast.error("Error cargando investigadores");
+      })
+      .finally(() => {
+        setInvestigadoresLoading(false);
+      });
   }, []);
 
   const exportar = async (format: "xlsx" | "pdf") => {
@@ -71,10 +79,10 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
       const exportPayload =
         format === "xlsx"
           ? await import("./reportExport").then(({ buildExcelReport }) =>
-              buildExcelReport("agrupado_docente"),
+              buildExcelReport("agrupado_investigador"),
             )
           : await import("./reportExportPdf").then(({ buildPdfReport }) =>
-              buildPdfReport("agrupado_docente"),
+              buildPdfReport("agrupado_investigador"),
             );
 
       const savedFilePath = await saveDesktopFile({
@@ -119,7 +127,7 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
 
       <ReporteProyectoPanel proyectos={proyectos} proyectosLoading={proyectosLoading} />
 
-      <ReporteDocentePanel docentes={docentes} docentesLoading={docentesLoading} />
+      <ReporteDocentePanel docentes={investigadores} docentesLoading={investigadoresLoading} />
     </div>
   );
 };

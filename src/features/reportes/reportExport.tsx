@@ -1,8 +1,8 @@
-import ExcelJS from 'exceljs';
-import { formatRenacytNivel } from '@/shared/utils/renacyt';
-import { getDataExportacionAgrupada, getDataExportacionPlana } from './api';
+import ExcelJS from "exceljs";
+import { formatRenacytNivel } from "@/shared/utils/renacyt";
+import { getDataExportacionAgrupada, getDataExportacionPlana } from "./api";
 
-type TipoReporte = 'agrupado_docente' | 'plano';
+type TipoReporte = "agrupado_investigador" | "plano";
 
 interface ReportExportPayload {
   bytes: Uint8Array;
@@ -10,31 +10,31 @@ interface ReportExportPayload {
 }
 
 const getReportBaseName = (tipo: TipoReporte) => {
-  return tipo === 'agrupado_docente' ? 'docentes-proyectos' : 'detalle-plano';
+  return tipo === "agrupado_investigador" ? "investigadores-proyectos" : "detalle-plano";
 };
 
-const getSuggestedFileName = (tipo: TipoReporte, extension: 'xlsx' | 'pdf') => {
-  const date = new Date().toISOString().split('T')[0];
+const getSuggestedFileName = (tipo: TipoReporte, extension: "xlsx" | "pdf") => {
+  const date = new Date().toISOString().split("T")[0];
   return `reporte-${getReportBaseName(tipo)}-${date}.${extension}`;
 };
 
 const normalizeRows = async (tipo: TipoReporte) => {
-  if (tipo === 'agrupado_docente') {
+  if (tipo === "agrupado_investigador") {
     const rows = await getDataExportacionAgrupada();
     return rows.map((row) => ({
-      docente: row.docente,
+      investigador: row.docente,
       dni: row.dni,
       grado: row.grado,
       renacyt_nivel: formatRenacytNivel(row.renacyt_nivel) ?? row.renacyt_nivel,
       cantidad_proyectos: row.cantidad_proyectos,
-      proyectos: row.proyectos ?? '-',
+      proyectos: row.proyectos ?? "-",
     }));
   }
 
   const rows = await getDataExportacionPlana();
   return rows.map((row) => ({
     proyecto: row.proyecto,
-    docente: row.docente,
+    investigador: row.docente,
     dni: row.dni,
     grado: row.grado,
     renacyt_nivel: formatRenacytNivel(row.renacyt_nivel) ?? row.renacyt_nivel,
@@ -42,7 +42,7 @@ const normalizeRows = async (tipo: TipoReporte) => {
 };
 
 const getSheetName = (tipo: TipoReporte) => {
-  return tipo === 'agrupado_docente' ? 'Docentes_Proyectos' : 'Detalle_Plano';
+  return tipo === "agrupado_investigador" ? "Investigadores_Proyectos" : "Detalle_Plano";
 };
 
 export const buildExcelReport = async (tipo: TipoReporte): Promise<ReportExportPayload> => {
@@ -62,7 +62,6 @@ export const buildExcelReport = async (tipo: TipoReporte): Promise<ReportExportP
   const buffer = await workbook.xlsx.writeBuffer();
   return {
     bytes: new Uint8Array(buffer),
-    suggestedName: getSuggestedFileName(tipo, 'xlsx'),
+    suggestedName: getSuggestedFileName(tipo, "xlsx"),
   };
 };
-

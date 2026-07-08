@@ -2,12 +2,12 @@ import React from "react";
 import { Download } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import SingleDocenteReport from "./SingleDocenteReport";
-import { useReporteDocente } from "../hooks/useReporteDocente";
+import { useReporteInvestigador } from "../hooks/useReporteInvestigador";
 import { useExport } from "../hooks/useExport";
-import type { Docente } from "@/services/tauri/types";
+import type { Investigador } from "@/services/tauri/types";
 
 interface ReporteDocentePanelProps {
-  docentes: Docente[];
+  docentes: Investigador[];
   docentesLoading: boolean;
 }
 
@@ -15,13 +15,19 @@ export const ReporteDocentePanel: React.FC<ReporteDocentePanelProps> = ({
   docentes,
   docentesLoading,
 }) => {
-  const { docenteReport, docenteReports, generating, expandedSections, toggleSection, generate } =
-    useReporteDocente();
+  const {
+    investigadorReport,
+    investigadorReports,
+    generating,
+    expandedSections,
+    toggleSection,
+    generate,
+  } = useReporteInvestigador();
 
-  const { exportDocenteXLSX, exportDocentePDF, exportingIntegral } = useExport({
+  const { exportInvestigadorXLSX, exportInvestigadorPDF, exportingIntegral } = useExport({
     proyectoReport: null,
-    docenteReport,
-    docenteReports,
+    investigadorReport,
+    investigadorReports,
   });
 
   return (
@@ -50,47 +56,49 @@ export const ReporteDocentePanel: React.FC<ReporteDocentePanelProps> = ({
         </div>
       </div>
 
-      {(docenteReport || docenteReports.length > 0) && (
+      {(investigadorReport || investigadorReports.length > 0) && (
         <div className="table-container" style={{ marginTop: "1rem" }}>
-          {docenteReport ? (
+          {investigadorReport ? (
             <SingleDocenteReport
-              report={docenteReport}
+              report={investigadorReport}
               expandedSections={expandedSections}
               toggleSection={toggleSection}
               exportingIntegral={exportingIntegral}
-              onExportXLSX={() => void exportDocenteXLSX()}
-              onExportPDF={() => void exportDocentePDF()}
+              onExportXLSX={() => void exportInvestigadorXLSX()}
+              onExportPDF={() => void exportInvestigadorPDF()}
             />
           ) : (
             <>
               <div className="section-header">
-                <h2>Resultados ({docenteReports.length} investigadores)</h2>
+                <h2>Resultados ({investigadorReports.length} investigadores)</h2>
                 <div className="section-header-actions flex gap-2">
                   <button
                     className="btn-primary"
-                    onClick={() => void exportDocenteXLSX()}
+                    onClick={() => void exportInvestigadorXLSX()}
                     disabled={exportingIntegral !== null}
                   >
                     <span className="button-with-icon">
                       <AppIcon icon={Download} size={16} />
                       <span>
-                        {exportingIntegral === "docente-xlsx" ? "Exportando..." : "Excel"}
+                        {exportingIntegral === "investigador-xlsx" ? "Exportando..." : "Excel"}
                       </span>
                     </span>
                   </button>
                   <button
                     className="btn-secondary"
-                    onClick={() => void exportDocentePDF()}
+                    onClick={() => void exportInvestigadorPDF()}
                     disabled={exportingIntegral !== null}
                   >
                     <span className="button-with-icon">
                       <AppIcon icon={Download} size={16} />
-                      <span>{exportingIntegral === "docente-pdf" ? "Exportando..." : "PDF"}</span>
+                      <span>
+                        {exportingIntegral === "investigador-pdf" ? "Exportando..." : "PDF"}
+                      </span>
                     </span>
                   </button>
                 </div>
               </div>
-              {docenteReports.map((rep, idx) => (
+              {investigadorReports.map((rep, idx) => (
                 <SingleDocenteReport
                   key={rep.perfil.id_docente}
                   report={rep}

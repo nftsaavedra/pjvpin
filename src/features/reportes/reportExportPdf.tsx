@@ -2,7 +2,7 @@ import { Document, Page, StyleSheet, Text, View, pdf } from "@react-pdf/renderer
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import { getDataExportacionAgrupada, getDataExportacionPlana } from "./api";
 
-type TipoReporte = "agrupado_docente" | "plano";
+type TipoReporte = "agrupado_investigador" | "plano";
 
 interface ReportExportColumn {
   key: string;
@@ -113,9 +113,9 @@ const pdfStyles = StyleSheet.create({
 });
 
 const getColumns = (tipo: TipoReporte): ReportExportColumn[] => {
-  if (tipo === "agrupado_docente") {
+  if (tipo === "agrupado_investigador") {
     return [
-      { key: "docente", label: "Docente", width: "23%" },
+      { key: "investigador", label: "Investigador", width: "23%" },
       { key: "dni", label: "DNI", width: "11%" },
       { key: "grado", label: "Grado", width: "16%" },
       { key: "renacyt_nivel", label: "RENACYT", width: "12%" },
@@ -126,7 +126,7 @@ const getColumns = (tipo: TipoReporte): ReportExportColumn[] => {
 
   return [
     { key: "proyecto", label: "Proyecto", width: "31%" },
-    { key: "docente", label: "Docente", width: "24%" },
+    { key: "investigador", label: "Investigador", width: "24%" },
     { key: "dni", label: "DNI", width: "12%" },
     { key: "grado", label: "Grado", width: "17%" },
     { key: "renacyt_nivel", label: "RENACYT", width: "16%" },
@@ -144,9 +144,9 @@ const ReportePdfDocument = ({ tipo, rows }: { tipo: TipoReporte; rows: ReportExp
         <View style={pdfStyles.header}>
           <Text style={pdfStyles.title}>Centro de Reportes PJVPI</Text>
           <Text style={pdfStyles.subtitle}>
-            {tipo === "agrupado_docente"
-              ? "Relación agrupada de docentes con trazabilidad de proyectos"
-              : "Detalle plano proyecto-docente para análisis y cruces operativos"}
+            {tipo === "agrupado_investigador"
+              ? "Relación agrupada de investigadores con trazabilidad de proyectos"
+              : "Detalle plano proyecto-investigador para análisis y cruces operativos"}
           </Text>
         </View>
 
@@ -154,7 +154,7 @@ const ReportePdfDocument = ({ tipo, rows }: { tipo: TipoReporte; rows: ReportExp
           <View style={pdfStyles.summaryCard}>
             <Text style={pdfStyles.summaryLabel}>Formato</Text>
             <Text style={pdfStyles.summaryValue}>
-              {tipo === "agrupado_docente" ? "Agrupado" : "Plano"}
+              {tipo === "agrupado_investigador" ? "Agrupado" : "Plano"}
             </Text>
           </View>
           <View style={pdfStyles.summaryCard}>
@@ -222,7 +222,7 @@ export const buildPdfDocumentBytes = async (tipo: TipoReporte, rows: ReportExpor
 };
 
 const getReportBaseName = (tipo: TipoReporte) => {
-  return tipo === "agrupado_docente" ? "docentes-proyectos" : "detalle-plano";
+  return tipo === "agrupado_investigador" ? "investigadores-proyectos" : "detalle-plano";
 };
 
 const getSuggestedFileName = (tipo: TipoReporte, extension: "pdf") => {
@@ -231,10 +231,10 @@ const getSuggestedFileName = (tipo: TipoReporte, extension: "pdf") => {
 };
 
 const normalizeRows = async (tipo: TipoReporte) => {
-  if (tipo === "agrupado_docente") {
+  if (tipo === "agrupado_investigador") {
     const rows = await getDataExportacionAgrupada();
     return rows.map((row) => ({
-      docente: row.docente,
+      investigador: row.docente,
       dni: row.dni,
       grado: row.grado,
       renacyt_nivel: formatRenacytNivel(row.renacyt_nivel) ?? row.renacyt_nivel,
@@ -246,7 +246,7 @@ const normalizeRows = async (tipo: TipoReporte) => {
   const rows = await getDataExportacionPlana();
   return rows.map((row) => ({
     proyecto: row.proyecto,
-    docente: row.docente,
+    investigador: row.docente,
     dni: row.dni,
     grado: row.grado,
     renacyt_nivel: formatRenacytNivel(row.renacyt_nivel) ?? row.renacyt_nivel,

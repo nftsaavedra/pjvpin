@@ -4,18 +4,23 @@ import { pdf } from "@react-pdf/renderer";
 import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
 import { toast } from "@/services/toast";
 import { getTauriErrorMessage } from "../api";
-import { ProyectoIntegralPdf, DocenteIntegralPdf } from "../components/PdfComponents";
+import { ProyectoIntegralPdf, InvestigadorIntegralPdf } from "../components/PdfComponents";
 import type { ReporteProyectoIntegral, ReporteDocenteIntegral } from "../api";
 
-type ExportState = "proyecto-xlsx" | "proyecto-pdf" | "docente-xlsx" | "docente-pdf" | null;
+type ExportState =
+  "proyecto-xlsx" | "proyecto-pdf" | "investigador-xlsx" | "investigador-pdf" | null;
 
 interface UseExportParams {
   proyectoReport: ReporteProyectoIntegral | null;
-  docenteReport: ReporteDocenteIntegral | null;
-  docenteReports: ReporteDocenteIntegral[];
+  investigadorReport: ReporteDocenteIntegral | null;
+  investigadorReports: ReporteDocenteIntegral[];
 }
 
-export function useExport({ proyectoReport, docenteReport, docenteReports }: UseExportParams) {
+export function useExport({
+  proyectoReport,
+  investigadorReport,
+  investigadorReports,
+}: UseExportParams) {
   const [exportingIntegral, setExportingIntegral] = useState<ExportState>(null);
 
   const exportProyectoXLSX = async () => {
@@ -103,12 +108,12 @@ export function useExport({ proyectoReport, docenteReport, docenteReports }: Use
     }
   };
 
-  const exportDocenteXLSX = async () => {
-    if (!docenteReport && docenteReports.length === 0) return;
-    setExportingIntegral("docente-xlsx");
+  const exportInvestigadorXLSX = async () => {
+    if (!investigadorReport && investigadorReports.length === 0) return;
+    setExportingIntegral("investigador-xlsx");
     try {
       const wb = new ExcelJS.Workbook();
-      const reports = docenteReport ? [docenteReport] : docenteReports;
+      const reports = investigadorReport ? [investigadorReport] : investigadorReports;
 
       for (const rep of reports) {
         const name = rep.perfil.nombres_apellidos.substring(0, 31);
@@ -143,7 +148,7 @@ export function useExport({ proyectoReport, docenteReport, docenteReports }: Use
       const buffer = await wb.xlsx.writeBuffer();
       const date = new Date().toISOString().split("T")[0];
       await saveDesktopFile({
-        suggestedName: `reporte-docente-integral-${date}.xlsx`,
+        suggestedName: `reporte-investigador-integral-${date}.xlsx`,
         bytes: new Uint8Array(buffer),
         filters: [{ name: "Archivo Excel", extensions: ["xlsx"] }],
         mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -156,21 +161,21 @@ export function useExport({ proyectoReport, docenteReport, docenteReports }: Use
     }
   };
 
-  const exportDocentePDF = async () => {
-    if (!docenteReport && docenteReports.length === 0) return;
-    setExportingIntegral("docente-pdf");
+  const exportInvestigadorPDF = async () => {
+    if (!investigadorReport && investigadorReports.length === 0) return;
+    setExportingIntegral("investigador-pdf");
     try {
-      const reports = docenteReport ? [docenteReport] : docenteReports;
+      const reports = investigadorReport ? [investigadorReport] : investigadorReports;
       for (const rep of reports) {
-        const blob = await pdf(<DocenteIntegralPdf report={rep} />).toBlob();
+        const blob = await pdf(<InvestigadorIntegralPdf report={rep} />).toBlob();
         const bytes = new Uint8Array(await blob.arrayBuffer());
         const date = new Date().toISOString().split("T")[0];
         const name = rep.perfil.nombres_apellidos.replace(/\s+/g, "_").substring(0, 40);
         await saveDesktopFile({
           suggestedName:
             reports.length === 1
-              ? `reporte-docente-integral-${date}.pdf`
-              : `reporte-docente-${name}-${date}.pdf`,
+              ? `reporte-investigador-integral-${date}.pdf`
+              : `reporte-investigador-${name}-${date}.pdf`,
           bytes,
           filters: [{ name: "Documento PDF", extensions: ["pdf"] }],
           mimeType: "application/pdf",
@@ -186,9 +191,9 @@ export function useExport({ proyectoReport, docenteReport, docenteReports }: Use
 
   return {
     exportProyectoXLSX,
-    exportDocenteXLSX,
+    exportInvestigadorXLSX,
     exportProyectoPDF,
-    exportDocentePDF,
+    exportInvestigadorPDF,
     exportingIntegral,
     setExportingIntegral,
   };
