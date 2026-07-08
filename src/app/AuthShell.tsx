@@ -17,7 +17,7 @@ export function AuthShell({ onAuthenticated }: AuthShellProps) {
               <AppIcon icon={BookOpen} size={24} />
               <span>UPI Research</span>
             </h1>
-            <p className="app-subtitle">Gestión de Proyectos y Docentes</p>
+            <p className="app-subtitle">Gestión de Proyectos e Investigadores</p>
           </div>
         </div>
       </header>

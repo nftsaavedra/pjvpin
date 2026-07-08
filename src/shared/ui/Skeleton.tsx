@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
 interface SkeletonBlockProps {
   className?: string;
 }
 
-export const SkeletonBlock: React.FC<SkeletonBlockProps> = ({ className = '' }) => (
+export const SkeletonBlock: React.FC<SkeletonBlockProps> = ({ className = "" }) => (
   <div className={`skeleton ${className}`.trim()} aria-hidden="true" />
 );
 
@@ -15,7 +15,7 @@ interface RefreshHintProps {
 
 export const RefreshHint: React.FC<RefreshHintProps> = ({
   refreshing = false,
-  label = 'Actualizando datos',
+  label = "Actualizando datos",
 }) => {
   if (!refreshing) return null;
 
@@ -36,11 +36,14 @@ export const SkeletonTable: React.FC<SkeletonTableProps> = ({ columns, rows = 5 
   <div
     className="skeleton-table"
     aria-hidden="true"
-    style={{ ['--skeleton-columns' as string]: columns }}
+    style={{ ["--skeleton-columns" as string]: columns }}
   >
     <div className="skeleton-table-header">
       {Array.from({ length: columns }).map((_, index) => (
-        <SkeletonBlock key={`header-${index}`} className="skeleton skeleton-table-cell skeleton-table-head" />
+        <SkeletonBlock
+          key={`header-${index}`}
+          className="skeleton skeleton-table-cell skeleton-table-head"
+        />
       ))}
     </div>
     {Array.from({ length: rows }).map((_, rowIndex) => (
@@ -71,13 +74,13 @@ export const SkeletonKpiGrid: React.FC = () => (
 );
 
 interface SkeletonChartProps {
-  titleWidth?: 'sm' | 'md' | 'lg';
-  height?: 'sm' | 'md' | 'lg';
+  titleWidth?: "sm" | "md" | "lg";
+  height?: "sm" | "md" | "lg";
 }
 
 export const SkeletonChart: React.FC<SkeletonChartProps> = ({
-  titleWidth = 'md',
-  height = 'md',
+  titleWidth = "md",
+  height = "md",
 }) => (
   <div className="chart-container skeleton-chart-card" aria-hidden="true">
     <SkeletonBlock className={`skeleton skeleton-line skeleton-title-${titleWidth}`} />
@@ -87,7 +90,7 @@ export const SkeletonChart: React.FC<SkeletonChartProps> = ({
 
 export const SkeletonChecklist: React.FC = () => (
   <div className="form-group" aria-hidden="true">
-    <label>Seleccionar Docentes *</label>
+    <label>Seleccionar Investigadores *</label>
     <div className="docentes-checklist skeleton-checklist">
       {Array.from({ length: 5 }).map((_, index) => (
         <div key={`docente-skeleton-${index}`} className="checkbox-item skeleton-checkbox-item">

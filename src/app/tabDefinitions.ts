@@ -32,11 +32,11 @@ export const TAB_DEFINITIONS: TabDef[] = [
     permission: "proyectos.view",
   },
   {
-    id: "docentes",
-    label: "Docentes",
+    id: "investigadores",
+    label: "Investigadores",
     icon: GraduationCap,
     description: "Registro y estado",
-    permission: "docentes.view",
+    permission: "investigadores.view",
   },
   {
     id: "grupos",
@@ -66,17 +66,17 @@ export const TAB_HEADER_META: Record<string, { kicker: string; title: string; su
     dashboard: {
       kicker: "Indicadores clave",
       title: "Dashboard",
-      subtitle: "Carga docente y proyectos en una sola vista.",
+      subtitle: "Carga de investigadores y proyectos en una sola vista.",
     },
     proyectos: {
       kicker: "Gestión operativa",
       title: "Proyectos",
       subtitle: "Alta, asignación y seguimiento de proyectos.",
     },
-    docentes: {
+    investigadores: {
       kicker: "Gestión operativa",
-      title: "Docentes",
-      subtitle: "Registro, estado y trazabilidad docente.",
+      title: "Investigadores",
+      subtitle: "Registro, estado y trazabilidad del investigador.",
     },
     grupos: {
       kicker: "Investigación",

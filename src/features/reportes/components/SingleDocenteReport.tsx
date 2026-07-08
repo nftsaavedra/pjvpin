@@ -48,7 +48,7 @@ const SingleDocenteReport: React.FC<SingleDocenteReportProps> = ({
             >
               <span className="button-with-icon">
                 <AppIcon icon={Download} size={16} />
-                <span>{exportingIntegral === "docente-xlsx" ? "Exportando..." : "Excel"}</span>
+                <span>{exportingIntegral === "investigador-xlsx" ? "Exportando..." : "Excel"}</span>
               </span>
             </button>
             <button
@@ -58,7 +58,7 @@ const SingleDocenteReport: React.FC<SingleDocenteReportProps> = ({
             >
               <span className="button-with-icon">
                 <AppIcon icon={Download} size={16} />
-                <span>{exportingIntegral === "docente-pdf" ? "Exportando..." : "PDF"}</span>
+                <span>{exportingIntegral === "investigador-pdf" ? "Exportando..." : "PDF"}</span>
               </span>
             </button>
           </div>

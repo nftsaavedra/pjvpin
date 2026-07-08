@@ -15,9 +15,9 @@ export const GruposTab = lazy(async () => {
   return { default: module.GruposTab };
 });
 
-export const DocentesTab = lazy(async () => {
-  const module = await import("@/features/docentes/DocentesTab");
-  return { default: module.DocentesTab };
+export const InvestigadoresTab = lazy(async () => {
+  const module = await import("@/features/investigadores/InvestigadoresTab");
+  return { default: module.InvestigadoresTab };
 });
 
 export const ReportesTab = lazy(async () => {

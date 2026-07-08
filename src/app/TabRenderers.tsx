@@ -11,7 +11,7 @@ import {
   DashboardTab,
   ProyectosTab,
   GruposTab,
-  DocentesTab,
+  InvestigadoresTab,
   ReportesTab,
   ConfiguracionTab,
 } from "@/app/lazyImports";
@@ -56,12 +56,12 @@ export function TabRenderers({
           </Suspense>
         </ErrorBoundary>
       );
-    case "docentes":
+    case "investigadores":
       return (
-        <ErrorBoundary fallbackTitle="Error en Docentes">
+        <ErrorBoundary fallbackTitle="Error en Investigadores">
           <Suspense fallback={<FormAndTableFallback columns={6} />}>
-            <DocentesTab
-              canManage={hasPermission(currentRole, "docentes.manage")}
+            <InvestigadoresTab
+              canManage={hasPermission(currentRole, "investigadores.manage")}
               refreshTrigger={refreshTrigger}
               onDataModified={onDataModified}
             />

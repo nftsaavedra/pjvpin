@@ -84,8 +84,8 @@ export const ReporteProyectoPanel: React.FC<ReporteProyectoPanelProps> = ({
 
   const { exportProyectoXLSX, exportProyectoPDF, exportingIntegral } = useExport({
     proyectoReport,
-    docenteReport: null,
-    docenteReports: [],
+    investigadorReport: null,
+    investigadorReports: [],
   });
 
   return (
@@ -175,7 +175,9 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
       <SectionHeader
         label="Cabecera"
         open={expandedSections["proy-cabecera"] ?? false}
-        onToggle={() => { toggleSection("proy-cabecera"); }}
+        onToggle={() => {
+          toggleSection("proy-cabecera");
+        }}
       />
       <div style={{ padding: "0.75rem" }}>
         <InfoRow label="ID Proyecto" value={report.cabecera.id_proyecto} />
@@ -193,7 +195,9 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
         label="Equipo"
         count={report.total_docentes}
         open={expandedSections["proy-equipo"] ?? false}
-        onToggle={() => { toggleSection("proy-equipo"); }}
+        onToggle={() => {
+          toggleSection("proy-equipo");
+        }}
       />
       <DataTable
         columns={equipoColumns}
@@ -208,7 +212,9 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
         label="Patentes"
         count={report.total_patentes}
         open={expandedSections["proy-patentes"] ?? false}
-        onToggle={() => { toggleSection("proy-patentes"); }}
+        onToggle={() => {
+          toggleSection("proy-patentes");
+        }}
       />
       <DataTable
         columns={patenteColumns}
@@ -223,7 +229,9 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
         label="Productos"
         count={report.total_productos}
         open={expandedSections["proy-productos"] ?? false}
-        onToggle={() => { toggleSection("proy-productos"); }}
+        onToggle={() => {
+          toggleSection("proy-productos");
+        }}
       />
       <DataTable
         columns={productoColumns}
@@ -238,7 +246,9 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
         label="Equipamientos"
         count={report.total_equipamientos}
         open={expandedSections["proy-equipamientos"] ?? false}
-        onToggle={() => { toggleSection("proy-equipamientos"); }}
+        onToggle={() => {
+          toggleSection("proy-equipamientos");
+        }}
       />
       <DataTable
         columns={equipColumns}
@@ -253,7 +263,9 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
         label="Financiamiento"
         count={report.total_financiamientos}
         open={expandedSections["proy-financiamiento"] ?? false}
-        onToggle={() => { toggleSection("proy-financiamiento"); }}
+        onToggle={() => {
+          toggleSection("proy-financiamiento");
+        }}
       />
       <DataTable
         columns={financColumns}
