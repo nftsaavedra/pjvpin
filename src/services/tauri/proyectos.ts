@@ -30,7 +30,7 @@ export const actualizarProyectoConParticipantes = async (
 export const buscarProyectosPorInvestigador = async (
   id_investigador: string,
 ): Promise<Proyecto[]> => {
-  return await invoke("buscar_proyectos_por_investigador", { idDocente: id_investigador });
+  return await invoke("buscar_proyectos_por_investigador", { id_investigador });
 };
 
 export const getAllProyectosDetalle = async (): Promise<ProyectoDetalle[]> => {
@@ -43,7 +43,7 @@ export const eliminarRelacionProyectoInvestigador = async (
 ): Promise<void> => {
   await invoke("eliminar_relacion_proyecto_investigador", {
     idProyecto: id_proyecto,
-    idDocente: id_investigador,
+    id_investigador,
   });
 };
 

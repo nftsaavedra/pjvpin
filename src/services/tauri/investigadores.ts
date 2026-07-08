@@ -64,7 +64,7 @@ export const consultarDniReniec = async (numero: string): Promise<ReniecDniLooku
 export const consultarRenacytInvestigador = async (
   codigo_o_id: string,
 ): Promise<RenacytLookupResult> => {
-  return await invoke("consultar_renacyt_investigador", { codigoOId: codigo_o_id });
+  return await invoke("consultar_renacyt_investigador", { codigo_o_id });
 };
 
 export const getAllInvestigadoresConProyectos = async (): Promise<InvestigadorDetalle[]> => {
@@ -72,25 +72,25 @@ export const getAllInvestigadoresConProyectos = async (): Promise<InvestigadorDe
 };
 
 export const eliminarInvestigador = async (
-  id_docente: string,
+  id_investigador: string,
 ): Promise<EliminarInvestigadorResultado> => {
-  return await invoke("eliminar_investigador", { idDocente: id_docente });
+  return await invoke("eliminar_investigador", { id_investigador });
 };
 
-export const reactivarInvestigador = async (id_docente: string): Promise<Investigador> => {
-  return await invoke("reactivar_investigador", { idDocente: id_docente });
+export const reactivarInvestigador = async (id_investigador: string): Promise<Investigador> => {
+  return await invoke("reactivar_investigador", { id_investigador });
 };
 
 export const refrescarFormacionAcademicaRenacytInvestigador = async (
-  id_docente: string,
+  id_investigador: string,
 ): Promise<RefreshInvestigadorRenacytFormacionResultado> => {
   return await invoke("refrescar_formacion_academica_renacyt_investigador", {
-    idDocente: id_docente,
+    id_investigador,
   });
 };
 
 export const actualizarInvestigador = async (
-  id_docente: string,
+  id_investigador: string,
   request: {
     nombres?: string;
     apellido_paterno?: string;
@@ -99,5 +99,5 @@ export const actualizarInvestigador = async (
     grupo_investigacion_id?: string;
   },
 ): Promise<Investigador> => {
-  return await invoke("actualizar_investigador", { idDocente: id_docente, request });
+  return await invoke("actualizar_investigador", { id_investigador, request });
 };

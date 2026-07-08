@@ -22,7 +22,7 @@ export const getReporteProyectoIntegral = async (
 export const getReporteInvestigadorIntegral = async (
   id_investigador: string,
 ): Promise<ReporteDocenteIntegral> =>
-  await invoke("get_reporte_investigador_integral", { idDocente: id_investigador });
+  await invoke("get_reporte_investigador_integral", { id_investigador });
 
 export const getReportesInvestigadoresIntegral = async (): Promise<ReporteDocenteIntegral[]> =>
   await invoke("get_reportes_investigadores_integral");
