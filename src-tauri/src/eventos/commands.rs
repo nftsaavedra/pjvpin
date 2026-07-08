@@ -32,12 +32,12 @@ pub async fn get_evento_by_id(
 }
 
 #[tauri::command]
-pub async fn get_eventos_by_docente(
+pub async fn get_eventos_by_investigador(
     window: Window,
     state: State<'_, AppState>,
-    docente_id: String,
+    id_investigador: String,
 ) -> Result<Vec<EventoAcademico>, AppError> {
-    handlers::get_eventos_by_docente(&state, window.label(), &docente_id).await
+    handlers::get_eventos_by_investigador(&state, window.label(), &id_investigador).await
 }
 
 #[tauri::command]

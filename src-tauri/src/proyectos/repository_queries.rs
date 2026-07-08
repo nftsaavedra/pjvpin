@@ -8,7 +8,7 @@ use crate::shared::error::AppError;
 use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
-pub async fn buscar_proyectos_por_docente(
+pub async fn buscar_proyectos_por_investigador(
     db: &Database,
     id_docente: &str,
 ) -> Result<Vec<Proyecto>, AppError> {

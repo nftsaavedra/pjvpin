@@ -30,13 +30,13 @@ pub async fn get_evento_by_id(
     evento_service::get_by_id(state, id).await
 }
 
-pub async fn get_eventos_by_docente(
+pub async fn get_eventos_by_investigador(
     state: &AppState,
     window_label: &str,
-    docente_id: &str,
+    id_investigador: &str,
 ) -> Result<Vec<EventoAcademico>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    evento_service::get_by_docente(state, docente_id).await
+    evento_service::get_by_docente(state, id_investigador).await
 }
 
 pub async fn actualizar_evento(

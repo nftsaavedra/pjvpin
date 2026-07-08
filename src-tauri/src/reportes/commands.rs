@@ -10,11 +10,11 @@ use crate::shared::state::AppState;
 use tauri::{State, Window};
 
 #[tauri::command]
-pub async fn get_estadisticas_proyectos_x_docente(
+pub async fn get_estadisticas_proyectos_x_investigador(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<DocenteProyectosCount>, AppError> {
-    handlers::get_estadisticas_proyectos_x_docente(&state, window.label()).await
+    handlers::get_estadisticas_proyectos_x_investigador(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -35,11 +35,11 @@ pub async fn get_data_exportacion_plana(
 
 // NEW: Improved export grouped by docente
 #[tauri::command]
-pub async fn get_data_exportacion_agrupada_docente(
+pub async fn get_data_exportacion_agrupada_investigador(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<ExportDataConProjectos>, AppError> {
-    handlers::get_data_exportacion_agrupada_docente(&state, window.label()).await
+    handlers::get_data_exportacion_agrupada_investigador(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -64,20 +64,20 @@ pub async fn get_reporte_proyecto_integral(
 }
 
 #[tauri::command]
-pub async fn get_reporte_docente_integral(
+pub async fn get_reporte_investigador_integral(
     window: Window,
     state: State<'_, AppState>,
     id_docente: String,
 ) -> Result<ReporteDocenteIntegral, AppError> {
-    handlers::get_reporte_docente_integral(&state, window.label(), &id_docente).await
+    handlers::get_reporte_investigador_integral(&state, window.label(), &id_docente).await
 }
 
 #[tauri::command]
-pub async fn get_reportes_docentes_integral(
+pub async fn get_reportes_investigadores_integral(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<ReporteDocenteIntegral>, AppError> {
-    handlers::get_reportes_docentes_integral(&state, window.label()).await
+    handlers::get_reportes_investigadores_integral(&state, window.label()).await
 }
 
 #[tauri::command]
@@ -97,11 +97,11 @@ pub async fn get_data_exportacion_recursos(
 }
 
 #[tauri::command]
-pub async fn get_data_exportacion_docentes_perfil(
+pub async fn get_data_exportacion_investigadores_perfil(
     window: Window,
     state: State<'_, AppState>,
 ) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
-    handlers::get_data_exportacion_docentes_perfil(&state, window.label()).await
+    handlers::get_data_exportacion_investigadores_perfil(&state, window.label()).await
 }
 
 #[tauri::command]

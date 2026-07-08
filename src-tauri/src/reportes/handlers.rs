@@ -8,7 +8,7 @@ use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
 
-pub async fn get_estadisticas_proyectos_x_docente(
+pub async fn get_estadisticas_proyectos_x_investigador(
     state: &AppState,
     window_label: &str,
 ) -> Result<Vec<crate::reportes::models::DocenteProyectosCount>, AppError> {
@@ -32,7 +32,7 @@ pub async fn get_data_exportacion_plana(
     proyecto_service::get_exportacion_plana(state).await
 }
 
-pub async fn get_data_exportacion_agrupada_docente(
+pub async fn get_data_exportacion_agrupada_investigador(
     state: &AppState,
     window_label: &str,
 ) -> Result<Vec<ExportDataConProjectos>, AppError> {
@@ -126,7 +126,7 @@ pub async fn get_reporte_proyecto_integral(
     crate::reportes::entity_service::get_reporte_proyecto(state, id_proyecto).await
 }
 
-pub async fn get_reporte_docente_integral(
+pub async fn get_reporte_investigador_integral(
     state: &AppState,
     window_label: &str,
     id_docente: &str,
@@ -135,7 +135,7 @@ pub async fn get_reporte_docente_integral(
     crate::reportes::entity_service::get_reporte_docente(state, id_docente).await
 }
 
-pub async fn get_reportes_docentes_integral(
+pub async fn get_reportes_investigadores_integral(
     state: &AppState,
     window_label: &str,
 ) -> Result<Vec<ReporteDocenteIntegral>, AppError> {
@@ -159,7 +159,7 @@ pub async fn get_data_exportacion_recursos(
     proyecto_service::get_exportacion_recursos(state).await
 }
 
-pub async fn get_data_exportacion_docentes_perfil(
+pub async fn get_data_exportacion_investigadores_perfil(
     state: &AppState,
     window_label: &str,
 ) -> Result<Vec<ExportDataDocentePerfil>, AppError> {

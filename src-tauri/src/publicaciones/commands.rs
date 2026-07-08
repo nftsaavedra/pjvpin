@@ -34,12 +34,12 @@ pub async fn get_publicacion_by_id(
 }
 
 #[tauri::command]
-pub async fn get_publicaciones_by_docente(
+pub async fn get_publicaciones_by_investigador(
     window: Window,
     state: State<'_, AppState>,
-    docente_id: String,
+    id_investigador: String,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
-    handlers::get_publicaciones_by_docente(&state, window.label(), &docente_id).await
+    handlers::get_publicaciones_by_investigador(&state, window.label(), &id_investigador).await
 }
 
 #[tauri::command]

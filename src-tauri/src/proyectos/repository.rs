@@ -228,7 +228,7 @@ pub async fn update_proyecto_con_participantes(
         .ok_or_else(|| AppError::NotFound("Proyecto no encontrado.".to_string()))
 }
 
-pub async fn eliminar_relacion_proyecto_docente(
+pub async fn eliminar_relacion_proyecto_investigador(
     db: &Database,
     id_proyecto: &str,
     id_docente: &str,

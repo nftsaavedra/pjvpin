@@ -75,7 +75,7 @@ pub async fn find_by_docente(
     id_docente: &str,
 ) -> Result<Vec<Proyecto>, AppError> {
     let db = state.mongo_db()?;
-    repository_queries::buscar_proyectos_por_docente(db, id_docente).await
+    repository_queries::buscar_proyectos_por_investigador(db, id_docente).await
 }
 
 pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalle>, AppError> {
@@ -97,7 +97,7 @@ pub async fn delete_relation(
     id_docente: &str,
 ) -> Result<(), AppError> {
     let db = state.mongo_db()?;
-    repository::eliminar_relacion_proyecto_docente(db, id_proyecto, id_docente).await
+    repository::eliminar_relacion_proyecto_investigador(db, id_proyecto, id_docente).await
 }
 
 pub async fn delete_relations(state: &AppState, id_proyecto: &str) -> Result<(), AppError> {
@@ -145,7 +145,7 @@ pub async fn get_exportacion_agrupada(
     state: &AppState,
 ) -> Result<Vec<ExportDataConProjectos>, AppError> {
     let db = state.mongo_db()?;
-    repository_export::get_data_exportacion_agrupada_docente(db).await
+    repository_export::get_data_exportacion_agrupada_investigador(db).await
 }
 
 pub async fn get_exportacion_grupos(state: &AppState) -> Result<Vec<ExportDataGrupo>, AppError> {
@@ -164,7 +164,7 @@ pub async fn get_exportacion_docentes_perfil(
     state: &AppState,
 ) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
     let db = state.mongo_db()?;
-    repository_export::get_data_exportacion_docentes_perfil(db).await
+    repository_export::get_data_exportacion_investigadores_perfil(db).await
 }
 
 pub async fn get_exportacion_proyectos_area(

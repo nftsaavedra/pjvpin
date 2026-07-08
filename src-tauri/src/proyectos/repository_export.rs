@@ -58,7 +58,7 @@ pub async fn get_data_exportacion_plana(db: &Database) -> Result<Vec<ExportData>
     Ok(data)
 }
 
-pub async fn get_data_exportacion_agrupada_docente(
+pub async fn get_data_exportacion_agrupada_investigador(
     db: &Database,
 ) -> Result<Vec<ExportDataConProjectos>, AppError> {
     let grados = data_loader::load_grados_map(db).await?;
@@ -334,7 +334,7 @@ pub async fn get_data_exportacion_recursos(
     Ok(data)
 }
 
-pub async fn get_data_exportacion_docentes_perfil(
+pub async fn get_data_exportacion_investigadores_perfil(
     db: &Database,
 ) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
     let grados = data_loader::load_grados_map(db).await?;

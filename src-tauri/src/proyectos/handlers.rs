@@ -45,7 +45,7 @@ pub async fn update_proyecto_con_participantes(
     Ok(proyecto)
 }
 
-pub async fn buscar_proyectos_por_docente(
+pub async fn buscar_proyectos_por_investigador(
     state: &AppState,
     window_label: &str,
     id_docente: &str,
@@ -93,7 +93,7 @@ pub async fn get_all_proyectos_paginated(
     proyecto_service::get_all_paginated(state, page, limit, responsable_id).await
 }
 
-pub async fn eliminar_relacion_proyecto_docente(
+pub async fn eliminar_relacion_proyecto_investigador(
     state: &AppState,
     window_label: &str,
     id_proyecto: &str,

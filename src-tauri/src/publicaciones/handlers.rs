@@ -32,13 +32,13 @@ pub async fn get_publicacion_by_id(
     publicacion_service::get_by_id(state, id).await
 }
 
-pub async fn get_publicaciones_by_docente(
+pub async fn get_publicaciones_by_investigador(
     state: &AppState,
     window_label: &str,
-    docente_id: &str,
+    id_investigador: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    publicacion_service::get_by_docente(state, docente_id).await
+    publicacion_service::get_by_docente(state, id_investigador).await
 }
 
 pub async fn get_publicaciones_by_anio(
