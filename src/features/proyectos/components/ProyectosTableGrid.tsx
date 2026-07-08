@@ -46,7 +46,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
           <tr>
             <th>Título</th>
             <th>Responsable</th>
-            <th>Docentes</th>
+            <th>Investigadores</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -80,8 +80,8 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                     <span className="button-with-icon">
                       <AppIcon icon={Users} size={15} />
                       <span>
-                        {proyecto.cantidad_docentes} docente
-                        {proyecto.cantidad_docentes === 1 ? "" : "s"}
+                        {proyecto.cantidad_docentes} investigador
+                        {proyecto.cantidad_docentes === 1 ? "" : "es"}
                       </span>
                     </span>
                   </button>
@@ -180,7 +180,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
             <div className="modal-body project-participants-modal-body">
               <div className="project-participants-modal-intro">
                 <strong>{selectedProyecto.titulo}</strong>
-                <span>{selectedProyecto.participantes.length} docentes relacionados</span>
+                <span>{selectedProyecto.participantes.length} investigadores relacionados</span>
               </div>
               <div className="project-participants-list">
                 {selectedProyecto.participantes.map((participante, index) => (

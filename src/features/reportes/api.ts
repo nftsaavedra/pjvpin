@@ -2,11 +2,11 @@ export {
   getDataExportacionAgrupada,
   getDataExportacionPlana,
   getReporteProyectoIntegral,
-  getReporteDocenteIntegral,
-  getReportesDocentesIntegral,
-} from '@/services/tauri/reportes';
+  getReporteInvestigadorIntegral,
+  getReportesInvestigadoresIntegral,
+} from "@/services/tauri/reportes";
 
-export { getTauriErrorMessage } from '@/services/tauri/error';
+export { getTauriErrorMessage } from "@/services/tauri/error";
 
 export type {
   DatosExportDocenteAgrupado,
@@ -27,4 +27,4 @@ export type {
   ReporteProyectoIntegral,
   ResumenFinanciero,
   TrazabilidadDocente,
-} from '@/services/tauri/types';
+} from "@/services/tauri/types";

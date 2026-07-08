@@ -25,7 +25,7 @@ export type {
 } from "./catalogo.types";
 
 export type {
-  DocenteProyectosCount,
+  InvestigadorProyectosCount,
   KpisDashboard,
   ProyectosTrendItem,
   RenacytDistribucionItem,

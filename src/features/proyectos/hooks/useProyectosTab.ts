@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useProyectosListado } from "./useProyectosListado";
 import { useProyectosCrud } from "./useProyectosCrud";
 import { useProyectosRecursos } from "./useProyectosRecursos";
-import { useFetchDocentes } from "../../docentes/hooks/useFetchDocentes";
+import { useFetchInvestigadores } from "../../investigadores/hooks/useFetchInvestigadores";
 import { useCatalogosProyectos } from "./useCatalogosProyectos";
 import { toast } from "@/services/toast";
 import { getTauriErrorMessage } from "@/services/tauri/error";
@@ -46,10 +46,10 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
   }, [selectedProyectoId]);
 
   const {
-    docentes,
-    loading: loadingDocentes,
-    refreshing: refreshingDocentes,
-  } = useFetchDocentes(refreshTrigger);
+    investigadores,
+    loading: loadingInvestigadores,
+    refreshing: refreshingInvestigadores,
+  } = useFetchInvestigadores(refreshTrigger);
 
   const handleBackToList = useCallback((): void => {
     setView("list");
@@ -103,12 +103,12 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
 
   const handleSubmit = async (
     titulo: string,
-    docentesSeleccionados: string[],
-    docenteResponsableId: string,
+    investigadoresIds: string[],
+    investigadorResponsableId: string,
   ): Promise<void> => {
     setIsLoading(true);
     try {
-      const proyecto = await crudHandleCreate(titulo, docentesSeleccionados, docenteResponsableId);
+      const proyecto = await crudHandleCreate(titulo, investigadoresIds, investigadorResponsableId);
       await recursosRef.current.crearRecursosParaProyecto(proyecto.id_proyecto);
 
       toast.success("Proyecto creado exitosamente");
@@ -155,9 +155,9 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
     loadingProyectos,
     proyectosError,
     cargarProyectos,
-    docentes,
-    loadingDocentes,
-    refreshingDocentes,
+    investigadores,
+    loadingInvestigadores,
+    refreshingInvestigadores,
     recursos,
     view,
     selectedProyectoId,

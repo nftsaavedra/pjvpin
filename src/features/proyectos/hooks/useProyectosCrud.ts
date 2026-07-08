@@ -34,10 +34,14 @@ export const useProyectosCrud = (refreshTrigger: number, onProyectoCreated: () =
 
   const handleCreate = async (
     titulo: string,
-    docentesSeleccionados: string[],
-    docenteResponsableId: string,
+    investigadoresIds: string[],
+    investigadorResponsableId: string,
   ): Promise<Proyecto> => {
-    return await crearProyectoConParticipantes(titulo, docentesSeleccionados, docenteResponsableId);
+    return await crearProyectoConParticipantes(
+      titulo,
+      investigadoresIds,
+      investigadorResponsableId,
+    );
   };
 
   const handleUpdate = async (

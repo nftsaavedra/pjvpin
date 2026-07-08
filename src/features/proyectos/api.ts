@@ -1,8 +1,9 @@
 export {
   actualizarProyectoConParticipantes,
+  buscarProyectosPorInvestigador,
   crearProyectoConParticipantes,
   eliminarProyecto,
-  eliminarRelacionProyectoDocente,
+  eliminarRelacionProyectoInvestigador,
   eliminarRelacionesProyecto,
   getAllProyectosDetalle,
   reactivarProyecto,
@@ -11,7 +12,7 @@ export {
 export { getTauriErrorMessage } from "@/services/tauri/error";
 
 export type {
-  DocenteDetalle,
+  InvestigadorDetalle,
   EliminarProyectoResultado,
   Proyecto,
   ProyectoDetalle,

@@ -95,7 +95,7 @@ export const ProyectosListView: React.FC<ProyectosListViewProps> = ({
         <ConfirmDialog
           open={Boolean(proyectoToDelete)}
           title="Desactivar proyecto"
-          message={`¿Desea desactivar el proyecto "${proyectoToDelete?.titulo_proyecto ?? ""}"? Solo se desactivará si no tiene docentes relacionados.`}
+          message={`¿Desea desactivar el proyecto "${proyectoToDelete?.titulo_proyecto ?? ""}"? Solo se desactivará si no tiene investigadores relacionados.`}
           confirmText="Sí, desactivar"
           cancelText="Cancelar"
           onConfirm={() => {

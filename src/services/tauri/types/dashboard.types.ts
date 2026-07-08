@@ -1,4 +1,4 @@
-export interface DocenteProyectosCount {
+export interface InvestigadorProyectosCount {
   nombre: string;
   cantidad: number;
 }

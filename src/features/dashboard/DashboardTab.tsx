@@ -1,14 +1,23 @@
-import React, { Suspense, lazy } from 'react';
-import { FolderOpen, RotateCcw, TrendingUp, TriangleAlert, Users } from 'lucide-react';
-import { getEstadisticasProyectosXDocente, getKpisDashboard, getProyectosTrend, getRenacytDistribucion, type DocenteProyectosCount, type KpisDashboard, type ProyectosTrendItem, type RenacytDistribucionItem } from './api';
-import { useRefreshToast } from '@/shared/hooks/useRefreshToast';
-import { useStableFetchData } from '@/shared/hooks/useStableFetch';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { SkeletonChart, SkeletonKpiGrid } from '@/shared/ui/Skeleton';
-import { KPICard } from './components/KPICard';
+import React, { Suspense, lazy } from "react";
+import { FolderOpen, RotateCcw, TrendingUp, TriangleAlert, Users } from "lucide-react";
+import {
+  getEstadisticasProyectosXInvestigador,
+  getKpisDashboard,
+  getProyectosTrend,
+  getRenacytDistribucion,
+  type InvestigadorProyectosCount,
+  type KpisDashboard,
+  type ProyectosTrendItem,
+  type RenacytDistribucionItem,
+} from "./api";
+import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
+import { useStableFetchData } from "@/shared/hooks/useStableFetch";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { SkeletonChart, SkeletonKpiGrid } from "@/shared/ui/Skeleton";
+import { KPICard } from "./components/KPICard";
 
 const DashboardCharts = lazy(async () => {
-  const module = await import('./components/DashboardCharts');
+  const module = await import("./components/DashboardCharts");
   return { default: module.DashboardCharts };
 });
 
@@ -37,14 +46,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
     recargar: cargarDatos,
   } = useStableFetchData<{
     kpis: KpisDashboard | null;
-    estadisticas: DocenteProyectosCount[];
+    estadisticas: InvestigadorProyectosCount[];
     trend: ProyectosTrendItem[];
     renacyt: RenacytDistribucionItem[];
   }>(
     async () => {
       const [kpisRes, estadisticasRes, trendRes, renacytRes] = await Promise.all([
         getKpisDashboard(),
-        getEstadisticasProyectosXDocente(),
+        getEstadisticasProyectosXInvestigador(),
         getProyectosTrend(),
         getRenacytDistribucion(),
       ]);
@@ -52,14 +61,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
       return { kpis: kpisRes, estadisticas: estadisticasRes, trend: trendRes, renacyt: renacytRes };
     },
     refreshTrigger,
-    'Error al cargar datos del dashboard',
+    "Error al cargar datos del dashboard",
     { kpis: null, estadisticas: [], trend: [], renacyt: [] },
   );
 
   useRefreshToast({
     refreshing,
-    message: 'Actualizando indicadores del dashboard',
-    toastKey: 'dashboard-refresh',
+    message: "Actualizando indicadores del dashboard",
+    toastKey: "dashboard-refresh",
     cooldownMs: 120000,
   });
 
@@ -68,9 +77,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
   const totalProyectos = kpis?.total_proyectos ?? 0;
   const docentesConProyectos = estadisticas.filter((docente) => docente.cantidad > 0).length;
   const docentesSinProyectos = Math.max(totalDocentes - docentesConProyectos, 0);
-  const promedioProyectos = totalDocentes > 0
-    ? (totalProyectos / totalDocentes).toFixed(2)
-    : '0.00';
+  const promedioProyectos =
+    totalDocentes > 0 ? (totalProyectos / totalDocentes).toFixed(2) : "0.00";
 
   if (error && !kpis && estadisticas.length === 0) {
     return (
@@ -107,10 +115,18 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
           <div className="kpi-grid dashboard-kpi-grid content-shell">
             {kpis && (
               <>
-                <KPICard label="Total Docentes" value={kpis.total_docentes} icon={Users} />
+                <KPICard label="Total Investigadores" value={kpis.total_docentes} icon={Users} />
                 <KPICard label="Total Proyectos" value={kpis.total_proyectos} icon={FolderOpen} />
-                <KPICard label="Docentes Sin Proyectos" value={docentesSinProyectos} icon={TriangleAlert} />
-                <KPICard label="Promedio Proyectos/Docente" value={promedioProyectos} icon={TrendingUp} />
+                <KPICard
+                  label="Investigadores Sin Proyectos"
+                  value={docentesSinProyectos}
+                  icon={TriangleAlert}
+                />
+                <KPICard
+                  label="Promedio Proyectos/Investigador"
+                  value={promedioProyectos}
+                  icon={TrendingUp}
+                />
               </>
             )}
           </div>
@@ -125,7 +141,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
             />
           </Suspense>
 
-          <button className="btn-secondary dashboard-refresh-action" onClick={() => void cargarDatos()}>
+          <button
+            className="btn-secondary dashboard-refresh-action"
+            onClick={() => void cargarDatos()}
+          >
             Actualizar
           </button>
         </>

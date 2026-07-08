@@ -2,28 +2,28 @@ import { useState, useCallback } from "react";
 
 export interface ProyectoFormState {
   titulo: string;
-  docentesSeleccionados: string[];
-  docenteResponsableId: string | null;
+  investigadoresSeleccionados: string[];
+  investigadorResponsableId: string | null;
 }
 
 export function useProyectoFormState(initial: Partial<ProyectoFormState> = {}) {
   const [titulo, setTitulo] = useState(initial.titulo ?? "");
-  const [docentesSeleccionados, setDocentesSeleccionados] = useState<string[]>(
-    initial.docentesSeleccionados ?? [],
+  const [investigadoresSeleccionados, setInvestigadoresSeleccionados] = useState<string[]>(
+    initial.investigadoresSeleccionados ?? [],
   );
-  const [docenteResponsableId, setDocenteResponsableId] = useState<string | null>(
-    initial.docenteResponsableId ?? null,
+  const [investigadorResponsableId, setInvestigadorResponsableId] = useState<string | null>(
+    initial.investigadorResponsableId ?? null,
   );
 
   const reset = useCallback(() => {
     setTitulo("");
-    setDocentesSeleccionados([]);
-    setDocenteResponsableId(null);
+    setInvestigadoresSeleccionados([]);
+    setInvestigadorResponsableId(null);
   }, []);
 
-  const handleChangeDocentesSeleccionados = useCallback((ids: string[]) => {
-    setDocentesSeleccionados(ids);
-    setDocenteResponsableId((current) => {
+  const handleChangeInvestigadoresSeleccionados = useCallback((ids: string[]) => {
+    setInvestigadoresSeleccionados(ids);
+    setInvestigadorResponsableId((current) => {
       if (ids.length === 0) return null;
       if (current && ids.includes(current)) return current;
       return ids[0] ?? null;
@@ -31,16 +31,18 @@ export function useProyectoFormState(initial: Partial<ProyectoFormState> = {}) {
   }, []);
 
   const isValid =
-    titulo.trim().length > 0 && docentesSeleccionados.length > 0 && docenteResponsableId !== null;
+    titulo.trim().length > 0 &&
+    investigadoresSeleccionados.length > 0 &&
+    investigadorResponsableId !== null;
 
   return {
     titulo,
     setTitulo,
-    docentesSeleccionados,
-    setDocentesSeleccionados,
-    docenteResponsableId,
-    setDocenteResponsableId,
-    handleChangeDocentesSeleccionados,
+    investigadoresSeleccionados,
+    setInvestigadoresSeleccionados,
+    investigadorResponsableId,
+    setInvestigadorResponsableId,
+    handleChangeInvestigadoresSeleccionados,
     reset,
     isValid,
   };

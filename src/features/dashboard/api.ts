@@ -1,8 +1,13 @@
 export {
-  getEstadisticasProyectosXDocente,
+  getEstadisticasProyectosXInvestigador,
   getKpisDashboard,
   getProyectosTrend,
   getRenacytDistribucion,
-} from '@/services/tauri/dashboard';
+} from "@/services/tauri/dashboard";
 
-export type { DocenteProyectosCount, KpisDashboard, ProyectosTrendItem, RenacytDistribucionItem } from '@/services/tauri/types';
+export type {
+  InvestigadorProyectosCount,
+  KpisDashboard,
+  ProyectosTrendItem,
+  RenacytDistribucionItem,
+} from "@/services/tauri/types";

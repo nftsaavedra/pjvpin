@@ -21,9 +21,9 @@ export const ProyectosTab: React.FC<ProyectosTabProps> = ({
     proyectos,
     loadingProyectos,
     proyectosError,
-    docentes,
-    loadingDocentes,
-    refreshingDocentes,
+    investigadores,
+    loadingInvestigadores,
+    refreshingInvestigadores,
     recursos,
     view,
     selectedProyecto,
@@ -70,9 +70,9 @@ export const ProyectosTab: React.FC<ProyectosTabProps> = ({
     return (
       <ProyectoFormScreen
         mode="create"
-        docentes={docentes}
-        loadingDocentes={loadingDocentes}
-        refreshingDocentes={refreshingDocentes}
+        investigadores={investigadores}
+        loadingInvestigadores={loadingInvestigadores}
+        refreshingInvestigadores={refreshingInvestigadores}
         catalogos={catalogos}
         patentes={recursos.patentesNormalizados}
         productos={recursos.productosNormalizados}
@@ -103,9 +103,9 @@ export const ProyectosTab: React.FC<ProyectosTabProps> = ({
       <ProyectoFormScreen
         mode="edit"
         proyecto={selectedProyecto}
-        docentes={docentes}
-        loadingDocentes={loadingDocentes}
-        refreshingDocentes={refreshingDocentes}
+        investigadores={investigadores}
+        loadingInvestigadores={loadingInvestigadores}
+        refreshingInvestigadores={refreshingInvestigadores}
         catalogos={catalogos}
         patentes={recursos.patentesNormalizados}
         productos={recursos.productosNormalizados}

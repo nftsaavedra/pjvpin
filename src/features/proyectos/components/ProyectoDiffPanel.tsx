@@ -6,8 +6,8 @@ interface ProyectoDiffPanelProps {
   tituloActual: string;
   responsableOriginalNombre: string | null;
   responsableActualNombre: string | null;
-  addedDocentes: string[];
-  removedDocentes: string[];
+  addedInvestigadores: string[];
+  removedInvestigadores: string[];
 }
 
 export const ProyectoDiffPanel: React.FC<ProyectoDiffPanelProps> = ({
@@ -16,8 +16,8 @@ export const ProyectoDiffPanel: React.FC<ProyectoDiffPanelProps> = ({
   tituloActual,
   responsableOriginalNombre,
   responsableActualNombre,
-  addedDocentes,
-  removedDocentes,
+  addedInvestigadores,
+  removedInvestigadores,
 }) => (
   <div className="screen-section" aria-label="Resumen visual de cambios pendientes">
     <div className="project-diff-header">
@@ -54,11 +54,11 @@ export const ProyectoDiffPanel: React.FC<ProyectoDiffPanelProps> = ({
             </div>
           </article>
         )}
-        {addedDocentes.length > 0 && (
+        {addedInvestigadores.length > 0 && (
           <article className="project-diff-row">
             <span className="project-diff-label">Agregados</span>
             <div className="project-diff-chip-row">
-              {addedDocentes.map((nombre) => (
+              {addedInvestigadores.map((nombre) => (
                 <span key={`add-${nombre}`} className="project-diff-chip is-added">
                   {nombre}
                 </span>
@@ -66,11 +66,11 @@ export const ProyectoDiffPanel: React.FC<ProyectoDiffPanelProps> = ({
             </div>
           </article>
         )}
-        {removedDocentes.length > 0 && (
+        {removedInvestigadores.length > 0 && (
           <article className="project-diff-row">
             <span className="project-diff-label">Retirados</span>
             <div className="project-diff-chip-row">
-              {removedDocentes.map((nombre) => (
+              {removedInvestigadores.map((nombre) => (
                 <span key={`remove-${nombre}`} className="project-diff-chip is-removed">
                   {nombre}
                 </span>

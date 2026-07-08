@@ -38,12 +38,12 @@ export const ProyectosToolbar: React.FC<ProyectosToolbarProps> = ({
     </div>
     <input
       className="form-input filter-search"
-      placeholder="Buscar por título o perfil docente"
+      placeholder="Buscar por título o perfil del investigador"
       value={busqueda}
       onChange={(e) => {
         onBusquedaChange(e.target.value);
       }}
-      aria-label="Buscar proyectos por título o perfil docente"
+      aria-label="Buscar proyectos por título o perfil del investigador"
     />
     <select
       className="form-input filter-select"

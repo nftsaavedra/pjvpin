@@ -108,7 +108,7 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">{participantes.length}</span>
-              <span className="screen-kpi-label">Docentes</span>
+              <span className="screen-kpi-label">Investigadores</span>
             </div>
           </div>
           <div className="screen-kpi-card">
@@ -159,11 +159,13 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
           <div className="screen-section-header">
             <span className="screen-section-title">
               <AppIcon icon={Users} size={18} />
-              <span>Docentes participantes</span>
+              <span>Investigadores participantes</span>
             </span>
           </div>
           {participantes.length === 0 ? (
-            <p className="screen-placeholder-card">No hay docentes vinculados a este proyecto.</p>
+            <p className="screen-placeholder-card">
+              No hay investigadores vinculados a este proyecto.
+            </p>
           ) : (
             <div className="screen-readonly-list">
               {participantes.map((participante) => (
