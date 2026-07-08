@@ -2,28 +2,30 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
 use crate::investigadores::models::Investigador;
-use crate::reportes::entity_reports::ReporteDocenteIntegral;
+use crate::reportes::entity_reports::ReporteInvestigadorIntegral;
 use crate::shared::error::AppError;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Reportes Docentes Integral (todos los activos)
+// Reportes Investigadores Integral (todos los activos)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub async fn build_reportes_docentes_integral(
+pub async fn build_reportes_investigadores_integral(
     db: &Database,
-) -> Result<Vec<ReporteDocenteIntegral>, AppError> {
-    let docentes = db
-        .collection::<Investigador>("docentes")
+) -> Result<Vec<ReporteInvestigadorIntegral>, AppError> {
+    let investigadores = db
+        .collection::<Investigador>("investigadores")
         .find(doc! { "activo": 1i64 })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
 
-    let mut reportes = Vec::with_capacity(docentes.len());
-    for docente in docentes {
-        let reporte =
-            super::repository_docente::build_reporte_docente_integral(db, &docente.id_docente)
-                .await?;
+    let mut reportes = Vec::with_capacity(investigadores.len());
+    for investigador in investigadores {
+        let reporte = super::repository_investigador::build_reporte_investigador_integral(
+            db,
+            &investigador.id_investigador,
+        )
+        .await?;
         reportes.push(reporte);
     }
 

@@ -41,13 +41,13 @@ pub struct RenacytLookupResult {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Investigador {
-    pub id_docente: String,
+    pub id_investigador: String,
     pub persona_id: String,
     pub id_grado: String,
     pub activo: i64,
     #[serde(default)]
     pub updated_at: Option<i64>,
-    #[serde(default = "default_perfil_docente")]
+    #[serde(default = "default_perfil")]
     pub perfil: String,
     pub renacyt_codigo_registro: Option<String>,
     pub renacyt_id_investigador: Option<String>,
@@ -66,7 +66,7 @@ pub struct Investigador {
     pub grupo_investigacion_id: Option<String>,
 }
 
-fn default_perfil_docente() -> String {
+fn default_perfil() -> String {
     "docente".to_string()
 }
 
@@ -83,14 +83,14 @@ pub struct CreateInvestigadorRequest {
     pub direccion: Option<String>,
     pub sexo: Option<String>,
     pub fecha_nacimiento: Option<i64>,
-    #[serde(default = "default_perfil_docente")]
+    #[serde(default = "default_perfil")]
     pub perfil: String,
     pub renacyt: Option<CreateInvestigadorRenacytRequest>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct InvestigadorDetalle {
-    pub id_docente: String,
+    pub id_investigador: String,
     pub persona_id: String,
     pub dni: String,
     pub nombres_apellidos: String,
@@ -126,7 +126,7 @@ impl From<(Investigador, Persona, String, Vec<String>)> for InvestigadorDetalle 
     ) -> Self {
         let cantidad_proyectos = proyectos.len() as i64;
         InvestigadorDetalle {
-            id_docente: investigador.id_docente,
+            id_investigador: investigador.id_investigador,
             persona_id: investigador.persona_id,
             dni: persona.dni,
             nombres_apellidos: persona.nombre_completo,
@@ -194,7 +194,7 @@ impl Investigador {
         };
 
         Self {
-            id_docente: Uuid::new_v4().to_string(),
+            id_investigador: Uuid::new_v4().to_string(),
             persona_id,
             id_grado: request.id_grado.clone(),
             activo: 1,

@@ -17,7 +17,7 @@ export interface ProyectoCabeceraReporte {
 }
 
 export interface MiembroProyectoReporte {
-  id_docente: string;
+  id_investigador: string;
   dni: string;
   nombres_apellidos: string;
   nombres?: string | null;
@@ -55,7 +55,7 @@ export interface ResumenFinanciero {
 export interface ReporteProyectoIntegral {
   cabecera: ProyectoCabeceraReporte;
   equipo: MiembroProyectoReporte[];
-  total_docentes: number;
+  total_investigadores: number;
   patentes: PatenteConEtiquetas[];
   total_patentes: number;
   productos: ProductoConEtiquetas[];
@@ -67,8 +67,8 @@ export interface ReporteProyectoIntegral {
   resumen_financiero: ResumenFinanciero;
 }
 
-export interface PerfilDocenteReporte {
-  id_docente: string;
+export interface PerfilInvestigadorReporte {
+  id_investigador: string;
   dni: string;
   nombres_apellidos: string;
   nombres?: string | null;
@@ -93,7 +93,7 @@ export interface PerfilDocenteReporte {
 }
 
 export interface ColegaProyecto {
-  id_docente: string;
+  id_investigador: string;
   nombres_apellidos: string;
   grado_nombre: string;
   es_responsable: boolean;
@@ -106,7 +106,7 @@ export interface RecursosProyectoResumen {
   financiamientos: number;
 }
 
-export interface ProyectoDocenteDetalle {
+export interface ProyectoInvestigadorDetalle {
   id_proyecto: string;
   titulo_proyecto: string;
   es_responsable: boolean;
@@ -117,7 +117,7 @@ export interface ProyectoDocenteDetalle {
   recursos_en_proyecto: RecursosProyectoResumen;
 }
 
-export interface RecursosDocenteResumen {
+export interface RecursosInvestigadorResumen {
   patentes: PatenteConEtiquetas[];
   productos: ProductoConEtiquetas[];
   equipamientos: EquipamientoConEtiquetas[];
@@ -126,18 +126,18 @@ export interface RecursosDocenteResumen {
   total_equipamientos: number;
 }
 
-export interface TrazabilidadDocente {
+export interface TrazabilidadInvestigador {
   updated_at?: number | null;
   fecha_ultima_sincronizacion_renacyt?: number | null;
   fecha_ultima_sincronizacion_pure?: number | null;
 }
 
-export interface ReporteDocenteIntegral {
-  perfil: PerfilDocenteReporte;
-  proyectos: ProyectoDocenteDetalle[];
+export interface ReporteInvestigadorIntegral {
+  perfil: PerfilInvestigadorReporte;
+  proyectos: ProyectoInvestigadorDetalle[];
   total_proyectos: number;
-  recursos: RecursosDocenteResumen;
+  recursos: RecursosInvestigadorResumen;
   publicaciones: PublicacionConEtiquetas[];
   total_publicaciones: number;
-  trazabilidad: TrazabilidadDocente;
+  trazabilidad: TrazabilidadInvestigador;
 }

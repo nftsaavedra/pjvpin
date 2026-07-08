@@ -1,7 +1,7 @@
 export interface Publicacion {
   id_publicacion: string;
   pure_uuid: string;
-  docente_id: string;
+  investigador_id: string;
   proyecto_id?: string | null;
   titulo: string;
   tipo_publicacion?: string | null;
@@ -18,7 +18,7 @@ export interface Publicacion {
 }
 
 export interface SyncPublicacionesResult {
-  docente_id: string;
+  investigador_id: string;
   scopus_author_id: string;
   pure_person_uuid?: string | null;
   total_encontradas: number;
@@ -70,7 +70,7 @@ export interface PublicacionCientifica {
 }
 
 export interface ParticipanteEvento {
-  docente_id: string;
+  investigador_id: string;
   rol: string;
 }
 

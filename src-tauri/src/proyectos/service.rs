@@ -1,7 +1,7 @@
 use crate::proyectos::models::{
-    CreateProyectoConParticipantesRequest, DocenteProyectosCount, EliminarProyectoResultado,
-    ExportData, ExportDataConProjectos, ExportDataDocentePerfil, ExportDataGrupo,
-    ExportDataProyectoArea, ExportDataRecurso, KpisDashboard, Proyecto, ProyectoDetalle,
+    CreateProyectoConParticipantesRequest, EliminarProyectoResultado, ExportData,
+    ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil, ExportDataProyectoArea,
+    ExportDataRecurso, InvestigadorProyectosCount, KpisDashboard, Proyecto, ProyectoDetalle,
     ProyectosTrendItem, RenacytDistribucionItem, UpdateProyectoConParticipantesRequest,
 };
 use crate::proyectos::repository;
@@ -14,42 +14,42 @@ use crate::shared::state::AppState;
 #[derive(Debug, Clone)]
 pub struct ProyectoParticipantesInput {
     pub titulo_proyecto: String,
-    pub docentes_ids: Vec<String>,
-    pub docente_responsable_id: Option<String>,
+    pub investigadores_ids: Vec<String>,
+    pub investigador_responsable_id: Option<String>,
 }
 
 pub fn prepare_create_input(
     request: CreateProyectoConParticipantesRequest,
 ) -> Result<ProyectoParticipantesInput, AppError> {
-    let docentes_ids = normalize_docente_ids(&request.docentes_ids)?;
-    if docentes_ids.is_empty() {
+    let investigadores_ids = normalize_investigador_ids(&request.investigadores_ids)?;
+    if investigadores_ids.is_empty() {
         return Err(AppError::InternalError(
-            "Seleccione al menos un docente para crear el proyecto.".to_string(),
+            "Seleccione al menos un investigador para crear el proyecto.".to_string(),
         ));
     }
 
-    let docente_responsable_id = normalize_responsable_id(request.docente_responsable_id);
-    validate_responsable(&docentes_ids, &docente_responsable_id)?;
+    let investigador_responsable_id = normalize_responsable_id(request.investigador_responsable_id);
+    validate_responsable(&investigadores_ids, &investigador_responsable_id)?;
 
     Ok(ProyectoParticipantesInput {
         titulo_proyecto: request.titulo_proyecto,
-        docentes_ids,
-        docente_responsable_id,
+        investigadores_ids,
+        investigador_responsable_id,
     })
 }
 
 pub fn prepare_update_input(
     request: UpdateProyectoConParticipantesRequest,
 ) -> Result<ProyectoParticipantesInput, AppError> {
-    let docentes_ids = normalize_docente_ids(&request.docentes_ids)?;
-    let docente_responsable_id = normalize_responsable_id(request.docente_responsable_id);
+    let investigadores_ids = normalize_investigador_ids(&request.investigadores_ids)?;
+    let investigador_responsable_id = normalize_responsable_id(request.investigador_responsable_id);
 
-    validate_responsable(&docentes_ids, &docente_responsable_id)?;
+    validate_responsable(&investigadores_ids, &investigador_responsable_id)?;
 
     Ok(ProyectoParticipantesInput {
         titulo_proyecto: request.titulo_proyecto.trim().to_string(),
-        docentes_ids,
-        docente_responsable_id,
+        investigadores_ids,
+        investigador_responsable_id,
     })
 }
 
@@ -70,12 +70,12 @@ pub async fn update(
     repository::update_proyecto_con_participantes(db, id_proyecto, request).await
 }
 
-pub async fn find_by_docente(
+pub async fn find_by_investigador(
     state: &AppState,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<Vec<Proyecto>, AppError> {
     let db = state.mongo_db()?;
-    repository_queries::buscar_proyectos_por_investigador(db, id_docente).await
+    repository_queries::buscar_proyectos_por_investigador(db, id_investigador).await
 }
 
 pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalle>, AppError> {
@@ -94,10 +94,10 @@ pub async fn get_all_detalle_for_responsable(
 pub async fn delete_relation(
     state: &AppState,
     id_proyecto: &str,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<(), AppError> {
     let db = state.mongo_db()?;
-    repository::eliminar_relacion_proyecto_investigador(db, id_proyecto, id_docente).await
+    repository::eliminar_relacion_proyecto_investigador(db, id_proyecto, id_investigador).await
 }
 
 pub async fn delete_relations(state: &AppState, id_proyecto: &str) -> Result<(), AppError> {
@@ -124,11 +124,11 @@ pub async fn reactivate(state: &AppState, id_proyecto: &str) -> Result<Proyecto,
     repository::reactivar_proyecto(db, id_proyecto).await
 }
 
-pub async fn get_estadisticas_x_docente(
+pub async fn get_estadisticas_x_investigador(
     state: &AppState,
-) -> Result<Vec<DocenteProyectosCount>, AppError> {
+) -> Result<Vec<InvestigadorProyectosCount>, AppError> {
     let db = state.mongo_db()?;
-    repository_stats::get_estadisticas_proyectos_x_docente(db).await
+    repository_stats::get_estadisticas_proyectos_x_investigador(db).await
 }
 
 pub async fn get_kpis(state: &AppState) -> Result<KpisDashboard, AppError> {
@@ -160,9 +160,9 @@ pub async fn get_exportacion_recursos(
     repository_export::get_data_exportacion_recursos(db).await
 }
 
-pub async fn get_exportacion_docentes_perfil(
+pub async fn get_exportacion_investigadores_perfil(
     state: &AppState,
-) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
+) -> Result<Vec<ExportDataInvestigadorPerfil>, AppError> {
     let db = state.mongo_db()?;
     repository_export::get_data_exportacion_investigadores_perfil(db).await
 }
@@ -186,15 +186,15 @@ pub async fn get_renacyt_distribucion(
     repository_stats::get_renacyt_distribucion(db).await
 }
 
-fn normalize_docente_ids(docentes_ids: &[String]) -> Result<Vec<String>, AppError> {
+fn normalize_investigador_ids(investigadores_ids: &[String]) -> Result<Vec<String>, AppError> {
     let mut normalized_ids = Vec::new();
     let mut seen = std::collections::HashSet::new();
 
-    for docente_id in docentes_ids {
-        let normalized = docente_id.trim();
+    for investigador_id in investigadores_ids {
+        let normalized = investigador_id.trim();
         if normalized.is_empty() {
             return Err(AppError::InternalError(
-                "La lista de docentes contiene valores invalidos.".to_string(),
+                "La lista de investigadores contiene valores invalidos.".to_string(),
             ));
         }
 
@@ -206,37 +206,37 @@ fn normalize_docente_ids(docentes_ids: &[String]) -> Result<Vec<String>, AppErro
     Ok(normalized_ids)
 }
 
-fn normalize_responsable_id(docente_responsable_id: Option<String>) -> Option<String> {
-    docente_responsable_id
+fn normalize_responsable_id(investigador_responsable_id: Option<String>) -> Option<String> {
+    investigador_responsable_id
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
 }
 
 fn validate_responsable(
-    docentes_ids: &[String],
-    docente_responsable_id: &Option<String>,
+    investigadores_ids: &[String],
+    investigador_responsable_id: &Option<String>,
 ) -> Result<(), AppError> {
-    if docentes_ids.is_empty() {
-        if docente_responsable_id.is_some() {
+    if investigadores_ids.is_empty() {
+        if investigador_responsable_id.is_some() {
             return Err(AppError::InternalError(
-                "No puede asignar un docente responsable cuando el proyecto no tiene docentes vinculados.".to_string(),
+                "No puede asignar un investigador responsable cuando el proyecto no tiene investigadores vinculados.".to_string(),
             ));
         }
         return Ok(());
     }
 
-    let Some(responsable_id) = docente_responsable_id.as_ref() else {
+    let Some(responsable_id) = investigador_responsable_id.as_ref() else {
         return Err(AppError::InternalError(
-            "Seleccione un docente responsable para el proyecto.".to_string(),
+            "Seleccione un investigador responsable para el proyecto.".to_string(),
         ));
     };
 
-    if !docentes_ids
+    if !investigadores_ids
         .iter()
-        .any(|docente_id| docente_id == responsable_id)
+        .any(|investigador_id| investigador_id == responsable_id)
     {
         return Err(AppError::InternalError(
-            "El docente responsable debe formar parte de los docentes asignados al proyecto."
+            "El investigador responsable debe formar parte de los investigadores asignados al proyecto."
                 .to_string(),
         ));
     }

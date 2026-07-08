@@ -9,7 +9,12 @@ pub async fn crear_evento(
     window_label: &str,
     request: CreateEventoRequest,
 ) -> Result<EventoAcademico, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresManage).await?;
+    rbac::require_permission(
+        state,
+        window_label,
+        rbac::AppPermission::InvestigadoresManage,
+    )
+    .await?;
     evento_service::create(state, request).await
 }
 
@@ -36,7 +41,7 @@ pub async fn get_eventos_by_investigador(
     id_investigador: &str,
 ) -> Result<Vec<EventoAcademico>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    evento_service::get_by_docente(state, id_investigador).await
+    evento_service::get_by_investigador(state, id_investigador).await
 }
 
 pub async fn actualizar_evento(
@@ -45,7 +50,12 @@ pub async fn actualizar_evento(
     id: &str,
     request: UpdateEventoRequest,
 ) -> Result<EventoAcademico, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresManage).await?;
+    rbac::require_permission(
+        state,
+        window_label,
+        rbac::AppPermission::InvestigadoresManage,
+    )
+    .await?;
     evento_service::update(state, id, request).await
 }
 
@@ -54,7 +64,12 @@ pub async fn eliminar_evento(
     window_label: &str,
     id: &str,
 ) -> Result<(), AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresManage).await?;
+    rbac::require_permission(
+        state,
+        window_label,
+        rbac::AppPermission::InvestigadoresManage,
+    )
+    .await?;
     evento_service::delete(state, id).await
 }
 
@@ -63,6 +78,11 @@ pub async fn reactivar_evento(
     window_label: &str,
     id: &str,
 ) -> Result<EventoAcademico, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresManage).await?;
+    rbac::require_permission(
+        state,
+        window_label,
+        rbac::AppPermission::InvestigadoresManage,
+    )
+    .await?;
     evento_service::reactivate(state, id).await
 }

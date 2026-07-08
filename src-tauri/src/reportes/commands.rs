@@ -1,9 +1,9 @@
 use super::handlers;
-use crate::reportes::entity_reports::{ReporteDocenteIntegral, ReporteProyectoIntegral};
+use crate::reportes::entity_reports::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
 use crate::reportes::models::{
-    DocenteProyectosCount, ExportData, ExportDataConProjectos, ExportDataDocentePerfil,
-    ExportDataGrupo, ExportDataProyectoArea, ExportDataRecurso, KpisDashboard, ProyectosTrendItem,
-    RenacytDistribucionItem,
+    ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
+    ExportDataProyectoArea, ExportDataRecurso, InvestigadorProyectosCount, KpisDashboard,
+    ProyectosTrendItem, RenacytDistribucionItem,
 };
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
@@ -13,7 +13,7 @@ use tauri::{State, Window};
 pub async fn get_estadisticas_proyectos_x_investigador(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<DocenteProyectosCount>, AppError> {
+) -> Result<Vec<InvestigadorProyectosCount>, AppError> {
     handlers::get_estadisticas_proyectos_x_investigador(&state, window.label()).await
 }
 
@@ -33,7 +33,7 @@ pub async fn get_data_exportacion_plana(
     handlers::get_data_exportacion_plana(&state, window.label()).await
 }
 
-// NEW: Improved export grouped by docente
+// NEW: Improved export grouped by investigador
 #[tauri::command]
 pub async fn get_data_exportacion_agrupada_investigador(
     window: Window,
@@ -67,16 +67,16 @@ pub async fn get_reporte_proyecto_integral(
 pub async fn get_reporte_investigador_integral(
     window: Window,
     state: State<'_, AppState>,
-    id_docente: String,
-) -> Result<ReporteDocenteIntegral, AppError> {
-    handlers::get_reporte_investigador_integral(&state, window.label(), &id_docente).await
+    id_investigador: String,
+) -> Result<ReporteInvestigadorIntegral, AppError> {
+    handlers::get_reporte_investigador_integral(&state, window.label(), &id_investigador).await
 }
 
 #[tauri::command]
 pub async fn get_reportes_investigadores_integral(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ReporteDocenteIntegral>, AppError> {
+) -> Result<Vec<ReporteInvestigadorIntegral>, AppError> {
     handlers::get_reportes_investigadores_integral(&state, window.label()).await
 }
 
@@ -100,7 +100,7 @@ pub async fn get_data_exportacion_recursos(
 pub async fn get_data_exportacion_investigadores_perfil(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
+) -> Result<Vec<ExportDataInvestigadorPerfil>, AppError> {
     handlers::get_data_exportacion_investigadores_perfil(&state, window.label()).await
 }
 

@@ -45,7 +45,7 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
   });
 
   const handleToggle = (id: string) => {
-    const investigador = investigadores.find((item) => item.id_docente === id);
+    const investigador = investigadores.find((item) => item.id_investigador === id);
     if (!investigador) {
       return;
     }
@@ -64,14 +64,14 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
   };
 
   const investigadoresSeleccionados = investigadores.filter((investigador) =>
-    selectedIds.includes(investigador.id_docente),
+    selectedIds.includes(investigador.id_investigador),
   );
   const requiereBusquedaMinima = investigadores.length > 25 && deferredQuery.length < 2;
   const coincidencias = requiereBusquedaMinima
     ? []
     : investigadores.filter((investigador) => {
         if (!deferredQuery)
-          return investigadores.length <= 25 && !selectedIds.includes(investigador.id_docente);
+          return investigadores.length <= 25 && !selectedIds.includes(investigador.id_investigador);
 
         const nombre = normalizeText(investigador.nombres_apellidos);
         const dni = normalizeText(investigador.dni);
@@ -150,11 +150,11 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
           {investigadoresSeleccionados.length > 0 ? (
             investigadoresSeleccionados.map((investigador) => (
               <button
-                key={investigador.id_docente}
+                key={investigador.id_investigador}
                 type="button"
                 className="docente-chip"
                 onClick={() => {
-                  handleToggle(investigador.id_docente);
+                  handleToggle(investigador.id_investigador);
                 }}
                 title="Quitar de la selección"
               >
@@ -166,10 +166,10 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
                       {formatRenacytNivel(investigador.renacyt_nivel)
                         ? `RENACYT ${formatRenacytNivel(investigador.renacyt_nivel)}`
                         : "Sin nivel RENACYT"}
-                      {responsableId === investigador.id_docente ? " · Responsable" : ""}
+                      {responsableId === investigador.id_investigador ? " · Responsable" : ""}
                     </span>
                   )}
-                  {!showSelectedMeta && responsableId === investigador.id_docente && (
+                  {!showSelectedMeta && responsableId === investigador.id_investigador && (
                     <span className="docente-chip-meta docente-chip-meta-compact">
                       Responsable actual
                     </span>
@@ -209,15 +209,15 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
           ) : (
             <>
               {investigadoresVisibles.map((investigador) => {
-                const seleccionado = selectedIds.includes(investigador.id_docente);
+                const seleccionado = selectedIds.includes(investigador.id_investigador);
 
                 return (
                   <button
-                    key={investigador.id_docente}
+                    key={investigador.id_investigador}
                     type="button"
                     className={`checkbox-item docente-option ${seleccionado ? "selected" : ""}`}
                     onClick={() => {
-                      handleToggle(investigador.id_docente);
+                      handleToggle(investigador.id_investigador);
                     }}
                     aria-pressed={seleccionado}
                   >

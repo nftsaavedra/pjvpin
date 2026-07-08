@@ -15,8 +15,8 @@ pub async fn sync_publicaciones(
     let db = state.mongo_db()?;
 
     let investigador = db
-        .collection::<Investigador>("docentes")
-        .find_one(doc! { "id_docente": investigador_id })
+        .collection::<Investigador>("investigadores")
+        .find_one(doc! { "id_investigador": investigador_id })
         .await?
         .ok_or_else(|| {
             AppError::NotFound(format!("Investigador '{}' no encontrado.", investigador_id))
@@ -52,11 +52,8 @@ pub async fn sync_publicaciones(
     for fp in fetched {
         let filter = doc! { "pure_uuid": &fp.pure_uuid };
 
-        // Mantenemos el field name "docente_id" en MongoDB por compatibilidad
-        // con registros existentes. La semántica es "id del investigador
-        // al que pertenece esta publicación".
         let set_doc = doc! {
-            "docente_id":           investigador_id,
+            "investigador_id":      investigador_id,
             "titulo":               &fp.titulo,
             "tipo_publicacion":     fp.tipo_publicacion.as_deref(),
             "doi":                  fp.doi.as_deref(),
@@ -110,7 +107,7 @@ pub async fn get_publicaciones(
     let db = state.mongo_db()?;
     let publicaciones = db
         .collection::<Publicacion>("publicaciones")
-        .find(doc! { "docente_id": investigador_id })
+        .find(doc! { "investigador_id": investigador_id })
         .await?
         .try_collect::<Vec<_>>()
         .await?;

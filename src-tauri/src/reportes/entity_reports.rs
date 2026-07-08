@@ -8,7 +8,7 @@ use serde::Serialize;
 pub struct ReporteProyectoIntegral {
     pub cabecera: ProyectoCabeceraReporte,
     pub equipo: Vec<MiembroProyectoReporte>,
-    pub total_docentes: usize,
+    pub total_investigadores: usize,
     pub patentes: Vec<PatenteConEtiquetas>,
     pub total_patentes: usize,
     pub productos: Vec<ProductoConEtiquetas>,
@@ -33,7 +33,7 @@ pub struct ProyectoCabeceraReporte {
 
 #[derive(Debug, Serialize)]
 pub struct MiembroProyectoReporte {
-    pub id_docente: String,
+    pub id_investigador: String,
     pub dni: String,
     pub nombres_apellidos: String,
     pub nombres: Option<String>,
@@ -133,23 +133,23 @@ pub struct EstadoDesglose {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ReporteDocenteIntegral — Scenario: "Un docente, TODA su información"
+// ReporteInvestigadorIntegral — Scenario: "Un investigador, TODA su información"
 // ═══════════════════════════════════════════════════════════════════════════════
 
 #[derive(Debug, Serialize)]
-pub struct ReporteDocenteIntegral {
-    pub perfil: PerfilDocenteReporte,
-    pub proyectos: Vec<ProyectoDocenteDetalle>,
+pub struct ReporteInvestigadorIntegral {
+    pub perfil: PerfilInvestigadorReporte,
+    pub proyectos: Vec<ProyectoInvestigadorDetalle>,
     pub total_proyectos: usize,
-    pub recursos: RecursosDocenteResumen,
+    pub recursos: RecursosInvestigadorResumen,
     pub publicaciones: Vec<PublicacionConEtiquetas>,
     pub total_publicaciones: usize,
-    pub trazabilidad: TrazabilidadDocente,
+    pub trazabilidad: TrazabilidadInvestigador,
 }
 
 #[derive(Debug, Serialize)]
-pub struct PerfilDocenteReporte {
-    pub id_docente: String,
+pub struct PerfilInvestigadorReporte {
+    pub id_investigador: String,
     pub dni: String,
     pub nombres_apellidos: String,
     pub nombres: Option<String>,
@@ -174,7 +174,7 @@ pub struct PerfilDocenteReporte {
 }
 
 #[derive(Debug, Serialize)]
-pub struct ProyectoDocenteDetalle {
+pub struct ProyectoInvestigadorDetalle {
     pub id_proyecto: String,
     pub titulo_proyecto: String,
     pub es_responsable: bool,
@@ -187,7 +187,7 @@ pub struct ProyectoDocenteDetalle {
 
 #[derive(Debug, Serialize)]
 pub struct ColegaProyecto {
-    pub id_docente: String,
+    pub id_investigador: String,
     pub nombres_apellidos: String,
     pub grado_nombre: String,
     pub es_responsable: bool,
@@ -202,7 +202,7 @@ pub struct RecursosProyectoResumen {
 }
 
 #[derive(Debug, Serialize)]
-pub struct RecursosDocenteResumen {
+pub struct RecursosInvestigadorResumen {
     pub patentes: Vec<PatenteConEtiquetas>,
     pub productos: Vec<ProductoConEtiquetas>,
     pub equipamientos: Vec<EquipamientoConEtiquetas>,
@@ -212,7 +212,7 @@ pub struct RecursosDocenteResumen {
 }
 
 #[derive(Debug, Serialize)]
-pub struct TrazabilidadDocente {
+pub struct TrazabilidadInvestigador {
     pub updated_at: Option<i64>,
     pub fecha_ultima_sincronizacion_renacyt: Option<i64>,
     pub fecha_ultima_sincronizacion_pure: Option<i64>,

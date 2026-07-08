@@ -11,7 +11,7 @@ mod tests {
             rol: rol.to_string(),
             password_hash: "hash".to_string(),
             activo,
-            docente_id: None,
+            investigador_id: None,
             persona_id: None,
             dni: None,
             updated_at: None,

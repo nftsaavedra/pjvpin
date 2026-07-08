@@ -1,16 +1,11 @@
-import { invoke } from './client';
-import type {
-  Patente,
-  Producto,
-  Equipamiento,
-  Financiamiento,
-} from './types';
+import { invoke } from "./client";
+import type { Patente, Producto, Equipamiento, Financiamiento } from "./types";
 
 // ── Patentes ────────────────────────────────────────────────────────────────
 
 export interface CreatePatentePayload {
   proyecto_id?: string;
-  docente_id?: string;
+  investigador_id?: string;
   titulo: string;
   numero_patente?: string;
   tipo?: string;
@@ -35,26 +30,29 @@ export interface UpdatePatentePayload {
 }
 
 export const crearPatente = async (request: CreatePatentePayload): Promise<Patente> => {
-  return await invoke('crear_patente', { request });
+  return await invoke("crear_patente", { request });
 };
 
 export const getPatentesProyecto = async (proyectoId: string): Promise<Patente[]> => {
-  return await invoke('get_patentes_proyecto', { proyectoId });
+  return await invoke("get_patentes_proyecto", { proyectoId });
 };
 
-export const actualizarPatente = async (idPatente: string, request: UpdatePatentePayload): Promise<Patente> => {
-  return await invoke('actualizar_patente', { idPatente, request });
+export const actualizarPatente = async (
+  idPatente: string,
+  request: UpdatePatentePayload,
+): Promise<Patente> => {
+  return await invoke("actualizar_patente", { idPatente, request });
 };
 
 export const eliminarPatente = async (idPatente: string): Promise<void> => {
-  await invoke('eliminar_patente', { idPatente });
+  await invoke("eliminar_patente", { idPatente });
 };
 
 // ── Productos ────────────────────────────────────────────────────────────────
 
 export interface CreateProductoPayload {
   proyecto_id?: string;
-  docente_id?: string;
+  investigador_id?: string;
   nombre: string;
   tipo?: string;
   etapa?: string;
@@ -71,19 +69,22 @@ export interface UpdateProductoPayload {
 }
 
 export const crearProducto = async (request: CreateProductoPayload): Promise<Producto> => {
-  return await invoke('crear_producto', { request });
+  return await invoke("crear_producto", { request });
 };
 
 export const getProductosProyecto = async (proyectoId: string): Promise<Producto[]> => {
-  return await invoke('get_productos_proyecto', { proyectoId });
+  return await invoke("get_productos_proyecto", { proyectoId });
 };
 
-export const actualizarProducto = async (idProducto: string, request: UpdateProductoPayload): Promise<Producto> => {
-  return await invoke('actualizar_producto', { idProducto, request });
+export const actualizarProducto = async (
+  idProducto: string,
+  request: UpdateProductoPayload,
+): Promise<Producto> => {
+  return await invoke("actualizar_producto", { idProducto, request });
 };
 
 export const eliminarProducto = async (idProducto: string): Promise<void> => {
-  await invoke('eliminar_producto', { idProducto });
+  await invoke("eliminar_producto", { idProducto });
 };
 
 // ── Equipamientos ────────────────────────────────────────────────────────────
@@ -109,20 +110,25 @@ export interface UpdateEquipamientoPayload {
   fecha_adquisicion?: number;
 }
 
-export const crearEquipamiento = async (request: CreateEquipamientoPayload): Promise<Equipamiento> => {
-  return await invoke('crear_equipamiento', { request });
+export const crearEquipamiento = async (
+  request: CreateEquipamientoPayload,
+): Promise<Equipamiento> => {
+  return await invoke("crear_equipamiento", { request });
 };
 
 export const getEquipamientosProyecto = async (proyectoId: string): Promise<Equipamiento[]> => {
-  return await invoke('get_equipamientos_proyecto', { proyectoId });
+  return await invoke("get_equipamientos_proyecto", { proyectoId });
 };
 
-export const actualizarEquipamiento = async (idEquipamiento: string, request: UpdateEquipamientoPayload): Promise<Equipamiento> => {
-  return await invoke('actualizar_equipamiento', { idEquipamiento, request });
+export const actualizarEquipamiento = async (
+  idEquipamiento: string,
+  request: UpdateEquipamientoPayload,
+): Promise<Equipamiento> => {
+  return await invoke("actualizar_equipamiento", { idEquipamiento, request });
 };
 
 export const eliminarEquipamiento = async (idEquipamiento: string): Promise<void> => {
-  await invoke('eliminar_equipamiento', { idEquipamiento });
+  await invoke("eliminar_equipamiento", { idEquipamiento });
 };
 
 // ── Financiamientos ──────────────────────────────────────────────────────────
@@ -150,18 +156,23 @@ export interface UpdateFinanciamientoPayload {
   estado_financiero?: string;
 }
 
-export const crearFinanciamiento = async (request: CreateFinanciamientoPayload): Promise<Financiamiento> => {
-  return await invoke('crear_financiamiento', { request });
+export const crearFinanciamiento = async (
+  request: CreateFinanciamientoPayload,
+): Promise<Financiamiento> => {
+  return await invoke("crear_financiamiento", { request });
 };
 
 export const getFinanciamientosProyecto = async (proyectoId: string): Promise<Financiamiento[]> => {
-  return await invoke('get_financiamientos_proyecto', { proyectoId });
+  return await invoke("get_financiamientos_proyecto", { proyectoId });
 };
 
-export const actualizarFinanciamiento = async (idFinanciamiento: string, request: UpdateFinanciamientoPayload): Promise<Financiamiento> => {
-  return await invoke('actualizar_financiamiento', { idFinanciamiento, request });
+export const actualizarFinanciamiento = async (
+  idFinanciamiento: string,
+  request: UpdateFinanciamientoPayload,
+): Promise<Financiamiento> => {
+  return await invoke("actualizar_financiamiento", { idFinanciamiento, request });
 };
 
 export const eliminarFinanciamiento = async (idFinanciamiento: string): Promise<void> => {
-  await invoke('eliminar_financiamiento', { idFinanciamiento });
+  await invoke("eliminar_financiamiento", { idFinanciamiento });
 };

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Download } from "lucide-react";
-import type { DatosExportDocenteAgrupado } from "../api";
+import type { DatosExportInvestigadorAgrupado } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { DataTable, type ColumnDef } from "@/shared/ui/DataTable";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
@@ -11,7 +11,7 @@ const normalizeSearch = (value: string | null | undefined) => (value ?? "").trim
 type TipoReporte = "agrupado_investigador" | "plano";
 
 interface ExportPreviewPanelProps {
-  preview: DatosExportDocenteAgrupado[];
+  preview: DatosExportInvestigadorAgrupado[];
   loading: boolean;
   error: string | null;
   canExport: boolean;
@@ -20,8 +20,8 @@ interface ExportPreviewPanelProps {
   onRetry: () => void;
 }
 
-const columns: ColumnDef<DatosExportDocenteAgrupado>[] = [
-  { key: "docente", label: "Investigador", render: (r) => r.docente },
+const columns: ColumnDef<DatosExportInvestigadorAgrupado>[] = [
+  { key: "investigador", label: "Investigador", render: (r) => r.investigador },
   { key: "dni", label: "DNI", render: (r) => r.dni },
   { key: "grado", label: "Grado", render: (r) => r.grado },
   {
@@ -48,7 +48,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
   const normalizedQuery = normalizeSearch(query);
   const filtrados = preview.filter(
     (d) =>
-      normalizeText(d.docente).includes(normalizedQuery) ||
+      normalizeText(d.investigador).includes(normalizedQuery) ||
       normalizeText(d.dni).includes(normalizedQuery) ||
       normalizeText(d.grado).includes(normalizedQuery) ||
       normalizeRenacytNivelSearch(d.renacyt_nivel).includes(normalizedQuery),

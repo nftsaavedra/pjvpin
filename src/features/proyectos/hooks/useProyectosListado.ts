@@ -23,8 +23,8 @@ export function useProyectosListado(proyectos: ProyectoDetalle[]) {
           if (!texto) return true;
           return (
             p.titulo_proyecto.toLowerCase().includes(texto) ||
-            (p.docente_responsable || "").toLowerCase().includes(texto) ||
-            (p.docentes || "").toLowerCase().includes(texto)
+            (p.investigador_responsable || "").toLowerCase().includes(texto) ||
+            (p.investigadores || "").toLowerCase().includes(texto)
           );
         }),
     [busqueda, estadoFiltro, proyectos],

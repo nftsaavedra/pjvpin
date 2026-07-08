@@ -6,15 +6,15 @@ export interface Proyecto {
 export interface ProyectoDetalle {
   id_proyecto: string;
   titulo_proyecto: string;
-  cantidad_docentes: number;
-  docente_responsable?: string | null;
-  docentes: string | null;
+  cantidad_investigadores: number;
+  investigador_responsable?: string | null;
+  investigadores: string | null;
   participantes_json?: string | null;
   activo: boolean;
 }
 
 export interface ProyectoParticipanteResumen {
-  id_docente: string;
+  id_investigador: string;
   nombre: string;
   grado: string;
   renacyt_nivel: string;

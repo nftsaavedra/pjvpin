@@ -20,14 +20,14 @@ async fn require_recursos_manage_or_responsable(
     }
     if actor.rol.trim() == "responsable_proyecto" {
         if let Some(pid) = proyecto_id {
-            let docente_id = actor.docente_id.as_ref().ok_or_else(|| {
+            let investigador_id = actor.investigador_id.as_ref().ok_or_else(|| {
                 AppError::InternalError(
-                    "Usuario responsable_proyecto no tiene un docente asociado.".to_string(),
+                    "Usuario responsable_proyecto no tiene un investigador asociado.".to_string(),
                 )
             })?;
             let db = state.mongo_db()?;
             let es_responsable =
-                crate::proyectos::repository::es_responsable_del_proyecto(db, docente_id, pid)
+                crate::proyectos::repository::es_responsable_del_proyecto(db, investigador_id, pid)
                     .await?;
             if es_responsable {
                 return Ok(());

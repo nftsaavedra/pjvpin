@@ -55,12 +55,12 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
             const tieneFormaciones = Boolean(
               investigador.renacyt_formaciones_academicas_json?.trim(),
             );
-            const estaActualizando = refreshingRenacytInvestigadorId === investigador.id_docente;
+            const estaActualizando = refreshingRenacytInvestigadorId === investigador.id_investigador;
             const nivelRenacyt = formatRenacytNivel(investigador.renacyt_nivel);
 
             return (
               <tr
-                key={investigador.id_docente}
+                key={investigador.id_investigador}
                 className={investigador.cantidad_proyectos === 0 ? "unassigned" : ""}
               >
                 <td>{investigador.dni || "Sin DNI"}</td>
@@ -112,7 +112,7 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                             : "Reintentar formación RENACYT"
                       }
                       onClick={() => {
-                        onRefreshRenacyt(investigador.id_docente);
+                        onRefreshRenacyt(investigador.id_investigador);
                       }}
                       disabled={estaActualizando}
                     />
@@ -124,7 +124,7 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                       iconSize={18}
                       label="Reactivar investigador"
                       onClick={() => {
-                        onReactivate(investigador.id_docente);
+                        onReactivate(investigador.id_investigador);
                       }}
                     />
                   )}

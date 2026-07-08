@@ -35,12 +35,12 @@ pub async fn get_by_id(db: &Database, id: &str) -> Result<PublicacionCientifica,
         .ok_or_else(|| AppError::NotFound("Publicacion no encontrada.".to_string()))
 }
 
-pub async fn get_by_docente(
+pub async fn get_by_investigador(
     db: &Database,
-    docente_id: &str,
+    investigador_id: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
     db.collection::<PublicacionCientifica>("publicaciones_cientificas")
-        .find(doc! { "autores_ids": docente_id, "activo": 1 })
+        .find(doc! { "autores_ids": investigador_id, "activo": 1 })
         .await?
         .try_collect::<Vec<_>>()
         .await

@@ -48,10 +48,10 @@ pub async fn update_proyecto_con_participantes(
 pub async fn buscar_proyectos_por_investigador(
     state: &AppState,
     window_label: &str,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<Vec<Proyecto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    proyecto_service::find_by_docente(state, id_docente).await
+    proyecto_service::find_by_investigador(state, id_investigador).await
 }
 
 pub async fn get_all_proyectos_detalle(
@@ -61,12 +61,12 @@ pub async fn get_all_proyectos_detalle(
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
     if actor.rol.trim() == "responsable_proyecto" {
-        let docente_id = actor.docente_id.as_ref().ok_or_else(|| {
+        let investigador_id = actor.investigador_id.as_ref().ok_or_else(|| {
             AppError::InternalError(
-                "Usuario responsable_proyecto no tiene un docente asociado.".to_string(),
+                "Usuario responsable_proyecto no tiene un investigador asociado.".to_string(),
             )
         })?;
-        proyecto_service::get_all_detalle_for_responsable(state, docente_id).await
+        proyecto_service::get_all_detalle_for_responsable(state, investigador_id).await
     } else {
         proyecto_service::get_all_detalle(state).await
     }
@@ -81,12 +81,12 @@ pub async fn get_all_proyectos_paginated(
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
     let responsable_id = if actor.rol.trim() == "responsable_proyecto" {
-        let docente_id = actor.docente_id.as_ref().ok_or_else(|| {
+        let investigador_id = actor.investigador_id.as_ref().ok_or_else(|| {
             AppError::InternalError(
-                "Usuario responsable_proyecto no tiene un docente asociado.".to_string(),
+                "Usuario responsable_proyecto no tiene un investigador asociado.".to_string(),
             )
         })?;
-        Some(docente_id.as_str())
+        Some(investigador_id.as_str())
     } else {
         None
     };
@@ -97,17 +97,17 @@ pub async fn eliminar_relacion_proyecto_investigador(
     state: &AppState,
     window_label: &str,
     id_proyecto: &str,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<(), AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::delete_relation(state, id_proyecto, id_docente).await?;
+    proyecto_service::delete_relation(state, id_proyecto, id_investigador).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.delete_relation",
         "proyecto",
         id_proyecto,
-        format!("docente: {}", id_docente),
+        format!("investigador: {}", id_investigador),
     );
     Ok(())
 }

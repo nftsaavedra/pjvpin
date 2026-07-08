@@ -62,9 +62,11 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
     [mode, proyecto?.participantes_json],
   );
 
-  const initialSelectedIds = participantesIniciales.map((p) => p.id_docente);
+  const initialSelectedIds = participantesIniciales.map((p) => p.id_investigador);
   const initialResponsableId =
-    mode === "edit" ? (getResponsableProyecto(participantesIniciales)?.id_docente ?? null) : null;
+    mode === "edit"
+      ? (getResponsableProyecto(participantesIniciales)?.id_investigador ?? null)
+      : null;
 
   const form = useProyectoFormState(
     mode === "edit"
@@ -87,7 +89,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   }, [mode, resetForm]);
 
   const participantesPorId = useMemo(
-    () => new Map(participantesIniciales.map((p) => [p.id_docente, p])),
+    () => new Map(participantesIniciales.map((p) => [p.id_investigador, p])),
     [participantesIniciales],
   );
 
@@ -95,7 +97,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
     () =>
       form.investigadoresSeleccionados
         .filter((id) => !initialSelectedIds.includes(id))
-        .map((id) => investigadores.find((d) => d.id_docente === id)?.nombres_apellidos ?? id),
+        .map((id) => investigadores.find((d) => d.id_investigador === id)?.nombres_apellidos ?? id),
     [investigadores, initialSelectedIds, form.investigadoresSeleccionados],
   );
 
@@ -108,14 +110,14 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   );
 
   const investigadoresSeleccionados = useMemo(
-    () => investigadores.filter((d) => form.investigadoresSeleccionados.includes(d.id_docente)),
+    () => investigadores.filter((d) => form.investigadoresSeleccionados.includes(d.id_investigador)),
     [investigadores, form.investigadoresSeleccionados],
   );
 
   const responsableOptions = useMemo(
     () =>
       investigadoresSeleccionados.map((d) => ({
-        value: d.id_docente,
+        value: d.id_investigador,
         label: d.nombres_apellidos,
       })),
     [investigadoresSeleccionados],
@@ -127,7 +129,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       ? (participantesPorId.get(initialResponsableId)?.nombre ?? null)
       : null;
   const responsableActualNombre = form.investigadorResponsableId
-    ? (investigadores.find((d) => d.id_docente === form.investigadorResponsableId)
+    ? (investigadores.find((d) => d.id_investigador === form.investigadorResponsableId)
         ?.nombres_apellidos ??
       participantesPorId.get(form.investigadorResponsableId)?.nombre ??
       null)
@@ -148,9 +150,9 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
         confirmText: "Sí, agregar",
         onConfirm: () => {
           form.setInvestigadoresSeleccionados((current) =>
-            current.includes(investigador.id_docente)
+            current.includes(investigador.id_investigador)
               ? current
-              : [...current, investigador.id_docente],
+              : [...current, investigador.id_investigador],
           );
         },
       });
@@ -158,7 +160,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
     }
 
     if (
-      form.investigadorResponsableId === investigador.id_docente &&
+      form.investigadorResponsableId === investigador.id_investigador &&
       form.investigadoresSeleccionados.length > 1
     ) {
       toast.warning(
@@ -173,10 +175,10 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       confirmText: "Sí, quitar",
       onConfirm: () => {
         form.setInvestigadoresSeleccionados((current) =>
-          current.filter((id) => id !== investigador.id_docente),
+          current.filter((id) => id !== investigador.id_investigador),
         );
         form.setInvestigadorResponsableId((current) =>
-          current === investigador.id_docente ? null : current,
+          current === investigador.id_investigador ? null : current,
         );
       },
     });
@@ -185,7 +187,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   const requestResponsableChange = (investigadorId: string) => {
     if (form.investigadorResponsableId === investigadorId) return;
 
-    const investigador = investigadores.find((item) => item.id_docente === investigadorId);
+    const investigador = investigadores.find((item) => item.id_investigador === investigadorId);
     if (!investigador) return;
 
     requestChange({
@@ -224,8 +226,8 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       if (!proyecto) return;
       await onUpdate(proyecto.id_proyecto, {
         titulo_proyecto: form.titulo.trim(),
-        docentes_ids: form.investigadoresSeleccionados,
-        docente_responsable_id: form.investigadorResponsableId,
+        investigadores_ids: form.investigadoresSeleccionados,
+        investigador_responsable_id: form.investigadorResponsableId,
       });
     }
   };

@@ -8,7 +8,7 @@ pub struct GrupoInvestigacion {
     pub nombre: String,
     #[serde(default)]
     pub descripcion: Option<String>,
-    /// docente_id del docente que coordina el grupo.
+    /// investigador_id del investigador que coordina el grupo.
     #[serde(default)]
     pub coordinador_id: Option<String>,
     /// Líneas temáticas del grupo (lista libre).

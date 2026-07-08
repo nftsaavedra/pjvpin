@@ -1,5 +1,5 @@
 pub use crate::proyectos::models::{
-    DocenteProyectosCount, ExportData, ExportDataConProjectos, ExportDataDocentePerfil,
-    ExportDataGrupo, ExportDataProyectoArea, ExportDataRecurso, KpisDashboard, ProyectosTrendItem,
-    RenacytDistribucionItem,
+    ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
+    ExportDataProyectoArea, ExportDataRecurso, InvestigadorProyectosCount, KpisDashboard,
+    ProyectosTrendItem, RenacytDistribucionItem,
 };

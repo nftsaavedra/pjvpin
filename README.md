@@ -99,13 +99,7 @@ El wizard se vuelve a mostrar si el archivo de configuración se borra o si la c
 
 ### Migración desde una instalación previa
 
-Si la base de datos contiene la colección `docentes` (versión previa al rename `docente → investigador`), ejecutar **una sola vez** el script de migración incluido:
-
-```bash
-mongosh "$PJVPIN_MONGODB_URI/$PJVPIN_MONGODB_DB" scripts/migrate-investigadores.js
-```
-
-El script renombra la colección a `investigadores` y añade el campo `perfil: "docente"` a los registros existentes. El campo `id_docente` dentro de cada documento se preserva para mantener compatibilidad con la colección `participaciones` y los registros de publicaciones.
+No se requiere migración. La aplicación está en desarrollo activo (`v0.1.0-alpha`) y no ha sido desplegada en entornos productivos: la colección `investigadores` se crea limpia en el primer arranque. Si necesitas limpiar el estado durante desarrollo, basta con borrar las colecciones desde la consola de MongoDB Atlas.
 
 ---
 
@@ -194,7 +188,6 @@ El proyecto está en etapa de consolidación: la refactorización mayor `docente
 
 - **Firma digital del `.exe`** con code signing (certificado EV) para eliminar los warnings de Windows SmartScreen al instalar.
 - **Cifrado de `pjvpin.config.json` en disco** mediante Windows Credential Manager (actualmente en texto plano dentro de `%APPDATA%\com.vpin.pjvpin\`).
-- **Migración del campo `id_docente` → `id_investigador`** en documentos MongoDB (actualmente preservado con `#[serde(rename)]` para mantener compatibilidad; se consolidará en `v0.2.0` con un script de cleanup).
 - **Catálogo parametrizable de perfiles** de investigador (actualmente hardcoded con tres valores: `docente`, `tesista`, `alumno_egresado`; el siguiente paso es permitir gestión dinámica vía la UI de catálogos).
 - **Auditoría completa de operaciones multi-documento**, particularmente en recursos y en operaciones `update` / `reactivate` que hoy solo registran el evento en algunos casos.
 

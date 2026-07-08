@@ -314,7 +314,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                         type="button"
                         className="btn-secondary"
                         onClick={() => {
-                          onRefreshRenacytFormaciones(investigador.id_docente);
+                          onRefreshRenacytFormaciones(investigador.id_investigador);
                         }}
                         disabled={isRefreshingRenacyt}
                       >
@@ -418,7 +418,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
         </div>
 
         <InvestigadorPublicacionesSection
-          investigadorId={investigador.id_docente}
+          investigadorId={investigador.id_investigador}
           scopusAuthorId={investigador.renacyt_scopus_author_id}
           canSyncPure={canSyncPure}
         />

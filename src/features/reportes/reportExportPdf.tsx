@@ -234,7 +234,7 @@ const normalizeRows = async (tipo: TipoReporte) => {
   if (tipo === "agrupado_investigador") {
     const rows = await getDataExportacionAgrupada();
     return rows.map((row) => ({
-      investigador: row.docente,
+      investigador: row.investigador,
       dni: row.dni,
       grado: row.grado,
       renacyt_nivel: formatRenacytNivel(row.renacyt_nivel) ?? row.renacyt_nivel,
@@ -246,7 +246,7 @@ const normalizeRows = async (tipo: TipoReporte) => {
   const rows = await getDataExportacionPlana();
   return rows.map((row) => ({
     proyecto: row.proyecto,
-    investigador: row.docente,
+    investigador: row.investigador,
     dni: row.dni,
     grado: row.grado,
     renacyt_nivel: formatRenacytNivel(row.renacyt_nivel) ?? row.renacyt_nivel,

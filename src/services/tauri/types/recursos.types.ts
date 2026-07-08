@@ -1,7 +1,7 @@
 export interface Patente {
   id_patente: string;
   proyecto_id?: string | null;
-  docente_id?: string | null;
+  investigador_id?: string | null;
   titulo: string;
   numero_patente?: string | null;
   tipo?: string | null;
@@ -17,7 +17,7 @@ export interface Patente {
 export interface Producto {
   id_producto: string;
   proyecto_id?: string | null;
-  docente_id?: string | null;
+  investigador_id?: string | null;
   nombre: string;
   tipo?: string | null;
   descripcion?: string | null;
@@ -49,6 +49,7 @@ export interface Financiamiento {
   fecha_inicio?: number | null;
   fecha_fin?: number | null;
   descripcion?: string | null;
+  estado_financiero?: string | null;
   created_at?: number | null;
   updated_at?: number | null;
 }

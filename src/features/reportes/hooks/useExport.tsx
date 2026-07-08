@@ -5,15 +5,15 @@ import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
 import { toast } from "@/services/toast";
 import { getTauriErrorMessage } from "../api";
 import { ProyectoIntegralPdf, InvestigadorIntegralPdf } from "../components/PdfComponents";
-import type { ReporteProyectoIntegral, ReporteDocenteIntegral } from "../api";
+import type { ReporteProyectoIntegral, ReporteInvestigadorIntegral } from "../api";
 
 type ExportState =
   "proyecto-xlsx" | "proyecto-pdf" | "investigador-xlsx" | "investigador-pdf" | null;
 
 interface UseExportParams {
   proyectoReport: ReporteProyectoIntegral | null;
-  investigadorReport: ReporteDocenteIntegral | null;
-  investigadorReports: ReporteDocenteIntegral[];
+  investigadorReport: ReporteInvestigadorIntegral | null;
+  investigadorReports: ReporteInvestigadorIntegral[];
 }
 
 export function useExport({

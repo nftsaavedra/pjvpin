@@ -20,7 +20,7 @@ interface ReporteProyectoPanelProps {
 }
 
 const equipoColumns: ColumnDef<MiembroProyectoReporte>[] = [
-  { key: "docente", label: "Docente", render: (m) => m.nombres_apellidos },
+  { key: "investigador", label: "Investigador", render: (m) => m.nombres_apellidos },
   { key: "dni", label: "DNI", render: (m) => m.dni },
   { key: "grado", label: "Grado", render: (m) => m.grado_nombre },
   { key: "renacyt", label: "RENACYT Reg.", render: (m) => m.renacyt_codigo_registro ?? "-" },
@@ -193,7 +193,7 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
     <details open={expandedSections["proy-equipo"]}>
       <SectionHeader
         label="Equipo"
-        count={report.total_docentes}
+        count={report.total_investigadores}
         open={expandedSections["proy-equipo"] ?? false}
         onToggle={() => {
           toggleSection("proy-equipo");
@@ -202,7 +202,7 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
       <DataTable
         columns={equipoColumns}
         data={report.equipo}
-        getRowKey={(m) => m.id_docente}
+        getRowKey={(m) => m.id_investigador}
         emptyMessage="Sin miembros registrados"
       />
     </details>

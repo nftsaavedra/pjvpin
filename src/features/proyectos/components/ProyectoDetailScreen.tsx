@@ -169,7 +169,7 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
           ) : (
             <div className="screen-readonly-list">
               {participantes.map((participante) => (
-                <div key={participante.id_docente} className="screen-readonly-item">
+                <div key={participante.id_investigador} className="screen-readonly-item">
                   <span>
                     <strong>{participante.nombre}</strong>
                     {participante.grado && <span> &mdash; {participante.grado}</span>}

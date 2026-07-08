@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   getDataExportacionAgrupada,
   getTauriErrorMessage,
-  type DatosExportDocenteAgrupado,
+  type DatosExportInvestigadorAgrupado,
 } from "./api";
 import { getAllProyectosDetalle } from "@/services/tauri/proyectos";
 import { getAllInvestigadores } from "@/services/tauri/investigadores";
@@ -13,7 +13,7 @@ import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
 import { ExportPreviewPanel } from "./components/ExportPreviewPanel";
 import { ReporteProyectoPanel } from "./components/ReporteProyectoPanel";
-import { ReporteDocentePanel } from "./components/ReporteDocentePanel";
+import { ReporteInvestigadorPanel } from "./components/ReporteInvestigadorPanel";
 
 interface ReportesTabProps {
   canExport?: boolean;
@@ -32,7 +32,7 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
     refreshing,
     error,
     recargar: cargarPreview,
-  } = useStableFetchData<DatosExportDocenteAgrupado[]>(
+  } = useStableFetchData<DatosExportInvestigadorAgrupado[]>(
     () => getDataExportacionAgrupada(),
     refreshTrigger,
     "Error cargando vista previa de reportes",
@@ -127,7 +127,10 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
 
       <ReporteProyectoPanel proyectos={proyectos} proyectosLoading={proyectosLoading} />
 
-      <ReporteDocentePanel docentes={investigadores} docentesLoading={investigadoresLoading} />
+      <ReporteInvestigadorPanel
+        investigadores={investigadores}
+        investigadoresLoading={investigadoresLoading}
+      />
     </div>
   );
 };

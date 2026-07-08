@@ -3,48 +3,53 @@ use std::collections::{HashMap, HashSet};
 use chrono::Datelike;
 
 use crate::investigadores::models::Investigador;
-use crate::investigadores::repository as docentes_repo;
+use crate::investigadores::repository as investigadores_repo;
 use crate::proyectos::models::{
-    DocenteProyectosCount, KpisDashboard, Proyecto, ProyectosTrendItem, RenacytDistribucionItem,
+    InvestigadorProyectosCount, KpisDashboard, Proyecto, ProyectosTrendItem,
+    RenacytDistribucionItem,
 };
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
 use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
-pub async fn get_estadisticas_proyectos_x_docente(
+pub async fn get_estadisticas_proyectos_x_investigador(
     db: &Database,
-) -> Result<Vec<DocenteProyectosCount>, AppError> {
-    let docentes = docentes_repo::get_all_investigadores(db).await?;
+) -> Result<Vec<InvestigadorProyectosCount>, AppError> {
+    let investigadores = investigadores_repo::get_all_investigadores(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
 
-    let mut activos_por_docente: HashMap<String, i64> = docentes
+    let mut activos_por_investigador: HashMap<String, i64> = investigadores
         .iter()
-        .map(|docente| (docente.id_docente.clone(), 0))
+        .map(|investigador| (investigador.id_investigador.clone(), 0))
         .collect();
 
     for participacion in participaciones {
         if let Some(proyecto) = proyectos.get(&participacion.id_proyecto) {
             if proyecto.activo {
-                if let Some(contador) = activos_por_docente.get_mut(&participacion.id_docente) {
+                if let Some(contador) =
+                    activos_por_investigador.get_mut(&participacion.id_investigador)
+                {
                     *contador += 1;
                 }
             }
         }
     }
 
-    let mut stats: Vec<DocenteProyectosCount> = docentes
+    let mut stats: Vec<InvestigadorProyectosCount> = investigadores
         .into_iter()
-        .map(|docente| {
+        .map(|investigador| {
             let nombre = personas
-                .get(&docente.persona_id)
+                .get(&investigador.persona_id)
                 .map(|p| p.nombre_completo.clone())
                 .unwrap_or_default();
-            DocenteProyectosCount {
+            InvestigadorProyectosCount {
                 nombre,
-                cantidad: *activos_por_docente.get(&docente.id_docente).unwrap_or(&0),
+                cantidad: *activos_por_investigador
+                    .get(&investigador.id_investigador)
+                    .unwrap_or(&0),
             }
         })
         .collect();
@@ -57,21 +62,23 @@ pub async fn get_estadisticas_proyectos_x_docente(
 }
 
 pub async fn get_kpis_dashboard(db: &Database) -> Result<KpisDashboard, AppError> {
-    let docentes = docentes_repo::get_all_investigadores(db).await?;
+    let investigadores = investigadores_repo::get_all_investigadores(db).await?;
     let proyectos = db
         .collection::<mongodb::bson::Document>("proyectos")
         .count_documents(doc! { "activo": 1i64 })
         .await? as i64;
-    let stats = get_estadisticas_proyectos_x_docente(db).await?;
+    let stats = get_estadisticas_proyectos_x_investigador(db).await?;
 
-    let docentes_con_1_proyecto = stats.iter().filter(|item| item.cantidad == 1).count() as i64;
-    let docentes_multiples_proyectos = stats.iter().filter(|item| item.cantidad > 1).count() as i64;
+    let investigadores_con_1_proyecto =
+        stats.iter().filter(|item| item.cantidad == 1).count() as i64;
+    let investigadores_multiples_proyectos =
+        stats.iter().filter(|item| item.cantidad > 1).count() as i64;
 
     Ok(KpisDashboard {
         total_proyectos: proyectos,
-        total_docentes: docentes.len() as i64,
-        docentes_con_1_proyecto,
-        docentes_multiples_proyectos,
+        total_investigadores: investigadores.len() as i64,
+        investigadores_con_1_proyecto,
+        investigadores_multiples_proyectos,
     })
 }
 
@@ -114,8 +121,8 @@ pub async fn get_proyectos_trend(db: &Database) -> Result<Vec<ProyectosTrendItem
 pub async fn get_renacyt_distribucion(
     db: &Database,
 ) -> Result<Vec<RenacytDistribucionItem>, AppError> {
-    let docentes = db
-        .collection::<Investigador>("docentes")
+    let investigadores = db
+        .collection::<Investigador>("investigadores")
         .find(doc! { "activo": 1i64 })
         .await?
         .try_collect::<Vec<_>>()
@@ -124,29 +131,29 @@ pub async fn get_renacyt_distribucion(
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
 
-    let mut docentes_con_proyectos: HashSet<String> = HashSet::new();
+    let mut investigadores_con_proyectos: HashSet<String> = HashSet::new();
     for p in &participaciones {
         if let Some(proj) = proyectos.get(&p.id_proyecto) {
             if proj.activo {
-                docentes_con_proyectos.insert(p.id_docente.clone());
+                investigadores_con_proyectos.insert(p.id_investigador.clone());
             }
         }
     }
 
     let mut grupos: HashMap<String, RenacytDistribucionItem> = HashMap::new();
-    for docente in &docentes {
-        let nivel = data_loader::resolve_renacyt_nivel(docente);
+    for investigador in &investigadores {
+        let nivel = data_loader::resolve_renacyt_nivel(investigador);
 
         let entry = grupos
             .entry(nivel.clone())
             .or_insert(RenacytDistribucionItem {
                 nivel,
-                cantidad_docentes: 0,
+                cantidad_investigadores: 0,
                 con_proyectos: 0,
                 sin_proyectos: 0,
             });
-        entry.cantidad_docentes += 1;
-        if docentes_con_proyectos.contains(&docente.id_docente) {
+        entry.cantidad_investigadores += 1;
+        if investigadores_con_proyectos.contains(&investigador.id_investigador) {
             entry.con_proyectos += 1;
         } else {
             entry.sin_proyectos += 1;

@@ -10,11 +10,11 @@ use mongodb::{bson::doc, Database};
 
 pub async fn buscar_proyectos_por_investigador(
     db: &Database,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<Vec<Proyecto>, AppError> {
     let participaciones = db
         .collection::<ParticipacionRecord>("participaciones")
-        .find(doc! { "id_docente": id_docente })
+        .find(doc! { "id_investigador": id_investigador })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
@@ -45,8 +45,8 @@ pub async fn get_all_proyectos_detalle(
     db: &Database,
     responsable_id: Option<&str>,
 ) -> Result<Vec<ProyectoDetalle>, AppError> {
-    let filter = if let Some(docente_id) = responsable_id {
-        let proyecto_ids = get_ids_proyectos_como_responsable(db, docente_id).await?;
+    let filter = if let Some(investigador_id) = responsable_id {
+        let proyecto_ids = get_ids_proyectos_como_responsable(db, investigador_id).await?;
         if proyecto_ids.is_empty() {
             return Ok(Vec::new());
         }
@@ -66,36 +66,36 @@ pub async fn get_all_proyectos_detalle(
             .cmp(&b.titulo_proyecto.to_lowercase())
     });
 
-    let docentes = data_loader::load_docentes_map(db).await?;
+    let investigadores = data_loader::load_investigadores_map(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
     let grados = data_loader::load_grados_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
 
-    let mut docentes_por_proyecto: HashMap<String, Vec<String>> = HashMap::new();
+    let mut investigadores_por_proyecto: HashMap<String, Vec<String>> = HashMap::new();
     let mut participantes_por_proyecto: HashMap<String, Vec<ProyectoParticipanteResumen>> =
         HashMap::new();
     for participacion in participaciones {
-        if let Some(docente) = docentes.get(&participacion.id_docente) {
+        if let Some(investigador) = investigadores.get(&participacion.id_investigador) {
             let proyecto_id = participacion.id_proyecto.clone();
-            let grado = data_loader::resolve_grado_nombre(&grados, &docente.id_grado);
-            let nivel_renacyt = data_loader::resolve_renacyt_nivel(docente);
-            let nombre_docente = personas
-                .get(&docente.persona_id)
+            let grado = data_loader::resolve_grado_nombre(&grados, &investigador.id_grado);
+            let nivel_renacyt = data_loader::resolve_renacyt_nivel(investigador);
+            let nombre_investigador = personas
+                .get(&investigador.persona_id)
                 .map(|p| p.nombre_completo.clone())
                 .unwrap_or_default();
-            docentes_por_proyecto
+            investigadores_por_proyecto
                 .entry(proyecto_id.clone())
                 .or_default()
                 .push(format!(
                     "{} ({} · {})",
-                    nombre_docente, grado, nivel_renacyt
+                    nombre_investigador, grado, nivel_renacyt
                 ));
             participantes_por_proyecto
                 .entry(proyecto_id)
                 .or_default()
                 .push(ProyectoParticipanteResumen {
-                    id_docente: docente.id_docente.clone(),
-                    nombre: nombre_docente,
+                    id_investigador: investigador.id_investigador.clone(),
+                    nombre: nombre_investigador,
                     grado,
                     renacyt_nivel: nivel_renacyt,
                     es_responsable: participacion.es_responsable,
@@ -107,7 +107,7 @@ pub async fn get_all_proyectos_detalle(
         .into_iter()
         .map(|proyecto| {
             let proyecto_id = proyecto.id_proyecto.clone();
-            let docentes_proyecto = docentes_por_proyecto
+            let investigadores_proyecto = investigadores_por_proyecto
                 .remove(&proyecto_id)
                 .unwrap_or_default();
             let mut participantes = participantes_por_proyecto
@@ -118,17 +118,17 @@ pub async fn get_all_proyectos_detalle(
                     .cmp(&a.es_responsable)
                     .then_with(|| a.nombre.to_lowercase().cmp(&b.nombre.to_lowercase()))
             });
-            let docente_responsable = participantes
+            let investigador_responsable = participantes
                 .iter()
                 .find(|participante| participante.es_responsable)
                 .map(|participante| participante.nombre.clone());
             ProyectoDetalle {
                 id_proyecto: proyecto.id_proyecto,
                 titulo_proyecto: proyecto.titulo_proyecto,
-                cantidad_docentes: docentes_proyecto.len() as i64,
-                docente_responsable,
-                docentes: data_loader::join_or_none(&docentes_proyecto, " | "),
-                participantes_json: if docentes_proyecto.is_empty() {
+                cantidad_investigadores: investigadores_proyecto.len() as i64,
+                investigador_responsable,
+                investigadores: data_loader::join_or_none(&investigadores_proyecto, " | "),
+                participantes_json: if investigadores_proyecto.is_empty() {
                     None
                 } else {
                     serde_json::to_string(&participantes).ok()

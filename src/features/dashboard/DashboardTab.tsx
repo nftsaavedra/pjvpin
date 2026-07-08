@@ -73,12 +73,14 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
   });
 
   const { kpis, estadisticas, trend, renacyt } = dashboardData;
-  const totalDocentes = kpis?.total_docentes ?? 0;
+  const totalInvestigadores = kpis?.total_investigadores ?? 0;
   const totalProyectos = kpis?.total_proyectos ?? 0;
-  const docentesConProyectos = estadisticas.filter((docente) => docente.cantidad > 0).length;
-  const docentesSinProyectos = Math.max(totalDocentes - docentesConProyectos, 0);
+  const investigadoresConProyectos = estadisticas.filter(
+    (investigador) => investigador.cantidad > 0,
+  ).length;
+  const investigadoresSinProyectos = Math.max(totalInvestigadores - investigadoresConProyectos, 0);
   const promedioProyectos =
-    totalDocentes > 0 ? (totalProyectos / totalDocentes).toFixed(2) : "0.00";
+    totalInvestigadores > 0 ? (totalProyectos / totalInvestigadores).toFixed(2) : "0.00";
 
   if (error && !kpis && estadisticas.length === 0) {
     return (
@@ -115,11 +117,15 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
           <div className="kpi-grid dashboard-kpi-grid content-shell">
             {kpis && (
               <>
-                <KPICard label="Total Investigadores" value={kpis.total_docentes} icon={Users} />
+                <KPICard
+                  label="Total Investigadores"
+                  value={kpis.total_investigadores}
+                  icon={Users}
+                />
                 <KPICard label="Total Proyectos" value={kpis.total_proyectos} icon={FolderOpen} />
                 <KPICard
                   label="Investigadores Sin Proyectos"
-                  value={docentesSinProyectos}
+                  value={investigadoresSinProyectos}
                   icon={TriangleAlert}
                 />
                 <KPICard
@@ -134,7 +140,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
           <Suspense fallback={<DashboardChartsFallback />}>
             <DashboardCharts
               estadisticas={estadisticas}
-              totalDocentes={totalDocentes}
+              totalInvestigadores={totalInvestigadores}
               totalProyectos={totalProyectos}
               trend={trend}
               renacyt={renacyt}

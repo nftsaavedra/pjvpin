@@ -2,14 +2,16 @@ import { useCallback, useState } from "react";
 import {
   getReporteInvestigadorIntegral,
   getReportesInvestigadoresIntegral,
-  type ReporteDocenteIntegral,
+  type ReporteInvestigadorIntegral,
 } from "../api";
 import { toast } from "@/services/toast";
 import { getTauriErrorMessage } from "@/services/tauri/error";
 
 export function useReporteInvestigador() {
-  const [investigadorReport, setInvestigadorReport] = useState<ReporteDocenteIntegral | null>(null);
-  const [investigadorReports, setInvestigadorReports] = useState<ReporteDocenteIntegral[]>([]);
+  const [investigadorReport, setInvestigadorReport] = useState<ReporteInvestigadorIntegral | null>(
+    null,
+  );
+  const [investigadorReports, setInvestigadorReports] = useState<ReporteInvestigadorIntegral[]>([]);
   const [generating, setGenerating] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
@@ -29,12 +31,12 @@ export function useReporteInvestigador() {
       if (investigadorId === "__todos__") {
         const reports = await getReportesInvestigadoresIntegral();
         setInvestigadorReports(reports);
-        setExpandedSections({ "doc-perfil-0": true });
+        setExpandedSections({ "inv-perfil-0": true });
         toast.success(`${reports.length} reportes generados`);
       } else {
         const report = await getReporteInvestigadorIntegral(investigadorId);
         setInvestigadorReport(report);
-        setExpandedSections({ "doc-perfil": true });
+        setExpandedSections({ "inv-perfil": true });
         toast.success("Reporte de investigador generado");
       }
     } catch (err) {

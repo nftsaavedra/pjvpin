@@ -15,7 +15,7 @@ pub struct Patente {
     pub id: String,
     pub id_patente: String,
     pub proyecto_id: Option<String>,
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
     pub titulo: String,
     pub numero_patente: Option<String>,
     /// "invencion" | "modelo_utilidad" | "diseno_industrial"
@@ -40,7 +40,7 @@ impl Patente {
             id: id.clone(),
             id_patente: id,
             proyecto_id: request.proyecto_id,
-            docente_id: request.docente_id,
+            investigador_id: request.investigador_id,
             titulo: request.titulo,
             numero_patente: request.numero_patente,
             tipo: request.tipo,
@@ -60,7 +60,7 @@ impl Patente {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CreatePatenteRequest {
     pub proyecto_id: Option<String>,
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
     pub titulo: String,
     pub numero_patente: Option<String>,
     pub tipo: Option<String>,
@@ -93,7 +93,7 @@ pub struct Producto {
     pub id: String,
     pub id_producto: String,
     pub proyecto_id: Option<String>,
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
     pub nombre: String,
     /// "software" | "prototipo" | "metodologia" | "norma" | "base_datos"
     pub tipo: Option<String>,
@@ -114,7 +114,7 @@ impl Producto {
             id: id.clone(),
             id_producto: id,
             proyecto_id: request.proyecto_id,
-            docente_id: request.docente_id,
+            investigador_id: request.investigador_id,
             nombre: request.nombre,
             tipo: request.tipo,
             etapa: request.etapa,
@@ -130,7 +130,7 @@ impl Producto {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CreateProductoRequest {
     pub proyecto_id: Option<String>,
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
     pub nombre: String,
     pub tipo: Option<String>,
     pub etapa: Option<String>,

@@ -12,39 +12,39 @@ use crate::shared::error::AppError;
 // Reporte Investigador Integral
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub async fn build_reporte_docente_integral(
+pub async fn build_reporte_investigador_integral(
     db: &Database,
-    id_docente: &str,
-) -> Result<ReporteDocenteIntegral, AppError> {
+    id_investigador: &str,
+) -> Result<ReporteInvestigadorIntegral, AppError> {
     let catalogo_map = data_loader::load_catalogos_map(db).await?;
     let grados = data_loader::load_grados_map(db).await?;
     let grupos = data_loader::load_grupos_map(db).await?;
-    let docentes_map = data_loader::load_docentes_map(db).await?;
+    let investigadores_map = data_loader::load_investigadores_map(db).await?;
     let proyectos_map = data_loader::load_proyectos_map(db).await?;
     let todas_participaciones = data_loader::load_participaciones(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
 
-    let docente = db
-        .collection::<Investigador>("docentes")
-        .find_one(doc! { "id_docente": id_docente })
+    let investigador = db
+        .collection::<Investigador>("investigadores")
+        .find_one(doc! { "id_investigador": id_investigador })
         .await?
         .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))?;
 
     let grado_nombre = grados
-        .get(&docente.id_grado)
+        .get(&investigador.id_grado)
         .map(|g| g.nombre.clone())
         .unwrap_or_default();
 
-    let (grupo_nombre, grupo_id) = docente
+    let (grupo_nombre, grupo_id) = investigador
         .grupo_investigacion_id
         .as_ref()
         .and_then(|gid| grupos.get(gid))
         .map(|g| (Some(g.nombre.clone()), Some(g.id_grupo.clone())))
         .unwrap_or((None, None));
 
-    let persona_doc = personas.get(&docente.persona_id);
-    let perfil = PerfilDocenteReporte {
-        id_docente: docente.id_docente.clone(),
+    let persona_doc = personas.get(&investigador.persona_id);
+    let perfil = PerfilInvestigadorReporte {
+        id_investigador: investigador.id_investigador.clone(),
         dni: persona_doc.map(|p| p.dni.clone()).unwrap_or_default(),
         nombres_apellidos: persona_doc
             .map(|p| p.nombre_completo.clone())
@@ -53,29 +53,31 @@ pub async fn build_reporte_docente_integral(
         apellido_paterno: persona_doc.and_then(|p| p.apellido_paterno.clone()),
         apellido_materno: persona_doc.and_then(|p| p.apellido_materno.clone()),
         grado_nombre,
-        grado_id: docente.id_grado.clone(),
-        renacyt_codigo_registro: docente.renacyt_codigo_registro.clone(),
-        renacyt_id_investigador: docente.renacyt_id_investigador.clone(),
-        renacyt_nivel: docente.renacyt_nivel.clone(),
-        renacyt_grupo: docente.renacyt_grupo.clone(),
-        renacyt_condicion: docente.renacyt_condicion.clone(),
-        renacyt_fecha_informe_calificacion: docente.renacyt_fecha_informe_calificacion,
-        renacyt_fecha_registro: docente.renacyt_fecha_registro,
-        renacyt_fecha_ultima_revision: docente.renacyt_fecha_ultima_revision,
-        renacyt_orcid: docente.renacyt_orcid.clone(),
-        renacyt_scopus_author_id: docente.renacyt_scopus_author_id.clone(),
-        renacyt_ficha_url: docente.renacyt_ficha_url.clone(),
-        renacyt_formaciones_academicas_json: docente.renacyt_formaciones_academicas_json.clone(),
+        grado_id: investigador.id_grado.clone(),
+        renacyt_codigo_registro: investigador.renacyt_codigo_registro.clone(),
+        renacyt_id_investigador: investigador.renacyt_id_investigador.clone(),
+        renacyt_nivel: investigador.renacyt_nivel.clone(),
+        renacyt_grupo: investigador.renacyt_grupo.clone(),
+        renacyt_condicion: investigador.renacyt_condicion.clone(),
+        renacyt_fecha_informe_calificacion: investigador.renacyt_fecha_informe_calificacion,
+        renacyt_fecha_registro: investigador.renacyt_fecha_registro,
+        renacyt_fecha_ultima_revision: investigador.renacyt_fecha_ultima_revision,
+        renacyt_orcid: investigador.renacyt_orcid.clone(),
+        renacyt_scopus_author_id: investigador.renacyt_scopus_author_id.clone(),
+        renacyt_ficha_url: investigador.renacyt_ficha_url.clone(),
+        renacyt_formaciones_academicas_json: investigador
+            .renacyt_formaciones_academicas_json
+            .clone(),
         grupo_nombre,
         grupo_id,
     };
 
     let mis_participaciones: Vec<&ParticipacionRecord> = todas_participaciones
         .iter()
-        .filter(|p| p.id_docente == id_docente)
+        .filter(|p| p.id_investigador == id_investigador)
         .collect();
 
-    let mut proyectos_detalle: Vec<ProyectoDocenteDetalle> = Vec::new();
+    let mut proyectos_detalle: Vec<ProyectoInvestigadorDetalle> = Vec::new();
     let mut proyecto_ids: Vec<String> = Vec::new();
 
     for participacion in &mis_participaciones {
@@ -89,15 +91,15 @@ pub async fn build_reporte_docente_integral(
 
         let colegas: Vec<ColegaProyecto> = todas_participaciones
             .iter()
-            .filter(|p| p.id_proyecto == *proyecto_id && p.id_docente != id_docente)
+            .filter(|p| p.id_proyecto == *proyecto_id && p.id_investigador != id_investigador)
             .filter_map(|p| {
-                docentes_map.get(&p.id_docente).map(|d| {
+                investigadores_map.get(&p.id_investigador).map(|d| {
                     let colega_grado = grados
                         .get(&d.id_grado)
                         .map(|g| g.nombre.clone())
                         .unwrap_or_default();
                     ColegaProyecto {
-                        id_docente: d.id_docente.clone(),
+                        id_investigador: d.id_investigador.clone(),
                         nombres_apellidos: personas
                             .get(&d.persona_id)
                             .map(|p| p.nombre_completo.clone())
@@ -126,7 +128,7 @@ pub async fn build_reporte_docente_integral(
             .count_documents(doc! { "proyecto_id": proyecto_id })
             .await? as usize;
 
-        proyectos_detalle.push(ProyectoDocenteDetalle {
+        proyectos_detalle.push(ProyectoInvestigadorDetalle {
             id_proyecto: proyecto.id_proyecto.clone(),
             titulo_proyecto: proyecto.titulo_proyecto.clone(),
             es_responsable: participacion.es_responsable,
@@ -147,7 +149,7 @@ pub async fn build_reporte_docente_integral(
 
     let patentes_raw = db
         .collection::<crate::recursos::models::Patente>("patentes")
-        .find(doc! { "docente_id": id_docente })
+        .find(doc! { "investigador_id": id_investigador })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
@@ -160,7 +162,7 @@ pub async fn build_reporte_docente_integral(
 
     let productos_raw = db
         .collection::<Producto>("productos")
-        .find(doc! { "docente_id": id_docente })
+        .find(doc! { "investigador_id": id_investigador })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
@@ -189,7 +191,7 @@ pub async fn build_reporte_docente_integral(
 
     let publicaciones_raw = db
         .collection::<crate::investigadores::models::Publicacion>("publicaciones")
-        .find(doc! { "docente_id": id_docente })
+        .find(doc! { "investigador_id": id_investigador })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
@@ -213,17 +215,17 @@ pub async fn build_reporte_docente_integral(
         })
         .collect();
 
-    let trazabilidad = TrazabilidadDocente {
-        updated_at: docente.updated_at,
-        fecha_ultima_sincronizacion_renacyt: docente.renacyt_fecha_ultima_sincronizacion,
+    let trazabilidad = TrazabilidadInvestigador {
+        updated_at: investigador.updated_at,
+        fecha_ultima_sincronizacion_renacyt: investigador.renacyt_fecha_ultima_sincronizacion,
         fecha_ultima_sincronizacion_pure: None,
     };
 
-    Ok(ReporteDocenteIntegral {
+    Ok(ReporteInvestigadorIntegral {
         perfil,
         proyectos: proyectos_detalle,
         total_proyectos,
-        recursos: RecursosDocenteResumen {
+        recursos: RecursosInvestigadorResumen {
             patentes,
             productos,
             equipamientos,

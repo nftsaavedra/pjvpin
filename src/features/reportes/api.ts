@@ -9,22 +9,22 @@ export {
 export { getTauriErrorMessage } from "@/services/tauri/error";
 
 export type {
-  DatosExportDocenteAgrupado,
+  DatosExportInvestigadorAgrupado,
   ExportData,
   ColegaProyecto,
   EquipamientoConEtiquetas,
   FinanciamientoConEtiquetas,
   MiembroProyectoReporte,
   PatenteConEtiquetas,
-  PerfilDocenteReporte,
+  PerfilInvestigadorReporte,
   ProductoConEtiquetas,
   ProyectoCabeceraReporte,
-  ProyectoDocenteDetalle,
+  ProyectoInvestigadorDetalle,
   PublicacionConEtiquetas,
-  RecursosDocenteResumen,
+  RecursosInvestigadorResumen,
   RecursosProyectoResumen,
-  ReporteDocenteIntegral,
+  ReporteInvestigadorIntegral,
   ReporteProyectoIntegral,
   ResumenFinanciero,
-  TrazabilidadDocente,
+  TrazabilidadInvestigador,
 } from "@/services/tauri/types";

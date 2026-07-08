@@ -53,12 +53,12 @@ pub async fn delete_grado(
     db: &Database,
     id_grado: &str,
 ) -> Result<EliminarGradoResultado, AppError> {
-    let docentes_relacionados = db
-        .collection::<Document>("docentes")
+    let investigadores_relacionados = db
+        .collection::<Document>("investigadores")
         .count_documents(doc! { "id_grado": id_grado })
         .await?;
 
-    if docentes_relacionados > 0 {
+    if investigadores_relacionados > 0 {
         db.collection::<Document>("grados")
             .update_one(
                 doc! { "id_grado": id_grado },
@@ -67,8 +67,9 @@ pub async fn delete_grado(
             .await?;
         return Ok(EliminarGradoResultado {
             accion: "desactivado".to_string(),
-            mensaje: "El grado está relacionado con docentes. Se desactivó en lugar de eliminarse."
-                .to_string(),
+            mensaje:
+                "El grado está relacionado con investigadores. Se desactivó en lugar de eliminarse."
+                    .to_string(),
         });
     }
 

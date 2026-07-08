@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import prettierConfig from "eslint-config-prettier";
 
 export default tseslint.config(
-  { ignores: ["dist", "src-tauri/target", "scripts"] },
+  { ignores: ["dist", "src-tauri/target"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.strictTypeChecked],
     files: ["src/**/*.{ts,tsx}"],

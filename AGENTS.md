@@ -2,7 +2,7 @@
 
 ## Identidad del Proyecto
 
-Sistema de escritorio para gestión de investigación universitaria (docentes, proyectos, grados
+Sistema de escritorio para gestión de investigación universitaria (investigadores, proyectos, grados
 académicos, grupos de investigación, reportes). Construido con Tauri v2 + React + Rust.
 
 - **Nombre**: PJVPI (VPIN/UNF)
@@ -40,7 +40,7 @@ pjvpin/
 │   ├── features/                 # Módulos de dominio (vertical slicing)
 │   │   ├── auth/                 #   Login / primer arranque
 │   │   ├── dashboard/            #   KPIs y gráficos
-│   │   ├── docentes/             #   CRUD docentes + RENIEC/RENACYT/Pure
+│   │   ├── investigadores/       #   CRUD investigadores + RENIEC/RENACYT/Pure
 │   │   ├── proyectos/            #   CRUD proyectos + participantes + recursos
 │   │   ├── grupos/               #   Grupos de investigación
 │   │   ├── reportes/             #   Exportación Excel/PDF
@@ -55,7 +55,7 @@ pjvpin/
 │   │   ├── hooks/                #   useStableFetch, useRefreshToast
 │   │   └── utils/                #   renacyt, saveDesktopFile
 │   ├── services/                 # Capa de API (Tauri IPC wrappers)
-│   │   └── tauri/                #   client, error, types, auth, docentes, proyectos, ...
+│   │   └── tauri/                #   client, error, types, auth, investigadores, proyectos, ...
 │   └── hooks/                    # Barrel re-exports → features/*/hooks + shared/hooks
 │
 ├── src-tauri/                    # Backend Rust
@@ -73,7 +73,7 @@ pjvpin/
 │       │   ├── logging.rs        #   Structured logging via tracing
 │       │   └── external/         #   Clientes HTTP a servicios externos
 │       ├── catalogos/            # Feature: Catálogos parametrizables (tipos, estados, monedas)
-│       ├── docentes/             # Feature: Docentes
+│       ├── investigadores/             # Feature: Docentes
 │       ├── proyectos/            # Feature: Proyectos + Participantes
 │       ├── recursos/             # Feature: Patentes/Productos/Equipamientos/Financiamientos (repo via macros)
 │       ├── reportes/             # Feature: Estadísticas + Exportación
@@ -174,9 +174,9 @@ cargo clippy             # Linter Rust
 |-----|----------|
 | **superuser** | Todo (incluye gestión de usuarios, grados y catálogos). Rol único creado por el asistente de configuración. No se puede crear vía `crear_usuario`, no se puede degradar, no se puede desactivar/eliminar. |
 | **admin** | Todo (incluye gestión de usuarios y grados) |
-| **operador** | CRUD docentes, proyectos, grupos, recursos + reportes export |
-| **consulta** | Solo lectura: dashboard, docentes, proyectos, reportes, grupos |
-| **responsable_proyecto** | Solo lectura: dashboard, docentes, proyectos, reportes, grupos |
+| **operador** | CRUD investigadores, proyectos, grupos, recursos + reportes export |
+| **consulta** | Solo lectura: dashboard, investigadores, proyectos, reportes, grupos |
+| **responsable_proyecto** | Solo lectura: dashboard, investigadores, proyectos, reportes, grupos |
 
 ### Invariantes del rol `superuser`
 
@@ -194,7 +194,7 @@ Estas invariantes se aplican en `src-tauri/src/usuarios/validations.rs`
 ## Identidad y Persona
 
 Cada `Usuario` se vincula a una `Persona` (modelo canónico de identidad, ya
-usado por `docentes`). `Persona` almacena `dni`, `nombres`, `apellido_paterno`,
+usado por `investigadores`). `Persona` almacena `dni`, `nombres`, `apellido_paterno`,
 `apellido_materno` y `nombre_completo` (compuesto). El `Usuario` referencia a la
 `Persona` por `persona_id` y desnormaliza `dni` y `nombre_completo` para display
 eficiente (el repositorio repuebla desde `Persona` en cada lectura).
@@ -215,14 +215,14 @@ eficiente (el repositorio repuebla desde `Persona` en cada lectura).
   (sin sesión, con token del paso 2).
 - `consultar_dni_para_usuario(numero)` — RENIEC en contexto de gestión
   (requiere `UsuariosManage`).
-- `consultar_dni_reniec(numero)` — RENIEC en contexto de docentes
+- `consultar_dni_reniec(numero)` — RENIEC en contexto de investigadores
   (requiere `DocentesView`).
 
 ### Componente compartido
 
 `src/shared/forms/DniField.tsx` y `src/shared/forms/useDniValidation.ts`
 proveen el patrón DNI + validar + auto-completar, reutilizado por el wizard y
-la tab Usuarios. El flujo de docentes conserva su `DniValidationSection` legacy
+la tab Usuarios. El flujo de investigadores conserva su `DniValidationSection` legacy
 por estabilidad.
 
 ### Edición de identidad
@@ -288,7 +288,7 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 - `vercel-composition-patterns`: Patrones de composición React
 
 ### Testing (Pendiente)
-- Rust: `cargo test` (6 tests: 2 config_validator + 4 docentes)
+- Rust: `cargo test` (6 tests: 2 config_validator + 4 investigadores)
 - Frontend: Vitest + Testing Library (15 tests: permissions + error handling)
 - E2E: Sin tests (Playwright recomendado con Tauri)
 
@@ -306,7 +306,7 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 | ✅ Resuelto | Tests: 6 Rust + 15 frontend (Vitest) |
 | ✅ Resuelto | Structured logging con tracing crate |
 | ✅ Resuelto | Sin transacciones MongoDB para operaciones multi-documento |
-| ✅ Resuelto | Sin paginación en queries de lista (tipo PaginatedResult creado, integrado en docentes) |
+| ✅ Resuelto | Sin paginación en queries de lista (tipo PaginatedResult creado, integrado en investigadores) |
 | ✅ Resuelto | `pure_cmd.rs` bypassea capa de servicios → pure_service.rs creado |
 | ✅ Resuelto | `chrono` centralizado en `time.rs` y `renacyt_client.rs` |
 | ✅ Resuelto | `access_control.rs` dividido en `rbac.rs` + handlers + auditoría genérica en 11 operaciones |
@@ -315,5 +315,5 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 | ✅ Resuelto | `save_wizard_config` escribía `.json.enc` (cifrado dead code) → escribe `pjvpin.config.json` plaintext |
 | ✅ Resuelto | URLs hardcoded duplicadas → centralizadas en `src-tauri/src/shared/defaults.rs` y `src/shared/config/defaults.ts` |
 | 🟡 Medio | Cifrado de config en disco: eliminar `encryption.rs` (hecho), re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) |
-| 🟡 Bajo | Auditoría pendiente en recursos (12 operaciones) y update/reactivate de docentes/grados/proyectos |
+| 🟡 Bajo | Auditoría pendiente en recursos (12 operaciones) y update/reactivate de investigadores/grados/proyectos |
 | 🟡 Medio | Dropdowns de recursos aún usan placeholders; integrar con catálogos (FormSelect dinámico) |

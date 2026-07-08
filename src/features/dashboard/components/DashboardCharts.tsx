@@ -23,7 +23,7 @@ import { SkeletonChart } from "@/shared/ui/Skeleton";
 
 interface DashboardChartsProps {
   estadisticas: InvestigadorProyectosCount[];
-  totalDocentes: number;
+  totalInvestigadores: number;
   totalProyectos: number;
   trend: ProyectosTrendItem[];
   renacyt: RenacytDistribucionItem[];
@@ -31,7 +31,7 @@ interface DashboardChartsProps {
 
 export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   estadisticas,
-  totalDocentes,
+  totalInvestigadores,
   totalProyectos,
   trend,
   renacyt,
@@ -59,21 +59,21 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   }, []);
 
   const totalAsignaciones = useMemo(
-    () => estadisticas.reduce((acc, docente) => acc + docente.cantidad, 0),
+    () => estadisticas.reduce((acc, investigador) => acc + investigador.cantidad, 0),
     [estadisticas],
   );
   const hasProjectAssignments = totalAsignaciones > 0;
-  const docentesConProyectos = useMemo(
-    () => estadisticas.filter((docente) => docente.cantidad > 0).length,
+  const investigadoresConProyectos = useMemo(
+    () => estadisticas.filter((investigador) => investigador.cantidad > 0).length,
     [estadisticas],
   );
-  const docentesSinProyectos = Math.max(totalDocentes - docentesConProyectos, 0);
+  const investigadoresSinProyectos = Math.max(totalInvestigadores - investigadoresConProyectos, 0);
   const promedioProyectos =
-    totalDocentes > 0 ? (totalProyectos / totalDocentes).toFixed(2) : "0.00";
-  const topDocentes = useMemo(
+    totalInvestigadores > 0 ? (totalProyectos / totalInvestigadores).toFixed(2) : "0.00";
+  const topInvestigadores = useMemo(
     () =>
       [...estadisticas]
-        .filter((docente) => docente.cantidad > 0)
+        .filter((investigador) => investigador.cantidad > 0)
         .sort((a, b) => b.cantidad - a.cantidad)
         .slice(0, 8),
     [estadisticas],
@@ -90,23 +90,23 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   const distribucionConDatos = distribucion.filter((item) => item.cantidad > 0);
   const pieData = useMemo(
     () => [
-      { name: "Con proyectos", value: docentesConProyectos },
-      { name: "Sin proyectos", value: docentesSinProyectos },
+      { name: "Con proyectos", value: investigadoresConProyectos },
+      { name: "Sin proyectos", value: investigadoresSinProyectos },
     ],
-    [docentesConProyectos, docentesSinProyectos],
+    [investigadoresConProyectos, investigadoresSinProyectos],
   );
   const pieColors = ["#10b981", "#f59e0b"];
   const isCompact = viewportWidth <= 768;
-  const allDocentesTickInterval = isCompact
+  const allInvestigadoresTickInterval = isCompact
     ? Math.max(Math.ceil(estadisticas.length / 6) - 1, 0)
     : 0;
   const [topChartRef, topChart] = useMeasuredChart(320);
   const [distributionChartRef, distributionChart] = useMeasuredChart(280);
   const [pieChartRef, pieChart] = useMeasuredChart(280);
-  const [allDocentesChartRef, allDocentesChart] = useMeasuredChart(300);
+  const [allInvestigadoresChartRef, allInvestigadoresChart] = useMeasuredChart(300);
   const pieHasVisibleData = pieData.some((item) => item.value > 0);
-  const showTopRanking = topDocentes.length > 0 && hasProjectAssignments;
-  const showAllDocentes = estadisticas.length > 0 && hasProjectAssignments;
+  const showTopRanking = topInvestigadores.length > 0 && hasProjectAssignments;
+  const showAllInvestigadores = estadisticas.length > 0 && hasProjectAssignments;
   const chartMargin = useMemo(
     () => ({
       top: 8,
@@ -133,7 +133,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 <BarChart
                   width={topChart.width}
                   height={topChart.height}
-                  data={topDocentes}
+                  data={topInvestigadores}
                   margin={chartMargin}
                 >
                   <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
@@ -169,7 +169,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
         <div className="dashboard-side-panel">
           <div className="dashboard-insight-card">
             <span className="dashboard-insight-label">Investigadores con proyectos</span>
-            <strong>{docentesConProyectos}</strong>
+            <strong>{investigadoresConProyectos}</strong>
             <p>Participan actualmente en al menos un proyecto.</p>
           </div>
           <div className="dashboard-insight-card">
@@ -264,19 +264,19 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
       <div className="chart-container content-shell dashboard-wide-chart">
         <h2>Todos los investigadores: proyectos asignados</h2>
-        <div ref={allDocentesChartRef} className="dashboard-chart-stage dashboard-chart-stage-lg">
-          {showAllDocentes ? (
-            allDocentesChart.ready ? (
+        <div ref={allInvestigadoresChartRef} className="dashboard-chart-stage dashboard-chart-stage-lg">
+          {showAllInvestigadores ? (
+            allInvestigadoresChart.ready ? (
               <BarChart
-                width={allDocentesChart.width}
-                height={allDocentesChart.height}
+                width={allInvestigadoresChart.width}
+                height={allInvestigadoresChart.height}
                 data={estadisticas}
                 margin={chartMargin}
               >
                 <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="nombre"
-                  interval={allDocentesTickInterval}
+                  interval={allInvestigadoresTickInterval}
                   angle={isCompact ? -20 : 0}
                   textAnchor={isCompact ? "end" : "middle"}
                   height={isCompact ? 62 : 40}

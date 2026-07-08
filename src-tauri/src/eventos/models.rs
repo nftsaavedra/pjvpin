@@ -9,7 +9,7 @@ fn default_activo() -> i64 {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ParticipanteEvento {
-    pub docente_id: String,
+    pub investigador_id: String,
     pub rol: String,
 }
 

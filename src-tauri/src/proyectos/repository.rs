@@ -1,4 +1,4 @@
-use crate::investigadores::models::Investigador as Docente;
+use crate::investigadores::models::Investigador;
 use crate::proyectos::models::ParticipacionRecord;
 use crate::proyectos::models::{
     CreateProyectoConParticipantesRequest, CreateProyectoRequest, EliminarProyectoResultado,
@@ -11,14 +11,14 @@ use mongodb::{bson::doc, Database};
 
 pub async fn es_responsable_del_proyecto(
     db: &Database,
-    docente_id: &str,
+    investigador_id: &str,
     id_proyecto: &str,
 ) -> Result<bool, AppError> {
     let count = db
         .collection::<ParticipacionRecord>("participaciones")
         .count_documents(doc! {
             "id_proyecto": id_proyecto,
-            "id_docente": docente_id,
+            "id_investigador": investigador_id,
             "es_responsable": true,
         })
         .await?;
@@ -27,11 +27,11 @@ pub async fn es_responsable_del_proyecto(
 
 pub async fn get_ids_proyectos_como_responsable(
     db: &Database,
-    docente_id: &str,
+    investigador_id: &str,
 ) -> Result<Vec<String>, AppError> {
     let participaciones = db
         .collection::<ParticipacionRecord>("participaciones")
-        .find(doc! { "id_docente": docente_id, "es_responsable": true })
+        .find(doc! { "id_investigador": investigador_id, "es_responsable": true })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
@@ -47,8 +47,8 @@ pub async fn get_all_proyectos_paginated(
     limit: u32,
     responsable_id: Option<&str>,
 ) -> Result<crate::shared::pagination::PaginatedResult<Proyecto>, AppError> {
-    let filter = if let Some(docente_id) = responsable_id {
-        let proyecto_ids = get_ids_proyectos_como_responsable(db, docente_id).await?;
+    let filter = if let Some(investigador_id) = responsable_id {
+        let proyecto_ids = get_ids_proyectos_como_responsable(db, investigador_id).await?;
         if proyecto_ids.is_empty() {
             return Ok(crate::shared::pagination::PaginatedResult {
                 items: vec![],
@@ -92,17 +92,20 @@ pub async fn get_all_proyectos_paginated(
     })
 }
 
-async fn validate_docentes_activos(db: &Database, docentes_ids: &[String]) -> Result<(), AppError> {
-    let docentes_activos = db
-        .collection::<Docente>("docentes")
-        .find(doc! { "id_docente": { "$in": docentes_ids }, "activo": 1i64 })
+async fn validate_investigadores_activos(
+    db: &Database,
+    investigadores_ids: &[String],
+) -> Result<(), AppError> {
+    let investigadores_activos = db
+        .collection::<Investigador>("investigadores")
+        .find(doc! { "id_investigador": { "$in": investigadores_ids }, "activo": 1i64 })
         .await?
         .try_collect::<Vec<_>>()
         .await?;
 
-    if docentes_activos.len() != docentes_ids.len() {
+    if investigadores_activos.len() != investigadores_ids.len() {
         return Err(AppError::InternalError(
-            "Uno o más docentes seleccionados no existen o están inactivos.".to_string(),
+            "Uno o más investigadores seleccionados no existen o están inactivos.".to_string(),
         ));
     }
 
@@ -114,7 +117,7 @@ pub async fn create_proyecto_con_participantes(
     request: CreateProyectoConParticipantesRequest,
 ) -> Result<Proyecto, AppError> {
     let prepared = service::prepare_create_input(request)?;
-    validate_docentes_activos(db, &prepared.docentes_ids).await?;
+    validate_investigadores_activos(db, &prepared.investigadores_ids).await?;
 
     let mut session = db.client().start_session().await?;
     session.start_transaction().await?;
@@ -129,14 +132,14 @@ pub async fn create_proyecto_con_participantes(
             .await?;
 
         let participaciones_collection = db.collection::<ParticipacionRecord>("participaciones");
-        for docente_id in prepared.docentes_ids {
+        for investigador_id in prepared.investigadores_ids {
             participaciones_collection
                 .insert_one(ParticipacionRecord {
-                    id: format!("{}:{}", proyecto.id_proyecto, docente_id),
+                    id: format!("{}:{}", proyecto.id_proyecto, investigador_id),
                     id_proyecto: proyecto.id_proyecto.clone(),
-                    es_responsable: prepared.docente_responsable_id.as_deref()
-                        == Some(docente_id.as_str()),
-                    id_docente: docente_id,
+                    es_responsable: prepared.investigador_responsable_id.as_deref()
+                        == Some(investigador_id.as_str()),
+                    id_investigador: investigador_id,
                 })
                 .session(&mut session)
                 .await?;
@@ -162,7 +165,7 @@ pub async fn update_proyecto_con_participantes(
     request: UpdateProyectoConParticipantesRequest,
 ) -> Result<Proyecto, AppError> {
     let prepared = service::prepare_update_input(request)?;
-    validate_docentes_activos(db, &prepared.docentes_ids).await?;
+    validate_investigadores_activos(db, &prepared.investigadores_ids).await?;
 
     let proyecto_exists = db
         .collection::<Proyecto>("proyectos")
@@ -196,14 +199,14 @@ pub async fn update_proyecto_con_participantes(
             .await?;
 
         let participaciones_collection = db.collection::<ParticipacionRecord>("participaciones");
-        for docente_id in prepared.docentes_ids {
+        for investigador_id in prepared.investigadores_ids {
             participaciones_collection
                 .insert_one(ParticipacionRecord {
-                    id: format!("{}:{}", id_proyecto, docente_id),
+                    id: format!("{}:{}", id_proyecto, investigador_id),
                     id_proyecto: id_proyecto.to_string(),
-                    es_responsable: prepared.docente_responsable_id.as_deref()
-                        == Some(docente_id.as_str()),
-                    id_docente: docente_id,
+                    es_responsable: prepared.investigador_responsable_id.as_deref()
+                        == Some(investigador_id.as_str()),
+                    id_investigador: investigador_id,
                 })
                 .session(&mut session)
                 .await?;
@@ -231,9 +234,9 @@ pub async fn update_proyecto_con_participantes(
 pub async fn eliminar_relacion_proyecto_investigador(
     db: &Database,
     id_proyecto: &str,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<(), AppError> {
-    let relation_id = format!("{}:{}", id_proyecto, id_docente);
+    let relation_id = format!("{}:{}", id_proyecto, id_investigador);
     db.collection::<mongodb::bson::Document>("participaciones")
         .delete_one(doc! { "_id": relation_id })
         .await?;
@@ -254,14 +257,14 @@ pub async fn eliminar_proyecto(
     db: &Database,
     id_proyecto: &str,
 ) -> Result<EliminarProyectoResultado, AppError> {
-    let docentes_relacionados = db
+    let investigadores_relacionados = db
         .collection::<mongodb::bson::Document>("participaciones")
         .count_documents(doc! { "id_proyecto": id_proyecto })
         .await?;
 
-    if docentes_relacionados > 0 {
+    if investigadores_relacionados > 0 {
         return Err(AppError::InternalError(
-            "No se puede eliminar el proyecto porque aún tiene docentes relacionados. Elimine primero esas relaciones.".to_string(),
+            "No se puede eliminar el proyecto porque aún tiene investigadores relacionados. Elimine primero esas relaciones.".to_string(),
         ));
     }
 

@@ -2,10 +2,10 @@ import React from "react";
 import { Download } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { SectionHeader, InfoRow, formatBool, formatTimestamp } from "./PdfComponents";
-import type { ReporteDocenteIntegral } from "../api";
+import type { ReporteInvestigadorIntegral } from "../api";
 
-export interface SingleDocenteReportProps {
-  report: ReporteDocenteIntegral;
+export interface SingleInvestigadorReportProps {
+  report: ReporteInvestigadorIntegral;
   expandedSections: Record<string, boolean>;
   toggleSection: (key: string) => void;
   sectionKeyPrefix?: string;
@@ -15,7 +15,7 @@ export interface SingleDocenteReportProps {
   onExportPDF?: () => void;
 }
 
-const SingleDocenteReport: React.FC<SingleDocenteReportProps> = ({
+const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
   report,
   expandedSections,
   toggleSection,

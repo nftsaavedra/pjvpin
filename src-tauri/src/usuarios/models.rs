@@ -9,7 +9,7 @@ pub struct Usuario {
     pub rol: String,
     pub activo: i64,
     #[serde(default)]
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
     #[serde(default)]
     pub persona_id: Option<String>,
     #[serde(default)]
@@ -27,7 +27,7 @@ pub struct UsuarioConPassword {
     pub password_hash: String,
     pub activo: i64,
     #[serde(default)]
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
     #[serde(default)]
     pub persona_id: Option<String>,
     #[serde(default)]
@@ -47,7 +47,7 @@ pub struct CreateUsuarioRequest {
     pub rol: String,
     pub password: String,
     #[serde(default)]
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -73,7 +73,7 @@ pub struct UpdateUsuarioRequest {
     pub rol: String,
     pub password: Option<String>,
     #[serde(default)]
-    pub docente_id: Option<String>,
+    pub investigador_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -105,7 +105,7 @@ impl UsuarioConPassword {
             rol: request.rol.trim().to_string(),
             password_hash,
             activo: 1,
-            docente_id: request.docente_id,
+            investigador_id: request.investigador_id,
             persona_id: None,
             dni: Some(request.dni.trim().to_string()),
             updated_at: Some(now),
@@ -119,7 +119,7 @@ impl UsuarioConPassword {
             nombre_completo: self.nombre_completo.clone(),
             rol: self.rol.clone(),
             activo: self.activo,
-            docente_id: self.docente_id.clone(),
+            investigador_id: self.investigador_id.clone(),
             persona_id: self.persona_id.clone(),
             dni: self.dni.clone(),
             updated_at: self.updated_at,

@@ -4,9 +4,9 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
 use crate::catalogos::models::CatalogoItem;
-use crate::investigadores::models::Investigador;
 use crate::grados::models::GradoAcademico;
 use crate::grupos::models::GrupoInvestigacion;
+use crate::investigadores::models::Investigador;
 use crate::personas::models::Persona;
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::shared::error::AppError;
@@ -18,8 +18,8 @@ pub fn resolve_grado_nombre(grados: &HashMap<String, GradoAcademico>, id_grado: 
         .unwrap_or_else(|| "Sin grado".to_string())
 }
 
-pub fn resolve_renacyt_nivel(docente: &Investigador) -> String {
-    docente
+pub fn resolve_renacyt_nivel(investigador: &Investigador) -> String {
+    investigador
         .renacyt_nivel
         .as_ref()
         .filter(|v| !v.trim().is_empty())
@@ -48,16 +48,18 @@ pub async fn load_grados_map(db: &Database) -> Result<HashMap<String, GradoAcade
         .collect())
 }
 
-pub async fn load_docentes_map(db: &Database) -> Result<HashMap<String, Investigador>, AppError> {
-    let docentes = db
-        .collection::<Investigador>("docentes")
+pub async fn load_investigadores_map(
+    db: &Database,
+) -> Result<HashMap<String, Investigador>, AppError> {
+    let investigadores = db
+        .collection::<Investigador>("investigadores")
         .find(doc! {})
         .await?
         .try_collect::<Vec<_>>()
         .await?;
-    Ok(docentes
+    Ok(investigadores
         .into_iter()
-        .map(|docente| (docente.id_docente.clone(), docente))
+        .map(|investigador| (investigador.id_investigador.clone(), investigador))
         .collect())
 }
 

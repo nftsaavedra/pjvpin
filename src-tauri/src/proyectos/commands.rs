@@ -20,9 +20,9 @@ pub async fn crear_proyecto_con_participantes(
 pub async fn buscar_proyectos_por_investigador(
     window: Window,
     state: State<'_, AppState>,
-    id_docente: String,
+    id_investigador: String,
 ) -> Result<Vec<Proyecto>, AppError> {
-    handlers::buscar_proyectos_por_investigador(&state, window.label(), &id_docente).await
+    handlers::buscar_proyectos_por_investigador(&state, window.label(), &id_investigador).await
 }
 
 #[tauri::command]
@@ -58,13 +58,13 @@ pub async fn eliminar_relacion_proyecto_investigador(
     window: Window,
     state: State<'_, AppState>,
     id_proyecto: String,
-    id_docente: String,
+    id_investigador: String,
 ) -> Result<(), AppError> {
     handlers::eliminar_relacion_proyecto_investigador(
         &state,
         window.label(),
         &id_proyecto,
-        &id_docente,
+        &id_investigador,
     )
     .await
 }

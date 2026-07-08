@@ -23,12 +23,12 @@ pub async fn get_by_id(state: &AppState, id: &str) -> Result<PublicacionCientifi
     repository::get_by_id(db, id).await
 }
 
-pub async fn get_by_docente(
+pub async fn get_by_investigador(
     state: &AppState,
-    docente_id: &str,
+    investigador_id: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
     let db = state.mongo_db()?;
-    repository::get_by_docente(db, docente_id).await
+    repository::get_by_investigador(db, investigador_id).await
 }
 
 pub async fn get_by_anio(

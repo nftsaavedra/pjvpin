@@ -33,12 +33,12 @@ pub async fn get_by_id(db: &Database, id: &str) -> Result<EventoAcademico, AppEr
         .ok_or_else(|| AppError::NotFound("Evento no encontrado.".to_string()))
 }
 
-pub async fn get_by_docente(
+pub async fn get_by_investigador(
     db: &Database,
-    docente_id: &str,
+    investigador_id: &str,
 ) -> Result<Vec<EventoAcademico>, AppError> {
     db.collection::<EventoAcademico>("eventos_academicos")
-        .find(doc! { "participantes.docente_id": docente_id, "activo": 1 })
+        .find(doc! { "participantes.investigador_id": investigador_id, "activo": 1 })
         .await?
         .try_collect::<Vec<_>>()
         .await

@@ -5,9 +5,9 @@ export interface InvestigadorProyectosCount {
 
 export interface KpisDashboard {
   total_proyectos: number;
-  total_docentes: number;
-  docentes_con_1_proyecto: number;
-  docentes_multiples_proyectos: number;
+  total_investigadores: number;
+  investigadores_con_1_proyecto: number;
+  investigadores_multiples_proyectos: number;
 }
 
 export interface ProyectosTrendItem {
@@ -18,7 +18,7 @@ export interface ProyectosTrendItem {
 
 export interface RenacytDistribucionItem {
   nivel: string;
-  cantidad_docentes: number;
+  cantidad_investigadores: number;
   con_proyectos: number;
   sin_proyectos: number;
 }
@@ -27,12 +27,12 @@ export interface ExportData {
   proyecto: string;
   grado: string;
   renacyt_nivel: string;
-  docente: string;
+  investigador: string;
   dni: string;
 }
 
-export interface DatosExportDocenteAgrupado {
-  docente: string;
+export interface DatosExportInvestigadorAgrupado {
+  investigador: string;
   dni: string;
   grado: string;
   renacyt_nivel: string;

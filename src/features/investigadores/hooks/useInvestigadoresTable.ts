@@ -51,7 +51,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
   const handleEliminarInvestigador = async () => {
     if (!investigadorToDelete) return;
     try {
-      const resultado = await eliminarInvestigador(investigadorToDelete.id_docente);
+      const resultado = await eliminarInvestigador(investigadorToDelete.id_investigador);
       toast.info(resultado.mensaje);
       setInvestigadorToDelete(null);
       await cargarInvestigadores();
@@ -81,7 +81,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
       }
 
       setSelectedInvestigador((current) =>
-        current?.id_docente === id ? resultado.investigador : current,
+        current?.id_investigador === id ? resultado.investigador : current,
       );
       await cargarInvestigadores();
     } catch (error) {

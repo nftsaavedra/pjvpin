@@ -30,7 +30,7 @@ export type {
   ProyectosTrendItem,
   RenacytDistribucionItem,
   ExportData,
-  DatosExportDocenteAgrupado,
+  DatosExportInvestigadorAgrupado,
 } from "./dashboard.types";
 
 export type {
@@ -49,13 +49,13 @@ export type {
   MiembroProyectoReporte,
   ResumenFinanciero,
   ReporteProyectoIntegral,
-  PerfilDocenteReporte,
+  PerfilInvestigadorReporte,
   ColegaProyecto,
   RecursosProyectoResumen,
-  ProyectoDocenteDetalle,
-  RecursosDocenteResumen,
-  TrazabilidadDocente,
-  ReporteDocenteIntegral,
+  ProyectoInvestigadorDetalle,
+  RecursosInvestigadorResumen,
+  TrazabilidadInvestigador,
+  ReporteInvestigadorIntegral,
 } from "./reporte.types";
 
 export type {

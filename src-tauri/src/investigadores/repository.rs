@@ -13,7 +13,7 @@ use mongodb::{bson::doc, Database};
 
 use crate::shared::data_loader;
 
-const COLLECTION_INVESTIGADORES: &str = "docentes";
+const COLLECTION_INVESTIGADORES: &str = "investigadores";
 
 pub async fn create_investigador(
     db: &Database,
@@ -91,7 +91,7 @@ pub async fn get_all_investigadores_paginated(
     let mut cursor = db
         .collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .find(filter)
-        .sort(doc! { "id_docente": 1 })
+        .sort(doc! { "id_investigador": 1 })
         .skip(skip)
         .limit(limit_i64)
         .await?;
@@ -128,10 +128,10 @@ pub async fn get_investigador_by_dni(
 
 pub async fn get_investigador_by_id(
     db: &Database,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<Investigador, AppError> {
     db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
-        .find_one(doc! { "id_docente": id_docente })
+        .find_one(doc! { "id_investigador": id_investigador })
         .await?
         .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
 }
@@ -142,7 +142,7 @@ pub async fn update_investigador_renacyt(
 ) -> Result<(), AppError> {
     db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
         .replace_one(
-            doc! { "id_docente": &investigador.id_docente },
+            doc! { "id_investigador": &investigador.id_investigador },
             investigador,
         )
         .await?;
@@ -181,7 +181,7 @@ pub async fn get_all_investigadores_con_proyectos(
         if let Some(proyecto) = proyectos.get(&participacion.id_proyecto) {
             if proyecto.activo {
                 proyectos_por_investigador
-                    .entry(participacion.id_docente)
+                    .entry(participacion.id_investigador)
                     .or_default()
                     .push(proyecto.titulo_proyecto.clone());
             }
@@ -192,7 +192,7 @@ pub async fn get_all_investigadores_con_proyectos(
         .into_iter()
         .map(|investigador| {
             let proyectos_investigador = proyectos_por_investigador
-                .remove(&investigador.id_docente)
+                .remove(&investigador.id_investigador)
                 .unwrap_or_default();
             let grado = grados
                 .get(&investigador.id_grado)
@@ -212,9 +212,9 @@ pub async fn get_all_investigadores_con_proyectos(
 
 pub async fn get_investigador_detalle_by_id(
     db: &Database,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<InvestigadorDetalle, AppError> {
-    let investigador = get_investigador_by_id(db, id_docente).await?;
+    let investigador = get_investigador_by_id(db, id_investigador).await?;
     let persona = personas::repository::find_by_id(db, &investigador.persona_id).await?;
     let grados = data_loader::load_grados_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
@@ -222,7 +222,7 @@ pub async fn get_investigador_detalle_by_id(
 
     let proyectos_investigador = participaciones
         .into_iter()
-        .filter(|participacion| participacion.id_docente == investigador.id_docente)
+        .filter(|participacion| participacion.id_investigador == investigador.id_investigador)
         .filter_map(|participacion| proyectos.get(&participacion.id_proyecto))
         .filter(|proyecto| proyecto.activo)
         .map(|proyecto| proyecto.titulo_proyecto.clone())
@@ -243,16 +243,16 @@ pub async fn get_investigador_detalle_by_id(
 
 pub async fn delete_investigador(
     db: &Database,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<EliminarInvestigadorResultado, AppError> {
     let participaciones = db
         .collection::<mongodb::bson::Document>("participaciones")
-        .count_documents(doc! { "id_docente": id_docente })
+        .count_documents(doc! { "id_investigador": id_investigador })
         .await?;
 
     db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
         .update_one(
-            doc! { "id_docente": id_docente },
+            doc! { "id_investigador": id_investigador },
             doc! { "$set": { "activo": 0i64 } },
         )
         .await?;
@@ -262,27 +262,27 @@ pub async fn delete_investigador(
 
 pub async fn reactivar_investigador(
     db: &Database,
-    id_docente: &str,
+    id_investigador: &str,
 ) -> Result<Investigador, AppError> {
     db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
         .update_one(
-            doc! { "id_docente": id_docente },
+            doc! { "id_investigador": id_investigador },
             doc! { "$set": { "activo": 1i64 } },
         )
         .await?;
 
     db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
-        .find_one(doc! { "id_docente": id_docente })
+        .find_one(doc! { "id_investigador": id_investigador })
         .await?
         .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
 }
 
 pub async fn update_investigador(
     db: &Database,
-    id_docente: &str,
+    id_investigador: &str,
     request: &crate::investigadores::models::UpdateInvestigadorRequest,
 ) -> Result<Investigador, AppError> {
-    let investigador = get_investigador_by_id(db, id_docente).await?;
+    let investigador = get_investigador_by_id(db, id_investigador).await?;
 
     if request.nombres.is_some()
         || request.apellido_paterno.is_some()
@@ -327,12 +327,15 @@ pub async fn update_investigador(
         || request.perfil.is_some();
     if has_changes {
         db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
-            .update_one(doc! { "id_docente": id_docente }, doc! { "$set": set })
+            .update_one(
+                doc! { "id_investigador": id_investigador },
+                doc! { "$set": set },
+            )
             .await?;
     }
 
     db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
-        .find_one(doc! { "id_docente": id_docente })
+        .find_one(doc! { "id_investigador": id_investigador })
         .await?
         .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
 }

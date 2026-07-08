@@ -265,7 +265,7 @@ pub async fn bootstrap_admin(
             apellido_materno: request.apellido_materno,
             rol,
             password: request.password,
-            docente_id: None,
+            investigador_id: None,
         },
         password_hash,
     );
@@ -481,8 +481,8 @@ pub async fn update_usuario(
         updates.insert("password_hash", hash_password(password)?);
     }
 
-    if let Some(ref docente) = request.docente_id {
-        updates.insert("docente_id", docente.trim());
+    if let Some(ref investigador) = request.investigador_id {
+        updates.insert("investigador_id", investigador.trim());
     }
 
     db.collection::<Document>("usuarios")

@@ -1,5 +1,5 @@
 export interface Investigador {
-  id_docente: string;
+  id_investigador: string;
   dni: string;
   id_grado: string;
   nombres_apellidos: string;
@@ -24,7 +24,7 @@ export interface Investigador {
 }
 
 export interface InvestigadorDetalle {
-  id_docente: string;
+  id_investigador: string;
   dni: string;
   nombres_apellidos: string;
   nombres?: string | null;

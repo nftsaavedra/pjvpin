@@ -2,7 +2,7 @@ import React from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { AppIcon } from "@/shared/ui/AppIcon";
-import type { ReporteProyectoIntegral, ReporteDocenteIntegral } from "../api";
+import type { ReporteProyectoIntegral, ReporteInvestigadorIntegral } from "../api";
 
 export const formatTimestamp = (ts?: number | null) =>
   ts ? new Date(ts).toLocaleDateString("es-PE", { dateStyle: "medium" }) : "-";
@@ -178,7 +178,7 @@ export const ProyectoIntegralPdf = ({ report }: { report: ReporteProyectoIntegra
         </View>
 
         <View>
-          <Text style={pdfDefaults.sectionTitle}>Equipo ({report.total_docentes})</Text>
+          <Text style={pdfDefaults.sectionTitle}>Equipo ({report.total_investigadores})</Text>
           <PdfTable
             columns={[
               "Investigador",
@@ -276,7 +276,7 @@ export const ProyectoIntegralPdf = ({ report }: { report: ReporteProyectoIntegra
   );
 };
 
-export const InvestigadorIntegralPdf = ({ report }: { report: ReporteDocenteIntegral }) => {
+export const InvestigadorIntegralPdf = ({ report }: { report: ReporteInvestigadorIntegral }) => {
   const { perfil, proyectos, recursos, publicaciones, trazabilidad } = report;
 
   return (

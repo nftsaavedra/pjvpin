@@ -49,20 +49,23 @@ pub async fn build_reporte_proyecto_integral(
 
     let mut equipo: Vec<MiembroProyectoReporte> = Vec::new();
     for part in &participaciones {
-        let docente = db
-            .collection::<Investigador>("docentes")
-            .find_one(doc! { "id_docente": &part.id_docente })
+        let investigador = db
+            .collection::<Investigador>("investigadores")
+            .find_one(doc! { "id_investigador": &part.id_investigador })
             .await?
             .ok_or_else(|| {
-                AppError::NotFound(format!("Docente {} no encontrado.", part.id_docente))
+                AppError::NotFound(format!(
+                    "Investigador {} no encontrado.",
+                    part.id_investigador
+                ))
             })?;
 
         let grado_nombre = grados
-            .get(&docente.id_grado)
+            .get(&investigador.id_grado)
             .map(|g| g.nombre.clone())
             .unwrap_or_default();
 
-        let (grupo_nombre, grupo_id) = docente
+        let (grupo_nombre, grupo_id) = investigador
             .grupo_investigacion_id
             .as_ref()
             .and_then(|gid| grupos.get(gid))
@@ -71,12 +74,12 @@ pub async fn build_reporte_proyecto_integral(
 
         let publicaciones_count = db
             .collection::<Publicacion>("publicaciones")
-            .count_documents(doc! { "persona_id": &docente.persona_id })
+            .count_documents(doc! { "persona_id": &investigador.persona_id })
             .await? as i64;
 
-        let persona_doc = personas.get(&docente.persona_id);
+        let persona_doc = personas.get(&investigador.persona_id);
         equipo.push(MiembroProyectoReporte {
-            id_docente: docente.id_docente.clone(),
+            id_investigador: investigador.id_investigador.clone(),
             dni: persona_doc.map(|p| p.dni.clone()).unwrap_or_default(),
             nombres_apellidos: persona_doc
                 .map(|p| p.nombre_completo.clone())
@@ -85,21 +88,21 @@ pub async fn build_reporte_proyecto_integral(
             apellido_paterno: persona_doc.and_then(|p| p.apellido_paterno.clone()),
             apellido_materno: persona_doc.and_then(|p| p.apellido_materno.clone()),
             grado_nombre,
-            grado_id: docente.id_grado.clone(),
+            grado_id: investigador.id_grado.clone(),
             es_responsable: part.es_responsable,
-            renacyt_codigo_registro: docente.renacyt_codigo_registro.clone(),
-            renacyt_nivel: docente.renacyt_nivel.clone(),
-            renacyt_grupo: docente.renacyt_grupo.clone(),
-            renacyt_condicion: docente.renacyt_condicion.clone(),
-            renacyt_orcid: docente.renacyt_orcid.clone(),
-            renacyt_scopus_author_id: docente.renacyt_scopus_author_id.clone(),
+            renacyt_codigo_registro: investigador.renacyt_codigo_registro.clone(),
+            renacyt_nivel: investigador.renacyt_nivel.clone(),
+            renacyt_grupo: investigador.renacyt_grupo.clone(),
+            renacyt_condicion: investigador.renacyt_condicion.clone(),
+            renacyt_orcid: investigador.renacyt_orcid.clone(),
+            renacyt_scopus_author_id: investigador.renacyt_scopus_author_id.clone(),
             grupo_nombre,
             grupo_id,
             publicaciones_count,
         });
     }
 
-    let total_docentes = equipo.len();
+    let total_investigadores = equipo.len();
 
     let patentes_raw = db
         .collection::<Patente>("patentes")
@@ -158,7 +161,7 @@ pub async fn build_reporte_proyecto_integral(
     Ok(ReporteProyectoIntegral {
         cabecera,
         equipo,
-        total_docentes,
+        total_investigadores,
         patentes,
         total_patentes,
         productos,

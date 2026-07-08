@@ -5,7 +5,7 @@ use crate::shared::time;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProyectoParticipanteResumen {
-    pub id_docente: String,
+    pub id_investigador: String,
     pub nombre: String,
     pub grado: String,
     pub renacyt_nivel: String,
@@ -77,24 +77,24 @@ pub struct CreateProyectoRequest {
 #[derive(Debug, Deserialize)]
 pub struct CreateProyectoConParticipantesRequest {
     pub titulo_proyecto: String,
-    pub docentes_ids: Vec<String>,
-    pub docente_responsable_id: Option<String>,
+    pub investigadores_ids: Vec<String>,
+    pub investigador_responsable_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct UpdateProyectoConParticipantesRequest {
     pub titulo_proyecto: String,
-    pub docentes_ids: Vec<String>,
-    pub docente_responsable_id: Option<String>,
+    pub investigadores_ids: Vec<String>,
+    pub investigador_responsable_id: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct ProyectoDetalle {
     pub id_proyecto: String,
     pub titulo_proyecto: String,
-    pub cantidad_docentes: i64,
-    pub docente_responsable: Option<String>,
-    pub docentes: Option<String>,
+    pub cantidad_investigadores: i64,
+    pub investigador_responsable: Option<String>,
+    pub investigadores: Option<String>,
     pub participantes_json: Option<String>,
     pub activo: bool,
 }
@@ -105,10 +105,10 @@ pub struct EliminarProyectoResultado {
     pub mensaje: String,
 }
 
-// NEW: Enhanced export data grouped by docente
+// NEW: Enhanced export data grouped by investigador
 #[derive(Debug, Serialize)]
 pub struct ExportDataConProjectos {
-    pub docente: String,
+    pub investigador: String,
     pub dni: String,
     pub grado: String,
     pub renacyt_nivel: String,
@@ -134,7 +134,7 @@ impl Proyecto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DocenteProyectosCount {
+pub struct InvestigadorProyectosCount {
     pub nombre: String,
     pub cantidad: i64,
 }
@@ -149,7 +149,7 @@ pub struct ProyectosTrendItem {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RenacytDistribucionItem {
     pub nivel: String,
-    pub cantidad_docentes: i64,
+    pub cantidad_investigadores: i64,
     pub con_proyectos: i64,
     pub sin_proyectos: i64,
 }
@@ -158,9 +158,9 @@ pub struct RenacytDistribucionItem {
 pub struct KpisDashboard {
     // Counts only active entities.
     pub total_proyectos: i64,
-    pub total_docentes: i64,
-    pub docentes_con_1_proyecto: i64,
-    pub docentes_multiples_proyectos: i64,
+    pub total_investigadores: i64,
+    pub investigadores_con_1_proyecto: i64,
+    pub investigadores_multiples_proyectos: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -168,7 +168,7 @@ pub struct ExportData {
     pub proyecto: String,
     pub grado: String,
     pub renacyt_nivel: String,
-    pub docente: String,
+    pub investigador: String,
     pub dni: String,
 }
 
@@ -189,7 +189,7 @@ pub struct ExportDataRecurso {
     pub tipo_recurso: String,
     pub titulo_o_nombre: String,
     pub proyecto: Option<String>,
-    pub docente: Option<String>,
+    pub investigador: Option<String>,
     pub tipo: Option<String>,
     pub estado: Option<String>,
     pub moneda: Option<String>,
@@ -197,7 +197,7 @@ pub struct ExportDataRecurso {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ExportDataDocentePerfil {
+pub struct ExportDataInvestigadorPerfil {
     pub dni: String,
     pub nombres_apellidos: String,
     pub grado: String,
@@ -217,7 +217,7 @@ pub struct ExportDataProyectoArea {
     pub area: String,
     pub cantidad_proyectos: i64,
     pub proyectos: Option<String>,
-    pub cantidad_docentes: i64,
+    pub cantidad_investigadores: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -225,7 +225,7 @@ pub struct ParticipacionRecord {
     #[serde(rename = "_id")]
     pub id: String,
     pub id_proyecto: String,
-    pub id_docente: String,
+    pub id_investigador: String,
     #[serde(default)]
     pub es_responsable: bool,
 }

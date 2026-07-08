@@ -38,15 +38,15 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
 
-    db.collection::<Document>("docentes")
+    db.collection::<Document>("investigadores")
         .create_index(
             IndexModel::builder()
-                .keys(doc! { "id_docente": 1 })
+                .keys(doc! { "id_investigador": 1 })
                 .options(Some(IndexOptions::builder().unique(true).build()))
                 .build(),
         )
         .await?;
-    db.collection::<Document>("docentes")
+    db.collection::<Document>("investigadores")
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "dni": 1 })
@@ -54,14 +54,14 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .build(),
         )
         .await?;
-    db.collection::<Document>("docentes")
+    db.collection::<Document>("investigadores")
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "renacyt_id_investigador": 1 })
                 .build(),
         )
         .await?;
-    db.collection::<Document>("docentes")
+    db.collection::<Document>("investigadores")
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "renacyt_codigo_registro": 1 })
@@ -86,7 +86,11 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     db.collection::<Document>("participaciones")
-        .create_index(IndexModel::builder().keys(doc! { "id_docente": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_investigador": 1 })
+                .build(),
+        )
         .await?;
 
     db.collection::<Document>("usuarios")
@@ -116,7 +120,11 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     db.collection::<Document>("publicaciones")
-        .create_index(IndexModel::builder().keys(doc! { "docente_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "investigador_id": 1 })
+                .build(),
+        )
         .await?;
     db.collection::<Document>("publicaciones")
         .create_index(
@@ -135,7 +143,11 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     db.collection::<Document>("patentes")
-        .create_index(IndexModel::builder().keys(doc! { "docente_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "investigador_id": 1 })
+                .build(),
+        )
         .await?;
     db.collection::<Document>("patentes")
         .create_index(
@@ -154,7 +166,11 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     db.collection::<Document>("productos")
-        .create_index(IndexModel::builder().keys(doc! { "docente_id": 1 }).build())
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "investigador_id": 1 })
+                .build(),
+        )
         .await?;
 
     // --- Equipamientos ---
@@ -227,7 +243,7 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     db.collection::<Document>("eventos_academicos")
         .create_index(
             IndexModel::builder()
-                .keys(doc! { "participantes.docente_id": 1 })
+                .keys(doc! { "participantes.investigador_id": 1 })
                 .build(),
         )
         .await?;

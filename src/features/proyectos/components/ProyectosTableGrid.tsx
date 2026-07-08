@@ -80,8 +80,8 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                     <span className="button-with-icon">
                       <AppIcon icon={Users} size={15} />
                       <span>
-                        {proyecto.cantidad_docentes} investigador
-                        {proyecto.cantidad_docentes === 1 ? "" : "es"}
+                        {proyecto.cantidad_investigadores} investigador
+                        {proyecto.cantidad_investigadores === 1 ? "" : "es"}
                       </span>
                     </span>
                   </button>

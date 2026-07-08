@@ -1,7 +1,7 @@
 use crate::proyectos::service as proyecto_service;
-use crate::reportes::entity_reports::{ReporteDocenteIntegral, ReporteProyectoIntegral};
+use crate::reportes::entity_reports::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
 use crate::reportes::models::{
-    ExportData, ExportDataConProjectos, ExportDataDocentePerfil, ExportDataGrupo,
+    ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
     ExportDataProyectoArea, ExportDataRecurso, ProyectosTrendItem, RenacytDistribucionItem,
 };
 use crate::shared::error::AppError;
@@ -11,9 +11,9 @@ use crate::shared::state::AppState;
 pub async fn get_estadisticas_proyectos_x_investigador(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<crate::reportes::models::DocenteProyectosCount>, AppError> {
+) -> Result<Vec<crate::reportes::models::InvestigadorProyectosCount>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::DashboardView).await?;
-    proyecto_service::get_estadisticas_x_docente(state).await
+    proyecto_service::get_estadisticas_x_investigador(state).await
 }
 
 pub async fn get_kpis_dashboard(
@@ -129,18 +129,18 @@ pub async fn get_reporte_proyecto_integral(
 pub async fn get_reporte_investigador_integral(
     state: &AppState,
     window_label: &str,
-    id_docente: &str,
-) -> Result<ReporteDocenteIntegral, AppError> {
+    id_investigador: &str,
+) -> Result<ReporteInvestigadorIntegral, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesExport).await?;
-    crate::reportes::entity_service::get_reporte_docente(state, id_docente).await
+    crate::reportes::entity_service::get_reporte_investigador(state, id_investigador).await
 }
 
 pub async fn get_reportes_investigadores_integral(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ReporteDocenteIntegral>, AppError> {
+) -> Result<Vec<ReporteInvestigadorIntegral>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesExport).await?;
-    crate::reportes::entity_service::get_reportes_docentes(state).await
+    crate::reportes::entity_service::get_reportes_investigadores(state).await
 }
 
 pub async fn get_data_exportacion_grupos(
@@ -162,9 +162,9 @@ pub async fn get_data_exportacion_recursos(
 pub async fn get_data_exportacion_investigadores_perfil(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ExportDataDocentePerfil>, AppError> {
+) -> Result<Vec<ExportDataInvestigadorPerfil>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesView).await?;
-    proyecto_service::get_exportacion_docentes_perfil(state).await
+    proyecto_service::get_exportacion_investigadores_perfil(state).await
 }
 
 pub async fn get_data_exportacion_proyectos_area(

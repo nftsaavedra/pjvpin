@@ -3,17 +3,21 @@ import type { EliminarProyectoResultado, Proyecto, ProyectoDetalle } from "./typ
 
 export interface ProyectoParticipantesPayload {
   titulo_proyecto: string;
-  docentes_ids: string[];
-  docente_responsable_id?: string | null;
+  investigadores_ids: string[];
+  investigador_responsable_id?: string | null;
 }
 
 export const crearProyectoConParticipantes = async (
   titulo_proyecto: string,
-  docentes_ids: string[],
-  docente_responsable_id?: string | null,
+  investigadores_ids: string[],
+  investigador_responsable_id?: string | null,
 ): Promise<Proyecto> => {
   return await invoke("crear_proyecto_con_participantes", {
-    request: { titulo_proyecto, docentes_ids, docente_responsable_id },
+    request: {
+      titulo_proyecto,
+      investigadores_ids,
+      investigador_responsable_id,
+    },
   });
 };
 
