@@ -29,7 +29,7 @@ export const getPublicacionById = async (id: string): Promise<PublicacionCientif
 export const getPublicacionesByInvestigador = async (
   investigadorId: string,
 ): Promise<PublicacionCientifica[]> => {
-  return await invoke("get_publicaciones_by_investigador", { docenteId: investigadorId });
+  return await invoke("get_publicaciones_by_investigador", { idInvestigador: investigadorId });
 };
 
 export const getPublicacionesByAnio = async (anio: number): Promise<PublicacionCientifica[]> => {

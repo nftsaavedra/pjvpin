@@ -26,7 +26,7 @@ export const getEventoById = async (id: string): Promise<EventoAcademico> => {
 export const getEventosByInvestigador = async (
   investigadorId: string,
 ): Promise<EventoAcademico[]> => {
-  return await invoke("get_eventos_by_investigador", { docenteId: investigadorId });
+  return await invoke("get_eventos_by_investigador", { idInvestigador: investigadorId });
 };
 
 export const actualizarEvento = async (
