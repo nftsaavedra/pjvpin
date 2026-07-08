@@ -1,7 +1,6 @@
-# PJVPI
+# PJVPIN
 
-> **P**royecto de **V**icerrectorado de **I**nvestigación — **U**niversidad **N**acional de **F**rontera
-> Sistema de escritorio para gestión integral de investigación universitaria construido con Tauri v2, React y Rust.
+> **VPIN** — Sistema de escritorio para gestión integral de investigación universitaria construido con Tauri v2, React y Rust.
 
 PJVPI centraliza el registro y seguimiento de **investigadores** (docentes, tesistas y alumnos egresados), sus **proyectos**, **grupos de investigación**, **publicaciones** y **recursos** asociados. La aplicación consulta automáticamente los servicios de **RENIEC** y **RENACYT** (CONCYTEC) para validar identidad y clasificación, y exporta reportes operativos a Excel y PDF.
 
