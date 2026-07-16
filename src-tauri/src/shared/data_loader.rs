@@ -4,6 +4,7 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
 use crate::catalogos::models::CatalogoItem;
+use crate::catalogos::repository as catalogos_repo;
 use crate::grados::models::GradoAcademico;
 use crate::grados::repository as grados_repo;
 use crate::grupos::models::GrupoInvestigacion;
@@ -100,14 +101,5 @@ pub async fn load_grupos_map(
 pub async fn load_catalogos_map(
     db: &Database,
 ) -> Result<HashMap<(String, String), CatalogoItem>, AppError> {
-    let items = db
-        .collection::<CatalogoItem>("catalogos")
-        .find(doc! { "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
-    Ok(items
-        .into_iter()
-        .map(|c| ((c.tipo.clone(), c.codigo.clone()), c))
-        .collect())
+    catalogos_repo::load_all_map(db).await
 }

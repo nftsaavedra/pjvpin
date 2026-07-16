@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use crate::catalogos::dto::{CatalogoItemDto, CreateCatalogoRequest};
+use crate::shared::error::AppError;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct CatalogoItem {
     pub id_catalogo: String,
     pub tipo: String,
@@ -10,30 +10,24 @@ pub struct CatalogoItem {
     pub descripcion: Option<String>,
     pub orden: Option<i32>,
     pub activo: i64,
-    #[serde(default)]
     pub updated_at: Option<i64>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EliminarCatalogoResultado {
-    pub accion: String,
-    pub mensaje: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct CreateCatalogoRequest {
-    pub tipo: String,
-    pub codigo: String,
-    pub nombre: String,
-    pub descripcion: Option<String>,
-    pub orden: Option<i32>,
-}
-
 impl CatalogoItem {
-    pub fn new(request: CreateCatalogoRequest) -> Self {
+    pub fn new(id_catalogo: String, request: CreateCatalogoRequest) -> Result<Self, AppError> {
+        if id_catalogo.trim().is_empty() {
+            return Err(AppError::InternalError(
+                "El id de catálogo no puede estar vacio.".to_string(),
+            ));
+        }
+        if request.tipo.trim().is_empty() || request.codigo.trim().is_empty() {
+            return Err(AppError::InternalError(
+                "El tipo y código del catálogo no pueden estar vacios.".to_string(),
+            ));
+        }
         let now = crate::shared::time::now_ms();
-        Self {
-            id_catalogo: Uuid::new_v4().to_string(),
+        Ok(Self {
+            id_catalogo,
             tipo: request.tipo,
             codigo: request.codigo,
             nombre: request.nombre,
@@ -41,6 +35,21 @@ impl CatalogoItem {
             orden: request.orden,
             activo: 1,
             updated_at: Some(now),
+        })
+    }
+}
+
+impl From<CatalogoItem> for CatalogoItemDto {
+    fn from(m: CatalogoItem) -> Self {
+        Self {
+            id_catalogo: m.id_catalogo,
+            tipo: m.tipo,
+            codigo: m.codigo,
+            nombre: m.nombre,
+            descripcion: m.descripcion,
+            orden: m.orden,
+            activo: m.activo,
+            updated_at: m.updated_at,
         }
     }
 }

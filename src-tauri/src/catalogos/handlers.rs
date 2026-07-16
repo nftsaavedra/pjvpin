@@ -1,4 +1,5 @@
-use crate::catalogos::models::{CatalogoItem, CreateCatalogoRequest, EliminarCatalogoResultado};
+use crate::catalogos::dto::{CreateCatalogoRequest, EliminarCatalogoResultadoDto};
+use crate::catalogos::models::CatalogoItem;
 use crate::catalogos::service as catalogo_service;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
@@ -63,7 +64,7 @@ pub async fn eliminar_catalogo(
     state: &AppState,
     window_label: &str,
     id: &str,
-) -> Result<EliminarCatalogoResultado, AppError> {
+) -> Result<EliminarCatalogoResultadoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosManage).await?;
     let result = catalogo_service::delete(state, id).await?;

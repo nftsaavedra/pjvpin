@@ -1,4 +1,5 @@
-use crate::catalogos::models::{CatalogoItem, CreateCatalogoRequest, EliminarCatalogoResultado};
+use crate::catalogos::dto::{CreateCatalogoRequest, EliminarCatalogoResultadoDto};
+use crate::catalogos::models::CatalogoItem;
 use crate::catalogos::repository;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
@@ -26,7 +27,7 @@ pub async fn update(
     repository::update_catalogo(state.mongo_db()?, id, request).await
 }
 
-pub async fn delete(state: &AppState, id: &str) -> Result<EliminarCatalogoResultado, AppError> {
+pub async fn delete(state: &AppState, id: &str) -> Result<EliminarCatalogoResultadoDto, AppError> {
     repository::delete_catalogo(state.mongo_db()?, id).await
 }
 
