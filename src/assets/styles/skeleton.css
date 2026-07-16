@@ -20,6 +20,10 @@
   .skeleton-chart-lg { @apply h-[320px]; }
   .skeleton-chart-sm { @apply h-[200px]; }
   .skeleton-chart-card { @apply flex flex-col gap-4; }
+  .skeleton-checkbox-item { @apply flex items-center gap-3 p-2 rounded-lg; }
+  .skeleton-checklist { @apply flex flex-col gap-3 p-4 rounded-xl border border-gray-200; }
+  .skeleton-kpi-card { @apply p-4 rounded-xl border border-gray-200 bg-white; }
+  .skeleton-kpi-grid { @apply grid gap-4; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
   .auth-card-loading { @apply pointer-events-none; }
   .auth-loading-form { @apply flex flex-col gap-3.5; }
 }

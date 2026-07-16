@@ -2,6 +2,7 @@ import React, { useId, useState } from "react";
 import { LogIn } from "lucide-react";
 import { getTauriErrorMessage, loginUsuario, type Usuario } from "./api";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { toast } from "@/services/toast";
 
 interface AuthScreenProps {
@@ -36,61 +37,68 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
   };
 
   return (
-    <div className="auth-shell">
-      <div className="auth-card">
-        <div className="auth-card-header">
-          <h2>Acceso al sistema</h2>
-          <p>Ingrese sus credenciales para utilizar el sistema.</p>
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+        <div className="p-6 pb-4 bg-gradient-to-b from-blue-50 to-white border-b border-gray-200">
+          <div className="flex items-center gap-2 mb-1.5">
+            <h2 className="text-blue-900 m-0">Acceso al sistema</h2>
+            <FieldHelpTooltip
+              label="Informacion de acceso"
+              content="Ingrese sus credenciales para utilizar el sistema."
+            />
+          </div>
         </div>
 
-        <form
-          className="form"
-          onSubmit={(e) => {
-            void handleLogin(e);
-          }}
-        >
-          <div className="form-group">
-            <label htmlFor={usernameId}>Usuario</label>
-            <input
-              id={usernameId}
-              className="form-input"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-              }}
-              placeholder="Ej: admin"
-              autoComplete="username"
-              required
-            />
-          </div>
+        <div className="p-6">
+          <form
+            className="form"
+            onSubmit={(e) => {
+              void handleLogin(e);
+            }}
+          >
+            <div className="form-group">
+              <label htmlFor={usernameId}>Usuario</label>
+              <input
+                id={usernameId}
+                className="form-input"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                }}
+                placeholder="Ej: admin"
+                autoComplete="username"
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor={passwordId}>Contraseña</label>
-            <input
-              id={passwordId}
-              type="password"
-              className="form-input"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-              placeholder="Mínimo 8 caracteres"
-              autoComplete="current-password"
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor={passwordId}>Contraseña</label>
+              <input
+                id={passwordId}
+                type="password"
+                className="form-input"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+                placeholder="Mínimo 8 caracteres"
+                autoComplete="current-password"
+                required
+              />
+            </div>
 
-          <button type="submit" className="btn-primary auth-submit" disabled={isLoading}>
-            {isLoading ? (
-              "Procesando..."
-            ) : (
-              <span className="button-with-icon">
-                <AppIcon icon={LogIn} size={18} />
-                <span>Ingresar</span>
-              </span>
-            )}
-          </button>
-        </form>
+            <button type="submit" className="btn-primary w-full" disabled={isLoading}>
+              {isLoading ? (
+                "Procesando..."
+              ) : (
+                <span className="button-with-icon">
+                  <AppIcon icon={LogIn} size={18} />
+                  <span>Ingresar</span>
+                </span>
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

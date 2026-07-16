@@ -2,8 +2,19 @@
   .related-entities-section { @apply mt-6 pt-5; border-top: 1px solid var(--border-color, #e5e7eb); }
   .related-entities-toggle { @apply inline-flex items-center gap-2 px-0 py-2 text-sm font-semibold bg-transparent border-0 cursor-pointer transition-all duration-200; color: var(--color-primary); }
   .related-entities-toggle:hover { color: var(--primary-dark); }
+  .related-entities-toggle-copy { @apply inline-flex items-center gap-2 min-w-0; }
+  .related-entities-toggle-icon { @apply transition-transform duration-200; }
+  .related-entities-description { @apply text-sm text-gray-500 mb-2; }
   .related-entities-list { @apply flex flex-col gap-3 mt-3; }
   .related-entities-empty { @apply text-sm py-3; color: var(--gray-500, #6b7280); }
   .related-entities-card { @apply flex items-center justify-between gap-4 p-3.5 rounded-xl; border: 1px solid var(--border-color, #e5e7eb); background-color: var(--bg-secondary, #f9fafb); }
+  .related-entity-item { @apply flex flex-col gap-2 p-3.5 rounded-xl; border: 1px solid var(--border-color, #e5e7eb); background-color: var(--card-bg, #ffffff); }
+  .related-entity-actions { @apply flex items-center gap-2 flex-wrap justify-end; }
+  .related-entity-content { @apply flex flex-col gap-1 min-w-0; }
   .related-entities-form { @apply flex flex-col gap-3 mt-4 p-4 rounded-xl; border-color: var(--primary-light); border-width: 1px; border-style: solid; background-color: var(--primary-light); }
+  .related-entity-form { @apply flex flex-col gap-3 mt-3 p-4 rounded-xl; border: 1px dashed var(--primary-light, #dbeafe); background-color: var(--bg-color, #f8fafc); }
+  .related-entity-form-title { @apply text-sm font-bold text-gray-800; }
+  .related-entity-form-actions { @apply flex items-center gap-2 justify-end mt-2; }
+  .related-entities-add { @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold border border-blue-200 cursor-pointer transition-all duration-200; }
+  .related-entities-add:hover { @apply bg-blue-100 border-blue-400; }
 }

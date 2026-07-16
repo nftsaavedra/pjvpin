@@ -44,7 +44,7 @@ export const WizardScreen: React.FC<Props> = ({ onDone }) => {
         </div>
       </header>
 
-      <main className="main-content auth-main">
+      <main className="main-content flex items-center justify-center p-8">
         <div className="mx-auto flex w-full max-w-[640px] flex-col items-center px-4 py-8 pb-12">
           <div className="flex items-center justify-center mb-8 w-full">
             {STEP_META.map((meta, i) => {

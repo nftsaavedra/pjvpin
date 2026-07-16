@@ -563,7 +563,7 @@ Actual values from the CSS (frequencies in parentheses):
 | `3xl` | `16px` | Tab buttons (expanded), settings nav buttons, user avatars, catalogo summary cards |
 | `4xl` | `18px` | Brand mark icon, collapsed tabs, skeleton charts, project diff cards |
 | `5xl` | `20px` | Module hero, aside cards, insight cards, badges, sidebar brand, sidebar user card |
-| `full` | `999px` | Pill shapes: status chips, content module chip, docente chips, category pills, refresh hint |
+| `full` | `999px` | Pill shapes: status chips, content module chip, investigador chips, category pills, refresh hint |
 | `circle` | `50%` | Project number circles |
 
 ### Key Shape Rules
@@ -868,12 +868,12 @@ several components have their own transition overrides:
    - Fix: Replace all with `var(--primary-dark)`.
 
 9. **Hardcoded `#f8fafc` instead of `--bg-color`**: Used in
-   `docentes-selector-empty`, `form-modal-footer`, `catalogo-back-btn:hover`,
+   `investigadores-selector-empty`, `form-modal-footer`, `catalogo-back-btn:hover`,
    various gradient stops.
    - Fix: Replace with `var(--bg-color)`.
 
 10. **Hardcoded `#dbeafe` instead of `--primary-light`**: Used in
-    `docente-chip:hover`, `project-docentes-trigger:hover`,
+    `investigador-chip:hover`, `project-investigadores-trigger:hover`,
     `renacyt-inline-icon-button:hover`, `brand-mark-renacyt`, `settings-nav-icon`.
     - Fix: Replace with `var(--primary-light)`.
 
@@ -973,3 +973,128 @@ several components have their own transition overrides:
 - No inline `style` props are used in shared components (only one occurrence
   in `ReportesTab.tsx` for minor layout tweaks and the `--skeleton-columns`
   custom property on `SkeletonTable`).
+
+---
+
+# Estado Actual (v0.1.0-alpha — refactor CSS → Tailwind + tokens)
+
+> La sección anterior describía el sistema monolítico en `src/App.css`. Esa
+> implementación ha sido refactorizada a **Tailwind v4 + CSS custom properties
+> por capa**. Las reglas siguientes sustituyen las anteriores como fuente de
+> verdad.
+
+## Arquitectura CSS actual
+
+| Capa | Archivo | Responsabilidad |
+|------|---------|----------------|
+| Tokens / themes | `src/assets/styles/tokens.css` | `:root` variables (colores, sombras, radios, espaciado) + `@media (prefers-color-scheme: dark)`. Single source of truth para colores. |
+| Componentes | `src/assets/styles/{buttons,forms,tables,...}.css` | Selectores `.btn-primary`, `.form-input`, `.table`, `.kpi-card`, etc. Componidos con `@apply` (Tailwind v4). |
+| Entry point | `src/assets/styles/index.css` | Importa todas las capas + `tailwindcss/index.css`. Orden de carga importa. |
+| Dark mode | embebido en `tokens.css` | Variables se invierten bajo `@media (prefers-color-scheme: dark)`. No requiere `dark:` classes. |
+| Responsive | `src/assets/styles/responsive.css` | Reglas de colapso de grids con `@layer components` para prioridad controlada. |
+
+**Eliminados en este refactor (migrados a Tailwind utilities o componentes compartidos):**
+
+- `src/assets/styles/auth.css` (login/wizard screens usan utilities inline)
+- `src/assets/styles/error-boundary.css` (ErrorBoundary usa utilities inline)
+- `src/assets/styles/badges.css` (reemplazado por componente `<Badge>`)
+- `src/assets/styles/grupos.css` (GruposTab usa utilities inline)
+- Docentes: `docentes.css` y `docente-info.css` renombrados a `investigadores.css` y `investigador-info.css` (carve-out respetado en el modelo: `perfil: "docente"` por defecto)
+
+## Reglas de diseño (sustituyen la sección "Do's and Don'ts" previa)
+
+### Tailwind-first
+
+- **Todo nuevo componente**: priorizar Tailwind utilities (`grid grid-cols-1 md:grid-cols-2 gap-6`, `flex items-center gap-3`, `p-6`).
+- CSS custom (`@apply` en `*.css`) solo para patrones repetidos ≥3 veces que merezcan abstracción.
+- Si una utility se repite, promover a componente compartido (ej. `<Badge>`, `<StatusChip>`).
+
+### UI funcional, no explicativa
+
+- **Prosa explicativa > 1 línea en el cuerpo de pantallas: NO.** Mover a `<FieldHelpTooltip>` (icon `?` junto al título del campo/sección).
+- Tooltip content es texto corto (≤ 240 caracteres). Si es más largo, usar `<details>` collapsible.
+- Componentes clave: `FieldHelpTooltip` (`src/shared/forms/FieldHelpTooltip.tsx`) — usa `FloatingTooltip` con `size="rich"` + `placement="top-start"`.
+
+### Padding de forms en cards
+
+- Cualquier `<form className="form">` (definida en `forms.css` como `flex flex-col gap-5` SIN padding) debe envolverse en `<div className="p-6">…</div>` dentro de la card.
+- Mismo patrón para skeletons (`AppLoadingScreen`, `SkeletonFallbacks`).
+- Aplica a `AuthScreen`, `AppLoadingScreen`, y cualquier `Step*` del wizard que ya lo usen.
+
+### Componentes compartidos clave
+
+- `<Badge variant="default|info|success|warning">` — reemplaza `.badge*` (53 ocurrencias migradas).
+- `<StatusChip variant="total|success|warning|info">` — reemplaza `.status-chip*` y `.refresh-hint`.
+- `<AppIcon icon={...} size={...}>` — wrapper de `lucide-react` con `strokeWidth={2}` por defecto. SIEMPRE usar este wrapper (no importar lucide directo).
+- `<FieldHelpTooltip content={...} label={...}>` — para tooltips informativos.
+- `<FloatingTooltip>` — base genérica para todos los tooltips (vía `@floating-ui/react`).
+
+### Auditoría visual y de runtime
+
+- **Verificación de login, wizard, dashboard, configuración, reportes debe hacerse en la ventana Tauri** (`npm run tauri dev`), NO en el navegador Chrome sobre `localhost:1420`. El navegador no expone el IPC Tauri → `invoke()` falla → login/wizard no funcionan en browser.
+- Solo Chrome DevTools emulación (dark mode, responsive, focus-visible) puede hacerse en el navegador.
+- Si se necesita inspeccionar login sin wizard: restaurar un `pjvpin.config.json` previamente generado y reiniciar la app.
+
+## Tokens vigentes (reemplazan la sección "CSS Variables" previa)
+
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--primary-color` | `#3b82f6` (blue-500) | Acciones primarias, focus rings, iconos |
+| `--primary-dark` | `#1e40af` (blue-900) | Header gradient, KPI value color, auth card headings |
+| `--primary-light` | `#dbeafe` (blue-100) | Table headers, hover states |
+| `--secondary-color` | `#10b981` (emerald-500) | Estados positivos |
+| `--danger-color` | `#ef4444` (red-500) | Delete, errores, required marks |
+| `--warning-color` | `#f59e0b` (amber-500) | Estados de alerta |
+| `--bg-color` | `#f8fafc` (slate-50) | Page background |
+| `--card-bg` | `#ffffff` | Card / container surfaces |
+| `--text-primary` | `#1f2937` (gray-800) | Body text, headings, form labels |
+| `--text-secondary` | `#556274` | Supporting text, descriptions |
+| `--border-color` | `#e5e7eb` (gray-200) | Card/table/input borders |
+| `--shadow-sm` | `0 1px 2px 0 rgba(0,0,0,0.05)` | Cards at rest |
+| `--shadow-md` | `0 4px 6px -1px rgba(0,0,0,0.1)` | Default card shadow |
+| `--shadow-lg` | `0 10px 15px -3px rgba(0,0,0,0.1)` | Hovered cards, modals, toasts |
+| `--shadow-xl` | `0 20px 25px -5px rgba(0,0,0,0.1)` | Auth card, modal content |
+| `--border-radius` | `12px` | Default card radius |
+
+### Dark mode (auto via `prefers-color-scheme`)
+
+Bajo `@media (prefers-color-scheme: dark)` las variables se invierten:
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `--bg-color` | `#f8fafc` | `#0f172a` |
+| `--card-bg` | `#ffffff` | `#1e293b` |
+| `--text-primary` | `#1f2937` | `#e2e8f0` |
+| `--text-secondary` | `#556274` | `#94a3b8` |
+| `--border-color` | `#e5e7eb` | `#334155` |
+| `--primary-light` | `#dbeafe` | `#1e3a8a` |
+| Sombras | sutiles | densas |
+
+## Bug fix: KPI grid apilado (v0.1.0)
+
+**Síntoma**: en `DashboardTab` los 4 KPIs se apilaban verticalmente en lugar de
+formar grid horizontal.
+
+**Causa**: la regla `.content-shell { display: flex flex-col }` en `dashboard.css`
+ganaba cascada sobre `.kpi-grid { display: grid }` por orden de import, anulando
+la grilla.
+
+**Fix**: eliminar `.content-shell` de `dashboard.css` y aplicar Tailwind directo
+en `DashboardTab.tsx:117`:
+```tsx
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">…</div>
+```
+
+## Verificación
+
+```bash
+npm run typecheck  # 0 errores
+npm run lint       # 6 errors + 4 warnings (baseline preexistente en permissions.ts y PdfComponents.tsx)
+npm run test       # 27/27 vitest
+cargo check --no-default-features  # 0 warnings
+cargo test --lib  # 41/41 (1 ignored)
+npm run build      # OK (Tailwind compila todos los utilities)
+```
+
+Estado CSS: 32 archivos tracked (reducido desde 35; -3 eliminados).
+Estado TSX: 18 archivos migrados a `Badge`/`StatusChip`. Cero referencias huérfanas a clases eliminadas.

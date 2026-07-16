@@ -3,7 +3,9 @@ import { X } from "lucide-react";
 import { type InvestigadorDetalle } from "../../investigadores/api";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { SkeletonChecklist } from "@/shared/ui/Skeleton";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
 
 interface InvestigadoresChecklistProps {
@@ -109,11 +111,11 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
       <div className="field-header">
         <label htmlFor={searchId}>Seleccionar Investigadores *</label>
       </div>
-      <div className="docentes-selector">
-        <div className="docentes-selector-toolbar">
+      <div className="investigadores-selector">
+        <div className="investigadores-selector-toolbar">
           <input
             id={searchId}
-            className="form-input docentes-selector-search"
+            className="form-input investigadores-selector-search"
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -122,17 +124,13 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
             aria-describedby={helperId}
             aria-controls={resultsId}
           />
-          <div className="docentes-selector-meta">
-            <span className="status-chip status-chip-total">
-              Disponibles: {investigadores.length}
-            </span>
-            <span className="status-chip status-chip-success">
-              Seleccionados: {selectedIds.length}
-            </span>
+          <div className="investigadores-selector-meta">
+            <StatusChip variant="total">Disponibles: {investigadores.length}</StatusChip>
+            <StatusChip variant="success">Seleccionados: {selectedIds.length}</StatusChip>
             {selectedIds.length > 0 && (
               <button
                 type="button"
-                className="btn-secondary docentes-selector-clear"
+                className="btn-secondary investigadores-selector-clear"
                 onClick={limpiarSeleccion}
               >
                 Limpiar selección
@@ -146,22 +144,22 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
           agregarlos o quitarlos de la selección.
         </div>
 
-        <div className="docentes-selected-list" aria-live="polite">
+        <div className="investigadores-selected-list" aria-live="polite">
           {investigadoresSeleccionados.length > 0 ? (
             investigadoresSeleccionados.map((investigador) => (
               <button
                 key={investigador.id_investigador}
                 type="button"
-                className="docente-chip"
+                className="investigador-chip"
                 onClick={() => {
                   handleToggle(investigador.id_investigador);
                 }}
                 title="Quitar de la selección"
               >
-                <span className="docente-chip-content">
-                  <span className="docente-chip-name">{investigador.nombres_apellidos}</span>
+                <span className="investigador-chip-content">
+                  <span className="investigador-chip-name">{investigador.nombres_apellidos}</span>
                   {showSelectedMeta && (
-                    <span className="docente-chip-meta">
+                    <span className="investigador-chip-meta">
                       {investigador.grado || "Sin grado"} ·{" "}
                       {formatRenacytNivel(investigador.renacyt_nivel)
                         ? `RENACYT ${formatRenacytNivel(investigador.renacyt_nivel)}`
@@ -170,18 +168,18 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
                     </span>
                   )}
                   {!showSelectedMeta && responsableId === investigador.id_investigador && (
-                    <span className="docente-chip-meta docente-chip-meta-compact">
+                    <span className="investigador-chip-meta investigador-chip-meta-compact">
                       Responsable actual
                     </span>
                   )}
                 </span>
-                <span className="docente-chip-remove">
+                <span className="investigador-chip-remove">
                   <AppIcon icon={X} size={14} />
                 </span>
               </button>
             ))
           ) : (
-            <div className="docentes-selector-empty">
+            <div className="investigadores-selector-empty">
               Aún no ha seleccionado investigadores para este proyecto.
             </div>
           )}
@@ -189,21 +187,21 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
 
         <div
           id={resultsId}
-          className="docentes-checklist docentes-selector-results"
+          className="investigadores-checklist investigadores-selector-results"
           aria-label="Resultados de investigadores"
         >
           {requiereBusquedaMinima ? (
-            <div className="docentes-selector-empty">
+            <div className="investigadores-selector-empty">
               Escriba al menos 2 caracteres para buscar dentro de una lista grande de
               investigadores.
             </div>
           ) : !deferredQuery && investigadores.length > 25 ? (
-            <div className="docentes-selector-empty">
+            <div className="investigadores-selector-empty">
               Use el buscador para encontrar investigadores y agregarlos al proyecto sin recorrer
               una lista completa.
             </div>
           ) : investigadoresVisibles.length === 0 ? (
-            <div className="docentes-selector-empty">
+            <div className="investigadores-selector-empty">
               No se encontraron investigadores con ese criterio.
             </div>
           ) : (
@@ -215,32 +213,34 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
                   <button
                     key={investigador.id_investigador}
                     type="button"
-                    className={`checkbox-item docente-option ${seleccionado ? "selected" : ""}`}
+                    className={`checkbox-item investigador-option ${seleccionado ? "selected" : ""}`}
                     onClick={() => {
                       handleToggle(investigador.id_investigador);
                     }}
                     aria-pressed={seleccionado}
                   >
-                    <div className="docente-option-main">
-                      <span className="docente-option-name">{investigador.nombres_apellidos}</span>
-                      <span className="docente-option-dni">DNI: {investigador.dni}</span>
-                      <span className="docente-option-meta">
+                    <div className="investigador-option-main">
+                      <span className="investigador-option-name">
+                        {investigador.nombres_apellidos}
+                      </span>
+                      <span className="investigador-option-dni">DNI: {investigador.dni}</span>
+                      <span className="investigador-option-meta">
                         {investigador.grado || "Sin grado"} ·{" "}
                         {formatRenacytNivel(investigador.renacyt_nivel)
                           ? `RENACYT ${formatRenacytNivel(investigador.renacyt_nivel)}`
                           : "Sin nivel RENACYT"}
                       </span>
                     </div>
-                    <div className="docente-option-actions">
-                      <span className={`badge ${seleccionado ? "badge-success" : "badge-info"}`}>
+                    <div className="investigador-option-actions">
+                      <Badge variant={seleccionado ? "success" : "info"}>
                         {seleccionado ? "Seleccionado" : "Agregar"}
-                      </span>
+                      </Badge>
                     </div>
                   </button>
                 );
               })}
               {hayMasResultados && (
-                <div className="docentes-selector-footnote">
+                <div className="investigadores-selector-footnote">
                   Mostrando {investigadoresVisibles.length} de {coincidencias.length} coincidencias.
                   Refine la búsqueda para acotar resultados.
                 </div>

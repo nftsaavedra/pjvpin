@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Plus, Trash2, Edit2, Search } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { useGruposTab } from "./hooks/useGruposTab";
 import { GrupoFormModal } from "./components/GrupoFormModal";
@@ -42,7 +43,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
   }, [deletingId, grupos]);
 
   return (
-    <div className="tab-panel module-shell grupos-module">
+    <div className="tab-panel module-shell flex flex-col gap-4">
       <div className="table-container">
         <div className="section-header">
           <h2>Grupos de Investigación</h2>
@@ -82,7 +83,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
           </div>
         )}
 
-        <div className="toolbar-section">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="search-box">
             <AppIcon icon={Search} size={18} />
             <input
@@ -95,10 +96,13 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
               className="search-input"
             />
           </div>
-          <span className="badge badge-info">{gruposFiltrados.length} grupos</span>
+          <Badge variant="info">{gruposFiltrados.length} grupos</Badge>
         </div>
 
-        <div className="grupos-grid">
+        <div
+          className="grid gap-4"
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}
+        >
           {loading ? (
             <div className="empty-state">
               <p>Cargando grupos...</p>
@@ -114,21 +118,24 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
             </div>
           ) : (
             gruposFiltrados.map((grupo) => (
-              <div key={grupo.id_grupo} className="grupo-card">
-                <div className="grupo-card-header">
+              <div
+                key={grupo.id_grupo}
+                className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all duration-300 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 hover:border-blue-200"
+              >
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3>{grupo.nombre}</h3>
-                    <p className="grupo-coordinador">
+                    <h3 className="text-lg font-bold text-gray-800 m-0">{grupo.nombre}</h3>
+                    <p className="text-sm text-blue-700 font-semibold m-0">
                       {grupo.coordinador_nombre
                         ? `Coordinador: ${grupo.coordinador_nombre}`
                         : "Sin coordinador asignado"}
                     </p>
                   </div>
                   {canManage && (
-                    <div className="grupo-card-actions">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
-                        className="btn-icon"
+                        className="p-2 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center"
                         onClick={() => {
                           handleUpdate(grupo);
                         }}
@@ -138,7 +145,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                       </button>
                       <button
                         type="button"
-                        className="btn-icon btn-danger"
+                        className="p-2 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-medium"
                         onClick={() => {
                           setDeletingId(grupo.id_grupo);
                         }}
@@ -150,27 +157,34 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                   )}
                 </div>
 
-                {grupo.descripcion && <p className="grupo-descripcion">{grupo.descripcion}</p>}
+                {grupo.descripcion && (
+                  <p className="text-sm text-gray-600 m-0">{grupo.descripcion}</p>
+                )}
 
-                <div className="grupo-lineas">
-                  <strong>Líneas de investigación:</strong>
-                  <div className="lineas-tags">
+                <div className="flex flex-col gap-3 flex-1">
+                  <strong className="text-sm text-gray-800">Líneas de investigación:</strong>
+                  <div className="flex flex-wrap gap-2">
                     {grupo.lineas_investigacion.length > 0 ? (
                       grupo.lineas_investigacion.map((linea) => (
-                        <span key={linea} className="linea-tag">
+                        <span
+                          key={linea}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold"
+                        >
                           {linea}
                         </span>
                       ))
                     ) : (
-                      <span className="linea-tag linea-tag-empty">Sin líneas registradas</span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold italic text-gray-400">
+                        Sin líneas registradas
+                      </span>
                     )}
                   </div>
                 </div>
 
-                <div className="grupo-footer">
-                  <span className={`badge badge-${grupo.activo !== 0 ? "success" : "warning"}`}>
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200">
+                  <Badge variant={grupo.activo !== 0 ? "success" : "warning"}>
                     {grupo.activo !== 0 ? "Activo" : "Inactivo"}
-                  </span>
+                  </Badge>
                 </div>
               </div>
             ))

@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import type { ReporteProyectoIntegral, ReporteInvestigadorIntegral } from "../api";
 
 export const formatTimestamp = (ts?: number | null) =>
@@ -37,7 +38,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ label, count, open
   >
     <AppIcon icon={open ? ChevronDown : ChevronRight} size={16} />
     <strong>{label}</strong>
-    {count != null && <span className="badge badge-info">{count}</span>}
+    {count != null && <Badge variant="info">{count}</Badge>}
   </summary>
 );
 

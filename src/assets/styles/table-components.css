@@ -1,6 +1,8 @@
 @layer components {
-  .table-container { @apply bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-8; }
+  .table-container { @apply bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-8 px-5 pt-5 pb-4 flex flex-col gap-4; }
   .filter-bar { @apply flex items-center gap-3 p-4 border-b border-gray-200 flex-wrap; }
+  .filter-summary { @apply flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold; }
+  .filter-summary-group { @apply flex items-center gap-2 flex-wrap; }
   .filter-search { @apply flex-1 min-w-[200px] max-w-[320px]; }
   .filter-select { @apply min-w-[160px] max-w-[220px]; }
   .table-responsive { @apply overflow-x-auto; }
@@ -15,5 +17,4 @@
   .table-action-button-wrapper { @apply inline-flex; }
   .table-action-button { @apply inline-flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 cursor-pointer border border-gray-200 bg-white text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300; }
   .table-action-button:disabled { @apply opacity-40 cursor-not-allowed; }
-  .table-empty { @apply text-center py-12 text-gray-500 text-sm; }
 }

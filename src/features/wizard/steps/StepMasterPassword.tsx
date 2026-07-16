@@ -1,6 +1,7 @@
 import React, { useId } from "react";
 import { Shield } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import type { WizardState } from "../useWizardState";
 
 interface Props {
@@ -36,14 +37,15 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
       <div className="p-6 pb-4 border-b border-border bg-gradient-to-b from-primary-light to-card">
         <div className="text-center">
           <AppIcon icon={Shield} size={32} className="text-primary mb-2" />
-          <h2 className="text-xl font-bold m-0 mb-1.5 text-text-primary">
-            Contraseña maestra de configuracion
-          </h2>
-          <p className="text-sm leading-6 max-w-[44ch] mx-auto text-text-secondary">
-            Esta contraseña sera la clave de proteccion de credenciales. Actualmente se valida como
-            requisito de seguridad y se usara en una version futura para cifrar la configuracion en
-            disco.
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <h2 className="text-xl font-bold m-0 text-text-primary">
+              Contraseña maestra de configuracion
+            </h2>
+            <FieldHelpTooltip
+              label="Informacion sobre contraseña maestra"
+              content="Clave de proteccion de credenciales. Se valida como requisito de seguridad y se usara para cifrar la configuracion en disco en una version futura."
+            />
+          </div>
         </div>
       </div>
 

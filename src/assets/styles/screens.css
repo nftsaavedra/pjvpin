@@ -258,4 +258,24 @@
     gap: 0.5rem;
     align-items: center;
   }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 2.5rem 1.5rem;
+    background: var(--bg-color);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .empty-state strong {
+    color: var(--text-primary);
+    font-size: 1rem;
+  }
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import { Eye, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
 import type { InvestigadorDetalle } from "../api";
+import { Badge } from "@/shared/ui/Badge";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
@@ -55,7 +56,8 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
             const tieneFormaciones = Boolean(
               investigador.renacyt_formaciones_academicas_json?.trim(),
             );
-            const estaActualizando = refreshingRenacytInvestigadorId === investigador.id_investigador;
+            const estaActualizando =
+              refreshingRenacytInvestigadorId === investigador.id_investigador;
             const nivelRenacyt = formatRenacytNivel(investigador.renacyt_nivel);
 
             return (
@@ -67,28 +69,24 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                 <td>
                   <div className="investigador-profile-cell">
                     <strong>{investigador.grado || "Sin grado"}</strong>
-                    <span className={`badge ${nivelRenacyt ? "badge-info" : "badge-warning"}`}>
+                    <Badge variant={nivelRenacyt ? "info" : "warning"}>
                       {nivelRenacyt ? `RENACYT ${nivelRenacyt}` : "Sin nivel RENACYT"}
-                    </span>
+                    </Badge>
                   </div>
                 </td>
                 <td className="font-semibold">
                   {investigador.nombres_apellidos || "Sin nombre registrado"}
                 </td>
                 <td>
-                  <span
-                    className={`badge badge-${
-                      investigador.cantidad_proyectos === 0 ? "warning" : "success"
-                    }`}
-                  >
+                  <Badge variant={investigador.cantidad_proyectos === 0 ? "warning" : "success"}>
                     {investigador.cantidad_proyectos}
-                  </span>
+                  </Badge>
                 </td>
                 <td>
                   {investigador.activo === 1 ? (
-                    <span className="badge badge-success">Activo</span>
+                    <Badge variant="success">Activo</Badge>
                   ) : (
-                    <span className="badge badge-warning">Inactivo</span>
+                    <Badge variant="warning">Inactivo</Badge>
                   )}
                 </td>
                 <td className="table-actions">

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { ProyectoDetalle } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { getResponsableProyecto, parseParticipantesProyecto } from "../participantes";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import type { RelatedEntity } from "./relatedEntity";
@@ -123,9 +124,9 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
           <div className="screen-kpi-card">
             <div className="screen-kpi-icon">
               {proyecto.activo ? (
-                <span className="badge badge-success">Activo</span>
+                <Badge variant="success">Activo</Badge>
               ) : (
-                <span className="badge badge-warning">Inactivo</span>
+                <Badge variant="warning">Inactivo</Badge>
               )}
             </div>
             <div className="screen-kpi-copy">
@@ -175,12 +176,10 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
                     {participante.grado && <span> &mdash; {participante.grado}</span>}
                   </span>
                   <div className="screen-readonly-item-meta">
-                    {participante.es_responsable && (
-                      <span className="badge badge-info">Responsable</span>
-                    )}
-                    <span className="badge badge-info">
+                    {participante.es_responsable && <Badge variant="info">Responsable</Badge>}
+                    <Badge variant="info">
                       {formatRenacytNivel(participante.renacyt_nivel) ?? "Sin RENACYT"}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
               ))}
@@ -205,9 +204,7 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
               >
                 <AppIcon icon={tab.icon} size={16} />
                 <span>{tab.label}</span>
-                {tab.items.length > 0 && (
-                  <span className="badge badge-info">{tab.items.length}</span>
-                )}
+                {tab.items.length > 0 && <Badge variant="info">{tab.items.length}</Badge>}
               </button>
             ))}
           </div>

@@ -27,9 +27,9 @@ export const DniValidationSection: React.FC<DniValidationSectionProps> = ({
   nombreCompletoPreview,
 }) => (
   <>
-    <div className="form-group docente-form-span-2 docente-dni-group">
+    <div className="form-group investigador-form-span-2 investigador-dni-group">
       <div className="form-label-row">
-        <label htmlFor="docente-dni" className="form-label-text">
+        <label htmlFor="investigador-dni" className="form-label-text">
           DNI *
         </label>
         <FieldHelpTooltip
@@ -37,9 +37,9 @@ export const DniValidationSection: React.FC<DniValidationSectionProps> = ({
           content="Primero se valida si el DNI ya existe en la base principal. Si no existe, se consulta RENIEC para autocompletar los datos y, a continuación, se busca automáticamente el código RENACYT asociado. El proceso es transparente: solo debe ingresar el DNI y presionar Validar."
         />
       </div>
-      <div className="form-input-action-group docente-dni-input-row">
+      <div className="form-input-action-group investigador-dni-input-row">
         <input
-          id="docente-dni"
+          id="investigador-dni"
           type="text"
           value={dni}
           onChange={(event) => {
@@ -75,7 +75,7 @@ export const DniValidationSection: React.FC<DniValidationSectionProps> = ({
       </div>
     </div>
 
-    <div className="form-inline-preview docente-form-preview-card" aria-live="polite">
+    <div className="form-inline-preview investigador-form-preview-card" aria-live="polite">
       <strong>Nombre a registrar</strong>
       <span>
         {nombreCompletoPreview || "Complete nombres y apellidos para ver la vista previa."}

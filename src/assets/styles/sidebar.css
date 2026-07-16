@@ -23,4 +23,16 @@
   .content-sidebar-toggle { @apply px-2.5 py-2.5 text-gray-800 bg-white inline-flex items-center justify-center border border-slate-400/20 rounded-[14px] cursor-pointer transition-all duration-200; }
   .content-sidebar-toggle:hover { @apply -translate-y-0.5 border-blue-400/50; }
   .content-sidebar-toggle:focus-visible { @apply border-blue-400/60; }
+
+  .app-shell.sidebar-collapsed .sidebar-brand-copy,
+  .app-shell.sidebar-collapsed .sidebar-user-copy,
+  .app-shell.sidebar-collapsed .sidebar-logout-label,
+  .app-shell.sidebar-collapsed .sidebar-kicker,
+  .app-shell.sidebar-collapsed .sidebar-title,
+  .app-shell.sidebar-collapsed .sidebar-subtitle { @apply hidden; }
+  .app-shell.sidebar-collapsed .sidebar-brand { @apply px-2 py-2 justify-center; }
+  .app-shell.sidebar-collapsed .sidebar-user-card { @apply px-2 py-2 justify-center; }
+  .app-shell.sidebar-collapsed .sidebar-toggle { @apply ml-0; }
+  .app-shell.sidebar-collapsed .sidebar-footer { @apply gap-2 items-center; }
+  .app-shell.sidebar-collapsed .sidebar-logout { @apply w-10 h-10 p-0 justify-center; }
 }

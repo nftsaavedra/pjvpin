@@ -13,10 +13,11 @@ import {
 import { openUrl } from "@tauri-apps/plugin-opener";
 import type { InvestigadorDetalle } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
 import { toast } from "@/services/toast";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
-import { formatDate, parseFormacionesAcademicas } from "@/shared/utils/docenteUtils";
+import { formatDate, parseFormacionesAcademicas } from "@/shared/utils/investigadorUtils";
 import { InvestigadorPublicacionesSection } from "./InvestigadorPublicacionesSection";
 
 interface InvestigadorDetailScreenProps {
@@ -161,9 +162,9 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
           <div className="screen-kpi-card">
             <div className="screen-kpi-icon">
               {investigador.activo === 1 ? (
-                <span className="badge badge-success">Activo</span>
+                <Badge variant="success">Activo</Badge>
               ) : (
-                <span className="badge badge-warning">Inactivo</span>
+                <Badge variant="warning">Inactivo</Badge>
               )}
             </div>
             <div className="screen-kpi-copy">
@@ -211,7 +212,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
             </div>
             <div className="info-row highlight">
               <label>Proyectos Asignados:</label>
-              <span className="badge">{investigador.cantidad_proyectos}</span>
+              <Badge>{investigador.cantidad_proyectos}</Badge>
             </div>
           </div>
         </div>
@@ -232,9 +233,9 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                   <span>Estado RENACYT</span>
                 </span>
                 {tieneRenacyt ? (
-                  <span className="badge badge-success">Vinculado</span>
+                  <Badge variant="success">Vinculado</Badge>
                 ) : (
-                  <span className="badge badge-warning">No registrado</span>
+                  <Badge variant="warning">No registrado</Badge>
                 )}
               </span>
               <span className="renacyt-detail-toggle-icon" aria-hidden="true">
@@ -358,7 +359,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                             </span>
                             <span>Formación académica</span>
                           </span>
-                          <span className="badge badge-info">{formacionesAcademicas.length}</span>
+                          <Badge variant="info">{formacionesAcademicas.length}</Badge>
                         </span>
                         <span className="renacyt-detail-toggle-icon" aria-hidden="true">
                           <AppIcon icon={formacionesExpanded ? ChevronUp : ChevronDown} size={18} />
@@ -371,11 +372,11 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                             <article key={formacion.id} className="renacyt-formacion-card">
                               <div className="renacyt-formacion-head">
                                 <strong>{formacion.titulo ?? "Formación sin título"}</strong>
-                                <span
-                                  className={`badge ${formacion.considerado_para_cc ? "badge-success" : "badge-warning"}`}
+                                <Badge
+                                  variant={formacion.considerado_para_cc ? "success" : "warning"}
                                 >
                                   {formacion.considerado_para_cc ? "Considerado CC" : "Informativo"}
-                                </span>
+                                </Badge>
                               </div>
                               <div className="renacyt-formacion-grid">
                                 <span>

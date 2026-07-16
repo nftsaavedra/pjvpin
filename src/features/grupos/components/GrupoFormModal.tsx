@@ -134,7 +134,7 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
 
       <div className="form-group">
         <label htmlFor="linea">Líneas de Investigación</label>
-        <div className="linea-input-group">
+        <div className="flex items-center gap-2">
           <input
             id="linea"
             type="text"
@@ -156,13 +156,16 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
         </div>
 
         {lineas.length > 0 && (
-          <div className="lineas-list">
+          <div className="flex flex-col gap-2">
             {lineas.map((linea) => (
-              <div key={linea} className="linea-item">
+              <div
+                key={linea}
+                className="flex items-center justify-between gap-2 p-2 rounded-lg border border-gray-200 bg-white"
+              >
                 <span>{linea}</span>
                 <button
                   type="button"
-                  className="btn-icon-small"
+                  className="w-7 h-7 inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
                   onClick={() => {
                     handleRemoveLinea(linea);
                   }}

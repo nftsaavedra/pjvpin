@@ -1,0 +1,61 @@
+@layer components {
+  /* ============== Brand marks (RENACYT, RENIEC, default) ============== */
+  .brand-mark {
+    @apply inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-extrabold flex-shrink-0;
+  }
+  .brand-mark-renacyt {
+    @apply bg-blue-100 text-blue-700;
+  }
+  .brand-mark-reniec {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+  .brand-mark-default {
+    @apply bg-slate-100 text-slate-700;
+  }
+
+  /* ============== Renacyt summary card (alta investigador) ============== */
+  .renacyt-summary-card { @apply flex flex-col gap-3 mt-1 px-4 py-3.5 rounded-2xl border border-blue-200 bg-blue-50/40; }
+  .renacyt-summary-header { @apply flex items-center gap-2 text-sm font-bold text-blue-900; }
+  .renacyt-summary-grid { @apply grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-700; }
+
+  /* ============== Renacyt detail card (ficha investigador) ============== */
+  .renacyt-detail-card { @apply flex flex-col gap-3 p-4 rounded-2xl border border-blue-200 bg-white; }
+  .renacyt-detail-toggle {
+    @apply w-full flex items-center justify-between gap-3 px-0 py-0 bg-transparent border-0 text-left cursor-pointer;
+  }
+  .renacyt-detail-toggle-copy { @apply flex items-center gap-2 min-w-0; }
+  .renacyt-detail-title { @apply font-bold text-gray-800 flex items-center gap-2; }
+  .renacyt-detail-toggle-icon {
+    @apply text-gray-500 transition-transform duration-200;
+  }
+  .renacyt-detail-actions { @apply flex items-center gap-2 flex-wrap; }
+  .renacyt-detail-empty { @apply text-sm text-gray-500 italic; }
+  .renacyt-detail-grid { @apply grid grid-cols-2 gap-x-4 gap-y-3; }
+  .renacyt-detail-item { @apply flex flex-col gap-1 min-w-0; }
+  .renacyt-detail-item-linked { @apply cursor-pointer hover:bg-blue-50/40 rounded-lg transition-colors; }
+  .renacyt-detail-item-content { @apply flex flex-col gap-0.5; }
+  .renacyt-detail-label-row { @apply flex items-center gap-2 min-w-0; }
+  .renacyt-detail-label-main { @apply flex items-center gap-2 min-w-0; }
+  .renacyt-detail-label { @apply text-xs font-bold uppercase tracking-wider text-gray-500; }
+
+  /* ============== Renacyt formaciones (lista + cards) ============== */
+  .renacyt-formaciones-feedback { @apply mt-2; }
+  .renacyt-formaciones-list { @apply flex flex-col gap-3 mt-2; }
+  .renacyt-formacion-card {
+    @apply flex flex-col gap-2 p-4 rounded-xl border border-gray-200 bg-gray-50/60;
+  }
+  .renacyt-formacion-head { @apply flex items-center justify-between gap-2; }
+  .renacyt-formacion-grid { @apply grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-700; }
+  .renacyt-formacion-full-col { @apply col-span-2; }
+
+  /* ============== Renacyt subsection (toggleable) ============== */
+  .renacyt-subsection { @apply flex flex-col gap-3 mt-3 pt-3 border-t border-gray-200; }
+  .renacyt-subsection-toggle {
+    @apply w-full flex items-center justify-between gap-3 bg-transparent border-0 text-left cursor-pointer px-0 py-0;
+  }
+  .renacyt-subsection-toggle-copy { @apply flex items-center gap-2 min-w-0; }
+  .renacyt-subsection-title { @apply text-sm font-bold text-gray-800 flex items-center gap-2; }
+
+  /* ============== Inline form status variant (RENACYT auto-no-found) ============== */
+  .form-inline-status-auto-not-found { @apply text-amber-700 bg-amber-50 border-amber-200; }
+}

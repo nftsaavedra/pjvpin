@@ -4,6 +4,7 @@ import type { ProyectoDetalle, ProyectoParticipanteResumen } from "../api";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import { getResponsableProyecto, parseParticipantesProyecto } from "../participantes";
 
@@ -71,7 +72,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                 <td>
                   <button
                     type="button"
-                    className="project-docentes-trigger"
+                    className="project-investigadores-trigger"
                     onClick={() => {
                       setSelectedProyecto({ titulo: proyecto.titulo_proyecto, participantes });
                     }}
@@ -88,9 +89,9 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                 </td>
                 <td>
                   {proyecto.activo ? (
-                    <span className="badge badge-success">Activo</span>
+                    <Badge variant="success">Activo</Badge>
                   ) : (
-                    <span className="badge badge-warning">Inactivo</span>
+                    <Badge variant="warning">Inactivo</Badge>
                   )}
                 </td>
                 <td className="table-actions">
@@ -190,9 +191,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                   >
                     <div className="project-participant-card-head">
                       <strong>{participante.nombre}</strong>
-                      {participante.es_responsable && (
-                        <span className="badge badge-info">Responsable</span>
-                      )}
+                      {participante.es_responsable && <Badge variant="info">Responsable</Badge>}
                     </div>
                     <span>{participante.grado}</span>
                     <span>

@@ -21,7 +21,7 @@ export function AuthShell({ onAuthenticated }: AuthShellProps) {
           </div>
         </div>
       </header>
-      <main className="main-content auth-main">
+      <main className="main-content flex items-center justify-center p-8">
         <AuthScreen onAuthenticated={onAuthenticated} />
       </main>
     </>

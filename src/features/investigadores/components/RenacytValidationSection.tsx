@@ -2,6 +2,7 @@ import React from "react";
 import { BadgeCheck } from "lucide-react";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 
 const formatDate = (value?: number | null) => {
@@ -65,9 +66,9 @@ export const RenacytValidationSection: React.FC<RenacytValidationSectionProps> =
   isAutoNotFound,
   renacytSource,
 }) => (
-  <div className="form-group docente-form-span-2 docente-renacyt-card">
+  <div className="form-group investigador-form-span-2 investigador-renacyt-card">
     <div className="form-label-row">
-      <label htmlFor="docente-renacyt" className="form-label-text">
+      <label htmlFor="investigador-renacyt" className="form-label-text">
         Validación RENACYT
       </label>
       <FieldHelpTooltip
@@ -85,9 +86,9 @@ export const RenacytValidationSection: React.FC<RenacytValidationSectionProps> =
     )}
     {!isAutoChecking && (
       <>
-        <div className="form-input-action-group docente-dni-input-row">
+        <div className="form-input-action-group investigador-dni-input-row">
           <input
-            id="docente-renacyt"
+            id="investigador-renacyt"
             type="text"
             value={renacytQuery}
             onChange={(event) => {
@@ -125,7 +126,7 @@ export const RenacytValidationSection: React.FC<RenacytValidationSectionProps> =
       <div className="renacyt-summary-card" aria-live="polite">
         <div className="renacyt-summary-header">
           <strong>RENACYT (identificación automática)</strong>
-          <span className="badge badge-info">{renacytData.codigo_registro}</span>
+          <Badge variant="info">{renacytData.codigo_registro}</Badge>
         </div>
         <div className="renacyt-summary-grid">
           <span>
@@ -158,7 +159,7 @@ export const RenacytValidationSection: React.FC<RenacytValidationSectionProps> =
       <div className="renacyt-summary-card" aria-live="polite">
         <div className="renacyt-summary-header">
           <strong>RENACYT (validación manual)</strong>
-          <span className="badge badge-info">{renacytData.codigo_registro}</span>
+          <Badge variant="info">{renacytData.codigo_registro}</Badge>
         </div>
         <div className="renacyt-summary-grid">
           <span>

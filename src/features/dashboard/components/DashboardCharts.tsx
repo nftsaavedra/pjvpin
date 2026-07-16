@@ -123,9 +123,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   const chartLoadingState = <SkeletonChart titleWidth="md" height="md" />;
 
   return (
-    <>
-      <div className="dashboard-main-grid content-shell">
-        <div className="chart-container dashboard-primary-chart">
+    <div className="dashboard-charts flex flex-col gap-6">
+      <div className="dashboard-main-grid">
+        <div className="chart-container mb-0">
           <h2>Top investigadores por cantidad de proyectos</h2>
           <div ref={topChartRef} className="dashboard-chart-stage dashboard-chart-stage-lg">
             {showTopRanking ? (
@@ -166,7 +166,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
           </div>
         </div>
 
-        <div className="dashboard-side-panel">
+        <div className="flex flex-col gap-4 min-w-0">
           <div className="dashboard-insight-card">
             <span className="dashboard-insight-label">Investigadores con proyectos</span>
             <strong>{investigadoresConProyectos}</strong>
@@ -180,8 +180,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
         </div>
       </div>
 
-      <div className="dashboard-secondary-grid content-shell">
-        <div className="chart-container">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="chart-container mb-0">
           <h2>Distribución de carga por investigador</h2>
           <div
             ref={distributionChartRef}
@@ -262,9 +262,12 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
         </div>
       </div>
 
-      <div className="chart-container content-shell dashboard-wide-chart">
+      <div className="chart-container mb-0">
         <h2>Todos los investigadores: proyectos asignados</h2>
-        <div ref={allInvestigadoresChartRef} className="dashboard-chart-stage dashboard-chart-stage-lg">
+        <div
+          ref={allInvestigadoresChartRef}
+          className="dashboard-chart-stage dashboard-chart-stage-lg"
+        >
           {showAllInvestigadores ? (
             allInvestigadoresChart.ready ? (
               <BarChart
@@ -300,7 +303,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
       {/* ── Proyectos por Año (Trend) ── */}
       <div className="chart-container">
-        <h3 className="chart-title">Proyectos Registrados por Año y Mes</h3>
+        <h2>Proyectos Registrados por Año y Mes</h2>
         {trend.length > 0 ? (
           <LineChart data={trendData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
             <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
@@ -330,7 +333,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
       {/* ── Distribución RENACYT ── */}
       <div className="chart-container">
-        <h3 className="chart-title">Distribución de Investigadores por Nivel RENACYT</h3>
+        <h2>Distribución de Investigadores por Nivel RENACYT</h2>
         {renacyt.length > 0 ? (
           <BarChart data={renacyt} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
             <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
@@ -355,6 +358,6 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
           <div className="empty-state">Sin datos de distribucion RENACYT disponibles.</div>
         )}
       </div>
-    </>
+    </div>
   );
 };

@@ -359,14 +359,17 @@ pub struct RenacytBusquedaExitoso {
     pub codigo_registro: String,
     pub id_investigador: String,
     pub numero_documento: String,
+    pub nivel: String,
+    pub grupo: String,
+    pub condicion: String,
+    pub orcid: String,
+    pub tipo_documento: String,
     pub solicitud_id: Option<i64>,
 }
 
 #[derive(Debug, Deserialize)]
 #[allow(non_snake_case)]
 struct RenacytBusquedaEnvelope {
-    #[serde(default)]
-    total: i64,
     #[serde(default)]
     data: Vec<RenacytBusquedaItem>,
 }
@@ -470,6 +473,11 @@ pub async fn buscar_por_dni(
         codigo_registro: non_empty(item.codigoRegistro).unwrap_or_default(),
         id_investigador,
         numero_documento: item.numeroDocumento,
+        nivel: non_empty(item.nivel).unwrap_or_default(),
+        grupo: non_empty(item.grupo).unwrap_or_default(),
+        condicion: non_empty(item.condicion).unwrap_or_default(),
+        orcid: non_empty(item.orcid).unwrap_or_default(),
+        tipo_documento: non_empty(item.tipoDocumento).unwrap_or_default(),
         solicitud_id: item.solicitudId,
     }))
 }
@@ -515,6 +523,8 @@ mod tests {
                 assert_eq!(encontrado.codigo_registro, "P0016945");
                 assert_eq!(encontrado.numero_documento, "02884798");
                 assert!(!encontrado.id_investigador.is_empty());
+                assert!(!encontrado.nivel.is_empty(), "nivel debe venir poblado");
+                assert!(!encontrado.orcid.is_empty(), "orcid debe venir poblado");
             }
             Ok(None) => panic!("DNI 02884798 debería existir en RENACYT"),
             Err(error) => {

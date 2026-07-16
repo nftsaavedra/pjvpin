@@ -7,7 +7,9 @@ import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import {
   actualizarGrado,
@@ -166,9 +168,9 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
         <div className="filter-bar">
           <div className="filter-summary-group">
             <div className="filter-summary">Visibles: {gradosFiltrados.length}</div>
-            <span className="status-chip status-chip-total">Todos: {grados.length}</span>
-            <span className="status-chip status-chip-success">Activos: {totalActivos}</span>
-            <span className="status-chip status-chip-warning">Inactivos: {totalInactivos}</span>
+            <StatusChip variant="total">Todos: {grados.length}</StatusChip>
+            <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
+            <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
           </div>
           <input
             className="form-input filter-search"
@@ -209,7 +211,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
                   <td>{grado.nombre}</td>
                   <td>{grado.descripcion || "-"}</td>
                   <td className="table-actions">
-                    {grado.activo === 0 && <span className="badge badge-warning">Inactivo</span>}
+                    {grado.activo === 0 && <Badge variant="warning">Inactivo</Badge>}
                     {grado.activo === 0 && (
                       <TableActionButton
                         className="btn-primary"

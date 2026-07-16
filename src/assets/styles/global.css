@@ -31,8 +31,29 @@ body {
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-a:focus-visible {
+a:focus-visible,
+.kpi-card:focus-visible,
+.table-interactive tr:focus-visible,
+.proyecto-item:focus-visible,
+.grupo-card:focus-visible,
+.role-matrix-item:focus-visible,
+.dashboard-chart-stage:focus-visible,
+.catalogo-summary-card:focus-visible,
+.related-entities-toggle:focus-visible,
+.skeleton-checklist:focus-visible {
   box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.22);
+}
+
+.kpi-card:focus-visible,
+.table-interactive tr:focus-visible,
+.proyecto-item:focus-visible,
+.grupo-card:focus-visible,
+.role-matrix-item:focus-visible,
+.dashboard-chart-stage:focus-visible,
+.catalogo-summary-card:focus-visible,
+.related-entities-toggle:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.6);
+  outline-offset: 2px;
 }
 
 main:focus,

@@ -20,8 +20,12 @@ export const RefreshHint: React.FC<RefreshHintProps> = ({
   if (!refreshing) return null;
 
   return (
-    <div className="refresh-hint" role="status" aria-live="polite">
-      <span className="refresh-hint-dot" />
+    <div
+      className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
       {label}
     </div>
   );
@@ -91,9 +95,12 @@ export const SkeletonChart: React.FC<SkeletonChartProps> = ({
 export const SkeletonChecklist: React.FC = () => (
   <div className="form-group" aria-hidden="true">
     <label>Seleccionar Investigadores *</label>
-    <div className="docentes-checklist skeleton-checklist">
+    <div className="investigadores-checklist skeleton-checklist">
       {Array.from({ length: 5 }).map((_, index) => (
-        <div key={`docente-skeleton-${index}`} className="checkbox-item skeleton-checkbox-item">
+        <div
+          key={`investigador-skeleton-${index}`}
+          className="checkbox-item skeleton-checkbox-item"
+        >
           <SkeletonBlock className="skeleton skeleton-checkbox" />
           <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
         </div>

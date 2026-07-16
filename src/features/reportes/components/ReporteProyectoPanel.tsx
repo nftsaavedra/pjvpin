@@ -1,6 +1,7 @@
 import React from "react";
 import { Download } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { DataTable, type ColumnDef } from "@/shared/ui/DataTable";
 import { SectionHeader, InfoRow, formatBool, formatTimestamp, formatArray } from "./PdfComponents";
 import { useReporteProyecto } from "../hooks/useReporteProyecto";
@@ -90,9 +91,9 @@ export const ReporteProyectoPanel: React.FC<ReporteProyectoPanelProps> = ({
 
   return (
     <>
-      <div className="form-card" style={{ marginTop: "2rem" }}>
+      <div className="form-card mt-8">
         <h2>Reporte Integral de Proyecto</h2>
-        <div className="form" style={{ gap: "1rem" }}>
+        <div className="form gap-4">
           <div className="form-group">
             <label>Seleccionar proyecto</label>
             <select
@@ -144,7 +145,7 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
   onExportXLSX,
   onExportPDF,
 }) => (
-  <div className="table-container" style={{ marginTop: "1rem" }}>
+  <div className="table-container mt-4">
     <div className="section-header">
       <h2>Resultado: {report.cabecera.titulo_proyecto}</h2>
       <div className="section-header-actions flex gap-2">
@@ -179,7 +180,7 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
           toggleSection("proy-cabecera");
         }}
       />
-      <div style={{ padding: "0.75rem" }}>
+      <div className="p-3">
         <InfoRow label="ID Proyecto" value={report.cabecera.id_proyecto} />
         <InfoRow label="Título" value={report.cabecera.titulo_proyecto} />
         <InfoRow label="Activo" value={formatBool(report.cabecera.activo)} />
@@ -274,24 +275,18 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
         emptyMessage="Sin financiamientos registrados"
       />
       <div
-        style={{
-          padding: "0.75rem",
-          backgroundColor: "var(--color-surface-alt, #f4f8fb)",
-          borderRadius: "6px",
-          marginTop: "0.5rem",
-        }}
+        className="p-3 rounded-md mt-2"
+        style={{ backgroundColor: "var(--color-surface-alt, #f4f8fb)" }}
       >
         <strong>Resumen Financiero</strong>
-        <div style={{ marginTop: "0.5rem" }}>
+        <div className="mt-2">
           <p>
             Total financiamientos:{" "}
-            <span className="badge badge-info">
-              {report.resumen_financiero.total_financiamientos}
-            </span>
+            <Badge variant="info">{report.resumen_financiero.total_financiamientos}</Badge>
           </p>
-          <p style={{ marginTop: "0.5rem" }}>Desglose por moneda:</p>
+          <p className="mt-2">Desglose por moneda:</p>
           {report.resumen_financiero.desglose_por_moneda.length > 0 ? (
-            <table className="table" style={{ marginTop: "0.25rem" }}>
+            <table className="table mt-1">
               <thead>
                 <tr>
                   <th>Moneda</th>
@@ -312,9 +307,9 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
           ) : (
             <p>-</p>
           )}
-          <p style={{ marginTop: "0.5rem" }}>Desglose por estado:</p>
+          <p className="mt-2">Desglose por estado:</p>
           {report.resumen_financiero.desglose_por_estado.length > 0 ? (
-            <table className="table" style={{ marginTop: "0.25rem" }}>
+            <table className="table mt-1">
               <thead>
                 <tr>
                   <th>Estado</th>

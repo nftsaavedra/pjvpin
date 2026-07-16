@@ -1,6 +1,7 @@
 import React from "react";
 import { Server } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { FormInput } from "@/shared/forms/FormInput";
 import type { WizardState } from "../useWizardState";
 
@@ -22,13 +23,13 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
       <div className="p-6 pb-4 border-b border-border bg-gradient-to-b from-primary-light to-card">
         <div className="text-center">
           <AppIcon icon={Server} size={32} className="text-primary mb-2" />
-          <h2 className="text-xl font-bold m-0 mb-1.5 text-text-primary">
-            Credenciales de servicios
-          </h2>
-          <p className="text-sm leading-6 max-w-[44ch] mx-auto text-text-secondary">
-            Configure los servicios que PJVPI necesita para funcionar. Los servicios marcados con *
-            son obligatorios.
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <h2 className="text-xl font-bold m-0 text-text-primary">Credenciales de servicios</h2>
+            <FieldHelpTooltip
+              label="Informacion sobre credenciales"
+              content="Configure los servicios que PJVPI necesita para funcionar. Los servicios marcados con * son obligatorios."
+            />
+          </div>
         </div>
       </div>
 

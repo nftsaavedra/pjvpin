@@ -1,20 +1,11 @@
 @layer components {
-  .dashboard-kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .dashboard-main-grid { @apply grid gap-6 mb-8; grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr); }
-  .dashboard-primary-chart, .dashboard-wide-chart { @apply mb-0; }
-  .dashboard-side-panel { @apply flex flex-col gap-4; }
   .dashboard-insight-card { @apply flex-1 p-5 rounded-[20px] border border-blue-200 bg-gradient-to-b from-white to-blue-50 shadow-sm; }
   .dashboard-insight-card strong { @apply block mt-1.5 mb-1.5 text-3xl leading-none text-blue-900; }
   .dashboard-insight-card p { @apply text-gray-500 text-sm; }
   .dashboard-insight-label { @apply text-xs uppercase tracking-widest text-slate-500 font-bold; }
-  .dashboard-secondary-grid { @apply grid gap-6 mb-8; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .dashboard-secondary-grid .chart-container { @apply mb-0; }
-  .dashboard-refresh-action { @apply ml-auto; }
   .dashboard-chart-stage { @apply w-full min-w-0; }
   .dashboard-chart-stage-lg { @apply min-h-[320px]; }
   .dashboard-chart-stage-md { @apply min-h-[280px]; }
   .dashboard-chart-stage .recharts-wrapper, .dashboard-chart-stage .recharts-surface { @apply overflow-visible; }
-  .dashboard-subtitle { @apply mt-2 text-gray-500 text-sm; }
-  .settings-subtitle { @apply max-w-[720px]; }
-  .dashboard-subtitle { @apply max-w-[720px]; }
 }

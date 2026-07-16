@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Download } from "lucide-react";
 import type { DatosExportInvestigadorAgrupado } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { DataTable, type ColumnDef } from "@/shared/ui/DataTable";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
 import { normalizeText } from "@/shared/utils/text";
@@ -59,7 +60,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
       <div className="module-split-layout reportes-layout">
         <div className="form-card">
           <h2>Centro de Reportes</h2>
-          <div className="form" style={{ gap: "1rem" }}>
+          <div className="form gap-4">
             <div className="form-group">
               <label>Tipo de reporte</label>
               <select
@@ -115,12 +116,10 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
           <strong>{tipo === "agrupado_investigador" ? "Agrupado" : "Plano"}</strong>
           <p>Ajuste el formato antes de exportar.</p>
           <div className="module-aside-meta">
-            <span className="badge badge-info">
-              Consulta actual: {query ? "Filtrada" : "Completa"}
-            </span>
-            <span className={`badge ${canExport ? "badge-success" : "badge-warning"}`}>
+            <Badge variant="info">Consulta actual: {query ? "Filtrada" : "Completa"}</Badge>
+            <Badge variant={canExport ? "success" : "warning"}>
               {canExport ? "Exportación habilitada" : "Solo vista previa"}
-            </span>
+            </Badge>
           </div>
         </aside>
       </div>
@@ -145,7 +144,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
             </span>
           </div>
         )}
-        <div className="form-group" style={{ marginBottom: "1rem" }}>
+        <div className="form-group mb-4">
           <input
             className="form-input"
             placeholder="Buscar por investigador, DNI, grado o nivel RENACYT"

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { toast } from "@/services/toast";
 
@@ -121,7 +122,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
               {icon}
               <span>{title}</span>
             </span>
-            {items.length > 0 && <span className="badge badge-info">{items.length}</span>}
+            {items.length > 0 && <Badge variant="info">{items.length}</Badge>}
           </span>
           <span className="related-entities-toggle-icon" aria-hidden="true">
             <AppIcon icon={expanded ? ChevronUp : ChevronDown} size={18} />
@@ -154,7 +155,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
                         </button>
                         <button
                           type="button"
-                          className="btn-small btn-danger"
+                          className="btn-small btn-delete"
                           onClick={() => {
                             handleDeleteItem(item.id);
                           }}
@@ -184,7 +185,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
                         </button>
                         <button
                           type="button"
-                          className="btn-small btn-danger"
+                          className="btn-small btn-delete"
                           onClick={() => {
                             handleDeleteItem(item.id);
                           }}

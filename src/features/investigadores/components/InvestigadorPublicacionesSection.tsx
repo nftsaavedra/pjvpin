@@ -8,9 +8,10 @@ import {
   getTauriErrorMessage,
 } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
 import { toast } from "@/services/toast";
-import { parseAutores } from "@/shared/utils/docenteUtils";
+import { parseAutores } from "@/shared/utils/investigadorUtils";
 
 interface InvestigadorPublicacionesSectionProps {
   investigadorId: string;
@@ -85,7 +86,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
             <AppIcon icon={BookOpen} size={18} />
             <span>Publicaciones (Pure)</span>
           </span>
-          {loaded && <span className="badge badge-info">{publicaciones.length}</span>}
+          {loaded && <Badge variant="info">{publicaciones.length}</Badge>}
         </span>
         <span className="renacyt-detail-toggle-icon" aria-hidden="true">
           <AppIcon icon={expanded ? ChevronUp : ChevronDown} size={18} />
@@ -132,9 +133,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
                 <article key={pub.id_publicacion} className="renacyt-formacion-card">
                   <div className="renacyt-formacion-head">
                     <strong>{pub.titulo}</strong>
-                    {pub.anio_publicacion && (
-                      <span className="badge badge-info">{pub.anio_publicacion}</span>
-                    )}
+                    {pub.anio_publicacion && <Badge variant="info">{pub.anio_publicacion}</Badge>}
                   </div>
                   <div className="renacyt-formacion-grid">
                     {pub.tipo_publicacion && (

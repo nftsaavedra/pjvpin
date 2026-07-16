@@ -5,7 +5,6 @@
   .btn-delete { @apply border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-medium py-1.5 px-3 rounded-lg transition-all duration-200 cursor-pointer text-sm; }
   .btn-view { @apply bg-blue-500 hover:bg-blue-600 text-white font-medium py-1.5 px-3 rounded-lg transition-all duration-200 cursor-pointer text-sm; }
   .btn-small { @apply py-1 px-2.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer; }
-  .btn-export { @apply bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 cursor-pointer; }
   .btn-icon { @apply p-2 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center; }
   .button-with-icon { @apply inline-flex items-center justify-center gap-2; }
 }

@@ -30,17 +30,13 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
 
   return (
     <div
-      style={{
-        marginBottom: "1.5rem",
-        border: "1px solid var(--color-border, #d7e3f1)",
-        borderRadius: "8px",
-        padding: "1rem",
-      }}
+      className="mb-6 rounded-lg p-4"
+      style={{ border: "1px solid var(--color-border, #d7e3f1)" }}
     >
-      <div className="section-header" style={{ marginBottom: "1rem" }}>
+      <div className="section-header mb-4">
         <h3>{perfil.nombres_apellidos}</h3>
         {!hideExportButtons && onExportXLSX && onExportPDF && (
-          <div className="section-header-actions" style={{ display: "flex", gap: "0.5rem" }}>
+          <div className="section-header-actions flex gap-2">
             <button
               className="btn-primary"
               onClick={onExportXLSX}
@@ -73,7 +69,7 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
             toggleSection(k("doc-perfil"));
           }}
         />
-        <div style={{ padding: "0.75rem" }}>
+        <div className="p-3">
           <InfoRow label="DNI" value={perfil.dni} />
           <InfoRow label="Grado Académico" value={perfil.grado_nombre} />
           <InfoRow label="Código RENACYT" value={perfil.renacyt_codigo_registro ?? "-"} />
@@ -150,7 +146,7 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
             toggleSection(k("doc-recursos"));
           }}
         />
-        <div style={{ padding: "0.75rem" }}>
+        <div className="p-3">
           <p>
             <strong>Patentes ({recursos.total_patentes})</strong>
           </p>
@@ -180,7 +176,7 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
               </tbody>
             </table>
           )}
-          <p style={{ marginTop: "1rem" }}>
+          <p className="mt-4">
             <strong>Productos ({recursos.total_productos})</strong>
           </p>
           {recursos.productos.length === 0 ? (
@@ -207,7 +203,7 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
               </tbody>
             </table>
           )}
-          <p style={{ marginTop: "1rem" }}>
+          <p className="mt-4">
             <strong>Equipamientos ({recursos.total_equipamientos})</strong>
           </p>
           {recursos.equipamientos.length === 0 ? (
@@ -286,7 +282,7 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
             toggleSection(k("doc-trazabilidad"));
           }}
         />
-        <div style={{ padding: "0.75rem" }}>
+        <div className="p-3">
           <InfoRow label="Última actualización" value={formatTimestamp(trazabilidad.updated_at)} />
           <InfoRow
             label="Sincronización RENACYT"

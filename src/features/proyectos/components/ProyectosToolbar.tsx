@@ -1,4 +1,5 @@
 import React from "react";
+import { StatusChip } from "@/shared/ui/StatusChip";
 
 interface ProyectosToolbarProps {
   busqueda: string;
@@ -30,9 +31,9 @@ export const ProyectosToolbar: React.FC<ProyectosToolbarProps> = ({
       ) : (
         <>
           <div className="filter-summary">Visibles: {totalVisibles}</div>
-          <span className="status-chip status-chip-success">Activos: {totalActivos}</span>
-          <span className="status-chip status-chip-warning">Inactivos: {totalInactivos}</span>
-          <span className="status-chip status-chip-total">Todos: {totalTodos}</span>
+          <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
+          <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
+          <StatusChip variant="total">Todos: {totalTodos}</StatusChip>
         </>
       )}
     </div>

@@ -1,4 +1,5 @@
 import React from "react";
+import { StatusChip } from "@/shared/ui/StatusChip";
 
 interface InvestigadoresTableToolbarProps {
   busqueda: string;
@@ -36,9 +37,9 @@ export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProp
   <div className="filter-bar">
     <div className="filter-summary-group">
       <div className="filter-summary">Visibles: {totalVisibles}</div>
-      <span className="status-chip status-chip-total">Todos: {totalTodos}</span>
-      <span className="status-chip status-chip-success">Activos: {totalActivos}</span>
-      <span className="status-chip status-chip-warning">Inactivos: {totalInactivos}</span>
+      <StatusChip variant="total">Todos: {totalTodos}</StatusChip>
+      <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
+      <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
     </div>
     <input
       className="form-input filter-search"

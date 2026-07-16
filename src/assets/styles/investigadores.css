@@ -1,0 +1,35 @@
+@layer components {
+  .investigadores-selector { @apply flex flex-col gap-4; }
+  .investigadores-selector-toolbar { @apply flex gap-3.5 items-center flex-wrap; }
+  .investigadores-selector-search { @apply flex-1 min-w-[260px]; }
+  .investigadores-selector-meta { @apply flex gap-2 items-center flex-wrap; }
+  .investigadores-selector-clear { @apply py-2 px-4 text-sm; }
+  .investigadores-selected-list { @apply flex gap-2.5 flex-wrap min-h-[48px]; }
+  .investigador-chip { @apply inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-full border border-blue-200 bg-blue-50 text-blue-700 font-semibold cursor-pointer transition-all duration-300; }
+  .investigador-chip-content { @apply flex flex-col items-start gap-0.5 min-w-0; }
+  .investigador-chip-name { @apply font-bold text-current; }
+  .investigador-chip-meta { @apply text-xs text-blue-900; }
+  .investigador-chip-meta-compact { @apply text-[0.72rem] font-bold text-blue-700; }
+  .investigador-chip:hover { @apply border-blue-400 bg-blue-100; }
+  .investigador-chip-remove { @apply text-sm opacity-80; }
+  .investigadores-selector-empty { @apply w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-dashed border-gray-200 text-gray-500; }
+  .investigadores-checklist { @apply flex flex-col gap-3 max-h-[300px] overflow-y-auto border border-gray-200 rounded-xl p-4 bg-gray-50; }
+  .investigadores-selector-results { @apply min-h-[180px]; }
+  .checkbox-item { @apply flex items-center gap-3 p-2 rounded-lg transition-all duration-300; }
+  .checkbox-item:hover { @apply bg-blue-100; }
+  .investigador-option { @apply w-full justify-between border border-transparent bg-transparent text-left cursor-pointer; }
+  .investigador-option.selected { @apply bg-blue-50 border-blue-200; }
+  .investigador-option-main { @apply flex flex-col gap-1; }
+  .investigador-option-name { @apply font-semibold text-gray-800; }
+  .investigador-option-dni { @apply text-gray-500 text-sm; }
+  .investigador-option-meta { @apply text-slate-600 text-xs; }
+  .investigador-option-actions { @apply flex items-center gap-2 flex-wrap justify-end; }
+  .investigador-option-responsable { @apply px-2 py-1.5 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-bold cursor-pointer transition-all duration-300; }
+  .investigador-option-responsable:hover { @apply border-blue-400 bg-blue-50 text-blue-700; }
+  .investigador-option-responsable.selected { @apply border-blue-200 bg-blue-100 text-blue-700; }
+  .investigador-profile-cell { @apply inline-flex items-center gap-2 flex-wrap min-w-0; }
+  .investigador-profile-cell strong { @apply text-gray-800 whitespace-nowrap; }
+  .investigadores-selector-footnote { @apply pt-1.5 text-gray-500 text-sm; }
+  .checkbox-item input[type="checkbox"] { @apply w-[18px] h-[18px] cursor-pointer; accent-color: var(--color-primary); }
+  .checkbox-item label { @apply cursor-pointer flex-1 m-0; }
+}

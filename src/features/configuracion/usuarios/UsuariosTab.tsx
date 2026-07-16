@@ -7,7 +7,9 @@ import { FormModal } from "@/shared/forms/FormModal";
 import { FormSelect } from "@/shared/forms/FormSelect";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { Badge } from "@/shared/ui/Badge";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { getRoleDefinition, getRoleLabel, getRoleOptions } from "@/shared/auth/permissions";
 import type { Usuario } from "../../auth/api";
@@ -108,9 +110,9 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
         <div className="filter-bar">
           <div className="filter-summary-group">
             <div className="filter-summary">Visibles: {usuariosFiltrados.length}</div>
-            <span className="status-chip status-chip-total">Todos: {usuarios.length}</span>
-            <span className="status-chip status-chip-success">Activos: {totalActivos}</span>
-            <span className="status-chip status-chip-warning">Inactivos: {totalInactivos}</span>
+            <StatusChip variant="total">Todos: {usuarios.length}</StatusChip>
+            <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
+            <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
           </div>
           <input
             className="form-input filter-search"
@@ -160,13 +162,13 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
                   </td>
                   <td>{usuario.nombre_completo}</td>
                   <td>
-                    <span className="badge badge-info">{getRoleLabel(usuario.rol)}</span>
+                    <Badge variant="info">{getRoleLabel(usuario.rol)}</Badge>
                   </td>
                   <td>
                     {usuario.activo === 1 ? (
-                      <span className="badge badge-success">Activo</span>
+                      <Badge variant="success">Activo</Badge>
                     ) : (
-                      <span className="badge badge-warning">Inactivo</span>
+                      <Badge variant="warning">Inactivo</Badge>
                     )}
                   </td>
                   <td className="table-actions">

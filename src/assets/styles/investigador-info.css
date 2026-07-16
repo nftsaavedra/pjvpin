@@ -1,5 +1,5 @@
 @layer components {
-  .docente-info { @apply bg-gray-50 rounded-lg p-4 mb-6; }
+  .investigador-info { @apply bg-gray-50 rounded-lg p-4 mb-6; }
   .info-row { @apply flex justify-between items-center py-3 border-b border-gray-200; }
   .info-row:last-child { @apply border-b-0; }
   .info-row label { @apply font-semibold text-gray-800 min-w-[150px]; }

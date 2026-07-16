@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import { AppIcon } from "./shared/ui/AppIcon";
+import { StatusChip } from "./shared/ui/StatusChip";
 import { type Usuario } from "./features/auth/api";
 import { ToastContainer } from "./shared/feedback/ToastContainer";
 import { TabNavigation, type Tab } from "./shared/navigation/TabNavigation";
@@ -187,15 +188,19 @@ function App() {
 
           <div className="app-workspace">
             <header className="content-header">
-              <div className="content-header-meta subtle-module-meta">
-                <span className="content-kicker">{activeHeaderMeta.kicker}</span>
-                <div className="content-module-inline">
+              <div className="flex flex-col gap-1.5 min-w-0">
+                <span className="text-[#526173] mb-2 text-[0.72rem] uppercase tracking-[0.18em] font-bold">
+                  {activeHeaderMeta.kicker}
+                </span>
+                <div className="flex items-center gap-2 flex-wrap min-w-0 text-gray-500">
                   {activeTabMeta.icon && <AppIcon icon={activeTabMeta.icon} size={17} />}
-                  <strong>{activeHeaderMeta.title}</strong>
-                  <span>{activeHeaderMeta.subtitle}</span>
+                  <strong className="text-gray-800 text-base leading-none">
+                    {activeHeaderMeta.title}
+                  </strong>
+                  <span className="text-gray-500 text-sm">{activeHeaderMeta.subtitle}</span>
                 </div>
               </div>
-              <div className="content-header-actions">
+              <div className="flex items-center gap-3 flex-wrap ml-auto justify-end">
                 <button
                   type="button"
                   className="content-sidebar-toggle"
@@ -209,9 +214,7 @@ function App() {
                     <span>Menú</span>
                   </span>
                 </button>
-                <span className="status-chip status-chip-total">
-                  Rol: {getRoleLabel(currentUser.rol)}
-                </span>
+                <StatusChip variant="total">Rol: {getRoleLabel(currentUser.rol)}</StatusChip>
               </div>
             </header>
 

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle, Loader2, Minus, Wifi, XCircle } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import {
   wizardTestMongo,
   wizardTestReniec,
@@ -142,10 +143,13 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
       <div className="p-6 pb-4 border-b border-border bg-gradient-to-b from-primary-light to-card">
         <div className="text-center">
           <AppIcon icon={Wifi} size={32} className="text-primary mb-2" />
-          <h2 className="text-xl font-bold m-0 mb-1.5 text-text-primary">Prueba de conectividad</h2>
-          <p className="text-sm leading-6 max-w-[44ch] mx-auto text-text-secondary">
-            Verificando conexion con los servicios configurados.
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <h2 className="text-xl font-bold m-0 text-text-primary">Prueba de conectividad</h2>
+            <FieldHelpTooltip
+              label="Informacion sobre servicios opcionales"
+              content="Solo MongoDB es obligatorio. RENIEC, RENACYT y Pure son opcionales: puede continuar aunque fallen y configurarlos despues desde Configuracion."
+            />
+          </div>
         </div>
       </div>
 
@@ -165,12 +169,7 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
           ))}
         </div>
 
-        <p className="text-xs text-text-secondary mt-4 leading-5">
-          Solo MongoDB es obligatorio. RENIEC, RENACYT y Pure son opcionales — puede continuar
-          aunque fallen y configurarlos despues desde Configuracion.
-        </p>
-
-        <div className="flex items-center justify-between gap-3 pt-3">
+        <div className="flex items-center justify-between gap-3 pt-3 mt-4">
           <button type="button" className="btn-secondary shrink-0" onClick={onBack}>
             Atras
           </button>

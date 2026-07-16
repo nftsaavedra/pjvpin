@@ -24,7 +24,7 @@ const DashboardCharts = lazy(async () => {
 const DashboardChartsFallback = () => (
   <>
     <SkeletonChart titleWidth="md" height="lg" />
-    <div className="two-col-charts">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <SkeletonChart titleWidth="md" height="md" />
       <SkeletonChart titleWidth="md" height="md" />
     </div>
@@ -114,7 +114,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
         </>
       ) : (
         <>
-          <div className="kpi-grid dashboard-kpi-grid content-shell">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {kpis && (
               <>
                 <KPICard
@@ -147,10 +147,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
             />
           </Suspense>
 
-          <button
-            className="btn-secondary dashboard-refresh-action"
-            onClick={() => void cargarDatos()}
-          >
+          <button className="btn-secondary ml-auto" onClick={() => void cargarDatos()}>
             Actualizar
           </button>
         </>

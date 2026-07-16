@@ -317,3 +317,66 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 | 🟡 Medio | Cifrado de config en disco: eliminar `encryption.rs` (hecho), re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) |
 | 🟡 Bajo | Auditoría pendiente en recursos (12 operaciones) y update/reactivate de investigadores/grados/proyectos |
 | 🟡 Medio | Dropdowns de recursos aún usan placeholders; integrar con catálogos (FormSelect dinámico) |
+
+---
+
+## Reglas de UI/UX (v0.1.0-alpha — refactor CSS → Tailwind)
+
+### Tailwind-first
+
+- **Priorizar Tailwind utilities** para todo diseño nuevo: `grid grid-cols-1 md:grid-cols-2 gap-6`, `flex items-center gap-3`, `p-6`, `rounded-xl`, `shadow-md`.
+- CSS custom (`@apply` en `*.css`) solo para patrones repetidos ≥3 veces que merezcan abstracción.
+- Si una utility se repite, promover a componente compartido (ej. `<Badge>`, `<StatusChip>`).
+
+### UI funcional, no explicativa
+
+- **Prosa explicativa > 1 línea en el cuerpo de pantallas: NO.** Mover a `<FieldHelpTooltip>` (icono `?` junto al título del campo/sección).
+- Tooltip content ≤ 240 caracteres. Si más, usar `<details>` collapsible.
+- Componentes clave:
+  - `<FieldHelpTooltip content={...} label={...}>` — basado en `FloatingTooltip` (`@floating-ui/react`), `size="rich"`, `placement="top-start"`.
+  - `<FloatingTooltip>` para todos los tooltips.
+
+### Padding de forms en cards
+
+- Cualquier `<form className="form">` (definida en `forms.css` como `flex flex-col gap-5` **SIN padding**) **debe envolverse** en `<div className="p-6">…</div>` dentro de la card.
+- Aplica a `AuthScreen`, `AppLoadingScreen`, y cualquier modal/form card.
+- Mismo patrón para skeletons (`.form` envuelto en `<div className="p-6">`).
+
+### Componentes compartidos clave (reusar antes que crear alias)
+
+- `<Badge variant="default|info|success|warning">` — reemplaza `.badge*`.
+- `<StatusChip variant="total|success|warning|info">` — reemplaza `.status-chip*` y `.refresh-hint`.
+- `<AppIcon icon={...} size={...}>` — wrapper de `lucide-react`. SIEMPRE usar este wrapper.
+- `<FieldHelpTooltip>`, `<FloatingTooltip>` — tooltips.
+- `<Skeleton>`, `<SkeletonBlock>`, `<SkeletonTable>`, `<SkeletonFallbacks>` — loaders.
+
+### Auditoría de runtime (importante)
+
+- **Verificación de login, wizard, dashboard, configuración, reportes debe hacerse en la ventana Tauri** (`npm run tauri dev`), NO en el navegador Chrome sobre `localhost:1420`. El navegador no expone el IPC Tauri → `invoke()` falla → login/wizard no procesan datos.
+- Solo Chrome DevTools emulación (dark mode, responsive, focus-visible) puede hacerse en el navegador.
+- Para inspeccionar login sin wizard: restaurar un `pjvpin.config.json` previamente generado y reiniciar la app.
+
+### Quality gates obligatorios antes de commitear
+
+```bash
+npm run typecheck  # 0 errores
+npm run lint       # baseline 6 errors + 4 warnings preexistentes
+npm run test       # 27/27 vitest
+cargo check --no-default-features  # 0 warnings
+npm run build      # OK
+```
+
+Si typecheck/lint/build falla, **detener y reportar antes de commitear**.
+
+## Carve-outs respetados (no renombrar)
+
+- `perfil: "docente"` (default) en TS/Rust — modelo canónico.
+- Constantes y enums asociados a `"docente"` en código de negocio.
+- Tokens de perfil en backend (`perfil="docente"`, `default_perfil()`).
+
+Sí se renombraron (en este refactor):
+- Selectores CSS `docente-*` → `investigador-*`.
+- Archivos `docentes.css` → `investigadores.css`, `docente-info.css` → `investigador-info.css`.
+- Util `docenteUtils.ts` → `investigadorUtils.ts`.
+- ID HTML `docente-dni` → `investigador-dni`.
+- Selector `project-docentes-trigger` → `project-investigadores-trigger`.

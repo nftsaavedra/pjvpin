@@ -26,9 +26,9 @@ export const ReporteInvestigadorPanel: React.FC<ReporteInvestigadorPanelProps> =
 
   return (
     <>
-      <div className="form-card" style={{ marginTop: "2rem" }}>
+      <div className="form-card mt-8">
         <h2>Reporte Integral de Investigador</h2>
-        <div className="form" style={{ gap: "1rem" }}>
+        <div className="form gap-4">
           <div className="form-group">
             <label>Seleccionar investigador</label>
             <select
@@ -50,7 +50,7 @@ export const ReporteInvestigadorPanel: React.FC<ReporteInvestigadorPanelProps> =
           </div>
 
           {(investigadorReport || investigadorReports.length > 0) && (
-            <div className="form-actions" style={{ display: "flex", gap: "0.5rem" }}>
+            <div className="form-actions flex gap-2">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -81,10 +81,10 @@ export const ReporteInvestigadorPanel: React.FC<ReporteInvestigadorPanelProps> =
       )}
 
       {investigadorReports.length > 1 && !investigadorReport && (
-        <div className="data-card" style={{ marginTop: "1rem" }}>
+        <div className="data-card mt-4">
           <h3>{investigadorReports.length} investigadores listos para exportar</h3>
           <p>Selecciona un investigador específico para ver su detalle.</p>
-          <div className="form-actions" style={{ display: "flex", gap: "0.5rem" }}>
+          <div className="form-actions flex gap-2">
             <button
               type="button"
               className="btn btn-primary"

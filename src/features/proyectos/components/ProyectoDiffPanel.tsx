@@ -1,4 +1,5 @@
 import React from "react";
+import { Badge } from "@/shared/ui/Badge";
 
 interface ProyectoDiffPanelProps {
   hasDiff: boolean;
@@ -22,9 +23,9 @@ export const ProyectoDiffPanel: React.FC<ProyectoDiffPanelProps> = ({
   <div className="screen-section" aria-label="Resumen visual de cambios pendientes">
     <div className="project-diff-header">
       <strong>Cambios pendientes</strong>
-      <span className={`badge ${hasDiff ? "badge-info" : "badge-success"}`}>
+      <Badge variant={hasDiff ? "info" : "success"}>
         {hasDiff ? "Con cambios" : "Sin cambios"}
-      </span>
+      </Badge>
     </div>
     {!hasDiff ? (
       <p className="project-diff-empty">Todavía no hay diferencias respecto al proyecto actual.</p>
