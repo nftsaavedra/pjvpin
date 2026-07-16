@@ -1,4 +1,5 @@
-use crate::grados::models::{CreateGradoRequest, EliminarGradoResultado, GradoAcademico};
+use crate::grados::dto::{CreateGradoRequest, EliminarGradoResultadoDto};
+use crate::grados::models::GradoAcademico;
 use crate::grados::service as grado_service;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
@@ -55,7 +56,7 @@ pub async fn eliminar_grado(
     state: &AppState,
     window_label: &str,
     id_grado: &str,
-) -> Result<EliminarGradoResultado, AppError> {
+) -> Result<EliminarGradoResultadoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
     let result = grado_service::delete(state, id_grado).await?;

@@ -5,6 +5,7 @@ use mongodb::{bson::doc, Database};
 
 use crate::catalogos::models::CatalogoItem;
 use crate::grados::models::GradoAcademico;
+use crate::grados::repository as grados_repo;
 use crate::grupos::models::GrupoInvestigacion;
 use crate::investigadores::models::Investigador;
 use crate::personas::models::Persona;
@@ -37,16 +38,7 @@ pub fn join_or_none(items: &[String], separator: &str) -> Option<String> {
 }
 
 pub async fn load_grados_map(db: &Database) -> Result<HashMap<String, GradoAcademico>, AppError> {
-    let grados = db
-        .collection::<GradoAcademico>("grados")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
-    Ok(grados
-        .into_iter()
-        .map(|grado| (grado.id_grado.clone(), grado))
-        .collect())
+    grados_repo::load_all_map(db).await
 }
 
 pub async fn load_investigadores_map(

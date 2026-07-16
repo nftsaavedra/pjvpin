@@ -1,4 +1,5 @@
-use crate::grados::models::{CreateGradoRequest, EliminarGradoResultado, GradoAcademico};
+use crate::grados::dto::{CreateGradoRequest, EliminarGradoResultadoDto};
+use crate::grados::models::GradoAcademico;
 use crate::grados::repository;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
@@ -25,7 +26,10 @@ pub async fn update(
     repository::update_grado(db, id_grado, request).await
 }
 
-pub async fn delete(state: &AppState, id_grado: &str) -> Result<EliminarGradoResultado, AppError> {
+pub async fn delete(
+    state: &AppState,
+    id_grado: &str,
+) -> Result<EliminarGradoResultadoDto, AppError> {
     let db = state.mongo_db()?;
     repository::delete_grado(db, id_grado).await
 }
