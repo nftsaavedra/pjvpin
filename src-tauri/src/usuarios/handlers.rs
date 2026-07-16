@@ -3,10 +3,11 @@ use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
-use crate::usuarios::models::{
-    AuthStatus, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
-    UpdateUsuarioRequest, Usuario,
+use crate::usuarios::dto::{
+    AuthStatusDto, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
+    UpdateUsuarioRequest,
 };
+use crate::usuarios::models::Usuario;
 use crate::usuarios::service as usuario_service;
 
 pub async fn crear_usuario(
@@ -27,7 +28,7 @@ pub async fn crear_usuario(
     Ok(usuario)
 }
 
-pub async fn get_auth_status(state: &AppState) -> Result<AuthStatus, AppError> {
+pub async fn get_auth_status(state: &AppState) -> Result<AuthStatusDto, AppError> {
     usuario_service::get_auth_status(state).await
 }
 

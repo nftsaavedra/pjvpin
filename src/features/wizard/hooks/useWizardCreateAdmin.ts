@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useDniValidation } from "@/shared/forms/useDniValidation";
 import { getTauriErrorMessage, registrarPrimerUsuario } from "@/features/auth/api";
-import { wizardConsultarDni } from "@/services/tauri/wizard";
-import { toast } from "@/services/toast";
-import type { Usuario } from "@/services/tauri/types";
+import { wizardConsultarDni } from "@/shared/tauri/wizard";
+import { toast } from "@/shared/feedback/toast";
+import type { Usuario } from "@/shared/tauri/types";
 
 interface UseWizardCreateAdminOptions {
   reniecToken: string;

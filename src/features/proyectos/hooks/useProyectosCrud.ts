@@ -1,6 +1,6 @@
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import {
   actualizarProyectoConParticipantes,
   crearProyectoConParticipantes,
@@ -10,7 +10,7 @@ import {
   type ProyectoParticipantesPayload,
   type ProyectoDetalle,
 } from "../api";
-import type { Proyecto } from "@/services/tauri/types";
+import type { Proyecto } from "@/shared/tauri/types";
 
 export const useProyectosCrud = (refreshTrigger: number, onProyectoCreated: () => void) => {
   const {

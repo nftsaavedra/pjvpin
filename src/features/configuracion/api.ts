@@ -17,13 +17,13 @@ export {
   reactivarGrado,
   reactivarUsuario,
   type CrearUsuarioArgs,
-} from "@/services/tauri/configuracion";
+} from "@/shared/tauri/configuracion";
 
-export { getTauriErrorMessage } from "@/services/tauri/error";
+export { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export type {
   CatalogoItem,
   EliminarCatalogoResultado,
   GradoAcademico,
   Usuario,
-} from "@/services/tauri/types";
+} from "@/shared/tauri/types";

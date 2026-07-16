@@ -3,7 +3,7 @@ import { LogIn } from "lucide-react";
 import { getTauriErrorMessage, loginUsuario, type Usuario } from "./api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 
 interface AuthScreenProps {
   onAuthenticated: (usuario: Usuario) => void;

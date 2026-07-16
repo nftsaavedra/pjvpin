@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { toast } from "@/services/toast";
-import { getTauriErrorMessage } from "@/services/tauri/error";
+import { toast } from "@/shared/feedback/toast";
+import { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export function useToastError() {
   return useCallback((error: unknown, prefix = "Error") => {

@@ -15,7 +15,7 @@ import type { InvestigadorDetalle } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import { formatDate, parseFormacionesAcademicas } from "@/shared/utils/investigadorUtils";
 import { InvestigadorPublicacionesSection } from "./InvestigadorPublicacionesSection";

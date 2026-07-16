@@ -3,11 +3,11 @@ import { Save } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { StatusChip } from "@/shared/ui/StatusChip";
-import { getTauriErrorMessage } from "@/services/tauri/error";
-import { wizardSaveConfig } from "@/services/tauri/wizard";
-import { toast } from "@/services/toast";
-import type { WizardConfigRequest } from "@/services/tauri/wizard";
-import type { Usuario } from "@/services/tauri/types";
+import { getTauriErrorMessage } from "@/shared/tauri/error";
+import { wizardSaveConfig } from "@/shared/tauri/wizard";
+import { toast } from "@/shared/feedback/toast";
+import type { WizardConfigRequest } from "@/shared/tauri/wizard";
+import type { Usuario } from "@/shared/tauri/types";
 
 interface Props {
   request: WizardConfigRequest;

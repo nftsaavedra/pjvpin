@@ -4,9 +4,9 @@ export {
   getReporteProyectoIntegral,
   getReporteInvestigadorIntegral,
   getReportesInvestigadoresIntegral,
-} from "@/services/tauri/reportes";
+} from "@/shared/tauri/reportes";
 
-export { getTauriErrorMessage } from "@/services/tauri/error";
+export { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export type {
   DatosExportInvestigadorAgrupado,
@@ -27,4 +27,4 @@ export type {
   ReporteProyectoIntegral,
   ResumenFinanciero,
   TrazabilidadInvestigador,
-} from "@/services/tauri/types";
+} from "@/shared/tauri/types";

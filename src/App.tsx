@@ -13,7 +13,7 @@ import { TAB_DEFINITIONS, TAB_HEADER_META } from "./app/tabDefinitions";
 import { useAuth } from "./app/hooks/useAuth";
 import { useAutoRefresh } from "./app/hooks/useAutoRefresh";
 import { WizardScreen } from "./features/wizard";
-import { wizardHasConfig } from "./services/tauri/wizard";
+import { wizardHasConfig } from "@/shared/tauri/wizard";
 import "@/assets/styles/index.css";
 
 function App() {

@@ -1,4 +1,4 @@
-use crate::usuarios::models::{BootstrapUsuarioRequest, CreateUsuarioRequest};
+use crate::usuarios::dto::{BootstrapUsuarioRequest, CreateUsuarioRequest};
 use serde_json::json;
 
 #[cfg(test)]

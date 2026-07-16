@@ -4,7 +4,7 @@ import type { InvestigadorDetalle, ProyectoDetalle, ProyectoParticipantesPayload
 import type { CatalogosProyectos } from "../hooks/useCatalogosProyectos";
 import { useProyectoFormState } from "../hooks/useProyectoFormState";
 import { usePendingChange } from "../hooks/usePendingChange";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormSelect } from "@/shared/forms/FormSelect";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";

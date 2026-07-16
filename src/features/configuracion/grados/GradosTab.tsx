@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { BookPlus, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { useFetchGrados } from "./hooks/useFetchGrados";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";

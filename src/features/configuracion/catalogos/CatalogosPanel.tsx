@@ -3,7 +3,7 @@ import { Banknote, CheckCircle, DollarSign, FileText, Layers, LibraryBig, Packag
 import { AppIcon } from '@/shared/ui/AppIcon';
 import { SkeletonBlock, SkeletonTable } from '@/shared/ui/Skeleton';
 import { getAllCatalogosAdmin } from '../api';
-import type { CatalogoItem } from '@/services/tauri/types';
+import type { CatalogoItem } from '@/shared/tauri/types';
 
 const CatalogosTab = lazy(async () => {
   const module = await import('./CatalogosTab');

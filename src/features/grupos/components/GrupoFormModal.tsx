@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import { createGrupo, updateGrupo, getTauriErrorMessage } from "../api";
 import type { Grupo } from "../hooks/useGruposTab";
 

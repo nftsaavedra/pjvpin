@@ -13,7 +13,7 @@ import type {
   ProductoConEtiquetas,
   EquipamientoConEtiquetas,
   FinanciamientoConEtiquetas,
-} from "@/services/tauri/types";
+} from "@/shared/tauri/types";
 
 interface ReporteProyectoPanelProps {
   proyectos: Array<{ id_proyecto: string; titulo_proyecto: string }>;

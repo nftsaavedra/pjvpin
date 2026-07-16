@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useFetchUsuarios } from "./useFetchUsuarios";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import {
   actualizarUsuario,
   consultarDniParaUsuario,

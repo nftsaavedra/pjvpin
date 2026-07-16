@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { toast } from "@/services/toast";
-import { getTauriErrorMessage } from "@/services/tauri/error";
+import { toast } from "@/shared/feedback/toast";
+import { getTauriErrorMessage } from "@/shared/tauri/error";
 
 interface IncomingItem {
   id: string;

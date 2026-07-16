@@ -4,8 +4,8 @@ import { useProyectosCrud } from "./useProyectosCrud";
 import { useProyectosRecursos } from "./useProyectosRecursos";
 import { useFetchInvestigadores } from "../../investigadores/hooks/useFetchInvestigadores";
 import { useCatalogosProyectos } from "./useCatalogosProyectos";
-import { toast } from "@/services/toast";
-import { getTauriErrorMessage } from "@/services/tauri/error";
+import { toast } from "@/shared/feedback/toast";
+import { getTauriErrorMessage } from "@/shared/tauri/error";
 import type { ProyectoDetalle, ProyectoParticipantesPayload } from "../api";
 
 export type ProyectosView = "list" | "create" | "edit" | "detail";

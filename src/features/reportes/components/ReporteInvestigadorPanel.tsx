@@ -4,7 +4,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import SingleInvestigadorReport from "./SingleInvestigadorReport";
 import { useReporteInvestigador } from "../hooks/useReporteInvestigador";
 import { useExport } from "../hooks/useExport";
-import type { Investigador } from "@/services/tauri/types";
+import type { Investigador } from "@/shared/tauri/types";
 
 interface ReporteInvestigadorPanelProps {
   investigadores: Investigador[];

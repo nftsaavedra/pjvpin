@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCatalogos } from "@/features/configuracion/api";
-import type { CatalogoItem } from "@/services/tauri/types";
+import type { CatalogoItem } from "@/shared/tauri/types";
 
 export interface CatalogosProyectos {
   estadoPatente: { value: string; label: string }[];

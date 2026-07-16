@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useFetchGrados } from "../../configuracion/grados/hooks/useFetchGrados";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import {
   buscarInvestigadorPorDni,
   buscarInvestigadorPorDniConRenacyt,

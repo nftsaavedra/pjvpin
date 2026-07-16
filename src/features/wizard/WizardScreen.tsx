@@ -7,7 +7,7 @@ import { StepCredentials } from "./steps/StepCredentials";
 import { StepTestConnectivity } from "./steps/StepTestConnectivity";
 import { StepCreateAdmin } from "./steps/StepCreateAdmin";
 import { StepSummary } from "./steps/StepSummary";
-import type { Usuario } from "@/services/tauri/types";
+import type { Usuario } from "@/shared/tauri/types";
 
 interface Props {
   onDone: (usuario: Usuario) => void;

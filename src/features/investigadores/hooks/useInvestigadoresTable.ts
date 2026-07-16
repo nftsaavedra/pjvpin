@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import {
   eliminarInvestigador,
   getAllInvestigadoresConProyectos,

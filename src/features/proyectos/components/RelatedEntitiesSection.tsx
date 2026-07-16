@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 
 interface RelatedEntity {
   id: string;

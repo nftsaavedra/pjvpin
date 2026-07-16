@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { WizardConfigRequest } from "@/services/tauri/wizard";
+import type { WizardConfigRequest } from "@/shared/tauri/wizard";
 import {
   DEFAULT_MONGODB_DB,
   DEFAULT_RENACYT_ACTO_VERSION,

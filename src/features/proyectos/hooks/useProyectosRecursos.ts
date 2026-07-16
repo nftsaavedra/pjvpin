@@ -16,8 +16,8 @@ import {
   type CreateProductoPayload,
   type CreateEquipamientoPayload,
   type CreateFinanciamientoPayload,
-} from "@/services/tauri/recursos";
-import type { Patente, Producto, Equipamiento, Financiamiento } from "@/services/tauri/types";
+} from "@/shared/tauri/recursos";
+import type { Patente, Producto, Equipamiento, Financiamiento } from "@/shared/tauri/types";
 
 export const useProyectosRecursos = (proyectoId: string | undefined) => {
   const patentesCrud = useRecursoCrud<Patente, CreatePatentePayload>(

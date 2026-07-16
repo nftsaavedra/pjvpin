@@ -1,16 +1,16 @@
 use futures_util::TryStreamExt;
-use mongodb::bson::doc;
-use mongodb::bson::Document;
+use mongodb::bson::{doc, Document};
 use mongodb::Database;
 use rand_core::OsRng;
 
 use crate::personas::models::CreatePersonaRequest;
 use crate::personas::repository as personas_repo;
 use crate::shared::error::AppError;
-use crate::usuarios::models::{
-    AuthStatus, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
-    UpdateUsuarioRequest, Usuario, UsuarioConPassword,
+use crate::usuarios::dto::{
+    AuthStatusDto, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
+    UpdateUsuarioRequest, UsuarioConPasswordDto, UsuarioDto,
 };
+use crate::usuarios::models::{self, Usuario, UsuarioConPassword};
 use crate::usuarios::validations;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -19,13 +19,81 @@ pub enum ModoCreacion {
     Gestion,
 }
 
+// ============================================================================
+// Mappers BSON Document <-> DTO <-> Model
+// ============================================================================
+
+fn dto_to_model(dto: UsuarioConPasswordDto) -> Result<UsuarioConPassword, AppError> {
+    UsuarioConPassword::new(
+        dto.id_usuario,
+        dto.username,
+        dto.nombre_completo,
+        dto.rol,
+        dto.password_hash,
+        dto.activo,
+        dto.investigador_id,
+        dto.persona_id,
+        dto.dni,
+        dto.updated_at,
+    )
+}
+
+fn model_to_dto(m: UsuarioConPassword) -> UsuarioConPasswordDto {
+    UsuarioConPasswordDto {
+        id_usuario: m.id_usuario,
+        username: m.username,
+        nombre_completo: m.nombre_completo,
+        rol: m.rol,
+        password_hash: m.password_hash,
+        activo: m.activo,
+        investigador_id: m.investigador_id,
+        persona_id: m.persona_id,
+        dni: m.dni,
+        updated_at: m.updated_at,
+    }
+}
+
+fn user_dto_to_model(dto: UsuarioDto) -> Result<Usuario, AppError> {
+    Usuario::new(
+        dto.id_usuario,
+        dto.username,
+        dto.nombre_completo,
+        dto.rol,
+        dto.activo,
+        dto.investigador_id,
+        dto.persona_id,
+        dto.dni,
+        dto.updated_at,
+    )
+}
+
+fn document_to_user_dto(doc: Document) -> Result<UsuarioDto, AppError> {
+    mongodb::bson::from_document::<UsuarioDto>(doc).map_err(|e| {
+        AppError::InternalError(format!("No se pudo deserializar usuario desde BSON: {e}"))
+    })
+}
+
+fn document_to_user_with_password_dto(doc: Document) -> Result<UsuarioConPasswordDto, AppError> {
+    mongodb::bson::from_document::<UsuarioConPasswordDto>(doc).map_err(|e| {
+        AppError::InternalError(format!(
+            "No se pudo deserializar usuario (con password) desde BSON: {e}"
+        ))
+    })
+}
+
+// ============================================================================
+// CRUD de dominio
+// ============================================================================
+
 async fn load_usuarios(db: &Database) -> Result<Vec<UsuarioConPassword>, AppError> {
-    db.collection::<UsuarioConPassword>("usuarios")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await
-        .map_err(Into::into)
+    let cursor = db.collection::<Document>("usuarios").find(doc! {}).await?;
+    let mut result = Vec::new();
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    for d in docs {
+        let dto = document_to_user_with_password_dto(d)?;
+        result.push(dto_to_model(dto)?);
+    }
+    Ok(result)
 }
 
 async fn count_usuarios(db: &Database) -> Result<u64, AppError> {
@@ -39,21 +107,26 @@ async fn get_usuario_by_username(
     db: &Database,
     username: &str,
 ) -> Result<UsuarioConPassword, AppError> {
-    db.collection::<UsuarioConPassword>("usuarios")
+    let doc_opt = db
+        .collection::<Document>("usuarios")
         .find_one(doc! { "username": username.trim().to_lowercase() })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))
+        .await?;
+    let doc = doc_opt.ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+    let dto = document_to_user_with_password_dto(doc)?;
+    dto_to_model(dto)
 }
 
 async fn validar_actor_admin(
     db: &Database,
     actor_user_id: &str,
 ) -> Result<UsuarioConPassword, AppError> {
-    let actor = db
-        .collection::<UsuarioConPassword>("usuarios")
+    let doc_opt = db
+        .collection::<Document>("usuarios")
         .find_one(doc! { "id_usuario": actor_user_id })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+        .await?;
+    let doc = doc_opt.ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+    let dto = document_to_user_with_password_dto(doc)?;
+    let actor = dto_to_model(dto)?;
 
     validations::assert_actor_can_admin(&actor)?;
 
@@ -117,9 +190,9 @@ fn verify_password(password: &str, password_hash: &str) -> Result<bool, AppError
         .is_ok())
 }
 
-pub async fn get_auth_status(db: &Database) -> Result<AuthStatus, AppError> {
+pub async fn get_auth_status(db: &Database) -> Result<AuthStatusDto, AppError> {
     let total = count_usuarios(db).await?;
-    Ok(AuthStatus {
+    Ok(AuthStatusDto {
         has_users: total > 0,
         requires_setup: total == 0,
     })
@@ -177,6 +250,10 @@ async fn obtener_o_crear_persona(
     personas_repo::create(db, request).await
 }
 
+fn gen_uuid() -> String {
+    uuid::Uuid::new_v4().to_string()
+}
+
 pub async fn create_usuario(
     db: &Database,
     actor_user_id: &str,
@@ -201,15 +278,26 @@ pub async fn create_usuario(
     .await?;
 
     let password_hash = hash_password(&request.password)?;
-    let mut usuario = UsuarioConPassword::new(request, password_hash);
+    let mut usuario = models::build_usuario_with_password(request, password_hash, gen_uuid())?;
     usuario.persona_id = Some(persona.id_persona.clone());
     usuario.nombre_completo = persona.nombre_completo.clone();
     usuario.dni = Some(persona.dni.clone());
 
-    db.collection::<UsuarioConPassword>("usuarios")
-        .insert_one(&usuario)
+    let dto = model_to_dto(usuario);
+    let doc = mongodb::bson::to_document(&dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo serializar usuario a BSON: {e}"))
+    })?;
+    db.collection::<Document>("usuarios")
+        .insert_one(doc)
         .await?;
-    Ok(usuario.public_view())
+
+    let public = dto_to_model_public(dto)?;
+    Ok(public)
+}
+
+fn dto_to_model_public(dto: UsuarioConPasswordDto) -> Result<Usuario, AppError> {
+    let m = dto_to_model(dto)?;
+    Ok(m.public_view())
 }
 
 pub async fn bootstrap_admin(
@@ -256,7 +344,7 @@ pub async fn bootstrap_admin(
     .await?;
 
     let password_hash = hash_password(&request.password)?;
-    let mut usuario = UsuarioConPassword::new(
+    let mut usuario = models::build_usuario_with_password(
         CreateUsuarioRequest {
             username: request.username,
             dni: request.dni,
@@ -268,15 +356,22 @@ pub async fn bootstrap_admin(
             investigador_id: None,
         },
         password_hash,
-    );
+        gen_uuid(),
+    )?;
     usuario.persona_id = Some(persona.id_persona.clone());
     usuario.nombre_completo = persona.nombre_completo.clone();
     usuario.dni = Some(persona.dni.clone());
 
-    db.collection::<UsuarioConPassword>("usuarios")
-        .insert_one(&usuario)
+    let dto = model_to_dto(usuario);
+    let doc = mongodb::bson::to_document(&dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo serializar usuario a BSON: {e}"))
+    })?;
+    db.collection::<Document>("usuarios")
+        .insert_one(doc)
         .await?;
-    Ok(usuario.public_view())
+
+    let public = dto_to_model_public(dto)?;
+    Ok(public)
 }
 
 pub async fn login_usuario(
@@ -364,7 +459,7 @@ pub async fn get_all_usuarios(
     let mut usuarios: Vec<Usuario> = load_usuarios(db)
         .await?
         .into_iter()
-        .map(|usuario| usuario.public_view())
+        .map(|u| u.public_view())
         .collect();
     enrich_usuarios_with_persona(db, &mut usuarios).await?;
     usuarios.sort_by(|a, b| a.username.cmp(&b.username));
@@ -380,14 +475,14 @@ pub async fn get_all_usuarios_paginated(
     validar_actor_admin(db, actor_user_id).await?;
     let filter = doc! {};
     let total = db
-        .collection::<UsuarioConPassword>("usuarios")
+        .collection::<Document>("usuarios")
         .count_documents(filter.clone())
         .await?;
     let skip = (page.saturating_sub(1) * limit) as u64;
     let limit_i64 = limit as i64;
 
     let mut cursor = db
-        .collection::<UsuarioConPassword>("usuarios")
+        .collection::<Document>("usuarios")
         .find(filter)
         .sort(doc! { "username": 1 })
         .skip(skip)
@@ -395,8 +490,9 @@ pub async fn get_all_usuarios_paginated(
         .await?;
 
     let mut usuarios: Vec<Usuario> = Vec::new();
-    while let Some(u) = cursor.try_next().await? {
-        usuarios.push(u.public_view());
+    while let Some(d) = cursor.try_next().await? {
+        let dto = document_to_user_dto(d)?;
+        usuarios.push(user_dto_to_model(dto)?);
     }
     enrich_usuarios_with_persona(db, &mut usuarios).await?;
 
@@ -414,10 +510,13 @@ pub async fn get_usuario_by_id(
     db: &Database,
     id_usuario: &str,
 ) -> Result<UsuarioConPassword, AppError> {
-    db.collection::<UsuarioConPassword>("usuarios")
+    let doc_opt = db
+        .collection::<Document>("usuarios")
         .find_one(doc! { "id_usuario": id_usuario })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))
+        .await?;
+    let doc = doc_opt.ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+    let dto = document_to_user_with_password_dto(doc)?;
+    dto_to_model(dto)
 }
 
 pub async fn get_usuario_by_id_public(
@@ -453,11 +552,7 @@ pub async fn update_usuario(
         ));
     }
 
-    let usuario_actual = db
-        .collection::<UsuarioConPassword>("usuarios")
-        .find_one(doc! { "id_usuario": id_usuario })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+    let usuario_actual = get_usuario_by_id(db, id_usuario).await?;
 
     validations::assert_no_promote_to_superuser(&usuario_actual.rol, &request.rol)?;
 
@@ -507,11 +602,7 @@ pub async fn desactivar_usuario(
         ));
     }
 
-    let target = db
-        .collection::<UsuarioConPassword>("usuarios")
-        .find_one(doc! { "id_usuario": id_usuario })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
+    let target = get_usuario_by_id(db, id_usuario).await?;
 
     validations::assert_target_not_superuser(&target.rol)?;
 
@@ -527,7 +618,7 @@ pub async fn desactivar_usuario(
     Ok(usuario)
 }
 
-pub async fn reactivar_usuario(
+pub async fn reactivate_usuario(
     db: &Database,
     actor_user_id: &str,
     id_usuario: &str,

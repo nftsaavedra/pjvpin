@@ -5,9 +5,9 @@ use crate::investigadores::models::ReniecDniLookupResult;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
-use crate::usuarios::models::{
-    AuthStatus, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
-    UpdateUsuarioRequest, Usuario,
+use crate::usuarios::dto::{
+    AuthStatusDto, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
+    UpdateUsuarioRequest, UsuarioDto,
 };
 
 #[tauri::command]
@@ -15,8 +15,9 @@ pub async fn crear_usuario(
     window: Window,
     state: State<'_, AppState>,
     request: CreateUsuarioRequest,
-) -> Result<Usuario, AppError> {
-    handlers::crear_usuario(&state, window.label(), request).await
+) -> Result<UsuarioDto, AppError> {
+    let usuario = handlers::crear_usuario(&state, window.label(), request).await?;
+    Ok(usuario.into())
 }
 
 #[tauri::command]
@@ -31,7 +32,7 @@ pub async fn consultar_dni_para_usuario(
 }
 
 #[tauri::command]
-pub async fn get_auth_status(state: State<'_, AppState>) -> Result<AuthStatus, AppError> {
+pub async fn get_auth_status(state: State<'_, AppState>) -> Result<AuthStatusDto, AppError> {
     handlers::get_auth_status(&state).await
 }
 
@@ -40,8 +41,9 @@ pub async fn registrar_primer_usuario(
     window: Window,
     state: State<'_, AppState>,
     request: BootstrapUsuarioRequest,
-) -> Result<Usuario, AppError> {
-    handlers::registrar_primer_usuario(&state, window.label(), request).await
+) -> Result<UsuarioDto, AppError> {
+    let usuario = handlers::registrar_primer_usuario(&state, window.label(), request).await?;
+    Ok(usuario.into())
 }
 
 #[tauri::command]
@@ -49,16 +51,18 @@ pub async fn login_usuario(
     window: Window,
     state: State<'_, AppState>,
     request: LoginUsuarioRequest,
-) -> Result<Usuario, AppError> {
-    handlers::login_usuario(&state, window.label(), request).await
+) -> Result<UsuarioDto, AppError> {
+    let usuario = handlers::login_usuario(&state, window.label(), request).await?;
+    Ok(usuario.into())
 }
 
 #[tauri::command]
 pub async fn get_current_session(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Option<Usuario>, AppError> {
-    handlers::get_current_session(&state, window.label()).await
+) -> Result<Option<UsuarioDto>, AppError> {
+    let result = handlers::get_current_session(&state, window.label()).await?;
+    Ok(result.map(Into::into))
 }
 
 #[tauri::command]
@@ -70,8 +74,9 @@ pub async fn logout_usuario(window: Window, state: State<'_, AppState>) -> Resul
 pub async fn get_all_usuarios(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<Usuario>, AppError> {
-    handlers::get_all_usuarios(&state, window.label()).await
+) -> Result<Vec<UsuarioDto>, AppError> {
+    let usuarios = handlers::get_all_usuarios(&state, window.label()).await?;
+    Ok(usuarios.into_iter().map(Into::into).collect())
 }
 
 #[tauri::command]
@@ -80,8 +85,15 @@ pub async fn get_all_usuarios_paginated(
     state: State<'_, AppState>,
     page: u32,
     limit: u32,
-) -> Result<crate::shared::pagination::PaginatedResult<Usuario>, AppError> {
-    handlers::get_all_usuarios_paginated(&state, window.label(), page, limit).await
+) -> Result<crate::shared::pagination::PaginatedResult<UsuarioDto>, AppError> {
+    let result = handlers::get_all_usuarios_paginated(&state, window.label(), page, limit).await?;
+    Ok(crate::shared::pagination::PaginatedResult {
+        items: result.items.into_iter().map(Into::into).collect(),
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        total_pages: result.total_pages,
+    })
 }
 
 #[tauri::command]
@@ -90,8 +102,10 @@ pub async fn actualizar_usuario(
     state: State<'_, AppState>,
     id_usuario: String,
     request: UpdateUsuarioRequest,
-) -> Result<Usuario, AppError> {
-    handlers::actualizar_usuario(&state, window.label(), &id_usuario, request).await
+) -> Result<UsuarioDto, AppError> {
+    let usuario =
+        handlers::actualizar_usuario(&state, window.label(), &id_usuario, request).await?;
+    Ok(usuario.into())
 }
 
 #[tauri::command]
@@ -99,8 +113,9 @@ pub async fn desactivar_usuario(
     window: Window,
     state: State<'_, AppState>,
     id_usuario: String,
-) -> Result<Usuario, AppError> {
-    handlers::desactivar_usuario(&state, window.label(), &id_usuario).await
+) -> Result<UsuarioDto, AppError> {
+    let usuario = handlers::desactivar_usuario(&state, window.label(), &id_usuario).await?;
+    Ok(usuario.into())
 }
 
 #[tauri::command]
@@ -108,6 +123,7 @@ pub async fn reactivar_usuario(
     window: Window,
     state: State<'_, AppState>,
     id_usuario: String,
-) -> Result<Usuario, AppError> {
-    handlers::reactivar_usuario(&state, window.label(), &id_usuario).await
+) -> Result<UsuarioDto, AppError> {
+    let usuario = handlers::reactivar_usuario(&state, window.label(), &id_usuario).await?;
+    Ok(usuario.into())
 }

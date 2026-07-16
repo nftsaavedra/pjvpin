@@ -3,11 +3,11 @@ export {
   getKpisDashboard,
   getProyectosTrend,
   getRenacytDistribucion,
-} from "@/services/tauri/dashboard";
+} from "@/shared/tauri/dashboard";
 
 export type {
   InvestigadorProyectosCount,
   KpisDashboard,
   ProyectosTrendItem,
   RenacytDistribucionItem,
-} from "@/services/tauri/types";
+} from "@/shared/tauri/types";

@@ -9,11 +9,11 @@ export {
   getAllInvestigadoresConProyectos,
   refrescarFormacionAcademicaRenacytInvestigador,
   reactivarInvestigador,
-} from "@/services/tauri/investigadores";
+} from "@/shared/tauri/investigadores";
 
-export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/services/tauri/pure";
+export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/shared/tauri/pure";
 
-export { getTauriErrorMessage } from "@/services/tauri/error";
+export { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export type {
   Investigador,
@@ -25,4 +25,4 @@ export type {
   RenacytLookupResult,
   ReniecDniLookupResult,
   SyncPublicacionesResult,
-} from "@/services/tauri/types";
+} from "@/shared/tauri/types";

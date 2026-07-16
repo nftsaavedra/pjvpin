@@ -8,7 +8,7 @@ import {
   wizardTestRenacyt,
   wizardTestPure,
   type ConnectivityResult,
-} from "@/services/tauri/wizard";
+} from "@/shared/tauri/wizard";
 import { DEFAULT_PURE_API_BASE_URL } from "@/shared/config/defaults";
 import type { WizardState } from "../useWizardState";
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import { deleteGrupo, getAllGrupos, getTauriErrorMessage, type GrupoInvestigacion } from "../api";
 
 export type Grupo = GrupoInvestigacion & {

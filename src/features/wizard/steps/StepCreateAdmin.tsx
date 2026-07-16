@@ -5,7 +5,7 @@ import { DniField } from "@/shared/forms/DniField";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { FormInput } from "@/shared/forms/FormInput";
 import { useWizardCreateAdmin } from "../hooks/useWizardCreateAdmin";
-import type { Usuario } from "@/services/tauri/types";
+import type { Usuario } from "@/shared/tauri/types";
 
 interface Props {
   reniecToken: string;

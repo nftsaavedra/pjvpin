@@ -1,8 +1,9 @@
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
-use crate::usuarios::models::{
-    AuthStatus, CreateUsuarioRequest, LoginUsuarioRequest, UpdateUsuarioRequest, Usuario,
+use crate::usuarios::dto::{
+    AuthStatusDto, CreateUsuarioRequest, LoginUsuarioRequest, UpdateUsuarioRequest,
 };
+use crate::usuarios::models::Usuario;
 use crate::usuarios::repository;
 
 pub async fn create(
@@ -14,7 +15,7 @@ pub async fn create(
     repository::create_usuario(db, actor_user_id, request).await
 }
 
-pub async fn get_auth_status(state: &AppState) -> Result<AuthStatus, AppError> {
+pub async fn get_auth_status(state: &AppState) -> Result<AuthStatusDto, AppError> {
     let db = state.mongo_db()?;
     repository::get_auth_status(db).await
 }
@@ -59,7 +60,7 @@ pub async fn reactivate(
     id_usuario: &str,
 ) -> Result<Usuario, AppError> {
     let db = state.mongo_db()?;
-    repository::reactivar_usuario(db, actor_user_id, id_usuario).await
+    repository::reactivate_usuario(db, actor_user_id, id_usuario).await
 }
 
 pub async fn get_all_paginated(

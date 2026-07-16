@@ -10,7 +10,7 @@ import {
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import { parseAutores } from "@/shared/utils/investigadorUtils";
 
 interface InvestigadorPublicacionesSectionProps {

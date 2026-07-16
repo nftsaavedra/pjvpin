@@ -2,7 +2,7 @@ import { useState } from "react";
 import ExcelJS from "exceljs";
 import { pdf } from "@react-pdf/renderer";
 import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
-import { toast } from "@/services/toast";
+import { toast } from "@/shared/feedback/toast";
 import { getTauriErrorMessage } from "../api";
 import { ProyectoIntegralPdf, InvestigadorIntegralPdf } from "../components/PdfComponents";
 import type { ReporteProyectoIntegral, ReporteInvestigadorIntegral } from "../api";

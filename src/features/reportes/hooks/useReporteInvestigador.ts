@@ -4,8 +4,8 @@ import {
   getReportesInvestigadoresIntegral,
   type ReporteInvestigadorIntegral,
 } from "../api";
-import { toast } from "@/services/toast";
-import { getTauriErrorMessage } from "@/services/tauri/error";
+import { toast } from "@/shared/feedback/toast";
+import { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export function useReporteInvestigador() {
   const [investigadorReport, setInvestigadorReport] = useState<ReporteInvestigadorIntegral | null>(
