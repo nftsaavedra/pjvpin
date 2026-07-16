@@ -8,6 +8,7 @@ use crate::grados::models::GradoAcademico;
 use crate::grupos::models::GrupoInvestigacion;
 use crate::investigadores::models::Investigador;
 use crate::personas::models::Persona;
+use crate::personas::repository as personas_repo;
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::shared::error::AppError;
 
@@ -64,16 +65,7 @@ pub async fn load_investigadores_map(
 }
 
 pub async fn load_personas_map(db: &Database) -> Result<HashMap<String, Persona>, AppError> {
-    let personas = db
-        .collection::<Persona>("personas")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
-    Ok(personas
-        .into_iter()
-        .map(|p| (p.id_persona.clone(), p))
-        .collect())
+    personas_repo::load_all_map(db).await
 }
 
 pub async fn load_proyectos_map(db: &Database) -> Result<HashMap<String, Proyecto>, AppError> {

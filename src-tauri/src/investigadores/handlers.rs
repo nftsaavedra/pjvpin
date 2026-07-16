@@ -3,6 +3,7 @@ use crate::investigadores::models::{
     RefreshInvestigadorRenacytFormacionResultado,
 };
 use crate::investigadores::service as investigador_service;
+use crate::personas::repository as personas_repo;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use crate::shared::rbac;
@@ -20,11 +21,8 @@ pub async fn crear_investigador(
     )
     .await?;
     let investigador = investigador_service::create(state, request).await?;
-    let persona = state
-        .mongo_db()?
-        .collection::<crate::personas::models::Persona>("personas")
-        .find_one(mongodb::bson::doc! { "id_persona": &investigador.persona_id })
-        .await?;
+    let db = state.mongo_db()?;
+    let persona = personas_repo::find_by_id_persona(db, &investigador.persona_id).await?;
     let (dni_audit, nombre_audit) = match persona {
         Some(ref p) => (p.dni.clone(), p.nombre_completo.clone()),
         None => (String::new(), String::new()),

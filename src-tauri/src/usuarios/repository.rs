@@ -3,7 +3,7 @@ use mongodb::bson::{doc, Document};
 use mongodb::Database;
 use rand_core::OsRng;
 
-use crate::personas::models::CreatePersonaRequest;
+use crate::personas::dto::CreatePersonaRequest;
 use crate::personas::repository as personas_repo;
 use crate::shared::error::AppError;
 use crate::usuarios::dto::{
@@ -425,20 +425,7 @@ async fn enrich_usuarios_with_persona(
         return Ok(());
     }
 
-    let cursor = db
-        .collection::<crate::personas::models::Persona>("personas")
-        .find(doc! { "id_persona": { "$in": &persona_ids } })
-        .await?;
-
-    use futures_util::TryStreamExt;
-    let personas: Vec<crate::personas::models::Persona> = cursor
-        .try_collect::<Vec<_>>()
-        .await
-        .map_err(AppError::from)?;
-    let lookup: std::collections::HashMap<String, crate::personas::models::Persona> = personas
-        .into_iter()
-        .map(|p| (p.id_persona.clone(), p))
-        .collect();
+    let lookup = personas_repo::find_by_ids(db, &persona_ids).await?;
 
     for usuario in usuarios.iter_mut() {
         if let Some(ref persona_id) = usuario.persona_id {

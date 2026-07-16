@@ -1,9 +1,15 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+//! Modelos de dominio de la feature `personas`.
+//!
+//! Dominio puro: sin `serde`, sin `uuid`. Las invariantes se validan en
+//! `new()`. La conversion a/desde BSON `Document` se hace en
+//! `crate::personas::repository` via `PersonaDto`.
 
+use crate::shared::error::AppError;
 use crate::shared::time;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+use crate::personas::dto::CreatePersonaRequest;
+
+#[derive(Debug, Clone)]
 pub struct Persona {
     pub id_persona: String,
     pub dni: String,
@@ -21,33 +27,19 @@ pub struct Persona {
     pub updated_at: Option<i64>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct CreatePersonaRequest {
-    pub dni: String,
-    pub nombres: String,
-    pub apellido_paterno: String,
-    pub apellido_materno: Option<String>,
-    pub correo: Option<String>,
-    pub telefono: Option<String>,
-    pub direccion: Option<String>,
-    pub sexo: Option<String>,
-    pub fecha_nacimiento: Option<i64>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UpdatePersonaRequest {
-    pub nombres: Option<String>,
-    pub apellido_paterno: Option<String>,
-    pub apellido_materno: Option<String>,
-    pub correo: Option<String>,
-    pub telefono: Option<String>,
-    pub direccion: Option<String>,
-    pub sexo: Option<String>,
-    pub fecha_nacimiento: Option<i64>,
-}
-
 impl Persona {
-    pub fn new(request: CreatePersonaRequest) -> Self {
+    pub fn new(id_persona: String, request: CreatePersonaRequest) -> Result<Self, AppError> {
+        if id_persona.trim().is_empty() {
+            return Err(AppError::InternalError(
+                "El id de persona no puede estar vacio.".to_string(),
+            ));
+        }
+        if request.dni.trim().is_empty() {
+            return Err(AppError::InternalError(
+                "El DNI no puede estar vacio.".to_string(),
+            ));
+        }
+
         let apellido_materno = request
             .apellido_materno
             .map(|v| v.trim().to_string())
@@ -67,8 +59,8 @@ impl Persona {
 
         let now = time::now_ms();
 
-        Self {
-            id_persona: Uuid::new_v4().to_string(),
+        Ok(Self {
+            id_persona,
             dni: request.dni.trim().to_string(),
             nombres: Some(nombres),
             apellido_paterno: Some(apellido_paterno),
@@ -94,6 +86,6 @@ impl Persona {
             activo: 1,
             created_at: Some(now),
             updated_at: Some(now),
-        }
+        })
     }
 }

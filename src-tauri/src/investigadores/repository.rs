@@ -5,7 +5,7 @@ use crate::investigadores::models::{
 };
 use crate::investigadores::service::build_delete_result;
 use crate::personas;
-use crate::personas::models::CreatePersonaRequest;
+use crate::personas::dto::CreatePersonaRequest;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use futures_util::TryStreamExt;
@@ -291,7 +291,7 @@ pub async fn update_investigador(
         || request.telefono.is_some()
         || request.direccion.is_some()
     {
-        use crate::personas::models::UpdatePersonaRequest;
+        use crate::personas::dto::UpdatePersonaRequest;
         personas::repository::update(
             db,
             &investigador.persona_id,
