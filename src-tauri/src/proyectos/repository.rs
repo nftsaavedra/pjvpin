@@ -1,3 +1,4 @@
+use crate::investigadores::dto::InvestigadorDto;
 use crate::investigadores::models::Investigador;
 use crate::proyectos::models::ParticipacionRecord;
 use crate::proyectos::models::{
@@ -96,12 +97,19 @@ async fn validate_investigadores_activos(
     db: &Database,
     investigadores_ids: &[String],
 ) -> Result<(), AppError> {
-    let investigadores_activos = db
-        .collection::<Investigador>("investigadores")
+    let cursor = db
+        .collection::<mongodb::bson::Document>("investigadores")
         .find(doc! { "id_investigador": { "$in": investigadores_ids }, "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+    let investigadores_activos: Vec<Investigador> = docs
+        .into_iter()
+        .map(|d| {
+            let dto: InvestigadorDto = mongodb::bson::from_document(d)
+                .map_err(|e| AppError::InternalError(format!("BSON->InvestigadorDto: {e}")))?;
+            std::convert::TryFrom::try_from(dto)
+        })
+        .collect::<Result<_, AppError>>()?;
 
     if investigadores_activos.len() != investigadores_ids.len() {
         return Err(AppError::InternalError(

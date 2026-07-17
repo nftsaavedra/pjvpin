@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::catalogos::models::CatalogoItem;
+use crate::investigadores::dto::PublicacionDto;
 use crate::investigadores::models::{Investigador, Publicacion};
 use crate::investigadores::repository as investigadores_repo;
 use crate::personas::models::Persona;
@@ -376,12 +377,10 @@ pub async fn get_data_exportacion_investigadores_perfil(
     let participaciones = data_loader::load_participaciones(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
 
-    let mut investigadores = db
-        .collection::<Investigador>("investigadores")
-        .find(doc! {})
+    let mut investigadores: Vec<Investigador> = data_loader::load_investigadores_map(db)
         .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+        .into_values()
+        .collect();
     investigadores.sort_by(|a, b| {
         let na = personas
             .get(&a.persona_id)
@@ -407,12 +406,21 @@ pub async fn get_data_exportacion_investigadores_perfil(
             .push(p.id_proyecto.clone());
     }
 
-    let publicaciones = db
-        .collection::<Publicacion>("publicaciones")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let publicaciones: Vec<Publicacion> = {
+        use std::convert::TryFrom;
+        let cursor = db
+            .collection::<mongodb::bson::Document>("publicaciones")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: PublicacionDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->PublicacionDto: {e}")))?;
+                Publicacion::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
     let mut publicaciones_por_investigador: HashMap<String, i64> = HashMap::new();
     for pub_item in &publicaciones {
         if let Some(doc_id) = persona_a_investigador.get(&pub_item.persona_id) {

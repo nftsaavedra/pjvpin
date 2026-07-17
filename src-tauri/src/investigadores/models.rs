@@ -1,53 +1,17 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
+use crate::investigadores::dto::{
+    CreateInvestigadorRequest, InvestigadorDetalleDto, InvestigadorDto, PublicacionDto,
+    RenacytLookupResult,
+};
 use crate::personas::models::Persona;
-use crate::shared::time;
+use crate::shared::error::AppError;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CreateInvestigadorRenacytRequest {
-    pub codigo_registro: String,
-    pub id_investigador: String,
-    pub nivel: Option<String>,
-    pub grupo: Option<String>,
-    pub condicion: Option<String>,
-    pub fecha_informe_calificacion: Option<i64>,
-    pub fecha_registro: Option<i64>,
-    pub fecha_ultima_revision: Option<i64>,
-    pub orcid: Option<String>,
-    pub scopus_author_id: Option<String>,
-    pub ficha_url: String,
-    pub formaciones_academicas_json: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RenacytLookupResult {
-    pub codigo_registro: String,
-    pub id_investigador: String,
-    pub nombre_completo: Option<String>,
-    pub numero_documento: Option<String>,
-    pub nivel: Option<String>,
-    pub grupo: Option<String>,
-    pub condicion: Option<String>,
-    pub fecha_informe_calificacion: Option<i64>,
-    pub fecha_registro: Option<i64>,
-    pub fecha_ultima_revision: Option<i64>,
-    pub orcid: Option<String>,
-    pub scopus_author_id: Option<String>,
-    pub ficha_url: String,
-    pub solicitud_id: Option<i64>,
-    pub formaciones_academicas_json: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Investigador {
     pub id_investigador: String,
     pub persona_id: String,
     pub id_grado: String,
     pub activo: i64,
-    #[serde(default)]
     pub updated_at: Option<i64>,
-    #[serde(default = "default_perfil")]
     pub perfil: String,
     pub renacyt_codigo_registro: Option<String>,
     pub renacyt_id_investigador: Option<String>,
@@ -62,143 +26,32 @@ pub struct Investigador {
     pub renacyt_fecha_ultima_sincronizacion: Option<i64>,
     pub renacyt_ficha_url: Option<String>,
     pub renacyt_formaciones_academicas_json: Option<String>,
-    #[serde(default)]
     pub grupo_investigacion_id: Option<String>,
 }
 
-fn default_perfil() -> String {
-    "docente".to_string()
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateInvestigadorRequest {
-    pub dni: String,
-    pub id_grado: String,
-    pub nombres: String,
-    pub apellido_paterno: String,
-    pub apellido_materno: Option<String>,
-    pub correo: Option<String>,
-    pub telefono: Option<String>,
-    pub direccion: Option<String>,
-    pub sexo: Option<String>,
-    pub fecha_nacimiento: Option<i64>,
-    #[serde(default = "default_perfil")]
-    pub perfil: String,
-    pub renacyt: Option<CreateInvestigadorRenacytRequest>,
-}
-
-#[derive(Debug, Serialize)]
-pub struct InvestigadorDetalle {
-    pub id_investigador: String,
-    pub persona_id: String,
-    pub dni: String,
-    pub nombres_apellidos: String,
-    pub nombres: Option<String>,
-    pub apellido_paterno: Option<String>,
-    pub apellido_materno: Option<String>,
-    pub correo: Option<String>,
-    pub telefono: Option<String>,
-    pub direccion: Option<String>,
-    pub grado: String,
-    pub cantidad_proyectos: i64,
-    pub proyectos: Option<String>,
-    pub activo: i64,
-    pub perfil: String,
-    pub renacyt_codigo_registro: Option<String>,
-    pub renacyt_id_investigador: Option<String>,
-    pub renacyt_nivel: Option<String>,
-    pub renacyt_grupo: Option<String>,
-    pub renacyt_condicion: Option<String>,
-    pub renacyt_fecha_informe_calificacion: Option<i64>,
-    pub renacyt_fecha_registro: Option<i64>,
-    pub renacyt_fecha_ultima_revision: Option<i64>,
-    pub renacyt_orcid: Option<String>,
-    pub renacyt_scopus_author_id: Option<String>,
-    pub renacyt_fecha_ultima_sincronizacion: Option<i64>,
-    pub renacyt_ficha_url: Option<String>,
-    pub renacyt_formaciones_academicas_json: Option<String>,
-}
-
-impl From<(Investigador, Persona, String, Vec<String>)> for InvestigadorDetalle {
-    fn from(
-        (investigador, persona, grado, proyectos): (Investigador, Persona, String, Vec<String>),
-    ) -> Self {
-        let cantidad_proyectos = proyectos.len() as i64;
-        InvestigadorDetalle {
-            id_investigador: investigador.id_investigador,
-            persona_id: investigador.persona_id,
-            dni: persona.dni,
-            nombres_apellidos: persona.nombre_completo,
-            nombres: persona.nombres,
-            apellido_paterno: persona.apellido_paterno,
-            apellido_materno: persona.apellido_materno,
-            correo: persona.correo,
-            telefono: persona.telefono,
-            direccion: persona.direccion,
-            grado,
-            cantidad_proyectos,
-            proyectos: if proyectos.is_empty() {
-                None
-            } else {
-                Some(proyectos.join(" | "))
-            },
-            activo: investigador.activo,
-            perfil: investigador.perfil,
-            renacyt_codigo_registro: investigador.renacyt_codigo_registro,
-            renacyt_id_investigador: investigador.renacyt_id_investigador,
-            renacyt_nivel: investigador.renacyt_nivel,
-            renacyt_grupo: investigador.renacyt_grupo,
-            renacyt_condicion: investigador.renacyt_condicion,
-            renacyt_fecha_informe_calificacion: investigador.renacyt_fecha_informe_calificacion,
-            renacyt_fecha_registro: investigador.renacyt_fecha_registro,
-            renacyt_fecha_ultima_revision: investigador.renacyt_fecha_ultima_revision,
-            renacyt_orcid: investigador.renacyt_orcid,
-            renacyt_scopus_author_id: investigador.renacyt_scopus_author_id,
-            renacyt_fecha_ultima_sincronizacion: investigador.renacyt_fecha_ultima_sincronizacion,
-            renacyt_ficha_url: investigador.renacyt_ficha_url,
-            renacyt_formaciones_academicas_json: investigador.renacyt_formaciones_academicas_json,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ReniecDniLookupResult {
-    pub first_name: String,
-    pub first_last_name: String,
-    pub second_last_name: String,
-    pub full_name: String,
-    pub document_number: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EliminarInvestigadorResultado {
-    pub accion: String,
-    pub mensaje: String,
-}
-
-#[derive(Debug, Serialize)]
-pub struct RefreshInvestigadorRenacytFormacionResultado {
-    pub investigador: InvestigadorDetalle,
-    pub actualizada: bool,
-    pub mensaje: String,
-}
-
 impl Investigador {
-    pub fn new(persona_id: String, request: &CreateInvestigadorRequest) -> Self {
+    pub fn new(
+        id_investigador: String,
+        request: &CreateInvestigadorRequest,
+    ) -> Result<Self, AppError> {
+        if id_investigador.trim().is_empty() {
+            return Err(AppError::InternalError(
+                "El id de investigador no puede estar vacio.".to_string(),
+            ));
+        }
         let renacyt = &request.renacyt;
-        let fecha_ultima_sincronizacion = renacyt.as_ref().map(|_| time::now_ms());
+        let fecha_ultima_sincronizacion = renacyt.as_ref().map(|_| crate::shared::time::now_ms());
         let perfil = match request.perfil.as_str() {
             "docente" | "tesista" | "alumno_egresado" => request.perfil.clone(),
             _ => "docente".to_string(),
         };
 
-        Self {
-            id_investigador: Uuid::new_v4().to_string(),
-            persona_id,
+        Ok(Self {
+            id_investigador,
+            persona_id: String::new(),
             id_grado: request.id_grado.clone(),
             activo: 1,
-            updated_at: Some(time::now_ms()),
+            updated_at: Some(crate::shared::time::now_ms()),
             perfil,
             renacyt_codigo_registro: renacyt
                 .as_ref()
@@ -245,7 +98,12 @@ impl Investigador {
                 .and_then(|value| value.formaciones_academicas_json.clone())
                 .filter(|value| !value.trim().is_empty()),
             grupo_investigacion_id: None,
-        }
+        })
+    }
+
+    pub fn with_persona_id(mut self, persona_id: String) -> Self {
+        self.persona_id = persona_id;
+        self
     }
 
     pub fn apply_renacyt_refresh(&mut self, lookup: RenacytLookupResult) -> bool {
@@ -270,7 +128,7 @@ impl Investigador {
             .filter(|value| !value.trim().is_empty());
         self.renacyt_ficha_url =
             Some(lookup.ficha_url.trim().to_string()).filter(|value| !value.is_empty());
-        self.renacyt_fecha_ultima_sincronizacion = Some(time::now_ms());
+        self.renacyt_fecha_ultima_sincronizacion = Some(crate::shared::time::now_ms());
 
         if let Some(formaciones) = nuevas_formaciones {
             self.renacyt_formaciones_academicas_json = Some(formaciones);
@@ -280,60 +138,169 @@ impl Investigador {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+impl From<Investigador> for InvestigadorDto {
+    fn from(m: Investigador) -> Self {
+        Self {
+            id_investigador: m.id_investigador,
+            persona_id: m.persona_id,
+            id_grado: m.id_grado,
+            activo: m.activo,
+            updated_at: m.updated_at,
+            perfil: m.perfil,
+            renacyt_codigo_registro: m.renacyt_codigo_registro,
+            renacyt_id_investigador: m.renacyt_id_investigador,
+            renacyt_nivel: m.renacyt_nivel,
+            renacyt_grupo: m.renacyt_grupo,
+            renacyt_condicion: m.renacyt_condicion,
+            renacyt_fecha_informe_calificacion: m.renacyt_fecha_informe_calificacion,
+            renacyt_fecha_registro: m.renacyt_fecha_registro,
+            renacyt_fecha_ultima_revision: m.renacyt_fecha_ultima_revision,
+            renacyt_orcid: m.renacyt_orcid,
+            renacyt_scopus_author_id: m.renacyt_scopus_author_id,
+            renacyt_fecha_ultima_sincronizacion: m.renacyt_fecha_ultima_sincronizacion,
+            renacyt_ficha_url: m.renacyt_ficha_url,
+            renacyt_formaciones_academicas_json: m.renacyt_formaciones_academicas_json,
+            grupo_investigacion_id: m.grupo_investigacion_id,
+        }
+    }
+}
+
+impl TryFrom<InvestigadorDto> for Investigador {
+    type Error = AppError;
+    fn try_from(d: InvestigadorDto) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id_investigador: d.id_investigador,
+            persona_id: d.persona_id,
+            id_grado: d.id_grado,
+            activo: d.activo,
+            updated_at: d.updated_at,
+            perfil: d.perfil,
+            renacyt_codigo_registro: d.renacyt_codigo_registro,
+            renacyt_id_investigador: d.renacyt_id_investigador,
+            renacyt_nivel: d.renacyt_nivel,
+            renacyt_grupo: d.renacyt_grupo,
+            renacyt_condicion: d.renacyt_condicion,
+            renacyt_fecha_informe_calificacion: d.renacyt_fecha_informe_calificacion,
+            renacyt_fecha_registro: d.renacyt_fecha_registro,
+            renacyt_fecha_ultima_revision: d.renacyt_fecha_ultima_revision,
+            renacyt_orcid: d.renacyt_orcid,
+            renacyt_scopus_author_id: d.renacyt_scopus_author_id,
+            renacyt_fecha_ultima_sincronizacion: d.renacyt_fecha_ultima_sincronizacion,
+            renacyt_ficha_url: d.renacyt_ficha_url,
+            renacyt_formaciones_academicas_json: d.renacyt_formaciones_academicas_json,
+            grupo_investigacion_id: d.grupo_investigacion_id,
+        })
+    }
+}
+
+impl InvestigadorDetalleDto {
+    pub fn from_parts(
+        investigador: Investigador,
+        persona: Persona,
+        grado: String,
+        proyectos: Vec<String>,
+    ) -> Self {
+        let cantidad_proyectos = proyectos.len() as i64;
+        Self {
+            id_investigador: investigador.id_investigador,
+            persona_id: investigador.persona_id,
+            dni: persona.dni,
+            nombres_apellidos: persona.nombre_completo,
+            nombres: persona.nombres,
+            apellido_paterno: persona.apellido_paterno,
+            apellido_materno: persona.apellido_materno,
+            correo: persona.correo,
+            telefono: persona.telefono,
+            direccion: persona.direccion,
+            grado,
+            cantidad_proyectos,
+            proyectos: if proyectos.is_empty() {
+                None
+            } else {
+                Some(proyectos.join(" | "))
+            },
+            activo: investigador.activo,
+            perfil: investigador.perfil,
+            renacyt_codigo_registro: investigador.renacyt_codigo_registro,
+            renacyt_id_investigador: investigador.renacyt_id_investigador,
+            renacyt_nivel: investigador.renacyt_nivel,
+            renacyt_grupo: investigador.renacyt_grupo,
+            renacyt_condicion: investigador.renacyt_condicion,
+            renacyt_fecha_informe_calificacion: investigador.renacyt_fecha_informe_calificacion,
+            renacyt_fecha_registro: investigador.renacyt_fecha_registro,
+            renacyt_fecha_ultima_revision: investigador.renacyt_fecha_ultima_revision,
+            renacyt_orcid: investigador.renacyt_orcid,
+            renacyt_scopus_author_id: investigador.renacyt_scopus_author_id,
+            renacyt_fecha_ultima_sincronizacion: investigador.renacyt_fecha_ultima_sincronizacion,
+            renacyt_ficha_url: investigador.renacyt_ficha_url,
+            renacyt_formaciones_academicas_json: investigador.renacyt_formaciones_academicas_json,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Publicacion {
     pub id_publicacion: String,
     pub pure_uuid: String,
     pub persona_id: String,
-    #[serde(default)]
     pub proyecto_id: Option<String>,
     pub titulo: String,
-    #[serde(default)]
     pub tipo_publicacion: Option<String>,
-    #[serde(default)]
     pub doi: Option<String>,
-    #[serde(default)]
     pub scopus_eid: Option<String>,
-    #[serde(default)]
     pub anio_publicacion: Option<i32>,
-    #[serde(default)]
     pub autores_json: Option<String>,
-    #[serde(default)]
     pub estado_publicacion: Option<String>,
-    #[serde(default)]
     pub journal_titulo: Option<String>,
-    #[serde(default)]
     pub issn: Option<String>,
-    #[serde(default)]
     pub pure_sincronizado_at: Option<i64>,
-    #[serde(default)]
     pub created_at: Option<i64>,
-    #[serde(default)]
     pub updated_at: Option<i64>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SyncPublicacionesResult {
-    pub persona_id: String,
-    pub scopus_author_id: String,
-    pub pure_person_uuid: Option<String>,
-    pub total_encontradas: usize,
-    pub nuevas: usize,
-    pub actualizadas: usize,
+impl From<Publicacion> for PublicacionDto {
+    fn from(m: Publicacion) -> Self {
+        Self {
+            id_publicacion: m.id_publicacion,
+            pure_uuid: m.pure_uuid,
+            persona_id: m.persona_id,
+            proyecto_id: m.proyecto_id,
+            titulo: m.titulo,
+            tipo_publicacion: m.tipo_publicacion,
+            doi: m.doi,
+            scopus_eid: m.scopus_eid,
+            anio_publicacion: m.anio_publicacion,
+            autores_json: m.autores_json,
+            estado_publicacion: m.estado_publicacion,
+            journal_titulo: m.journal_titulo,
+            issn: m.issn,
+            pure_sincronizado_at: m.pure_sincronizado_at,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+        }
+    }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateInvestigadorRequest {
-    pub nombres: Option<String>,
-    pub apellido_paterno: Option<String>,
-    pub apellido_materno: Option<String>,
-    pub correo: Option<String>,
-    pub telefono: Option<String>,
-    pub direccion: Option<String>,
-    pub sexo: Option<String>,
-    pub fecha_nacimiento: Option<i64>,
-    pub id_grado: Option<String>,
-    pub grupo_investigacion_id: Option<String>,
-    pub perfil: Option<String>,
+impl TryFrom<PublicacionDto> for Publicacion {
+    type Error = AppError;
+    fn try_from(d: PublicacionDto) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id_publicacion: d.id_publicacion,
+            pure_uuid: d.pure_uuid,
+            persona_id: d.persona_id,
+            proyecto_id: d.proyecto_id,
+            titulo: d.titulo,
+            tipo_publicacion: d.tipo_publicacion,
+            doi: d.doi,
+            scopus_eid: d.scopus_eid,
+            anio_publicacion: d.anio_publicacion,
+            autores_json: d.autores_json,
+            estado_publicacion: d.estado_publicacion,
+            journal_titulo: d.journal_titulo,
+            issn: d.issn,
+            pure_sincronizado_at: d.pure_sincronizado_at,
+            created_at: d.created_at,
+            updated_at: d.updated_at,
+        })
+    }
 }

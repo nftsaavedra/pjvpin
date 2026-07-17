@@ -1,8 +1,11 @@
+use std::convert::TryFrom;
+
 use futures_util::TryStreamExt;
-use mongodb::bson::doc;
+use mongodb::bson::{doc, Document};
 use mongodb::options::UpdateOptions;
 
-use crate::investigadores::models::{Investigador, Publicacion, SyncPublicacionesResult};
+use crate::investigadores::dto::{PublicacionDto, SyncPublicacionesResult};
+use crate::investigadores::models::Publicacion;
 use crate::shared::error::AppError;
 use crate::shared::external::pure_client;
 use crate::shared::state::AppState;
@@ -14,13 +17,8 @@ pub async fn sync_publicaciones(
 ) -> Result<SyncPublicacionesResult, AppError> {
     let db = state.mongo_db()?;
 
-    let investigador = db
-        .collection::<Investigador>("investigadores")
-        .find_one(doc! { "id_investigador": investigador_id })
-        .await?
-        .ok_or_else(|| {
-            AppError::NotFound(format!("Investigador '{}' no encontrado.", investigador_id))
-        })?;
+    let investigador =
+        crate::investigadores::repository::get_investigador_by_id(db, investigador_id).await?;
 
     let scopus_author_id = investigador
         .renacyt_scopus_author_id
@@ -47,7 +45,7 @@ pub async fn sync_publicaciones(
     let mut actualizadas = 0usize;
     let now_ms = time::now_ms();
 
-    let col = db.collection::<Publicacion>("publicaciones");
+    let col = db.collection::<Document>("publicaciones");
 
     for fp in fetched {
         let filter = doc! { "pure_uuid": &fp.pure_uuid };
@@ -105,12 +103,17 @@ pub async fn get_publicaciones(
     investigador_id: &str,
 ) -> Result<Vec<Publicacion>, AppError> {
     let db = state.mongo_db()?;
-    let publicaciones = db
-        .collection::<Publicacion>("publicaciones")
+    let cursor = db
+        .collection::<Document>("publicaciones")
         .find(doc! { "investigador_id": investigador_id })
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
-
-    Ok(publicaciones)
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    docs.into_iter()
+        .map(|d| {
+            let dto: PublicacionDto = mongodb::bson::from_document(d).map_err(|e| {
+                AppError::InternalError(format!("No se pudo deserializar publicación: {e}"))
+            })?;
+            Publicacion::try_from(dto)
+        })
+        .collect()
 }

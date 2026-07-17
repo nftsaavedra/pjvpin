@@ -12,12 +12,8 @@ use crate::shared::error::AppError;
 pub async fn build_reportes_investigadores_integral(
     db: &Database,
 ) -> Result<Vec<ReporteInvestigadorIntegral>, AppError> {
-    let investigadores = db
-        .collection::<Investigador>("investigadores")
-        .find(doc! { "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let investigadores: Vec<Investigador> =
+        crate::investigadores::repository::get_all_investigadores(db).await?;
 
     let mut reportes = Vec::with_capacity(investigadores.len());
     for investigador in investigadores {

@@ -1,7 +1,8 @@
-use crate::investigadores::models::{
-    CreateInvestigadorRequest, EliminarInvestigadorResultado, Investigador, InvestigadorDetalle,
-    RefreshInvestigadorRenacytFormacionResultado,
+use crate::investigadores::dto::{
+    CreateInvestigadorRequest, EliminarInvestigadorResultadoDto, InvestigadorDetalleDto,
+    RefreshInvestigadorRenacytFormacionResultadoDto, UpdateInvestigadorRequest,
 };
+use crate::investigadores::models::Investigador;
 use crate::investigadores::service as investigador_service;
 use crate::personas::repository as personas_repo;
 use crate::shared::error::AppError;
@@ -72,7 +73,7 @@ pub async fn buscar_investigador_por_dni(
 pub async fn get_all_investigadores_con_proyectos(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<InvestigadorDetalle>, AppError> {
+) -> Result<Vec<InvestigadorDetalleDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
     investigador_service::get_all_detalle(state).await
 }
@@ -81,7 +82,7 @@ pub async fn eliminar_investigador(
     state: &AppState,
     window_label: &str,
     id_investigador: &str,
-) -> Result<EliminarInvestigadorResultado, AppError> {
+) -> Result<EliminarInvestigadorResultadoDto, AppError> {
     let actor = rbac::require_permission(
         state,
         window_label,
@@ -117,7 +118,7 @@ pub async fn actualizar_investigador(
     state: &AppState,
     window_label: &str,
     id_investigador: &str,
-    request: crate::investigadores::models::UpdateInvestigadorRequest,
+    request: UpdateInvestigadorRequest,
 ) -> Result<Investigador, AppError> {
     rbac::require_permission(
         state,
@@ -132,7 +133,7 @@ pub async fn refrescar_formacion_academica_renacyt_investigador(
     state: &AppState,
     window_label: &str,
     id_investigador: &str,
-) -> Result<RefreshInvestigadorRenacytFormacionResultado, AppError> {
+) -> Result<RefreshInvestigadorRenacytFormacionResultadoDto, AppError> {
     rbac::require_permission(
         state,
         window_label,

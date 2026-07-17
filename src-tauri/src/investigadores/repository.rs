@@ -1,19 +1,59 @@
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
-use crate::investigadores::models::{
-    CreateInvestigadorRequest, EliminarInvestigadorResultado, Investigador, InvestigadorDetalle,
+use futures_util::TryStreamExt;
+use mongodb::{bson::doc, bson::Document, Database};
+
+use crate::investigadores::dto::{
+    CreateInvestigadorRequest, EliminarInvestigadorResultadoDto, InvestigadorDetalleDto,
+    InvestigadorDto, UpdateInvestigadorRequest,
 };
+use crate::investigadores::models::Investigador;
 use crate::investigadores::service::build_delete_result;
 use crate::personas;
 use crate::personas::dto::CreatePersonaRequest;
+use crate::shared::data_loader;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
-use futures_util::TryStreamExt;
-use mongodb::{bson::doc, Database};
-
-use crate::shared::data_loader;
 
 const COLLECTION_INVESTIGADORES: &str = "investigadores";
+
+fn doc_to_dto(doc: Document) -> Result<InvestigadorDto, AppError> {
+    mongodb::bson::from_document::<InvestigadorDto>(doc).map_err(|e| {
+        AppError::InternalError(format!(
+            "No se pudo deserializar investigador desde BSON: {e}"
+        ))
+    })
+}
+
+fn dto_to_model(dto: InvestigadorDto) -> Investigador {
+    Investigador::try_from(dto).expect("InvestigadorDto -> Investigador conversion failed")
+}
+
+fn model_to_dto(m: &Investigador) -> InvestigadorDto {
+    InvestigadorDto {
+        id_investigador: m.id_investigador.clone(),
+        persona_id: m.persona_id.clone(),
+        id_grado: m.id_grado.clone(),
+        activo: m.activo,
+        updated_at: m.updated_at,
+        perfil: m.perfil.clone(),
+        renacyt_codigo_registro: m.renacyt_codigo_registro.clone(),
+        renacyt_id_investigador: m.renacyt_id_investigador.clone(),
+        renacyt_nivel: m.renacyt_nivel.clone(),
+        renacyt_grupo: m.renacyt_grupo.clone(),
+        renacyt_condicion: m.renacyt_condicion.clone(),
+        renacyt_fecha_informe_calificacion: m.renacyt_fecha_informe_calificacion,
+        renacyt_fecha_registro: m.renacyt_fecha_registro,
+        renacyt_fecha_ultima_revision: m.renacyt_fecha_ultima_revision,
+        renacyt_orcid: m.renacyt_orcid.clone(),
+        renacyt_scopus_author_id: m.renacyt_scopus_author_id.clone(),
+        renacyt_fecha_ultima_sincronizacion: m.renacyt_fecha_ultima_sincronizacion,
+        renacyt_ficha_url: m.renacyt_ficha_url.clone(),
+        renacyt_formaciones_academicas_json: m.renacyt_formaciones_academicas_json.clone(),
+        grupo_investigacion_id: m.grupo_investigacion_id.clone(),
+    }
+}
 
 pub async fn create_investigador(
     db: &Database,
@@ -36,7 +76,7 @@ pub async fn create_investigador(
     .await?;
 
     let grado_existente = db
-        .collection::<mongodb::bson::Document>("grados")
+        .collection::<Document>("grados")
         .find_one(doc! { "id_grado": &request.id_grado })
         .await?;
     if grado_existente.is_none() {
@@ -45,20 +85,28 @@ pub async fn create_investigador(
         ));
     }
 
-    let investigador = Investigador::new(persona.id_persona, &request);
-    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
-        .insert_one(&investigador)
+    let id = uuid::Uuid::new_v4().to_string();
+    let investigador = Investigador::new(id, &request)?.with_persona_id(persona.id_persona);
+    let dto = model_to_dto(&investigador);
+    let doc = mongodb::bson::to_document(&dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo serializar investigador a BSON: {e}"))
+    })?;
+    db.collection::<Document>(COLLECTION_INVESTIGADORES)
+        .insert_one(doc)
         .await?;
     Ok(investigador)
 }
 
 pub async fn get_all_investigadores(db: &Database) -> Result<Vec<Investigador>, AppError> {
-    let mut investigadores = db
-        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
+    let cursor = db
+        .collection::<Document>(COLLECTION_INVESTIGADORES)
         .find(doc! { "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut investigadores: Vec<Investigador> = docs
+        .into_iter()
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .collect::<Result<Vec<_>, _>>()?;
     let personas = data_loader::load_personas_map(db).await?;
     investigadores.sort_by(|a, b| {
         let na = personas
@@ -84,22 +132,22 @@ pub async fn get_all_investigadores_paginated(
     let filter = doc! { "activo": 1i64 };
 
     let total = db
-        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
+        .collection::<Document>(COLLECTION_INVESTIGADORES)
         .count_documents(filter.clone())
         .await?;
 
-    let mut cursor = db
-        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
+    let cursor = db
+        .collection::<Document>(COLLECTION_INVESTIGADORES)
         .find(filter)
         .sort(doc! { "id_investigador": 1 })
         .skip(skip)
         .limit(limit_i64)
         .await?;
-
-    let mut investigadores: Vec<Investigador> = Vec::new();
-    while let Some(investigador) = cursor.try_next().await? {
-        investigadores.push(investigador);
-    }
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let investigadores: Vec<Investigador> = docs
+        .into_iter()
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .collect::<Result<Vec<_>, _>>()?;
 
     let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
     Ok(PaginatedResult {
@@ -117,11 +165,13 @@ pub async fn get_investigador_by_dni(
 ) -> Result<Option<Investigador>, AppError> {
     let persona = personas::repository::find_by_dni(db, dni).await?;
     match persona {
-        Some(p) => db
-            .collection::<Investigador>(COLLECTION_INVESTIGADORES)
-            .find_one(doc! { "persona_id": &p.id_persona })
-            .await
-            .map_err(Into::into),
+        Some(p) => {
+            let doc_opt = db
+                .collection::<Document>(COLLECTION_INVESTIGADORES)
+                .find_one(doc! { "persona_id": &p.id_persona })
+                .await?;
+            Ok(doc_opt.map(|d| dto_to_model(doc_to_dto(d).expect("BSON decode"))))
+        }
         None => Ok(None),
     }
 }
@@ -130,35 +180,44 @@ pub async fn get_investigador_by_id(
     db: &Database,
     id_investigador: &str,
 ) -> Result<Investigador, AppError> {
-    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
+    let doc_opt = db
+        .collection::<Document>(COLLECTION_INVESTIGADORES)
         .find_one(doc! { "id_investigador": id_investigador })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
+        .await?;
+    let doc =
+        doc_opt.ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))?;
+    Ok(dto_to_model(doc_to_dto(doc)?))
 }
 
 pub async fn update_investigador_renacyt(
     db: &Database,
     investigador: &Investigador,
 ) -> Result<(), AppError> {
-    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
+    let dto = model_to_dto(investigador);
+    let doc = mongodb::bson::to_document(&dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo serializar investigador a BSON: {e}"))
+    })?;
+    db.collection::<Document>(COLLECTION_INVESTIGADORES)
         .replace_one(
             doc! { "id_investigador": &investigador.id_investigador },
-            investigador,
+            doc,
         )
         .await?;
-
     Ok(())
 }
 
 pub async fn get_all_investigadores_con_proyectos(
     db: &Database,
-) -> Result<Vec<InvestigadorDetalle>, AppError> {
-    let mut investigadores = db
-        .collection::<Investigador>(COLLECTION_INVESTIGADORES)
+) -> Result<Vec<InvestigadorDetalleDto>, AppError> {
+    let cursor = db
+        .collection::<Document>(COLLECTION_INVESTIGADORES)
         .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut investigadores: Vec<Investigador> = docs
+        .into_iter()
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .collect::<Result<Vec<_>, _>>()?;
     let personas = data_loader::load_personas_map(db).await?;
     investigadores.sort_by(|a, b| {
         let na = personas
@@ -203,7 +262,7 @@ pub async fn get_all_investigadores_con_proyectos(
                 .cloned()
                 .expect("Persona must exist for investigador");
 
-            InvestigadorDetalle::from((investigador, persona, grado, proyectos_investigador))
+            InvestigadorDetalleDto::from_parts(investigador, persona, grado, proyectos_investigador)
         })
         .collect();
 
@@ -213,7 +272,7 @@ pub async fn get_all_investigadores_con_proyectos(
 pub async fn get_investigador_detalle_by_id(
     db: &Database,
     id_investigador: &str,
-) -> Result<InvestigadorDetalle, AppError> {
+) -> Result<InvestigadorDetalleDto, AppError> {
     let investigador = get_investigador_by_id(db, id_investigador).await?;
     let persona = personas::repository::find_by_id(db, &investigador.persona_id).await?;
     let grados = data_loader::load_grados_map(db).await?;
@@ -233,24 +292,24 @@ pub async fn get_investigador_detalle_by_id(
         .map(|grado| grado.nombre.clone())
         .unwrap_or_else(|| "Sin grado".to_string());
 
-    Ok(InvestigadorDetalle::from((
+    Ok(InvestigadorDetalleDto::from_parts(
         investigador,
         persona,
         grado,
         proyectos_investigador,
-    )))
+    ))
 }
 
 pub async fn delete_investigador(
     db: &Database,
     id_investigador: &str,
-) -> Result<EliminarInvestigadorResultado, AppError> {
+) -> Result<EliminarInvestigadorResultadoDto, AppError> {
     let participaciones = db
-        .collection::<mongodb::bson::Document>("participaciones")
+        .collection::<Document>("participaciones")
         .count_documents(doc! { "id_investigador": id_investigador })
         .await?;
 
-    db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
+    db.collection::<Document>(COLLECTION_INVESTIGADORES)
         .update_one(
             doc! { "id_investigador": id_investigador },
             doc! { "$set": { "activo": 0i64 } },
@@ -264,23 +323,20 @@ pub async fn reactivar_investigador(
     db: &Database,
     id_investigador: &str,
 ) -> Result<Investigador, AppError> {
-    db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
+    db.collection::<Document>(COLLECTION_INVESTIGADORES)
         .update_one(
             doc! { "id_investigador": id_investigador },
             doc! { "$set": { "activo": 1i64 } },
         )
         .await?;
 
-    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
-        .find_one(doc! { "id_investigador": id_investigador })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
+    get_investigador_by_id(db, id_investigador).await
 }
 
 pub async fn update_investigador(
     db: &Database,
     id_investigador: &str,
-    request: &crate::investigadores::models::UpdateInvestigadorRequest,
+    request: &UpdateInvestigadorRequest,
 ) -> Result<Investigador, AppError> {
     let investigador = get_investigador_by_id(db, id_investigador).await?;
 
@@ -326,7 +382,7 @@ pub async fn update_investigador(
         || request.grupo_investigacion_id.is_some()
         || request.perfil.is_some();
     if has_changes {
-        db.collection::<mongodb::bson::Document>(COLLECTION_INVESTIGADORES)
+        db.collection::<Document>(COLLECTION_INVESTIGADORES)
             .update_one(
                 doc! { "id_investigador": id_investigador },
                 doc! { "$set": set },
@@ -334,8 +390,22 @@ pub async fn update_investigador(
             .await?;
     }
 
-    db.collection::<Investigador>(COLLECTION_INVESTIGADORES)
-        .find_one(doc! { "id_investigador": id_investigador })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))
+    get_investigador_by_id(db, id_investigador).await
+}
+
+/// Carga todos los investigadores (activos e inactivos) indexados por `id_investigador`.
+pub async fn load_all_map(db: &Database) -> Result<HashMap<String, Investigador>, AppError> {
+    let cursor = db
+        .collection::<Document>(COLLECTION_INVESTIGADORES)
+        .find(doc! {})
+        .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let investigadores: Vec<Investigador> = docs
+        .into_iter()
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(investigadores
+        .into_iter()
+        .map(|i| (i.id_investigador.clone(), i))
+        .collect())
 }

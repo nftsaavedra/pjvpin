@@ -121,12 +121,8 @@ pub async fn get_proyectos_trend(db: &Database) -> Result<Vec<ProyectosTrendItem
 pub async fn get_renacyt_distribucion(
     db: &Database,
 ) -> Result<Vec<RenacytDistribucionItem>, AppError> {
-    let investigadores = db
-        .collection::<Investigador>("investigadores")
-        .find(doc! { "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let investigadores: Vec<Investigador> =
+        crate::investigadores::repository::get_all_investigadores(db).await?;
 
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;

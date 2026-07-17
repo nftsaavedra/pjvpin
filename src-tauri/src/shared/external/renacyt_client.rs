@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-use crate::investigadores::models::RenacytLookupResult;
+use crate::investigadores::dto::RenacytLookupResult;
 use crate::shared::config::RenacytConfig;
 use crate::shared::error::{sanitize_external_detail, AppError};
 

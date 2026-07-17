@@ -1,10 +1,10 @@
 use tauri::{State, Window};
 
 use super::handlers;
-use crate::investigadores::models::{
-    CreateInvestigadorRequest, EliminarInvestigadorResultado, Investigador, InvestigadorDetalle,
-    RefreshInvestigadorRenacytFormacionResultado, RenacytLookupResult, ReniecDniLookupResult,
-    UpdateInvestigadorRequest,
+use crate::investigadores::dto::{
+    CreateInvestigadorRequest, EliminarInvestigadorResultadoDto, InvestigadorDetalleDto,
+    InvestigadorDto, RefreshInvestigadorRenacytFormacionResultadoDto, RenacytLookupResult,
+    ReniecDniLookupResult, UpdateInvestigadorRequest,
 };
 use crate::shared::error::AppError;
 use crate::shared::external::renacyt_client;
@@ -18,16 +18,18 @@ pub async fn crear_investigador(
     window: Window,
     state: State<'_, AppState>,
     request: CreateInvestigadorRequest,
-) -> Result<Investigador, AppError> {
-    handlers::crear_investigador(&state, window.label(), request).await
+) -> Result<InvestigadorDto, AppError> {
+    let item = handlers::crear_investigador(&state, window.label(), request).await?;
+    Ok(item.into())
 }
 
 #[tauri::command]
 pub async fn get_all_investigadores(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<Investigador>, AppError> {
-    handlers::get_all_investigadores(&state, window.label()).await
+) -> Result<Vec<InvestigadorDto>, AppError> {
+    let items = handlers::get_all_investigadores(&state, window.label()).await?;
+    Ok(items.into_iter().map(Into::into).collect())
 }
 
 #[tauri::command]
@@ -36,8 +38,16 @@ pub async fn get_all_investigadores_paginated(
     state: State<'_, AppState>,
     page: u32,
     limit: u32,
-) -> Result<PaginatedResult<Investigador>, AppError> {
-    handlers::get_all_investigadores_paginated(&state, window.label(), page, limit).await
+) -> Result<PaginatedResult<InvestigadorDto>, AppError> {
+    let result =
+        handlers::get_all_investigadores_paginated(&state, window.label(), page, limit).await?;
+    Ok(PaginatedResult {
+        items: result.items.into_iter().map(Into::into).collect(),
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        total_pages: result.total_pages,
+    })
 }
 
 #[tauri::command]
@@ -45,15 +55,16 @@ pub async fn buscar_investigador_por_dni(
     window: Window,
     state: State<'_, AppState>,
     dni: String,
-) -> Result<Option<Investigador>, AppError> {
-    handlers::buscar_investigador_por_dni(&state, window.label(), &dni).await
+) -> Result<Option<InvestigadorDto>, AppError> {
+    let item = handlers::buscar_investigador_por_dni(&state, window.label(), &dni).await?;
+    Ok(item.map(Into::into))
 }
 
 #[tauri::command]
 pub async fn get_all_investigadores_con_proyectos(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<InvestigadorDetalle>, AppError> {
+) -> Result<Vec<InvestigadorDetalleDto>, AppError> {
     handlers::get_all_investigadores_con_proyectos(&state, window.label()).await
 }
 
@@ -62,7 +73,7 @@ pub async fn eliminar_investigador(
     window: Window,
     state: State<'_, AppState>,
     id_investigador: String,
-) -> Result<EliminarInvestigadorResultado, AppError> {
+) -> Result<EliminarInvestigadorResultadoDto, AppError> {
     handlers::eliminar_investigador(&state, window.label(), &id_investigador).await
 }
 
@@ -71,8 +82,9 @@ pub async fn reactivar_investigador(
     window: Window,
     state: State<'_, AppState>,
     id_investigador: String,
-) -> Result<Investigador, AppError> {
-    handlers::reactivar_investigador(&state, window.label(), &id_investigador).await
+) -> Result<InvestigadorDto, AppError> {
+    let item = handlers::reactivar_investigador(&state, window.label(), &id_investigador).await?;
+    Ok(item.into())
 }
 
 #[tauri::command]
@@ -81,8 +93,10 @@ pub async fn actualizar_investigador(
     state: State<'_, AppState>,
     id_investigador: String,
     request: UpdateInvestigadorRequest,
-) -> Result<Investigador, AppError> {
-    handlers::actualizar_investigador(&state, window.label(), &id_investigador, request).await
+) -> Result<InvestigadorDto, AppError> {
+    let item = handlers::actualizar_investigador(&state, window.label(), &id_investigador, request)
+        .await?;
+    Ok(item.into())
 }
 
 #[tauri::command]
@@ -118,7 +132,6 @@ pub async fn buscar_investigador_por_dni_con_renacyt(
     state: State<'_, AppState>,
     dni: String,
 ) -> Result<Option<RenacytLookupResult>, AppError> {
-    // Permiso de lectura o de gestión (cualquiera de los dos)
     if rbac::require_permission(
         &state,
         window.label(),
@@ -152,7 +165,7 @@ pub async fn refrescar_formacion_academica_renacyt_investigador(
     window: Window,
     state: State<'_, AppState>,
     id_investigador: String,
-) -> Result<RefreshInvestigadorRenacytFormacionResultado, AppError> {
+) -> Result<RefreshInvestigadorRenacytFormacionResultadoDto, AppError> {
     handlers::refrescar_formacion_academica_renacyt_investigador(
         &state,
         window.label(),

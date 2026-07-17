@@ -1,15 +1,16 @@
-use crate::investigadores::models::{
-    CreateInvestigadorRequest, EliminarInvestigadorResultado, Investigador, InvestigadorDetalle,
-    RefreshInvestigadorRenacytFormacionResultado,
+use crate::investigadores::dto::{
+    CreateInvestigadorRequest, EliminarInvestigadorResultadoDto,
+    RefreshInvestigadorRenacytFormacionResultadoDto, UpdateInvestigadorRequest,
 };
+use crate::investigadores::models::Investigador;
 use crate::investigadores::repository;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use crate::shared::state::AppState;
 
-pub fn build_delete_result(has_related_projects: bool) -> EliminarInvestigadorResultado {
+pub fn build_delete_result(has_related_projects: bool) -> EliminarInvestigadorResultadoDto {
     if has_related_projects {
-        return EliminarInvestigadorResultado {
+        return EliminarInvestigadorResultadoDto {
             accion: "desactivado".to_string(),
             mensaje:
                 "Investigador desactivado. Mantiene trazabilidad porque tiene proyectos relacionados."
@@ -17,7 +18,7 @@ pub fn build_delete_result(has_related_projects: bool) -> EliminarInvestigadorRe
         };
     }
 
-    EliminarInvestigadorResultado {
+    EliminarInvestigadorResultadoDto {
         accion: "desactivado".to_string(),
         mensaje: "Investigador desactivado correctamente.".to_string(),
     }
@@ -27,13 +28,11 @@ pub async fn create(
     state: &AppState,
     request: CreateInvestigadorRequest,
 ) -> Result<Investigador, AppError> {
-    let db = state.mongo_db()?;
-    repository::create_investigador(db, request).await
+    repository::create_investigador(state.mongo_db()?, request).await
 }
 
 pub async fn get_all(state: &AppState) -> Result<Vec<Investigador>, AppError> {
-    let db = state.mongo_db()?;
-    repository::get_all_investigadores(db).await
+    repository::get_all_investigadores(state.mongo_db()?).await
 }
 
 pub async fn get_all_paginated(
@@ -41,55 +40,49 @@ pub async fn get_all_paginated(
     page: u32,
     limit: u32,
 ) -> Result<PaginatedResult<Investigador>, AppError> {
-    let db = state.mongo_db()?;
-    repository::get_all_investigadores_paginated(db, page, limit).await
+    repository::get_all_investigadores_paginated(state.mongo_db()?, page, limit).await
 }
 
 pub async fn find_by_dni(state: &AppState, dni: &str) -> Result<Option<Investigador>, AppError> {
-    let db = state.mongo_db()?;
-    repository::get_investigador_by_dni(db, dni).await
+    repository::get_investigador_by_dni(state.mongo_db()?, dni).await
 }
 
-pub async fn get_all_detalle(state: &AppState) -> Result<Vec<InvestigadorDetalle>, AppError> {
-    let db = state.mongo_db()?;
-    repository::get_all_investigadores_con_proyectos(db).await
+pub async fn get_all_detalle(
+    state: &AppState,
+) -> Result<Vec<crate::investigadores::dto::InvestigadorDetalleDto>, AppError> {
+    repository::get_all_investigadores_con_proyectos(state.mongo_db()?).await
 }
 
 pub async fn delete(
     state: &AppState,
     id_investigador: &str,
-) -> Result<EliminarInvestigadorResultado, AppError> {
-    let db = state.mongo_db()?;
-    repository::delete_investigador(db, id_investigador).await
+) -> Result<EliminarInvestigadorResultadoDto, AppError> {
+    repository::delete_investigador(state.mongo_db()?, id_investigador).await
 }
 
 pub async fn reactivate(state: &AppState, id_investigador: &str) -> Result<Investigador, AppError> {
-    let db = state.mongo_db()?;
-    repository::reactivar_investigador(db, id_investigador).await
+    repository::reactivar_investigador(state.mongo_db()?, id_investigador).await
 }
 
 pub async fn get_by_id(state: &AppState, id_investigador: &str) -> Result<Investigador, AppError> {
-    let db = state.mongo_db()?;
-    repository::get_investigador_by_id(db, id_investigador).await
+    repository::get_investigador_by_id(state.mongo_db()?, id_investigador).await
 }
 
 pub async fn update_renacyt(state: &AppState, investigador: &Investigador) -> Result<(), AppError> {
-    let db = state.mongo_db()?;
-    repository::update_investigador_renacyt(db, investigador).await
+    repository::update_investigador_renacyt(state.mongo_db()?, investigador).await
 }
 
 pub async fn get_detalle_by_id(
     state: &AppState,
     id_investigador: &str,
-) -> Result<InvestigadorDetalle, AppError> {
-    let db = state.mongo_db()?;
-    repository::get_investigador_detalle_by_id(db, id_investigador).await
+) -> Result<crate::investigadores::dto::InvestigadorDetalleDto, AppError> {
+    repository::get_investigador_detalle_by_id(state.mongo_db()?, id_investigador).await
 }
 
 pub async fn refresh_renacyt_formacion(
     state: &AppState,
     id_investigador: &str,
-) -> Result<RefreshInvestigadorRenacytFormacionResultado, AppError> {
+) -> Result<RefreshInvestigadorRenacytFormacionResultadoDto, AppError> {
     let mut investigador = get_by_id(state, id_investigador).await?;
     let codigo_o_id = investigador
         .renacyt_id_investigador
@@ -120,7 +113,7 @@ pub async fn refresh_renacyt_formacion(
     } else {
         "RENACYT no devolvió formación académica disponible para este investigador en esta sincronización.".to_string()
     };
-    Ok(RefreshInvestigadorRenacytFormacionResultado {
+    Ok(RefreshInvestigadorRenacytFormacionResultadoDto {
         investigador: investigador_detalle,
         actualizada,
         mensaje,
@@ -130,8 +123,7 @@ pub async fn refresh_renacyt_formacion(
 pub async fn update(
     state: &AppState,
     id_investigador: &str,
-    request: crate::investigadores::models::UpdateInvestigadorRequest,
+    request: UpdateInvestigadorRequest,
 ) -> Result<Investigador, AppError> {
-    let db = state.mongo_db()?;
-    repository::update_investigador(db, id_investigador, &request).await
+    repository::update_investigador(state.mongo_db()?, id_investigador, &request).await
 }

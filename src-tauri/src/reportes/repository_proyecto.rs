@@ -49,16 +49,9 @@ pub async fn build_reporte_proyecto_integral(
 
     let mut equipo: Vec<MiembroProyectoReporte> = Vec::new();
     for part in &participaciones {
-        let investigador = db
-            .collection::<Investigador>("investigadores")
-            .find_one(doc! { "id_investigador": &part.id_investigador })
-            .await?
-            .ok_or_else(|| {
-                AppError::NotFound(format!(
-                    "Investigador {} no encontrado.",
-                    part.id_investigador
-                ))
-            })?;
+        let investigador =
+            crate::investigadores::repository::get_investigador_by_id(db, &part.id_investigador)
+                .await?;
 
         let grado_nombre = grados
             .get(&investigador.id_grado)

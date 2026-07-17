@@ -1,6 +1,6 @@
 use tauri::{State, Window};
 
-use crate::investigadores::models::{Publicacion, SyncPublicacionesResult};
+use crate::investigadores::dto::{PublicacionDto, SyncPublicacionesResult};
 use crate::shared::access_control;
 use crate::shared::error::AppError;
 use crate::shared::external::pure_service;
@@ -21,7 +21,8 @@ pub async fn get_publicaciones_investigador(
     window: Window,
     state: State<'_, AppState>,
     investigador_id: String,
-) -> Result<Vec<Publicacion>, AppError> {
+) -> Result<Vec<PublicacionDto>, AppError> {
     access_control::require_investigadores_view_permission(&state, window.label()).await?;
-    pure_service::get_publicaciones(&state, &investigador_id).await
+    let items = pure_service::get_publicaciones(&state, &investigador_id).await?;
+    Ok(items.into_iter().map(Into::into).collect())
 }

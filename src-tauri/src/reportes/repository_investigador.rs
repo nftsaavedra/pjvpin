@@ -24,11 +24,8 @@ pub async fn build_reporte_investigador_integral(
     let todas_participaciones = data_loader::load_participaciones(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
 
-    let investigador = db
-        .collection::<Investigador>("investigadores")
-        .find_one(doc! { "id_investigador": id_investigador })
-        .await?
-        .ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))?;
+    let investigador =
+        crate::investigadores::repository::get_investigador_by_id(db, id_investigador).await?;
 
     let grado_nombre = grados
         .get(&investigador.id_grado)
@@ -215,12 +212,22 @@ pub async fn build_reporte_investigador_integral(
         .map(|e| EquipamientoConEtiquetas::from_equipamiento(e, &catalogo_map))
         .collect();
 
-    let publicaciones_raw = db
-        .collection::<crate::investigadores::models::Publicacion>("publicaciones")
-        .find(doc! { "investigador_id": id_investigador })
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let publicaciones_raw: Vec<crate::investigadores::models::Publicacion> = {
+        use crate::investigadores::dto::PublicacionDto;
+        use std::convert::TryFrom;
+        let cursor = db
+            .collection::<mongodb::bson::Document>("publicaciones")
+            .find(doc! { "investigador_id": id_investigador })
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: PublicacionDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->PublicacionDto: {e}")))?;
+                crate::investigadores::models::Publicacion::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
 
     let total_publicaciones = publicaciones_raw.len();
     let publicaciones: Vec<PublicacionConEtiquetas> = publicaciones_raw
