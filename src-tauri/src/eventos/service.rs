@@ -1,4 +1,5 @@
-use crate::eventos::models::{CreateEventoRequest, EventoAcademico, UpdateEventoRequest};
+use crate::eventos::dto::{CreateEventoRequest, UpdateEventoRequest};
+use crate::eventos::models::EventoAcademico;
 use crate::eventos::repository;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
