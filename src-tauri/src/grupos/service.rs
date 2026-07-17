@@ -1,33 +1,22 @@
-use crate::grupos::models::{
-    CreateGrupoInvestigacionRequest, GrupoInvestigacion, UpdateGrupoInvestigacionRequest,
-};
+use crate::grupos::dto::{CreateGrupoInvestigacionRequest, UpdateGrupoInvestigacionRequest};
+use crate::grupos::models::GrupoInvestigacion;
 use crate::grupos::repository;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 
 pub async fn get_all(state: &AppState) -> Result<Vec<GrupoInvestigacion>, AppError> {
-    let mongo = state.mongo_db()?;
-    repository::get_all_grupos(mongo).await
+    repository::get_all_grupos(state.mongo_db()?).await
 }
 
 pub async fn create(
     state: &AppState,
     request: CreateGrupoInvestigacionRequest,
 ) -> Result<GrupoInvestigacion, AppError> {
-    let mongo = state.mongo_db()?;
-
-    let now_ms = crate::shared::time::now_ms();
-    let mut nuevo_grupo = GrupoInvestigacion::new(request.nombre, now_ms);
-    nuevo_grupo.descripcion = request.descripcion;
-    nuevo_grupo.coordinador_id = request.coordinador_id;
-    nuevo_grupo.lineas_investigacion = request.lineas_investigacion;
-
-    repository::create_grupo(mongo, nuevo_grupo).await
+    repository::create_grupo(state.mongo_db()?, request).await
 }
 
 pub async fn get_by_id(state: &AppState, id_grupo: &str) -> Result<GrupoInvestigacion, AppError> {
-    let mongo = state.mongo_db()?;
-    repository::get_grupo_by_id(mongo, id_grupo).await
+    repository::get_grupo_by_id(state.mongo_db()?, id_grupo).await
 }
 
 pub async fn update(
@@ -35,11 +24,9 @@ pub async fn update(
     id_grupo: &str,
     request: UpdateGrupoInvestigacionRequest,
 ) -> Result<GrupoInvestigacion, AppError> {
-    let mongo = state.mongo_db()?;
-    repository::update_grupo(mongo, id_grupo, request).await
+    repository::update_grupo(state.mongo_db()?, id_grupo, request).await
 }
 
 pub async fn delete(state: &AppState, id_grupo: &str) -> Result<(), AppError> {
-    let mongo = state.mongo_db()?;
-    repository::delete_grupo(mongo, id_grupo).await
+    repository::delete_grupo(state.mongo_db()?, id_grupo).await
 }

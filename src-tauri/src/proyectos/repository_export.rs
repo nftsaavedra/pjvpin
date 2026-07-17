@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::catalogos::models::CatalogoItem;
-use crate::grupos::models::GrupoInvestigacion;
 use crate::investigadores::models::{Investigador, Publicacion};
 use crate::investigadores::repository as investigadores_repo;
 use crate::personas::models::Persona;
@@ -126,12 +125,7 @@ pub async fn get_data_exportacion_grupos(db: &Database) -> Result<Vec<ExportData
     let proyectos = data_loader::load_proyectos_map(db).await?;
     let participaciones = data_loader::load_participaciones(db).await?;
 
-    let grupos = db
-        .collection::<GrupoInvestigacion>("grupos_investigacion")
-        .find(doc! { "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let grupos = crate::grupos::repository::get_all_grupos(db).await?;
 
     let mut proyectos_por_investigador: HashMap<String, HashSet<String>> = HashMap::new();
     for p in &participaciones {

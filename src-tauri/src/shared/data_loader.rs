@@ -8,6 +8,7 @@ use crate::catalogos::repository as catalogos_repo;
 use crate::grados::models::GradoAcademico;
 use crate::grados::repository as grados_repo;
 use crate::grupos::models::GrupoInvestigacion;
+use crate::grupos::repository as grupos_repo;
 use crate::investigadores::models::Investigador;
 use crate::personas::models::Persona;
 use crate::personas::repository as personas_repo;
@@ -86,16 +87,7 @@ pub async fn load_participaciones(db: &Database) -> Result<Vec<ParticipacionReco
 pub async fn load_grupos_map(
     db: &Database,
 ) -> Result<HashMap<String, GrupoInvestigacion>, AppError> {
-    let grupos = db
-        .collection::<GrupoInvestigacion>("grupos_investigacion")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
-    Ok(grupos
-        .into_iter()
-        .map(|g| (g.id_grupo.clone(), g))
-        .collect())
+    grupos_repo::load_all_map(db).await
 }
 
 pub async fn load_catalogos_map(

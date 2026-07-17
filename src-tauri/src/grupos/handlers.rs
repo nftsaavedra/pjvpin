@@ -1,6 +1,5 @@
-use crate::grupos::models::{
-    CreateGrupoInvestigacionRequest, GrupoInvestigacion, UpdateGrupoInvestigacionRequest,
-};
+use crate::grupos::dto::{CreateGrupoInvestigacionRequest, UpdateGrupoInvestigacionRequest};
+use crate::grupos::models::GrupoInvestigacion;
 use crate::grupos::service as grupo_service;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
