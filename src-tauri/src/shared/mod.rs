@@ -6,6 +6,7 @@ pub mod config_wizard;
 pub mod data_loader;
 pub mod db;
 pub mod defaults;
+pub mod dni;
 pub mod error;
 pub mod external;
 pub mod logging;
@@ -13,6 +14,7 @@ pub mod pagination;
 pub mod rbac;
 pub mod state;
 pub mod time;
+pub mod tokens;
 
 #[cfg(test)]
 mod config_wizard_tests;

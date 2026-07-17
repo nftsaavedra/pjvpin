@@ -5,6 +5,7 @@
 //! BSON `Document` se hace explicitamente en las capas de borde
 //! (commands/handlers/repository). Ver `crate::usuarios::dto`.
 
+use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
 use crate::usuarios::dto::{CreateUsuarioRequest, UsuarioConPasswordDto, UsuarioDto};
 
@@ -163,6 +164,7 @@ pub fn build_usuario_with_password(
         request.apellido_paterno.as_deref(),
         request.apellido_materno.as_deref(),
     );
+    let dni = Dni::new(&request.dni)?.into_string();
 
     UsuarioConPassword::new(
         id_usuario,
@@ -173,7 +175,7 @@ pub fn build_usuario_with_password(
         1,
         request.investigador_id,
         None,
-        Some(request.dni.trim().to_string()),
+        Some(dni),
         Some(now),
     )
 }

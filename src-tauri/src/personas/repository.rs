@@ -83,9 +83,10 @@ pub async fn find_by_id(db: &Database, id: &str) -> Result<Persona, AppError> {
 }
 
 pub async fn find_by_dni(db: &Database, dni: &str) -> Result<Option<Persona>, AppError> {
+    let dni = crate::shared::dni::Dni::new(dni)?.into_string();
     let doc_opt = db
         .collection::<Document>("personas")
-        .find_one(doc! { "dni": dni.trim(), "activo": 1 })
+        .find_one(doc! { "dni": dni, "activo": 1 })
         .await?;
     doc_opt.map(|d| doc_to_dto(d).map(dto_to_model)).transpose()
 }

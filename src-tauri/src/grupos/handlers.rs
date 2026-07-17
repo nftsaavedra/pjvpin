@@ -46,8 +46,17 @@ pub async fn update_grupo(
     id_grupo: &str,
     request: UpdateGrupoInvestigacionRequest,
 ) -> Result<GrupoInvestigacion, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::GruposManage).await?;
-    grupo_service::update(state, id_grupo, request).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::GruposManage).await?;
+    let grupo = grupo_service::update(state, id_grupo, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "grupo.update",
+        "grupo",
+        id_grupo,
+        grupo.nombre.clone(),
+    );
+    Ok(grupo)
 }
 
 pub async fn delete_grupo(

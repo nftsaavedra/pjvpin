@@ -52,7 +52,15 @@ pub async fn crear_patente(
 ) -> Result<Patente, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    recurso_service::create_patente(state, request).await
+    let patente = recurso_service::create_patente(state, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "patente.create",
+        "patente",
+        &patente.id_patente,
+        patente.titulo.clone(),
+    );
+    Ok(patente)
 }
 
 pub async fn get_patentes_proyecto(
@@ -75,7 +83,15 @@ pub async fn actualizar_patente(
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
-    recurso_service::update_patente(state, id_patente, request).await
+    let patente = recurso_service::update_patente(state, id_patente, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "patente.update",
+        "patente",
+        id_patente,
+        patente.titulo.clone(),
+    );
+    Ok(patente)
 }
 
 pub async fn eliminar_patente(
@@ -123,7 +139,15 @@ pub async fn crear_producto(
 ) -> Result<Producto, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    recurso_service::create_producto(state, request).await
+    let producto = recurso_service::create_producto(state, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "producto.create",
+        "producto",
+        &producto.id_producto,
+        producto.nombre.clone(),
+    );
+    Ok(producto)
 }
 
 pub async fn get_productos_proyecto(
@@ -146,7 +170,15 @@ pub async fn actualizar_producto(
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
-    recurso_service::update_producto(state, id_producto, request).await
+    let producto = recurso_service::update_producto(state, id_producto, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "producto.update",
+        "producto",
+        id_producto,
+        producto.nombre.clone(),
+    );
+    Ok(producto)
 }
 
 pub async fn eliminar_producto(
@@ -194,7 +226,15 @@ pub async fn crear_equipamiento(
 ) -> Result<Equipamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    recurso_service::create_equipamiento(state, request).await
+    let equipamiento = recurso_service::create_equipamiento(state, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "equipamiento.create",
+        "equipamiento",
+        &equipamiento.id_equipamiento,
+        equipamiento.nombre.clone(),
+    );
+    Ok(equipamiento)
 }
 
 pub async fn get_equipamientos_proyecto(
@@ -217,7 +257,16 @@ pub async fn actualizar_equipamiento(
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
-    recurso_service::update_equipamiento(state, id_equipamiento, request).await
+    let equipamiento =
+        recurso_service::update_equipamiento(state, id_equipamiento, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "equipamiento.update",
+        "equipamiento",
+        id_equipamiento,
+        equipamiento.nombre.clone(),
+    );
+    Ok(equipamiento)
 }
 
 pub async fn eliminar_equipamiento(
@@ -265,7 +314,15 @@ pub async fn crear_financiamiento(
 ) -> Result<Financiamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    recurso_service::create_financiamiento(state, request).await
+    let financiamiento = recurso_service::create_financiamiento(state, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "financiamiento.create",
+        "financiamiento",
+        &financiamiento.id_financiamiento,
+        financiamiento.entidad_financiadora.clone(),
+    );
+    Ok(financiamiento)
 }
 
 pub async fn get_financiamientos_proyecto(
@@ -288,7 +345,16 @@ pub async fn actualizar_financiamiento(
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
-    recurso_service::update_financiamiento(state, id_financiamiento, request).await
+    let financiamiento =
+        recurso_service::update_financiamiento(state, id_financiamiento, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "financiamiento.update",
+        "financiamiento",
+        id_financiamiento,
+        financiamiento.entidad_financiadora.clone(),
+    );
+    Ok(financiamiento)
 }
 
 pub async fn eliminar_financiamiento(

@@ -4,9 +4,11 @@ use mongodb::Database;
 use tokio::sync::RwLock;
 
 use crate::investigadores::dto::ReniecDniLookupResult;
-use crate::shared::config::{PureConfig, RenacytConfig, ReniecConfig};
+use crate::shared::config::{PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig};
+use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
 use crate::shared::time;
+use crate::shared::tokens::TokenResolver;
 
 const SESSION_TIMEOUT_MS: i64 = 30 * 60 * 1000;
 
@@ -171,6 +173,7 @@ pub struct AppState {
     pub reniec: ReniecConfig,
     pub renacyt: RenacytConfig,
     pub pure_config: PureConfig,
+    pub tokens: TokenResolver,
     sessions: SessionStore,
     pub rate_limiter: LoginRateLimiter,
     pub reniec_cache: ReniecCache,
@@ -183,11 +186,23 @@ impl AppState {
         renacyt: RenacytConfig,
         pure_config: PureConfig,
     ) -> Self {
+        let runtime = RuntimeConfig {
+            database: crate::shared::config::DatabaseConfig {
+                mongodb_uri: None,
+                mongodb_db_name: String::new(),
+                mongodb_max_pool_size: 0,
+                mongodb_min_pool_size: 0,
+            },
+            reniec: reniec.clone(),
+            renacyt: renacyt.clone(),
+            pure: pure_config.clone(),
+        };
         Self {
             mongo,
             reniec,
             renacyt,
             pure_config,
+            tokens: TokenResolver::from_config(&runtime),
             sessions: SessionStore::new(),
             rate_limiter: LoginRateLimiter::new(),
             reniec_cache: ReniecCache::new(),
@@ -200,14 +215,6 @@ impl AppState {
                 "MongoDB no esta inicializado para la configuracion actual.".to_string(),
             )
         })
-    }
-
-    pub fn reniec_config(&self) -> &ReniecConfig {
-        &self.reniec
-    }
-
-    pub fn renacyt_config(&self) -> &RenacytConfig {
-        &self.renacyt
     }
 
     pub async fn set_current_session(&self, window_label: &str, user_id: String) {
@@ -258,8 +265,9 @@ impl ReniecCache {
 
     pub async fn get(&self, dni: &str) -> Option<ReniecDniLookupResult> {
         let now = time::now_ms();
+        let key = Dni::new(dni).ok()?.into_string();
         let cache = self.cache.read().await;
-        cache.get(dni.trim()).and_then(|entry| {
+        cache.get(&key).and_then(|entry| {
             if now - entry.cached_at < Self::TTL_MS {
                 Some(entry.result.clone())
             } else {
@@ -269,9 +277,12 @@ impl ReniecCache {
     }
 
     pub async fn put(&self, dni: &str, result: ReniecDniLookupResult) {
+        let Ok(key) = Dni::new(dni) else {
+            return;
+        };
         let mut cache = self.cache.write().await;
         cache.insert(
-            dni.trim().to_string(),
+            key.into_string(),
             ReniecCacheEntry {
                 result,
                 cached_at: time::now_ms(),

@@ -10,6 +10,8 @@ pub async fn get_security_status(
     state: tauri::State<'_, AppState>,
 ) -> Result<SecurityStatus, AppError> {
     let mongodb_configured = state.mongo.is_some();
+    let reniec_configured = state.tokens.has_reniec();
+    let pure_configured = state.tokens.has_pure();
 
     let mut recommendations = Vec::new();
 
@@ -19,10 +21,22 @@ pub async fn get_security_status(
                 .to_string(),
         );
     }
+    if !reniec_configured {
+        recommendations.push(
+            "ℹ️ RENIEC no está configurado. Defina PJVPIN_RENIEC_TOKEN para autocompletar DNI en investigadores.".to_string(),
+        );
+    }
+    if !pure_configured {
+        recommendations.push(
+            "ℹ️ Pure no está configurado. Defina PJVPIN_PURE_API_KEY para sincronizar publicaciones científicas.".to_string(),
+        );
+    }
 
     Ok(SecurityStatus {
         database_backend: "MongoDB".to_string(),
         mongodb_configured,
+        reniec_configured,
+        pure_configured,
         security_recommendations: recommendations,
     })
 }
@@ -162,13 +176,32 @@ pub async fn wizard_consultar_dni(
     token: String,
     numero: String,
 ) -> Result<crate::investigadores::dto::ReniecDniLookupResult, AppError> {
-    use crate::shared::config::ReniecConfig;
+    use crate::shared::config::{PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig};
     use crate::shared::defaults;
     use crate::shared::external::reniec_client;
+    use crate::shared::tokens::TokenResolver;
 
-    let config = ReniecConfig {
-        api_base_url: defaults::RENIEC_API_BASE_URL.to_string(),
-        token: Some(token),
+    let runtime = RuntimeConfig {
+        database: crate::shared::config::DatabaseConfig {
+            mongodb_uri: None,
+            mongodb_db_name: String::new(),
+            mongodb_max_pool_size: 0,
+            mongodb_min_pool_size: 0,
+        },
+        reniec: ReniecConfig {
+            api_base_url: defaults::RENIEC_API_BASE_URL.to_string(),
+            token: Some(token),
+        },
+        renacyt: RenacytConfig {
+            api_base_url: String::new(),
+            acto_version: String::new(),
+            ficha_base_url: String::new(),
+        },
+        pure: PureConfig {
+            api_base_url: String::new(),
+            api_key: None,
+        },
     };
-    reniec_client::consultar_dni(&config, &numero).await
+    let tokens = TokenResolver::from_config(&runtime);
+    reniec_client::consultar_dni(&tokens, &runtime.reniec.api_base_url, &numero).await
 }

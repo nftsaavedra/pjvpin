@@ -5,6 +5,12 @@ pub const RENACYT_ACTO_VERSION: &str = "2021";
 pub const PURE_API_BASE_URL: &str = "https://pure.unf.edu.pe/ws/api";
 pub const DEFAULT_MONGODB_DB: &str = "pjvpin";
 
+// Pool de conexiones MongoDB. Para una app de escritorio single-user
+// (pocos handlers concurrentes por ventana) 10 conexiones maximas es mas
+// que suficiente y evita saturar MongoDB Atlas en free tier.
+pub const DEFAULT_MONGODB_MAX_POOL_SIZE: u32 = 10;
+pub const DEFAULT_MONGODB_MIN_POOL_SIZE: u32 = 1;
+
 // Valores de prueba para tests de conectividad del wizard.
 // Todos son publicos (RENIEC/DNI y RENACYT/CTI Vitae son registros publicos).
 pub const RENIEC_TEST_DNI: &str = "00000000";

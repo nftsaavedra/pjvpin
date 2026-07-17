@@ -105,13 +105,21 @@ pub async fn reactivar_investigador(
     window_label: &str,
     id_investigador: &str,
 ) -> Result<Investigador, AppError> {
-    rbac::require_permission(
+    let actor = rbac::require_permission(
         state,
         window_label,
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    investigador_service::reactivate(state, id_investigador).await
+    let investigador = investigador_service::reactivate(state, id_investigador).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "investigador.reactivate",
+        "investigador",
+        id_investigador,
+        "activo=1".to_string(),
+    );
+    Ok(investigador)
 }
 
 pub async fn actualizar_investigador(
@@ -120,13 +128,26 @@ pub async fn actualizar_investigador(
     id_investigador: &str,
     request: UpdateInvestigadorRequest,
 ) -> Result<Investigador, AppError> {
-    rbac::require_permission(
+    let actor = rbac::require_permission(
         state,
         window_label,
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    investigador_service::update(state, id_investigador, request).await
+    let investigador = investigador_service::update(state, id_investigador, request).await?;
+    let db = state.mongo_db()?;
+    let dni_audit = crate::personas::repository::find_by_id_persona(db, &investigador.persona_id)
+        .await?
+        .map(|p| p.dni)
+        .unwrap_or_default();
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "investigador.update",
+        "investigador",
+        id_investigador,
+        format!("dni: {dni_audit}"),
+    );
+    Ok(investigador)
 }
 
 pub async fn refrescar_formacion_academica_renacyt_investigador(

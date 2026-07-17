@@ -4,6 +4,7 @@
 //! `new()`. La conversion a/desde BSON `Document` se hace en
 //! `crate::personas::repository` via `PersonaDto`.
 
+use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
 use crate::shared::time;
 
@@ -34,11 +35,7 @@ impl Persona {
                 "El id de persona no puede estar vacio.".to_string(),
             ));
         }
-        if request.dni.trim().is_empty() {
-            return Err(AppError::InternalError(
-                "El DNI no puede estar vacio.".to_string(),
-            ));
-        }
+        let dni = Dni::new(&request.dni)?.into_string();
 
         let apellido_materno = request
             .apellido_materno
@@ -61,7 +58,7 @@ impl Persona {
 
         Ok(Self {
             id_persona,
-            dni: request.dni.trim().to_string(),
+            dni,
             nombres: Some(nombres),
             apellido_paterno: Some(apellido_paterno),
             apellido_materno,

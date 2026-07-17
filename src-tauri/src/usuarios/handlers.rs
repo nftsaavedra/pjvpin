@@ -72,7 +72,11 @@ async fn resolve_bootstrap_db(
         ));
     }
 
-    let client = mongodb::Client::with_uri_str(uri).await?;
+    let mut client_options = mongodb::options::ClientOptions::parse(uri).await?;
+    client_options.max_pool_size = Some(defaults::DEFAULT_MONGODB_MAX_POOL_SIZE);
+    client_options.min_pool_size = Some(defaults::DEFAULT_MONGODB_MIN_POOL_SIZE);
+    client_options.app_name = Some("PJVPI".to_string());
+    let client = mongodb::Client::with_options(client_options)?;
     let db_name = mongodb_db
         .filter(|s| !s.trim().is_empty())
         .unwrap_or(defaults::DEFAULT_MONGODB_DB);

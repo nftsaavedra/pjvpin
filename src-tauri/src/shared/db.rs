@@ -1,6 +1,6 @@
 use mongodb::{
     bson::{doc, Document},
-    options::IndexOptions,
+    options::{ClientOptions, IndexOptions},
     Client, Database, IndexModel,
 };
 
@@ -14,7 +14,12 @@ pub async fn init_mongo(config: &DatabaseConfig) -> Result<Database, AppError> {
         )
     })?;
 
-    let client = Client::with_uri_str(uri).await?;
+    let mut client_options = ClientOptions::parse(uri).await?;
+    client_options.max_pool_size = Some(config.mongodb_max_pool_size);
+    client_options.min_pool_size = Some(config.mongodb_min_pool_size);
+    client_options.app_name = Some("PJVPI".to_string());
+
+    let client = Client::with_options(client_options)?;
     let database = client.database(&config.mongodb_db_name);
     ensure_indexes(&database).await?;
     Ok(database)

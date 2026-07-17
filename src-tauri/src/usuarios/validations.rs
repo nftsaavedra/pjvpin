@@ -1,3 +1,4 @@
+use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
 use crate::usuarios::models::UsuarioConPassword;
 
@@ -5,21 +6,6 @@ pub const ROL_SUPERUSER: &str = "superuser";
 pub const ROL_ADMIN: &str = "admin";
 pub const ROL_OPERADOR: &str = "operador";
 pub const ROL_CONSULTA: &str = "consulta";
-
-pub fn validar_dni_pure(dni: &str) -> Result<(), AppError> {
-    let dni_limpio = dni.trim();
-    if dni_limpio.is_empty() {
-        return Err(AppError::InternalError(
-            "Ingrese el DNI del usuario.".to_string(),
-        ));
-    }
-    if !dni_limpio.chars().all(|c| c.is_ascii_digit()) || dni_limpio.len() != 8 {
-        return Err(AppError::InternalError(
-            "El DNI debe tener exactamente 8 d\u{00ed}gitos num\u{00e9}ricos.".to_string(),
-        ));
-    }
-    Ok(())
-}
 
 pub fn validar_identidad_manual_pure(
     nombres: Option<&str>,
@@ -43,7 +29,7 @@ pub fn validar_usuario_dni_pure(username: &str, dni: &str, rol: &str) -> Result<
             "Complete todos los campos del usuario.".to_string(),
         ));
     }
-    validar_dni_pure(dni)?;
+    Dni::validate(dni)?;
     if !matches!(
         rol.trim(),
         ROL_SUPERUSER | ROL_ADMIN | ROL_OPERADOR | ROL_CONSULTA

@@ -8,7 +8,7 @@ use mongodb::{
 };
 
 use crate::catalogos::models::CatalogoItem;
-use crate::investigadores::models::{Investigador, Publicacion};
+use crate::investigadores::models::Publicacion;
 use crate::proyectos::dto::{ParticipacionRecordDto, ProyectoDto};
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};

@@ -64,7 +64,9 @@ pjvpin/
 │       │   ├── error.rs          #   AppError, sanitize_external_detail
 │       │   ├── state.rs          #   AppState, SessionStore
 │       │   ├── config.rs         #   Carga de configuración multi-fuente
-│       │   ├── db.rs             #   Conexión MongoDB
+│       │   ├── db.rs             #   Conexión MongoDB con pool configurable
+│       │   ├── dni.rs            #   Value Object Dni (8 dígitos + trim)
+│       │   ├── tokens.rs         #   TokenResolver para credenciales externas
 │       │   ├── access_control.rs #   Handlers de dominio (delega RBAC a rbac.rs)
 │       │   ├── rbac.rs           #   RBAC: roles, permisos, autorización
 │       │   ├── audit.rs          #   Auditoría de operaciones
@@ -111,6 +113,20 @@ y repositorio.
 - Sin over-engineering: MongoDB como única BD es aceptable para v0.1.0
 - Sin ORMs: queries directas al driver de MongoDB
 - Sin state management libraries: `useState` + custom hooks
+
+### DDD Value Objects (en shared/)
+- **`Dni`** (`shared/dni.rs`): encapsula validación de DNI peruano (8 dígitos ASCII)
+  + trim. Usado por `Persona::new`, `Usuario::new` (vía `build_usuario_with_password`),
+  `ReniecCache`, `reniec_client`. Construir siempre vía `Dni::new(&str) -> Result<Self, AppError>`
+  o `Dni::new_opt(Option<&str>) -> Result<Option<Self>, AppError>`.
+- **`TokenResolver`** (`shared/tokens.rs`): acceso centralizado a credenciales externas
+  (RENIEC token + Pure API key) con mensajes de error canónicos apuntando a las env vars.
+  Construido una sola vez desde `RuntimeConfig` y guardado en `AppState.tokens`.
+
+### Hexagonal / DTO separation
+- Cada feature tiene `dto.rs` (serde, contrato IPC) + `models.rs` puro (sin serde, validando en `new()`).
+- Repository convierte `Document` ↔ `Dto` ↔ `Model` con `try_from`/`From` traits.
+- Handlers/commands convierten `Model → Dto` antes de cruzar al frontend.
 
 ---
 
@@ -314,8 +330,11 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 | ✅ Resuelto | `load_runtime_config` auto-creaba config con defaults → ya no auto-crea, arranca en modo wizard |
 | ✅ Resuelto | `save_wizard_config` escribía `.json.enc` (cifrado dead code) → escribe `pjvpin.config.json` plaintext |
 | ✅ Resuelto | URLs hardcoded duplicadas → centralizadas en `src-tauri/src/shared/defaults.rs` y `src/shared/config/defaults.ts` |
-| 🟡 Medio | Cifrado de config en disco: eliminar `encryption.rs` (hecho), re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) |
-| 🟡 Bajo | Auditoría pendiente en recursos (12 operaciones) y update/reactivate de investigadores/grados/proyectos |
+| ✅ Resuelto | Auditoría completa en recursos (16 ops: create/update/delete/reactivate para patente/producto/equipamiento/financiamiento) + investigadores (update/reactivate) + grados (update/reactivate) + grupos (update) |
+| ✅ Resuelto | Value Object `Dni` (`shared/dni.rs`) centraliza validación de 8 dígitos + trim; migrado en `usuarios`, `personas`, `reniec_client`, `ReniecCache` |
+| ✅ Resuelto | MongoDB connection pool configurable (`PJVPIN_MONGODB_MAX_POOL_SIZE`/`MIN_POOL_SIZE`, defaults 10/1) |
+| ✅ Resuelto | `TokenResolver` centraliza tokens externos (RENIEC + Pure) en `AppState.tokens`; mensajes de error canónicos |
+| 🟡 Medio | Cifrado de config en disco: eliminar `encryption.rs` (hecho), re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) — `TokenResolver` es la pieza que conecta con keychain |
 | 🟡 Medio | Dropdowns de recursos aún usan placeholders; integrar con catálogos (FormSelect dinámico) |
 
 ---
@@ -363,6 +382,7 @@ npm run typecheck  # 0 errores
 npm run lint       # baseline 6 errors + 4 warnings preexistentes
 npm run test       # 27/27 vitest
 cargo check --no-default-features  # 0 warnings
+cargo test --lib   # 71 Rust unit tests (Dni VO + validations + rbac + renacyt + tokens)
 npm run build      # OK
 ```
 

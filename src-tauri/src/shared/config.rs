@@ -9,6 +9,8 @@ use crate::shared::error::AppError;
 pub struct DatabaseConfig {
     pub mongodb_uri: Option<String>,
     pub mongodb_db_name: String,
+    pub mongodb_max_pool_size: u32,
+    pub mongodb_min_pool_size: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -53,9 +55,23 @@ impl DatabaseConfig {
             .filter(|value| !value.is_empty())
             .unwrap_or_else(|| defaults::DEFAULT_MONGODB_DB.to_string());
 
+        let mongodb_max_pool_size = values
+            .get("PJVPIN_MONGODB_MAX_POOL_SIZE")
+            .and_then(|v| v.trim().parse::<u32>().ok())
+            .filter(|&n| n > 0)
+            .unwrap_or(defaults::DEFAULT_MONGODB_MAX_POOL_SIZE);
+
+        let mongodb_min_pool_size = values
+            .get("PJVPIN_MONGODB_MIN_POOL_SIZE")
+            .and_then(|v| v.trim().parse::<u32>().ok())
+            .filter(|&n| n <= mongodb_max_pool_size)
+            .unwrap_or(defaults::DEFAULT_MONGODB_MIN_POOL_SIZE);
+
         Self {
             mongodb_uri,
             mongodb_db_name,
+            mongodb_max_pool_size,
+            mongodb_min_pool_size,
         }
     }
 

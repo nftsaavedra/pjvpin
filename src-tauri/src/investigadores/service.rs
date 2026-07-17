@@ -99,7 +99,7 @@ pub async fn refresh_renacyt_formacion(
         .as_ref()
         .is_some_and(|value| !value.trim().is_empty());
     let lookup = crate::shared::external::renacyt_client::consultar_investigador(
-        state.renacyt_config(),
+        &state.renacyt,
         &codigo_o_id,
     )
     .await?;

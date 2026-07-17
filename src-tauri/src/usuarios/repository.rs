@@ -206,8 +206,8 @@ async fn obtener_o_crear_persona(
     apellido_materno: Option<&str>,
     modo: ModoCreacion,
 ) -> Result<crate::personas::models::Persona, AppError> {
-    let dni_limpio = dni.trim();
-    if let Some(persona) = personas_repo::find_by_dni(db, dni_limpio).await? {
+    let dni_limpio = crate::shared::dni::Dni::new(dni)?.into_string();
+    if let Some(persona) = personas_repo::find_by_dni(db, &dni_limpio).await? {
         match modo {
             ModoCreacion::Bootstrap => {
                 return Err(AppError::InternalError(

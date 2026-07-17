@@ -48,8 +48,17 @@ pub async fn actualizar_grado(
     id_grado: &str,
     request: CreateGradoRequest,
 ) -> Result<GradoAcademico, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
-    grado_service::update(state, id_grado, request).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
+    let grado = grado_service::update(state, id_grado, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "grado.update",
+        "grado",
+        id_grado,
+        format!("nombre: {}", grado.nombre),
+    );
+    Ok(grado)
 }
 
 pub async fn eliminar_grado(
@@ -75,6 +84,15 @@ pub async fn reactivar_grado(
     window_label: &str,
     id_grado: &str,
 ) -> Result<GradoAcademico, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
-    grado_service::reactivate(state, id_grado).await
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
+    let grado = grado_service::reactivate(state, id_grado).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "grado.reactivate",
+        "grado",
+        id_grado,
+        "activo=1".to_string(),
+    );
+    Ok(grado)
 }

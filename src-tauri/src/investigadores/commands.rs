@@ -111,7 +111,8 @@ pub async fn consultar_dni_reniec(
         return Ok(cached);
     }
 
-    let result = reniec_client::consultar_dni(state.reniec_config(), &numero).await?;
+    let result =
+        reniec_client::consultar_dni(&state.tokens, &state.reniec.api_base_url, &numero).await?;
     state.reniec_cache.put(&numero, result.clone()).await;
     Ok(result)
 }
@@ -123,7 +124,7 @@ pub async fn consultar_renacyt_investigador(
     codigo_o_id: String,
 ) -> Result<RenacytLookupResult, AppError> {
     rbac::require_investigadores_manage_permission(&state, window.label()).await?;
-    renacyt_client::consultar_investigador(state.renacyt_config(), &codigo_o_id).await
+    renacyt_client::consultar_investigador(&state.renacyt, &codigo_o_id).await
 }
 
 #[tauri::command]
@@ -148,7 +149,7 @@ pub async fn buscar_investigador_por_dni_con_renacyt(
         .await?;
     }
 
-    let config = state.renacyt_config();
+    let config = &state.renacyt;
     let encontrado = renacyt_client::buscar_por_dni(config, &dni).await?;
     match encontrado {
         Some(item) => {

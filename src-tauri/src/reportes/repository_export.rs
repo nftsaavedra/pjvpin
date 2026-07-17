@@ -1,5 +1,4 @@
-use futures_util::TryStreamExt;
-use mongodb::{bson::doc, Database};
+use mongodb::Database;
 
 use crate::investigadores::models::Investigador;
 use crate::reportes::dto::ReporteInvestigadorIntegral;

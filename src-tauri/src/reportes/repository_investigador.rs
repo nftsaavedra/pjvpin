@@ -1,7 +1,6 @@
 use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
-use crate::investigadores::models::Investigador;
 use crate::proyectos::models::ParticipacionRecord;
 use crate::recursos::models::{Equipamiento, Patente, Producto};
 use crate::reportes::dto::*;

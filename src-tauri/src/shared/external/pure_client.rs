@@ -5,7 +5,6 @@
 /// Endpoint de personas: POST /persons/search (resolución de UUID de persona por Scopus Author ID).
 use serde::{Deserialize, Serialize};
 
-use crate::shared::config::PureConfig;
 use crate::shared::error::{sanitize_external_detail, AppError};
 
 // ─── DTOs defensivos de Pure API ────────────────────────────────────────────
@@ -153,19 +152,13 @@ pub struct FetchedPublication {
 /// Resuelve el UUID de Pure de una persona a partir de su Scopus Author ID.
 /// Devuelve `None` si la persona no se encuentra, o un error si falla la red.
 pub async fn resolve_person_uuid(
-    config: &PureConfig,
+    tokens: &crate::shared::tokens::TokenResolver,
+    api_base_url: &str,
     scopus_author_id: &str,
 ) -> Result<Option<String>, AppError> {
-    let api_key = config.api_key.as_deref().ok_or_else(|| {
-        AppError::ConfigurationError(
-            "No se encontró la API key de Pure. Configure PJVPIN_PURE_API_KEY (o PURE_API_KEY) en .env (desarrollo) o en pjvpin.env (producción).".to_string(),
-        )
-    })?;
+    let api_key = tokens.resolve_pure_api_key()?;
 
-    let url = format!(
-        "{}/persons/search",
-        config.api_base_url.trim_end_matches('/')
-    );
+    let url = format!("{}/persons/search", api_base_url.trim_end_matches('/'));
 
     let body = PersonsQuery {
         size: 5,
@@ -218,18 +211,15 @@ pub async fn resolve_person_uuid(
 /// Descarga todas las publicaciones asociadas a un Scopus Author ID desde Pure.
 /// Utiliza paginación interna (size=50) y devuelve la lista completa.
 pub async fn fetch_research_outputs_by_scopus_id(
-    config: &PureConfig,
+    tokens: &crate::shared::tokens::TokenResolver,
+    api_base_url: &str,
     scopus_author_id: &str,
 ) -> Result<Vec<FetchedPublication>, AppError> {
-    let api_key = config.api_key.as_deref().ok_or_else(|| {
-        AppError::ConfigurationError(
-            "No se encontró la API key de Pure. Configure PJVPIN_PURE_API_KEY (o PURE_API_KEY) en .env (desarrollo) o en pjvpin.env (producción).".to_string(),
-        )
-    })?;
+    let api_key = tokens.resolve_pure_api_key()?;
 
     let url = format!(
         "{}/research-outputs/search",
-        config.api_base_url.trim_end_matches('/')
+        api_base_url.trim_end_matches('/')
     );
 
     let client = reqwest::Client::new();

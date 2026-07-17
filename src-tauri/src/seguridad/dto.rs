@@ -4,6 +4,8 @@ use serde::Serialize;
 pub struct SecurityStatus {
     pub database_backend: String,
     pub mongodb_configured: bool,
+    pub reniec_configured: bool,
+    pub pure_configured: bool,
     pub security_recommendations: Vec<String>,
 }
 

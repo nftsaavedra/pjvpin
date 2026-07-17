@@ -27,8 +27,12 @@ pub async fn consultar_dni_para_usuario(
     numero: String,
 ) -> Result<ReniecDniLookupResult, AppError> {
     rbac::require_permission(&state, window.label(), rbac::AppPermission::UsuariosManage).await?;
-    let config = state.reniec_config();
-    crate::shared::external::reniec_client::consultar_dni(config, &numero).await
+    crate::shared::external::reniec_client::consultar_dni(
+        &state.tokens,
+        &state.reniec.api_base_url,
+        &numero,
+    )
+    .await
 }
 
 #[tauri::command]

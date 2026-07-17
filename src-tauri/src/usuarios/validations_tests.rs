@@ -51,23 +51,6 @@ mod tests {
     }
 
     #[test]
-    fn validar_dni_pure_acepta_8_digitos() {
-        assert!(validations::validar_dni_pure("45678912").is_ok());
-        assert!(validations::validar_dni_pure("  45678912  ").is_ok());
-    }
-
-    #[test]
-    fn validar_dni_pure_rechaza_formato_invalido() {
-        for dni in ["", "   ", "1234567", "123456789", "45678abc", "abc45678"] {
-            assert!(
-                validations::validar_dni_pure(dni).is_err(),
-                "DNI invalido aceptado: {:?}",
-                dni
-            );
-        }
-    }
-
-    #[test]
     fn validar_identidad_manual_pure_acepta_campos_completos() {
         assert!(validations::validar_identidad_manual_pure(Some("Juan"), Some("Perez")).is_ok());
     }

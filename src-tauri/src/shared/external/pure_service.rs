@@ -32,13 +32,20 @@ pub async fn sync_publicaciones(
             )
         })?;
 
-    let pure_person_uuid = pure_client::resolve_person_uuid(&state.pure_config, scopus_author_id)
-        .await
-        .unwrap_or(None);
+    let pure_person_uuid = pure_client::resolve_person_uuid(
+        &state.tokens,
+        &state.pure_config.api_base_url,
+        scopus_author_id,
+    )
+    .await
+    .unwrap_or(None);
 
-    let fetched =
-        pure_client::fetch_research_outputs_by_scopus_id(&state.pure_config, scopus_author_id)
-            .await?;
+    let fetched = pure_client::fetch_research_outputs_by_scopus_id(
+        &state.tokens,
+        &state.pure_config.api_base_url,
+        scopus_author_id,
+    )
+    .await?;
 
     let total_encontradas = fetched.len();
     let mut nuevas = 0usize;
