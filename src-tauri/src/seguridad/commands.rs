@@ -1,4 +1,4 @@
-use crate::seguridad::models::{
+use crate::seguridad::dto::{
     ConfigurationGuide, ConfigurationStep, SecurityRecommendation, SecurityRecommendations,
     SecurityStatus,
 };
