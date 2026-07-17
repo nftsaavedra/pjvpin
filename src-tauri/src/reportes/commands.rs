@@ -1,10 +1,10 @@
 use super::handlers;
-use crate::reportes::entity_reports::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
-use crate::reportes::models::{
+use crate::proyectos::dto::{
     ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
     ExportDataProyectoAreaDto, ExportDataRecursoDto, InvestigadorProyectosCountDto,
     KpisDashboardDto, ProyectosTrendItemDto, RenacytDistribucionItemDto,
 };
+use crate::reportes::dto::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 use tauri::{State, Window};

@@ -12,7 +12,7 @@ use crate::investigadores::models::{Investigador, Publicacion};
 use crate::proyectos::dto::{ParticipacionRecordDto, ProyectoDto};
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
-use crate::reportes::entity_reports::*;
+use crate::reportes::dto::*;
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
 

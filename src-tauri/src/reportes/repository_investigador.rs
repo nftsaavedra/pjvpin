@@ -4,7 +4,7 @@ use mongodb::{bson::doc, Database};
 use crate::investigadores::models::Investigador;
 use crate::proyectos::models::ParticipacionRecord;
 use crate::recursos::models::{Equipamiento, Patente, Producto};
-use crate::reportes::entity_reports::*;
+use crate::reportes::dto::*;
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
 

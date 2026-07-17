@@ -2,7 +2,7 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
 use crate::investigadores::models::Investigador;
-use crate::reportes::entity_reports::ReporteInvestigadorIntegral;
+use crate::reportes::dto::ReporteInvestigadorIntegral;
 use crate::shared::error::AppError;
 
 // ═══════════════════════════════════════════════════════════════════════════════

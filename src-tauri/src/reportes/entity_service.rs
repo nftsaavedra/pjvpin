@@ -1,4 +1,4 @@
-use crate::reportes::entity_reports::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
+use crate::reportes::dto::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
 use crate::reportes::repository_export;
 use crate::reportes::repository_investigador;
 use crate::reportes::repository_proyecto;

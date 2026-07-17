@@ -1,10 +1,10 @@
-use crate::proyectos::service as proyecto_service;
-use crate::reportes::entity_reports::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
-use crate::reportes::models::{
+use crate::proyectos::dto::{
     ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
     ExportDataProyectoAreaDto, ExportDataRecursoDto, InvestigadorProyectosCountDto,
     KpisDashboardDto, ProyectosTrendItemDto, RenacytDistribucionItemDto,
 };
+use crate::proyectos::service as proyecto_service;
+use crate::reportes::dto::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
