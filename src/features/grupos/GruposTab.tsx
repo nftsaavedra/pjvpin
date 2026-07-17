@@ -194,6 +194,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
 
       {canManage && (
         <GrupoFormModal
+          key={editingGrupo ? `edit-${editingGrupo.id_grupo}` : "new"}
           open={formOpen}
           onClose={() => {
             setFormOpen(false);

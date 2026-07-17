@@ -7,7 +7,7 @@
 
 use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
-use crate::usuarios::dto::{CreateUsuarioRequest, UsuarioConPasswordDto, UsuarioDto};
+use crate::usuarios::dto::{CreateUsuarioRequest, UsuarioConPasswordDoc, UsuarioDoc, UsuarioDto};
 
 /// Dominio: usuario sin password (vista publica).
 #[derive(Debug, Clone)]
@@ -194,7 +194,61 @@ pub fn compose_nombre_completo(
 }
 
 // ============================================================================
-// Mappers: DTO <-> Model
+// Mappers: Doc <-> Model (persistencia, BSON snake_case)
+// ============================================================================
+
+impl From<UsuarioDoc> for Usuario {
+    fn from(doc: UsuarioDoc) -> Self {
+        Self {
+            id_usuario: doc.id_usuario,
+            username: doc.username,
+            nombre_completo: doc.nombre_completo,
+            rol: doc.rol,
+            activo: doc.activo,
+            investigador_id: doc.investigador_id,
+            persona_id: doc.persona_id,
+            dni: doc.dni,
+            updated_at: doc.updated_at,
+        }
+    }
+}
+
+impl From<UsuarioConPasswordDoc> for UsuarioConPassword {
+    fn from(doc: UsuarioConPasswordDoc) -> Self {
+        Self {
+            id_usuario: doc.id_usuario,
+            username: doc.username,
+            nombre_completo: doc.nombre_completo,
+            rol: doc.rol,
+            password_hash: doc.password_hash,
+            activo: doc.activo,
+            investigador_id: doc.investigador_id,
+            persona_id: doc.persona_id,
+            dni: doc.dni,
+            updated_at: doc.updated_at,
+        }
+    }
+}
+
+impl From<UsuarioConPassword> for UsuarioConPasswordDoc {
+    fn from(m: UsuarioConPassword) -> Self {
+        Self {
+            id_usuario: m.id_usuario,
+            username: m.username,
+            nombre_completo: m.nombre_completo,
+            rol: m.rol,
+            password_hash: m.password_hash,
+            activo: m.activo,
+            investigador_id: m.investigador_id,
+            persona_id: m.persona_id,
+            dni: m.dni,
+            updated_at: m.updated_at,
+        }
+    }
+}
+
+// ============================================================================
+// Mappers: DTO <-> Model (IPC, frontend camelCase)
 // ============================================================================
 
 impl From<UsuarioDto> for Usuario {
@@ -220,40 +274,6 @@ impl From<Usuario> for UsuarioDto {
             username: m.username,
             nombre_completo: m.nombre_completo,
             rol: m.rol,
-            activo: m.activo,
-            investigador_id: m.investigador_id,
-            persona_id: m.persona_id,
-            dni: m.dni,
-            updated_at: m.updated_at,
-        }
-    }
-}
-
-impl From<UsuarioConPasswordDto> for UsuarioConPassword {
-    fn from(dto: UsuarioConPasswordDto) -> Self {
-        Self {
-            id_usuario: dto.id_usuario,
-            username: dto.username,
-            nombre_completo: dto.nombre_completo,
-            rol: dto.rol,
-            password_hash: dto.password_hash,
-            activo: dto.activo,
-            investigador_id: dto.investigador_id,
-            persona_id: dto.persona_id,
-            dni: dto.dni,
-            updated_at: dto.updated_at,
-        }
-    }
-}
-
-impl From<UsuarioConPassword> for UsuarioConPasswordDto {
-    fn from(m: UsuarioConPassword) -> Self {
-        Self {
-            id_usuario: m.id_usuario,
-            username: m.username,
-            nombre_completo: m.nombre_completo,
-            rol: m.rol,
-            password_hash: m.password_hash,
             activo: m.activo,
             investigador_id: m.investigador_id,
             persona_id: m.persona_id,

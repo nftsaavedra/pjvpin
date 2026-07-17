@@ -1,7 +1,8 @@
 import React from "react";
 import { Download } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
-import { SectionHeader, InfoRow, formatBool, formatTimestamp } from "./PdfComponents";
+import { SectionHeader, InfoRow } from "./PdfComponents";
+import { formatBool, formatTimestamp } from "./pdfFormatters";
 import type { ReporteInvestigadorIntegral } from "../api";
 
 export interface SingleInvestigadorReportProps {

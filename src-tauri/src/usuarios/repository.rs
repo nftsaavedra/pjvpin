@@ -8,7 +8,7 @@ use crate::personas::repository as personas_repo;
 use crate::shared::error::AppError;
 use crate::usuarios::dto::{
     AuthStatusDto, BootstrapUsuarioRequest, CreateUsuarioRequest, LoginUsuarioRequest,
-    UpdateUsuarioRequest, UsuarioConPasswordDto, UsuarioDto,
+    UpdateUsuarioRequest, UsuarioConPasswordDoc, UsuarioDoc,
 };
 use crate::usuarios::models::{self, Usuario, UsuarioConPassword};
 use crate::usuarios::validations;
@@ -20,26 +20,26 @@ pub enum ModoCreacion {
 }
 
 // ============================================================================
-// Mappers BSON Document <-> DTO <-> Model
+// Mappers BSON Document <-> Doc <-> Model
 // ============================================================================
 
-fn dto_to_model(dto: UsuarioConPasswordDto) -> Result<UsuarioConPassword, AppError> {
+fn doc_to_model(doc: UsuarioConPasswordDoc) -> Result<UsuarioConPassword, AppError> {
     UsuarioConPassword::new(
-        dto.id_usuario,
-        dto.username,
-        dto.nombre_completo,
-        dto.rol,
-        dto.password_hash,
-        dto.activo,
-        dto.investigador_id,
-        dto.persona_id,
-        dto.dni,
-        dto.updated_at,
+        doc.id_usuario,
+        doc.username,
+        doc.nombre_completo,
+        doc.rol,
+        doc.password_hash,
+        doc.activo,
+        doc.investigador_id,
+        doc.persona_id,
+        doc.dni,
+        doc.updated_at,
     )
 }
 
-fn model_to_dto(m: UsuarioConPassword) -> UsuarioConPasswordDto {
-    UsuarioConPasswordDto {
+fn model_to_doc(m: UsuarioConPassword) -> UsuarioConPasswordDoc {
+    UsuarioConPasswordDoc {
         id_usuario: m.id_usuario,
         username: m.username,
         nombre_completo: m.nombre_completo,
@@ -53,28 +53,28 @@ fn model_to_dto(m: UsuarioConPassword) -> UsuarioConPasswordDto {
     }
 }
 
-fn user_dto_to_model(dto: UsuarioDto) -> Result<Usuario, AppError> {
+fn user_doc_to_model(doc: UsuarioDoc) -> Result<Usuario, AppError> {
     Usuario::new(
-        dto.id_usuario,
-        dto.username,
-        dto.nombre_completo,
-        dto.rol,
-        dto.activo,
-        dto.investigador_id,
-        dto.persona_id,
-        dto.dni,
-        dto.updated_at,
+        doc.id_usuario,
+        doc.username,
+        doc.nombre_completo,
+        doc.rol,
+        doc.activo,
+        doc.investigador_id,
+        doc.persona_id,
+        doc.dni,
+        doc.updated_at,
     )
 }
 
-fn document_to_user_dto(doc: Document) -> Result<UsuarioDto, AppError> {
-    mongodb::bson::from_document::<UsuarioDto>(doc).map_err(|e| {
+fn document_to_user_doc(doc: Document) -> Result<UsuarioDoc, AppError> {
+    mongodb::bson::from_document::<UsuarioDoc>(doc).map_err(|e| {
         AppError::InternalError(format!("No se pudo deserializar usuario desde BSON: {e}"))
     })
 }
 
-fn document_to_user_with_password_dto(doc: Document) -> Result<UsuarioConPasswordDto, AppError> {
-    mongodb::bson::from_document::<UsuarioConPasswordDto>(doc).map_err(|e| {
+fn document_to_user_with_password_doc(doc: Document) -> Result<UsuarioConPasswordDoc, AppError> {
+    mongodb::bson::from_document::<UsuarioConPasswordDoc>(doc).map_err(|e| {
         AppError::InternalError(format!(
             "No se pudo deserializar usuario (con password) desde BSON: {e}"
         ))
@@ -90,8 +90,8 @@ async fn load_usuarios(db: &Database) -> Result<Vec<UsuarioConPassword>, AppErro
     let mut result = Vec::new();
     let docs: Vec<Document> = cursor.try_collect().await?;
     for d in docs {
-        let dto = document_to_user_with_password_dto(d)?;
-        result.push(dto_to_model(dto)?);
+        let user_doc = document_to_user_with_password_doc(d)?;
+        result.push(doc_to_model(user_doc)?);
     }
     Ok(result)
 }
@@ -112,8 +112,8 @@ async fn get_usuario_by_username(
         .find_one(doc! { "username": username.trim().to_lowercase() })
         .await?;
     let doc = doc_opt.ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
-    let dto = document_to_user_with_password_dto(doc)?;
-    dto_to_model(dto)
+    let user_doc = document_to_user_with_password_doc(doc)?;
+    doc_to_model(user_doc)
 }
 
 async fn validar_actor_admin(
@@ -125,8 +125,8 @@ async fn validar_actor_admin(
         .find_one(doc! { "id_usuario": actor_user_id })
         .await?;
     let doc = doc_opt.ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
-    let dto = document_to_user_with_password_dto(doc)?;
-    let actor = dto_to_model(dto)?;
+    let user_doc = document_to_user_with_password_doc(doc)?;
+    let actor = doc_to_model(user_doc)?;
 
     validations::assert_actor_can_admin(&actor)?;
 
@@ -283,20 +283,20 @@ pub async fn create_usuario(
     usuario.nombre_completo = persona.nombre_completo.clone();
     usuario.dni = Some(persona.dni.clone());
 
-    let dto = model_to_dto(usuario);
-    let doc = mongodb::bson::to_document(&dto).map_err(|e| {
+    let user_doc = model_to_doc(usuario);
+    let doc = mongodb::bson::to_document(&user_doc).map_err(|e| {
         AppError::InternalError(format!("No se pudo serializar usuario a BSON: {e}"))
     })?;
     db.collection::<Document>("usuarios")
         .insert_one(doc)
         .await?;
 
-    let public = dto_to_model_public(dto)?;
+    let public = doc_to_model_public(user_doc)?;
     Ok(public)
 }
 
-fn dto_to_model_public(dto: UsuarioConPasswordDto) -> Result<Usuario, AppError> {
-    let m = dto_to_model(dto)?;
+fn doc_to_model_public(user_doc: UsuarioConPasswordDoc) -> Result<Usuario, AppError> {
+    let m = doc_to_model(user_doc)?;
     Ok(m.public_view())
 }
 
@@ -362,15 +362,15 @@ pub async fn bootstrap_admin(
     usuario.nombre_completo = persona.nombre_completo.clone();
     usuario.dni = Some(persona.dni.clone());
 
-    let dto = model_to_dto(usuario);
-    let doc = mongodb::bson::to_document(&dto).map_err(|e| {
+    let user_doc = model_to_doc(usuario);
+    let doc = mongodb::bson::to_document(&user_doc).map_err(|e| {
         AppError::InternalError(format!("No se pudo serializar usuario a BSON: {e}"))
     })?;
     db.collection::<Document>("usuarios")
         .insert_one(doc)
         .await?;
 
-    let public = dto_to_model_public(dto)?;
+    let public = doc_to_model_public(user_doc)?;
     Ok(public)
 }
 
@@ -478,8 +478,8 @@ pub async fn get_all_usuarios_paginated(
 
     let mut usuarios: Vec<Usuario> = Vec::new();
     while let Some(d) = cursor.try_next().await? {
-        let dto = document_to_user_dto(d)?;
-        usuarios.push(user_dto_to_model(dto)?);
+        let user_doc = document_to_user_doc(d)?;
+        usuarios.push(user_doc_to_model(user_doc)?);
     }
     enrich_usuarios_with_persona(db, &mut usuarios).await?;
 
@@ -502,8 +502,8 @@ pub async fn get_usuario_by_id(
         .find_one(doc! { "id_usuario": id_usuario })
         .await?;
     let doc = doc_opt.ok_or_else(|| AppError::NotFound("Usuario no encontrado.".to_string()))?;
-    let dto = document_to_user_with_password_dto(doc)?;
-    dto_to_model(dto)
+    let user_doc = document_to_user_with_password_doc(doc)?;
+    doc_to_model(user_doc)
 }
 
 pub async fn get_usuario_by_id_public(

@@ -21,7 +21,7 @@ interface RoleDefinition {
   capabilities: string[];
 }
 
-export const ROLE_DEFINITIONS: Record<string, RoleDefinition> = {
+export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
   superuser: {
     label: "Superusuario",
     summary: "Nivel root del sistema. Control total de configuracion y accesos.",
@@ -123,10 +123,12 @@ export const ROLE_DEFINITIONS: Record<string, RoleDefinition> = {
   },
 };
 
-export const normalizeAppRole = (value: string | null | undefined): string => {
+const isAppRole = (value: string): value is AppRole => value in ROLE_DEFINITIONS;
+
+export const normalizeAppRole = (value: string | null | undefined): AppRole => {
   const normalizedValue = (value ?? "").trim().toLowerCase();
 
-  if (ROLE_DEFINITIONS[normalizedValue]) {
+  if (isAppRole(normalizedValue)) {
     return normalizedValue;
   }
 
@@ -134,13 +136,13 @@ export const normalizeAppRole = (value: string | null | undefined): string => {
 };
 
 export const getRoleLabel = (value: string | null | undefined) =>
-  ROLE_DEFINITIONS[normalizeAppRole(value)]?.label ?? "Desconocido";
+  ROLE_DEFINITIONS[normalizeAppRole(value)].label;
 
 export const getRoleDefinition = (value: string | null | undefined) =>
-  ROLE_DEFINITIONS[normalizeAppRole(value)] ?? ROLE_DEFINITIONS.consulta;
+  ROLE_DEFINITIONS[normalizeAppRole(value)];
 
 export const hasPermission = (role: string | null | undefined, permission: AppPermission) =>
-  (ROLE_DEFINITIONS[normalizeAppRole(role)]?.permissions ?? []).includes(permission);
+  ROLE_DEFINITIONS[normalizeAppRole(role)].permissions.includes(permission);
 
 export const getRoleOptions = () =>
   Object.entries(ROLE_DEFINITIONS).map(([value, definition]) => ({

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
 import { toast } from "@/shared/feedback/toast";
@@ -18,28 +18,13 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
   editingGrupo,
   onDataModified,
 }) => {
-  const [formData, setFormData] = useState({
-    nombre: "",
-    descripcion: "",
+  const [formData, setFormData] = useState(() => ({
+    nombre: editingGrupo?.nombre ?? "",
+    descripcion: editingGrupo?.descripcion ?? "",
     linea: "",
-  });
-  const [lineas, setLineas] = useState<string[]>([]);
+  }));
+  const [lineas, setLineas] = useState<string[]>(() => editingGrupo?.lineas_investigacion ?? []);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    if (editingGrupo) {
-      setFormData({
-        nombre: editingGrupo.nombre,
-        descripcion: editingGrupo.descripcion || "",
-        linea: "",
-      });
-      setLineas([...editingGrupo.lineas_investigacion]);
-    } else {
-      setFormData({ nombre: "", descripcion: "", linea: "" });
-      setLineas([]);
-    }
-  }, [open, editingGrupo]);
 
   const handleAddLinea = () => {
     if (formData.linea.trim() && !lineas.includes(formData.linea.trim())) {

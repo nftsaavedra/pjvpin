@@ -1,26 +1,34 @@
 //! DTOs de la feature `usuarios`.
 //!
-//! Esta capa de DTOs contiene el contrato wire entre el backend Rust y el
-//! frontend TypeScript (Tauri IPC). Los DTOs llevan los `#[derive]` de
-//! `serde` y `mongodb::bson::serde_helpers` necesarios para serializar a JSON
-//! (IPC) y a BSON (persistencia).
+//! Esta capa se divide en dos responsabilidades bien separadas (Hexagonal):
 //!
-//! Los structs de dominio puros viven en `crate::usuarios::models` y NO
-//! dependen de `serde` ni de `uuid`. La conversion entre DTOs y modelos se
-//! hace via `impl From<...> for ...` explicitos al borde (commands/handlers).
+//! - **Persistencia (`*Doc`)**: structs usados unicamente por el repository para
+//!   serializar/deserializar a/desde BSON `Document`. Llevan claves en
+//!   `snake_case` (sin `rename_all`) para mantener consistencia con las
+//!   queries `doc! { "id_usuario": ... }` y con el indice unico definido en
+//!   `shared/db.rs` (que tambien es snake_case). Asi, los documentos en
+//!   MongoDB se persisten en snake_case, igual que el resto de features
+//!   (`personas`, `investigadores`, `proyectos`, `grupos`, `grados`, etc.).
 //!
-//! Convenciones:
-//! - Todos los structs de salida (enviados al frontend) usan
+//! - **IPC (`UsuarioDto`, `*Request`)**: structs del contrato wire entre el
+//!   backend Rust y el frontend TypeScript (Tauri IPC). Los de salida usan
 //!   `#[serde(rename_all = "camelCase")]` para preservar las mismas keys que
-//!   consume hoy el frontend TS (sin break).
-//! - Los structs de entrada (requests IPC) usan `#[serde(rename_all = "camelCase")]`
-//!   para aceptar el formato que envia el frontend.
+//!   consume hoy el frontend TS. Los de entrada (requests IPC) tambien usan
+//!   `#[serde(rename_all = "camelCase")]` para aceptar el formato que envia
+//!   el frontend.
+//!
+//! Los modelos de dominio puros viven en `crate::usuarios::models` y NO
+//! dependen de `serde`. La conversion entre modelos y DTOs/Docs se hace via
+//! `impl From<...>` explicitos al borde (commands/handlers/repository).
 
 use serde::{Deserialize, Serialize};
 
+// ============================================================================
+// Persistencia (BSON): snake_case, sin rename_all.
+// ============================================================================
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UsuarioDto {
+pub struct UsuarioDoc {
     pub id_usuario: String,
     pub username: String,
     pub nombre_completo: String,
@@ -37,13 +45,34 @@ pub struct UsuarioDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UsuarioConPasswordDto {
+pub struct UsuarioConPasswordDoc {
     pub id_usuario: String,
     pub username: String,
     pub nombre_completo: String,
     pub rol: String,
     pub password_hash: String,
+    pub activo: i64,
+    #[serde(default)]
+    pub investigador_id: Option<String>,
+    #[serde(default)]
+    pub persona_id: Option<String>,
+    #[serde(default)]
+    pub dni: Option<String>,
+    #[serde(default)]
+    pub updated_at: Option<i64>,
+}
+
+// ============================================================================
+// IPC (wire Tauri -> frontend): camelCase.
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UsuarioDto {
+    pub id_usuario: String,
+    pub username: String,
+    pub nombre_completo: String,
+    pub rol: String,
     pub activo: i64,
     #[serde(default)]
     pub investigador_id: Option<String>,
