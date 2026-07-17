@@ -1,6 +1,5 @@
-use crate::publicaciones::models::{
-    CreatePublicacionRequest, PublicacionCientifica, UpdatePublicacionRequest,
-};
+use crate::publicaciones::dto::{CreatePublicacionRequest, UpdatePublicacionRequest};
+use crate::publicaciones::models::PublicacionCientifica;
 use crate::publicaciones::repository;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;

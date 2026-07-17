@@ -1,23 +1,14 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use crate::publicaciones::dto::{CreatePublicacionRequest, PublicacionCientificaDto};
+use crate::shared::error::AppError;
 
-use crate::shared::time;
-
-fn default_activo() -> i64 {
-    1
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct PublicacionCientifica {
-    #[serde(rename = "_id")]
     pub id: String,
     pub id_publicacion: String,
     pub titulo: String,
     pub autores_ids: Vec<String>,
     pub revista: Option<String>,
-    #[serde(default)]
     pub doi: Option<String>,
-    #[serde(default)]
     pub issn: Option<String>,
     pub anio: Option<i32>,
     pub cuartil: Option<String>,
@@ -28,49 +19,28 @@ pub struct PublicacionCientifica {
     pub pure_id: Option<String>,
     pub created_at: Option<i64>,
     pub updated_at: Option<i64>,
-    #[serde(default = "default_activo")]
     pub activo: i64,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct CreatePublicacionRequest {
-    pub titulo: String,
-    pub autores_ids: Vec<String>,
-    pub revista: Option<String>,
-    pub doi: Option<String>,
-    pub issn: Option<String>,
-    pub anio: Option<i32>,
-    pub cuartil: Option<String>,
-    pub tipo: String,
-    pub url: Option<String>,
-    pub resumen: Option<String>,
-    #[serde(default)]
-    pub palabras_clave: Vec<String>,
-    pub pure_id: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UpdatePublicacionRequest {
-    pub titulo: Option<String>,
-    pub autores_ids: Option<Vec<String>>,
-    pub revista: Option<String>,
-    pub doi: Option<String>,
-    pub issn: Option<String>,
-    pub anio: Option<i32>,
-    pub cuartil: Option<String>,
-    pub tipo: Option<String>,
-    pub url: Option<String>,
-    pub resumen: Option<String>,
-    pub palabras_clave: Option<Vec<String>>,
-}
-
 impl PublicacionCientifica {
-    pub fn new(request: CreatePublicacionRequest) -> Self {
-        let now = time::now_ms();
-        let id = Uuid::new_v4().to_string();
-        Self {
-            id: id.clone(),
-            id_publicacion: id,
+    pub fn new(
+        id_publicacion: String,
+        request: CreatePublicacionRequest,
+    ) -> Result<Self, AppError> {
+        if id_publicacion.trim().is_empty() {
+            return Err(AppError::InternalError(
+                "El id de publicación no puede estar vacio.".to_string(),
+            ));
+        }
+        if request.titulo.trim().is_empty() {
+            return Err(AppError::InternalError(
+                "El título de la publicación es obligatorio.".to_string(),
+            ));
+        }
+        let now = crate::shared::time::now_ms();
+        Ok(Self {
+            id: id_publicacion.clone(),
+            id_publicacion,
             titulo: request.titulo,
             autores_ids: request.autores_ids,
             revista: request.revista,
@@ -86,6 +56,30 @@ impl PublicacionCientifica {
             created_at: Some(now),
             updated_at: Some(now),
             activo: 1,
+        })
+    }
+}
+
+impl From<PublicacionCientifica> for PublicacionCientificaDto {
+    fn from(m: PublicacionCientifica) -> Self {
+        Self {
+            id: m.id,
+            id_publicacion: m.id_publicacion,
+            titulo: m.titulo,
+            autores_ids: m.autores_ids,
+            revista: m.revista,
+            doi: m.doi,
+            issn: m.issn,
+            anio: m.anio,
+            cuartil: m.cuartil,
+            tipo: m.tipo,
+            url: m.url,
+            resumen: m.resumen,
+            palabras_clave: m.palabras_clave,
+            pure_id: m.pure_id,
+            created_at: m.created_at,
+            updated_at: m.updated_at,
+            activo: m.activo,
         }
     }
 }
