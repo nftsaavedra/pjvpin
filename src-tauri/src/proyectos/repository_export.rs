@@ -8,6 +8,7 @@ use crate::proyectos::models::{
     ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
     ExportDataProyectoArea, ExportDataRecurso, Proyecto,
 };
+use crate::recursos::dto::{EquipamientoDto, FinanciamientoDto, PatenteDto, ProductoDto};
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
@@ -201,33 +202,71 @@ pub async fn get_data_exportacion_recursos(
     let personas = data_loader::load_personas_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
 
-    let patentes = db
-        .collection::<Patente>("patentes")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    use std::convert::TryFrom;
 
-    let productos = db
-        .collection::<Producto>("productos")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let patentes: Vec<Patente> = {
+        let cursor = db
+            .collection::<mongodb::bson::Document>("patentes")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: PatenteDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->PatenteDto: {e}")))?;
+                Patente::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
 
-    let equipamientos = db
-        .collection::<Equipamiento>("equipamientos")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let productos: Vec<Producto> = {
+        use std::convert::TryFrom;
+        let cursor = db
+            .collection::<mongodb::bson::Document>("productos")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: ProductoDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->ProductoDto: {e}")))?;
+                Producto::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
 
-    let financiamientos = db
-        .collection::<Financiamiento>("financiamientos")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let equipamientos: Vec<Equipamiento> = {
+        use std::convert::TryFrom;
+        let cursor = db
+            .collection::<mongodb::bson::Document>("equipamientos")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: EquipamientoDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
+                Equipamiento::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
+
+    let financiamientos: Vec<Financiamiento> = {
+        use std::convert::TryFrom;
+        let cursor = db
+            .collection::<mongodb::bson::Document>("financiamientos")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: FinanciamientoDto = mongodb::bson::from_document(d).map_err(|e| {
+                    AppError::InternalError(format!("BSON->FinanciamientoDto: {e}"))
+                })?;
+                Financiamiento::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
 
     fn resolve_label(
         catalogo_map: &HashMap<(String, String), CatalogoItem>,

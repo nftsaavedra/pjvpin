@@ -1,9 +1,15 @@
 /// Generates 8 CRUD repository functions for one resource entity type.
 /// Delete is soft-delete (activo = 0). Reactivate restores (activo = 1).
+///
+/// Type parameters:
+/// - `$entity:ty` — domain struct with `new(id, request) -> Result<Self, _>` and `TryFrom<Dto>`
+/// - `$dto:ty` — serializable DTO (persistence shape)
+/// - `$create_req:ty`, `$update_req:ty` — request types
 #[macro_export]
 macro_rules! impl_resource_repository {
     (
         $entity:ty,
+        $dto:ty,
         $create_req:ty,
         $update_req:ty,
         $collection:expr,
@@ -18,12 +24,34 @@ macro_rules! impl_resource_repository {
         $error_label:expr,
         $( $upd_field:ident ),* $(,)?
     ) => {
+        #[allow(non_snake_case)]
+        mod $fn_create {
+            pub fn doc_to_dto(
+                doc: mongodb::bson::Document,
+            ) -> Result<$dto, $crate::shared::error::AppError> {
+                mongodb::bson::from_document::<$dto>(doc).map_err(|e| {
+                    $crate::shared::error::AppError::InternalError(format!(
+                        "No se pudo deserializar desde BSON: {e}"
+                    ))
+                })
+            }
+        }
+
         pub async fn $fn_create(
             db: &mongodb::Database,
             request: $create_req,
         ) -> Result<$entity, $crate::shared::error::AppError> {
-            let entity = <$entity>::new(request);
-            db.collection::<$entity>($collection).insert_one(&entity).await?;
+            let id = uuid::Uuid::new_v4().to_string();
+            let entity = <$entity>::new(id, request)?;
+            let dto: $dto = (&entity).into();
+            let doc = mongodb::bson::to_document(&dto).map_err(|e| {
+                $crate::shared::error::AppError::InternalError(format!(
+                    "No se pudo serializar a BSON: {e}"
+                ))
+            })?;
+            db.collection::<mongodb::bson::Document>($collection)
+                .insert_one(doc)
+                .await?;
             Ok(entity)
         }
 
@@ -31,22 +59,29 @@ macro_rules! impl_resource_repository {
             db: &mongodb::Database,
             proyecto_id: &str,
         ) -> Result<Vec<$entity>, $crate::shared::error::AppError> {
-            db.collection::<$entity>($collection)
+            use futures_util::TryStreamExt;
+            let cursor = db
+                .collection::<mongodb::bson::Document>($collection)
                 .find(mongodb::bson::doc! { "proyecto_id": proyecto_id, "activo": 1 })
-                .await?
-                .try_collect::<Vec<_>>()
-                .await
-                .map_err(Into::into)
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            docs.into_iter()
+                .map(|d| $fn_create::doc_to_dto(d).and_then(<$entity>::try_from))
+                .collect()
         }
 
         pub async fn $fn_get_by_id(
             db: &mongodb::Database,
             $id_field: &str,
         ) -> Result<$entity, $crate::shared::error::AppError> {
-            db.collection::<$entity>($collection)
+            let doc_opt = db
+                .collection::<mongodb::bson::Document>($collection)
                 .find_one(mongodb::bson::doc! { stringify!($id_field): $id_field, "activo": 1 })
-                .await?
-                .ok_or_else(|| $crate::shared::error::AppError::NotFound($error_label.to_string()))
+                .await?;
+            let doc = doc_opt.ok_or_else(|| {
+                $crate::shared::error::AppError::NotFound($error_label.to_string())
+            })?;
+            $fn_create::doc_to_dto(doc).and_then(<$entity>::try_from)
         }
 
         pub async fn $fn_update(
@@ -106,10 +141,7 @@ macro_rules! impl_resource_repository {
                     mongodb::bson::doc! { "$set": { "activo": 1, "updated_at": $crate::shared::time::now_ms() } },
                 )
                 .await?;
-            db.collection::<$entity>($collection)
-                .find_one(mongodb::bson::doc! { stringify!($id_field): $id_field })
-                .await?
-                .ok_or_else(|| $crate::shared::error::AppError::NotFound($error_label.to_string()))
+            $fn_get_by_id(db, $id_field).await
         }
     };
 }

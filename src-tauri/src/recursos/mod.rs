@@ -1,4 +1,5 @@
 pub mod commands;
+pub mod dto;
 pub mod handlers;
 #[macro_use]
 pub mod macros;

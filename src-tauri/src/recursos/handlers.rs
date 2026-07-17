@@ -1,9 +1,9 @@
-use crate::recursos::models::{
+use crate::recursos::dto::{
     CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest,
-    CreateProductoRequest, Equipamiento, Financiamiento, Patente, Producto,
-    UpdateEquipamientoRequest, UpdateFinanciamientoRequest, UpdatePatenteRequest,
-    UpdateProductoRequest,
+    CreateProductoRequest, UpdateEquipamientoRequest, UpdateFinanciamientoRequest,
+    UpdatePatenteRequest, UpdateProductoRequest,
 };
+use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 use crate::recursos::service as recurso_service;
 use crate::shared::error::AppError;
 use crate::shared::rbac;

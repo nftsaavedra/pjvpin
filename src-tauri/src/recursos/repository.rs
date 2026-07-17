@@ -1,16 +1,14 @@
-use futures_util::TryStreamExt;
-
-use crate::recursos::models::{
+use crate::recursos::dto::{
     CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest,
-    CreateProductoRequest, Equipamiento, Financiamiento, Patente, Producto,
+    CreateProductoRequest, EquipamientoDto, FinanciamientoDto, PatenteDto, ProductoDto,
     UpdateEquipamientoRequest, UpdateFinanciamientoRequest, UpdatePatenteRequest,
     UpdateProductoRequest,
 };
-
-// ── Patentes ──────────────────────────────────────────────────────────────────
+use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 
 impl_resource_repository!(
     Patente,
+    PatenteDto,
     CreatePatenteRequest,
     UpdatePatenteRequest,
     "patentes",
@@ -34,10 +32,9 @@ impl_resource_repository!(
     descripcion
 );
 
-// ── Productos ─────────────────────────────────────────────────────────────────
-
 impl_resource_repository!(
     Producto,
+    ProductoDto,
     CreateProductoRequest,
     UpdateProductoRequest,
     "productos",
@@ -57,10 +54,9 @@ impl_resource_repository!(
     fecha_registro
 );
 
-// ── Equipamientos ─────────────────────────────────────────────────────────────
-
 impl_resource_repository!(
     Equipamiento,
+    EquipamientoDto,
     CreateEquipamientoRequest,
     UpdateEquipamientoRequest,
     "equipamientos",
@@ -82,10 +78,9 @@ impl_resource_repository!(
     fecha_adquisicion
 );
 
-// ── Financiamientos ───────────────────────────────────────────────────────────
-
 impl_resource_repository!(
     Financiamiento,
+    FinanciamientoDto,
     CreateFinanciamientoRequest,
     UpdateFinanciamientoRequest,
     "financiamientos",

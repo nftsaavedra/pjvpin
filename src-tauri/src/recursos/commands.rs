@@ -1,9 +1,9 @@
 use tauri::{State, Window};
 
 use super::handlers;
-use crate::recursos::models::{
+use crate::recursos::dto::{
     CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest,
-    CreateProductoRequest, Equipamiento, Financiamiento, Patente, Producto,
+    CreateProductoRequest, EquipamientoDto, FinanciamientoDto, PatenteDto, ProductoDto,
     UpdateEquipamientoRequest, UpdateFinanciamientoRequest, UpdatePatenteRequest,
     UpdateProductoRequest,
 };
@@ -15,16 +15,18 @@ pub async fn crear_patente(
     window: Window,
     state: State<'_, AppState>,
     request: CreatePatenteRequest,
-) -> Result<Patente, AppError> {
-    handlers::crear_patente(&state, window.label(), request).await
+) -> Result<PatenteDto, AppError> {
+    let item = handlers::crear_patente(&state, window.label(), request).await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn get_patentes_proyecto(
     window: Window,
     state: State<'_, AppState>,
     proyecto_id: String,
-) -> Result<Vec<Patente>, AppError> {
-    handlers::get_patentes_proyecto(&state, window.label(), &proyecto_id).await
+) -> Result<Vec<PatenteDto>, AppError> {
+    let items = handlers::get_patentes_proyecto(&state, window.label(), &proyecto_id).await?;
+    Ok(items.into_iter().map(Into::into).collect())
 }
 #[tauri::command]
 pub async fn actualizar_patente(
@@ -32,8 +34,9 @@ pub async fn actualizar_patente(
     state: State<'_, AppState>,
     id_patente: String,
     request: UpdatePatenteRequest,
-) -> Result<Patente, AppError> {
-    handlers::actualizar_patente(&state, window.label(), &id_patente, request).await
+) -> Result<PatenteDto, AppError> {
+    let item = handlers::actualizar_patente(&state, window.label(), &id_patente, request).await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn eliminar_patente(
@@ -48,8 +51,9 @@ pub async fn reactivar_patente(
     window: Window,
     state: State<'_, AppState>,
     id_patente: String,
-) -> Result<Patente, AppError> {
-    handlers::reactivar_patente(&state, window.label(), &id_patente).await
+) -> Result<PatenteDto, AppError> {
+    let item = handlers::reactivar_patente(&state, window.label(), &id_patente).await?;
+    Ok(item.into())
 }
 
 #[tauri::command]
@@ -57,16 +61,18 @@ pub async fn crear_producto(
     window: Window,
     state: State<'_, AppState>,
     request: CreateProductoRequest,
-) -> Result<Producto, AppError> {
-    handlers::crear_producto(&state, window.label(), request).await
+) -> Result<ProductoDto, AppError> {
+    let item = handlers::crear_producto(&state, window.label(), request).await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn get_productos_proyecto(
     window: Window,
     state: State<'_, AppState>,
     proyecto_id: String,
-) -> Result<Vec<Producto>, AppError> {
-    handlers::get_productos_proyecto(&state, window.label(), &proyecto_id).await
+) -> Result<Vec<ProductoDto>, AppError> {
+    let items = handlers::get_productos_proyecto(&state, window.label(), &proyecto_id).await?;
+    Ok(items.into_iter().map(Into::into).collect())
 }
 #[tauri::command]
 pub async fn actualizar_producto(
@@ -74,8 +80,9 @@ pub async fn actualizar_producto(
     state: State<'_, AppState>,
     id_producto: String,
     request: UpdateProductoRequest,
-) -> Result<Producto, AppError> {
-    handlers::actualizar_producto(&state, window.label(), &id_producto, request).await
+) -> Result<ProductoDto, AppError> {
+    let item = handlers::actualizar_producto(&state, window.label(), &id_producto, request).await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn eliminar_producto(
@@ -90,8 +97,9 @@ pub async fn reactivar_producto(
     window: Window,
     state: State<'_, AppState>,
     id_producto: String,
-) -> Result<Producto, AppError> {
-    handlers::reactivar_producto(&state, window.label(), &id_producto).await
+) -> Result<ProductoDto, AppError> {
+    let item = handlers::reactivar_producto(&state, window.label(), &id_producto).await?;
+    Ok(item.into())
 }
 
 #[tauri::command]
@@ -99,16 +107,18 @@ pub async fn crear_equipamiento(
     window: Window,
     state: State<'_, AppState>,
     request: CreateEquipamientoRequest,
-) -> Result<Equipamiento, AppError> {
-    handlers::crear_equipamiento(&state, window.label(), request).await
+) -> Result<EquipamientoDto, AppError> {
+    let item = handlers::crear_equipamiento(&state, window.label(), request).await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn get_equipamientos_proyecto(
     window: Window,
     state: State<'_, AppState>,
     proyecto_id: String,
-) -> Result<Vec<Equipamiento>, AppError> {
-    handlers::get_equipamientos_proyecto(&state, window.label(), &proyecto_id).await
+) -> Result<Vec<EquipamientoDto>, AppError> {
+    let items = handlers::get_equipamientos_proyecto(&state, window.label(), &proyecto_id).await?;
+    Ok(items.into_iter().map(Into::into).collect())
 }
 #[tauri::command]
 pub async fn actualizar_equipamiento(
@@ -116,8 +126,10 @@ pub async fn actualizar_equipamiento(
     state: State<'_, AppState>,
     id_equipamiento: String,
     request: UpdateEquipamientoRequest,
-) -> Result<Equipamiento, AppError> {
-    handlers::actualizar_equipamiento(&state, window.label(), &id_equipamiento, request).await
+) -> Result<EquipamientoDto, AppError> {
+    let item = handlers::actualizar_equipamiento(&state, window.label(), &id_equipamiento, request)
+        .await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn eliminar_equipamiento(
@@ -132,8 +144,9 @@ pub async fn reactivar_equipamiento(
     window: Window,
     state: State<'_, AppState>,
     id_equipamiento: String,
-) -> Result<Equipamiento, AppError> {
-    handlers::reactivar_equipamiento(&state, window.label(), &id_equipamiento).await
+) -> Result<EquipamientoDto, AppError> {
+    let item = handlers::reactivar_equipamiento(&state, window.label(), &id_equipamiento).await?;
+    Ok(item.into())
 }
 
 #[tauri::command]
@@ -141,16 +154,19 @@ pub async fn crear_financiamiento(
     window: Window,
     state: State<'_, AppState>,
     request: CreateFinanciamientoRequest,
-) -> Result<Financiamiento, AppError> {
-    handlers::crear_financiamiento(&state, window.label(), request).await
+) -> Result<FinanciamientoDto, AppError> {
+    let item = handlers::crear_financiamiento(&state, window.label(), request).await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn get_financiamientos_proyecto(
     window: Window,
     state: State<'_, AppState>,
     proyecto_id: String,
-) -> Result<Vec<Financiamiento>, AppError> {
-    handlers::get_financiamientos_proyecto(&state, window.label(), &proyecto_id).await
+) -> Result<Vec<FinanciamientoDto>, AppError> {
+    let items =
+        handlers::get_financiamientos_proyecto(&state, window.label(), &proyecto_id).await?;
+    Ok(items.into_iter().map(Into::into).collect())
 }
 #[tauri::command]
 pub async fn actualizar_financiamiento(
@@ -158,8 +174,11 @@ pub async fn actualizar_financiamiento(
     state: State<'_, AppState>,
     id_financiamiento: String,
     request: UpdateFinanciamientoRequest,
-) -> Result<Financiamiento, AppError> {
-    handlers::actualizar_financiamiento(&state, window.label(), &id_financiamiento, request).await
+) -> Result<FinanciamientoDto, AppError> {
+    let item =
+        handlers::actualizar_financiamiento(&state, window.label(), &id_financiamiento, request)
+            .await?;
+    Ok(item.into())
 }
 #[tauri::command]
 pub async fn eliminar_financiamiento(
@@ -174,6 +193,8 @@ pub async fn reactivar_financiamiento(
     window: Window,
     state: State<'_, AppState>,
     id_financiamiento: String,
-) -> Result<Financiamiento, AppError> {
-    handlers::reactivar_financiamiento(&state, window.label(), &id_financiamiento).await
+) -> Result<FinanciamientoDto, AppError> {
+    let item =
+        handlers::reactivar_financiamiento(&state, window.label(), &id_financiamiento).await?;
+    Ok(item.into())
 }

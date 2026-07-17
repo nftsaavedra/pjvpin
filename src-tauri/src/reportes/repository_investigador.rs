@@ -3,7 +3,7 @@ use mongodb::{bson::doc, Database};
 
 use crate::investigadores::models::Investigador;
 use crate::proyectos::models::ParticipacionRecord;
-use crate::recursos::models::{Equipamiento, Producto};
+use crate::recursos::models::{Equipamiento, Patente, Producto};
 use crate::reportes::entity_reports::*;
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
@@ -112,19 +112,19 @@ pub async fn build_reporte_investigador_integral(
             .collect();
 
         let patentes_count = db
-            .collection::<crate::recursos::models::Patente>("patentes")
+            .collection::<mongodb::bson::Document>("patentes")
             .count_documents(doc! { "proyecto_id": proyecto_id })
             .await? as usize;
         let productos_count = db
-            .collection::<Producto>("productos")
+            .collection::<mongodb::bson::Document>("productos")
             .count_documents(doc! { "proyecto_id": proyecto_id })
             .await? as usize;
         let equipamientos_count = db
-            .collection::<Equipamiento>("equipamientos")
+            .collection::<mongodb::bson::Document>("equipamientos")
             .count_documents(doc! { "proyecto_id": proyecto_id })
             .await? as usize;
         let financiamientos_count = db
-            .collection::<crate::recursos::models::Financiamiento>("financiamientos")
+            .collection::<mongodb::bson::Document>("financiamientos")
             .count_documents(doc! { "proyecto_id": proyecto_id })
             .await? as usize;
 
@@ -147,12 +147,23 @@ pub async fn build_reporte_investigador_integral(
 
     let total_proyectos = proyectos_detalle.len();
 
-    let patentes_raw = db
-        .collection::<crate::recursos::models::Patente>("patentes")
-        .find(doc! { "investigador_id": id_investigador })
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    use crate::recursos::dto::{EquipamientoDto, PatenteDto, ProductoDto};
+    use std::convert::TryFrom;
+
+    let patentes_raw: Vec<Patente> = {
+        let cursor = db
+            .collection::<mongodb::bson::Document>("patentes")
+            .find(doc! { "investigador_id": id_investigador })
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: PatenteDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->PatenteDto: {e}")))?;
+                Patente::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
 
     let total_patentes = patentes_raw.len();
     let patentes: Vec<PatenteConEtiquetas> = patentes_raw
@@ -160,12 +171,20 @@ pub async fn build_reporte_investigador_integral(
         .map(|p| PatenteConEtiquetas::from_patente(p, &catalogo_map))
         .collect();
 
-    let productos_raw = db
-        .collection::<Producto>("productos")
-        .find(doc! { "investigador_id": id_investigador })
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
+    let productos_raw: Vec<Producto> = {
+        let cursor = db
+            .collection::<mongodb::bson::Document>("productos")
+            .find(doc! { "investigador_id": id_investigador })
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: ProductoDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->ProductoDto: {e}")))?;
+                Producto::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
+    };
 
     let total_productos = productos_raw.len();
     let productos: Vec<ProductoConEtiquetas> = productos_raw
@@ -173,14 +192,21 @@ pub async fn build_reporte_investigador_integral(
         .map(|p| ProductoConEtiquetas::from_producto(p, &catalogo_map))
         .collect();
 
-    let equipamientos_raw = if proyecto_ids.is_empty() {
+    let equipamientos_raw: Vec<Equipamiento> = if proyecto_ids.is_empty() {
         Vec::new()
     } else {
-        db.collection::<Equipamiento>("equipamientos")
+        let cursor = db
+            .collection::<mongodb::bson::Document>("equipamientos")
             .find(doc! { "proyecto_id": { "$in": &proyecto_ids } })
-            .await?
-            .try_collect::<Vec<_>>()
-            .await?
+            .await?;
+        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .map(|d| {
+                let dto: EquipamientoDto = mongodb::bson::from_document(d)
+                    .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
+                Equipamiento::try_from(dto)
+            })
+            .collect::<Result<Vec<_>, _>>()?
     };
 
     let total_equipamientos = equipamientos_raw.len();
