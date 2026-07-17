@@ -1,23 +1,56 @@
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
-use crate::proyectos::models::ParticipacionRecord;
-use crate::proyectos::models::{Proyecto, ProyectoDetalle, ProyectoParticipanteResumen};
+use futures_util::TryStreamExt;
+use mongodb::{bson::doc, bson::Document, Database};
+
+use crate::proyectos::dto::{
+    ParticipacionRecordDto, ProyectoDetalleDto, ProyectoDto, ProyectoParticipanteResumenDto,
+};
+use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::proyectos::repository::get_ids_proyectos_como_responsable;
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
-use futures_util::TryStreamExt;
-use mongodb::{bson::doc, Database};
+
+const COLLECTION_PROYECTOS: &str = "proyectos";
+const COLLECTION_PARTICIPACIONES: &str = "participaciones";
+
+fn doc_to_proyecto_dto(doc: Document) -> Result<ProyectoDto, AppError> {
+    mongodb::bson::from_document::<ProyectoDto>(doc).map_err(|e| {
+        AppError::InternalError(format!("No se pudo deserializar proyecto desde BSON: {e}"))
+    })
+}
+
+fn dto_to_proyecto(dto: ProyectoDto) -> Proyecto {
+    Proyecto::try_from(dto).expect("ProyectoDto -> Proyecto conversion failed")
+}
+
+fn doc_to_participacion_dto(doc: Document) -> Result<ParticipacionRecordDto, AppError> {
+    mongodb::bson::from_document::<ParticipacionRecordDto>(doc).map_err(|e| {
+        AppError::InternalError(format!(
+            "No se pudo deserializar participacion desde BSON: {e}"
+        ))
+    })
+}
+
+fn dto_to_participacion(dto: ParticipacionRecordDto) -> ParticipacionRecord {
+    ParticipacionRecord::try_from(dto)
+        .expect("ParticipacionRecordDto -> ParticipacionRecord conversion failed")
+}
 
 pub async fn buscar_proyectos_por_investigador(
     db: &Database,
     id_investigador: &str,
 ) -> Result<Vec<Proyecto>, AppError> {
-    let participaciones = db
-        .collection::<ParticipacionRecord>("participaciones")
+    let cursor = db
+        .collection::<Document>(COLLECTION_PARTICIPACIONES)
         .find(doc! { "id_investigador": id_investigador })
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let participaciones: Vec<ParticipacionRecord> = docs
+        .into_iter()
+        .map(|d| Ok::<_, AppError>(dto_to_participacion(doc_to_participacion_dto(d)?)))
+        .collect::<Result<Vec<_>, _>>()?;
 
     let proyecto_ids: Vec<String> = participaciones
         .into_iter()
@@ -27,12 +60,15 @@ pub async fn buscar_proyectos_por_investigador(
         return Ok(Vec::new());
     }
 
-    let mut proyectos = db
-        .collection::<Proyecto>("proyectos")
+    let cursor = db
+        .collection::<Document>(COLLECTION_PROYECTOS)
         .find(doc! { "id_proyecto": { "$in": proyecto_ids }, "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut proyectos: Vec<Proyecto> = docs
+        .into_iter()
+        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)))
+        .collect::<Result<Vec<_>, _>>()?;
     proyectos.sort_by(|a, b| {
         a.titulo_proyecto
             .to_lowercase()
@@ -44,7 +80,7 @@ pub async fn buscar_proyectos_por_investigador(
 pub async fn get_all_proyectos_detalle(
     db: &Database,
     responsable_id: Option<&str>,
-) -> Result<Vec<ProyectoDetalle>, AppError> {
+) -> Result<Vec<ProyectoDetalleDto>, AppError> {
     let filter = if let Some(investigador_id) = responsable_id {
         let proyecto_ids = get_ids_proyectos_como_responsable(db, investigador_id).await?;
         if proyecto_ids.is_empty() {
@@ -54,12 +90,15 @@ pub async fn get_all_proyectos_detalle(
     } else {
         doc! { "activo": 1i64 }
     };
-    let mut proyectos = db
-        .collection::<Proyecto>("proyectos")
+    let cursor = db
+        .collection::<Document>(COLLECTION_PROYECTOS)
         .find(filter)
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut proyectos: Vec<Proyecto> = docs
+        .into_iter()
+        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)))
+        .collect::<Result<Vec<_>, _>>()?;
     proyectos.sort_by(|a, b| {
         a.titulo_proyecto
             .to_lowercase()
@@ -72,7 +111,7 @@ pub async fn get_all_proyectos_detalle(
     let participaciones = data_loader::load_participaciones(db).await?;
 
     let mut investigadores_por_proyecto: HashMap<String, Vec<String>> = HashMap::new();
-    let mut participantes_por_proyecto: HashMap<String, Vec<ProyectoParticipanteResumen>> =
+    let mut participantes_por_proyecto: HashMap<String, Vec<ProyectoParticipanteResumenDto>> =
         HashMap::new();
     for participacion in participaciones {
         if let Some(investigador) = investigadores.get(&participacion.id_investigador) {
@@ -93,7 +132,7 @@ pub async fn get_all_proyectos_detalle(
             participantes_por_proyecto
                 .entry(proyecto_id)
                 .or_default()
-                .push(ProyectoParticipanteResumen {
+                .push(ProyectoParticipanteResumenDto {
                     id_investigador: investigador.id_investigador.clone(),
                     nombre: nombre_investigador,
                     grado,
@@ -122,7 +161,7 @@ pub async fn get_all_proyectos_detalle(
                 .iter()
                 .find(|participante| participante.es_responsable)
                 .map(|participante| participante.nombre.clone());
-            ProyectoDetalle {
+            ProyectoDetalleDto {
                 id_proyecto: proyecto.id_proyecto,
                 titulo_proyecto: proyecto.titulo_proyecto,
                 cantidad_investigadores: investigadores_proyecto.len() as i64,

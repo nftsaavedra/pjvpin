@@ -1,10 +1,15 @@
 use std::collections::HashMap;
+use std::convert::TryFrom;
 
 use futures_util::TryStreamExt;
-use mongodb::{bson::doc, Database};
+use mongodb::{
+    bson::{doc, Document},
+    Database,
+};
 
 use crate::catalogos::models::CatalogoItem;
 use crate::investigadores::models::{Investigador, Publicacion};
+use crate::proyectos::dto::{ParticipacionRecordDto, ProyectoDto};
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 use crate::reportes::entity_reports::*;
@@ -24,11 +29,14 @@ pub async fn build_reporte_proyecto_integral(
     let grupos = data_loader::load_grupos_map(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
 
-    let proyecto = db
-        .collection::<Proyecto>("proyectos")
+    let proyecto_doc = db
+        .collection::<Document>("proyectos")
         .find_one(doc! { "id_proyecto": id_proyecto })
         .await?
         .ok_or_else(|| AppError::NotFound("Proyecto no encontrado.".to_string()))?;
+    let proyecto_dto: ProyectoDto = mongodb::bson::from_document(proyecto_doc)
+        .map_err(|e| AppError::InternalError(format!("BSON->ProyectoDto: {e}")))?;
+    let proyecto = Proyecto::try_from(proyecto_dto)?;
 
     let cabecera = ProyectoCabeceraReporte {
         id_proyecto: proyecto.id_proyecto.clone(),
@@ -40,12 +48,20 @@ pub async fn build_reporte_proyecto_integral(
         fecha_actualizacion: proyecto.updated_at.map(|t| t.to_string()),
     };
 
-    let participaciones = db
-        .collection::<ParticipacionRecord>("participaciones")
+    let participaciones_cursor = db
+        .collection::<Document>("participaciones")
         .find(doc! { "id_proyecto": id_proyecto })
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let participaciones_docs: Vec<Document> = participaciones_cursor.try_collect().await?;
+    let participaciones: Vec<ParticipacionRecord> = participaciones_docs
+        .into_iter()
+        .map(|d| {
+            let dto: ParticipacionRecordDto = mongodb::bson::from_document(d).map_err(|e| {
+                AppError::InternalError(format!("BSON->ParticipacionRecordDto: {e}"))
+            })?;
+            ParticipacionRecord::try_from(dto)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
     let mut equipo: Vec<MiembroProyectoReporte> = Vec::new();
     for part in &participaciones {

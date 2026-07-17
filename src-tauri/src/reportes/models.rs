@@ -1,5 +1,5 @@
-pub use crate::proyectos::models::{
-    ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
-    ExportDataProyectoArea, ExportDataRecurso, InvestigadorProyectosCount, KpisDashboard,
-    ProyectosTrendItem, RenacytDistribucionItem,
+pub use crate::proyectos::dto::{
+    ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
+    ExportDataProyectoAreaDto, ExportDataRecursoDto, InvestigadorProyectosCountDto,
+    KpisDashboardDto, ProyectosTrendItemDto, RenacytDistribucionItemDto,
 };

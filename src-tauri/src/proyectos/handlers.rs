@@ -1,7 +1,8 @@
-use crate::proyectos::models::{
-    CreateProyectoConParticipantesRequest, EliminarProyectoResultado, Proyecto, ProyectoDetalle,
-    UpdateProyectoConParticipantesRequest,
+use crate::proyectos::dto::{
+    CreateProyectoConParticipantesRequest, EliminarProyectoResultadoDto, ProyectoDetalleDto,
+    ProyectoDto, UpdateProyectoConParticipantesRequest,
 };
+use crate::proyectos::models::Proyecto;
 use crate::proyectos::service as proyecto_service;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
@@ -12,10 +13,10 @@ pub async fn crear_proyecto_con_participantes(
     state: &AppState,
     window_label: &str,
     request: CreateProyectoConParticipantesRequest,
-) -> Result<Proyecto, AppError> {
+) -> Result<ProyectoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    let proyecto = proyecto_service::create(state, request).await?;
+    let proyecto: Proyecto = proyecto_service::create(state, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.create",
@@ -23,7 +24,7 @@ pub async fn crear_proyecto_con_participantes(
         &proyecto.id_proyecto,
         proyecto.titulo_proyecto.clone(),
     );
-    Ok(proyecto)
+    Ok(ProyectoDto::from(proyecto))
 }
 
 pub async fn update_proyecto_con_participantes(
@@ -31,10 +32,10 @@ pub async fn update_proyecto_con_participantes(
     window_label: &str,
     id_proyecto: &str,
     request: UpdateProyectoConParticipantesRequest,
-) -> Result<Proyecto, AppError> {
+) -> Result<ProyectoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    let proyecto = proyecto_service::update(state, id_proyecto, request).await?;
+    let proyecto: Proyecto = proyecto_service::update(state, id_proyecto, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.update",
@@ -42,22 +43,24 @@ pub async fn update_proyecto_con_participantes(
         id_proyecto,
         proyecto.titulo_proyecto.clone(),
     );
-    Ok(proyecto)
+    Ok(ProyectoDto::from(proyecto))
 }
 
 pub async fn buscar_proyectos_por_investigador(
     state: &AppState,
     window_label: &str,
     id_investigador: &str,
-) -> Result<Vec<Proyecto>, AppError> {
+) -> Result<Vec<ProyectoDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    proyecto_service::find_by_investigador(state, id_investigador).await
+    let proyectos: Vec<Proyecto> =
+        proyecto_service::find_by_investigador(state, id_investigador).await?;
+    Ok(proyectos.into_iter().map(ProyectoDto::from).collect())
 }
 
 pub async fn get_all_proyectos_detalle(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ProyectoDetalle>, AppError> {
+) -> Result<Vec<ProyectoDetalleDto>, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
     if actor.rol.trim() == "responsable_proyecto" {
@@ -77,7 +80,7 @@ pub async fn get_all_proyectos_paginated(
     window_label: &str,
     page: u32,
     limit: u32,
-) -> Result<PaginatedResult<Proyecto>, AppError> {
+) -> Result<PaginatedResult<ProyectoDto>, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
     let responsable_id = if actor.rol.trim() == "responsable_proyecto" {
@@ -90,7 +93,15 @@ pub async fn get_all_proyectos_paginated(
     } else {
         None
     };
-    proyecto_service::get_all_paginated(state, page, limit, responsable_id).await
+    let result: PaginatedResult<Proyecto> =
+        proyecto_service::get_all_paginated(state, page, limit, responsable_id).await?;
+    Ok(PaginatedResult {
+        items: result.items.into_iter().map(ProyectoDto::from).collect(),
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        total_pages: result.total_pages,
+    })
 }
 
 pub async fn eliminar_relacion_proyecto_investigador(
@@ -134,7 +145,7 @@ pub async fn eliminar_proyecto(
     state: &AppState,
     window_label: &str,
     id_proyecto: &str,
-) -> Result<EliminarProyectoResultado, AppError> {
+) -> Result<EliminarProyectoResultadoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
     let result = proyecto_service::delete(state, id_proyecto).await?;
@@ -152,10 +163,10 @@ pub async fn reactivar_proyecto(
     state: &AppState,
     window_label: &str,
     id_proyecto: &str,
-) -> Result<Proyecto, AppError> {
+) -> Result<ProyectoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    let proyecto = proyecto_service::reactivate(state, id_proyecto).await?;
+    let proyecto: Proyecto = proyecto_service::reactivate(state, id_proyecto).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.reactivate",
@@ -163,5 +174,5 @@ pub async fn reactivar_proyecto(
         id_proyecto,
         "activo=1".to_string(),
     );
-    Ok(proyecto)
+    Ok(ProyectoDto::from(proyecto))
 }

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use futures_util::TryStreamExt;
-use mongodb::{bson::doc, Database};
+use mongodb::Database;
 
 use crate::catalogos::models::CatalogoItem;
 use crate::catalogos::repository as catalogos_repo;
@@ -55,25 +54,11 @@ pub async fn load_personas_map(db: &Database) -> Result<HashMap<String, Persona>
 }
 
 pub async fn load_proyectos_map(db: &Database) -> Result<HashMap<String, Proyecto>, AppError> {
-    let proyectos = db
-        .collection::<Proyecto>("proyectos")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await?;
-    Ok(proyectos
-        .into_iter()
-        .map(|proyecto| (proyecto.id_proyecto.clone(), proyecto))
-        .collect())
+    crate::proyectos::repository::load_all_map(db).await
 }
 
 pub async fn load_participaciones(db: &Database) -> Result<Vec<ParticipacionRecord>, AppError> {
-    db.collection::<ParticipacionRecord>("participaciones")
-        .find(doc! {})
-        .await?
-        .try_collect::<Vec<_>>()
-        .await
-        .map_err(Into::into)
+    crate::proyectos::repository::load_participaciones_all(db).await
 }
 
 pub async fn load_grupos_map(

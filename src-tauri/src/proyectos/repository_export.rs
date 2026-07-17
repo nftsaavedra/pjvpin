@@ -1,22 +1,25 @@
 use std::collections::{HashMap, HashSet};
+use std::convert::TryFrom;
+
+use futures_util::TryStreamExt;
+use mongodb::{bson::doc, bson::Document, Database};
 
 use crate::catalogos::models::CatalogoItem;
 use crate::investigadores::dto::PublicacionDto;
 use crate::investigadores::models::{Investigador, Publicacion};
 use crate::investigadores::repository as investigadores_repo;
 use crate::personas::models::Persona;
-use crate::proyectos::models::{
-    ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
-    ExportDataProyectoArea, ExportDataRecurso, Proyecto,
+use crate::proyectos::dto::{
+    ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
+    ExportDataProyectoAreaDto, ExportDataRecursoDto,
 };
+use crate::proyectos::models::Proyecto;
 use crate::recursos::dto::{EquipamientoDto, FinanciamientoDto, PatenteDto, ProductoDto};
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
-use futures_util::TryStreamExt;
-use mongodb::{bson::doc, Database};
 
-pub async fn get_data_exportacion_plana(db: &Database) -> Result<Vec<ExportData>, AppError> {
+pub async fn get_data_exportacion_plana(db: &Database) -> Result<Vec<ExportDataDto>, AppError> {
     let grados = data_loader::load_grados_map(db).await?;
     let investigadores = data_loader::load_investigadores_map(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
@@ -36,7 +39,7 @@ pub async fn get_data_exportacion_plana(db: &Database) -> Result<Vec<ExportData>
         }
         let grado = data_loader::resolve_grado_nombre(&grados, &investigador.id_grado);
 
-        data.push(ExportData {
+        data.push(ExportDataDto {
             proyecto: proyecto.titulo_proyecto.clone(),
             grado,
             renacyt_nivel: data_loader::resolve_renacyt_nivel(investigador),
@@ -61,7 +64,7 @@ pub async fn get_data_exportacion_plana(db: &Database) -> Result<Vec<ExportData>
 
 pub async fn get_data_exportacion_agrupada_investigador(
     db: &Database,
-) -> Result<Vec<ExportDataConProjectos>, AppError> {
+) -> Result<Vec<ExportDataConProjectosDto>, AppError> {
     let grados = data_loader::load_grados_map(db).await?;
     let grupos = data_loader::load_grupos_map(db).await?;
     let investigadores_activos = investigadores_repo::get_all_investigadores(db).await?;
@@ -89,13 +92,13 @@ pub async fn get_data_exportacion_agrupada_investigador(
         }
     }
 
-    let mut data: Vec<ExportDataConProjectos> = investigadores_activos
+    let mut data: Vec<ExportDataConProjectosDto> = investigadores_activos
         .into_iter()
         .map(|investigador| {
             let proyectos_investigador = proyectos_por_investigador
                 .remove(&investigador.id_investigador)
                 .unwrap_or_default();
-            ExportDataConProjectos {
+            ExportDataConProjectosDto {
                 investigador: personas
                     .get(&investigador.persona_id)
                     .map(|p| p.nombre_completo.clone())
@@ -121,7 +124,9 @@ pub async fn get_data_exportacion_agrupada_investigador(
     Ok(data)
 }
 
-pub async fn get_data_exportacion_grupos(db: &Database) -> Result<Vec<ExportDataGrupo>, AppError> {
+pub async fn get_data_exportacion_grupos(
+    db: &Database,
+) -> Result<Vec<ExportDataGrupoDto>, AppError> {
     let investigadores = data_loader::load_investigadores_map(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
@@ -179,7 +184,7 @@ pub async fn get_data_exportacion_grupos(db: &Database) -> Result<Vec<ExportData
             .collect();
         proyecto_titles.sort();
 
-        data.push(ExportDataGrupo {
+        data.push(ExportDataGrupoDto {
             grupo: grupo.nombre.clone(),
             descripcion: grupo.descripcion.clone(),
             coordinador,
@@ -197,20 +202,18 @@ pub async fn get_data_exportacion_grupos(db: &Database) -> Result<Vec<ExportData
 
 pub async fn get_data_exportacion_recursos(
     db: &Database,
-) -> Result<Vec<ExportDataRecurso>, AppError> {
+) -> Result<Vec<ExportDataRecursoDto>, AppError> {
     let catalogo_map = data_loader::load_catalogos_map(db).await?;
     let investigadores = data_loader::load_investigadores_map(db).await?;
     let personas = data_loader::load_personas_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
-
-    use std::convert::TryFrom;
 
     let patentes: Vec<Patente> = {
         let cursor = db
             .collection::<mongodb::bson::Document>("patentes")
             .find(doc! {})
             .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
                 let dto: PatenteDto = mongodb::bson::from_document(d)
@@ -221,12 +224,11 @@ pub async fn get_data_exportacion_recursos(
     };
 
     let productos: Vec<Producto> = {
-        use std::convert::TryFrom;
         let cursor = db
             .collection::<mongodb::bson::Document>("productos")
             .find(doc! {})
             .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
                 let dto: ProductoDto = mongodb::bson::from_document(d)
@@ -237,12 +239,11 @@ pub async fn get_data_exportacion_recursos(
     };
 
     let equipamientos: Vec<Equipamiento> = {
-        use std::convert::TryFrom;
         let cursor = db
             .collection::<mongodb::bson::Document>("equipamientos")
             .find(doc! {})
             .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
                 let dto: EquipamientoDto = mongodb::bson::from_document(d)
@@ -253,12 +254,11 @@ pub async fn get_data_exportacion_recursos(
     };
 
     let financiamientos: Vec<Financiamiento> = {
-        use std::convert::TryFrom;
         let cursor = db
             .collection::<mongodb::bson::Document>("financiamientos")
             .find(doc! {})
             .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
                 let dto: FinanciamientoDto = mongodb::bson::from_document(d).map_err(|e| {
@@ -307,7 +307,7 @@ pub async fn get_data_exportacion_recursos(
     let mut data = Vec::new();
 
     for p in patentes {
-        data.push(ExportDataRecurso {
+        data.push(ExportDataRecursoDto {
             tipo_recurso: "Patente".to_string(),
             titulo_o_nombre: p.titulo.clone(),
             proyecto: resolve_proyecto(&proyectos, &p.proyecto_id),
@@ -320,7 +320,7 @@ pub async fn get_data_exportacion_recursos(
     }
 
     for p in productos {
-        data.push(ExportDataRecurso {
+        data.push(ExportDataRecursoDto {
             tipo_recurso: "Producto".to_string(),
             titulo_o_nombre: p.nombre.clone(),
             proyecto: resolve_proyecto(&proyectos, &p.proyecto_id),
@@ -333,7 +333,7 @@ pub async fn get_data_exportacion_recursos(
     }
 
     for e in equipamientos {
-        data.push(ExportDataRecurso {
+        data.push(ExportDataRecursoDto {
             tipo_recurso: "Equipamiento".to_string(),
             titulo_o_nombre: e.nombre.clone(),
             proyecto: resolve_proyecto(&proyectos, &e.proyecto_id),
@@ -346,7 +346,7 @@ pub async fn get_data_exportacion_recursos(
     }
 
     for f in financiamientos {
-        data.push(ExportDataRecurso {
+        data.push(ExportDataRecursoDto {
             tipo_recurso: "Financiamiento".to_string(),
             titulo_o_nombre: f.entidad_financiadora.clone(),
             proyecto: resolve_proyecto(&proyectos, &f.proyecto_id),
@@ -370,7 +370,7 @@ pub async fn get_data_exportacion_recursos(
 
 pub async fn get_data_exportacion_investigadores_perfil(
     db: &Database,
-) -> Result<Vec<ExportDataInvestigadorPerfil>, AppError> {
+) -> Result<Vec<ExportDataInvestigadorPerfilDto>, AppError> {
     let grados = data_loader::load_grados_map(db).await?;
     let grupos = data_loader::load_grupos_map(db).await?;
     let proyectos = data_loader::load_proyectos_map(db).await?;
@@ -407,12 +407,11 @@ pub async fn get_data_exportacion_investigadores_perfil(
     }
 
     let publicaciones: Vec<Publicacion> = {
-        use std::convert::TryFrom;
         let cursor = db
             .collection::<mongodb::bson::Document>("publicaciones")
             .find(doc! {})
             .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
                 let dto: PublicacionDto = mongodb::bson::from_document(d)
@@ -459,7 +458,7 @@ pub async fn get_data_exportacion_investigadores_perfil(
             .unwrap_or(0);
 
         let persona = personas.get(&investigador.persona_id);
-        data.push(ExportDataInvestigadorPerfil {
+        data.push(ExportDataInvestigadorPerfilDto {
             dni: persona.map(|p| p.dni.clone()).unwrap_or_default(),
             nombres_apellidos: persona
                 .map(|p| p.nombre_completo.clone())
@@ -482,13 +481,20 @@ pub async fn get_data_exportacion_investigadores_perfil(
 
 pub async fn get_data_exportacion_proyectos_area(
     db: &Database,
-) -> Result<Vec<ExportDataProyectoArea>, AppError> {
-    let mut proyectos = db
-        .collection::<Proyecto>("proyectos")
+) -> Result<Vec<ExportDataProyectoAreaDto>, AppError> {
+    let cursor = db
+        .collection::<Document>("proyectos")
         .find(doc! { "activo": 1i64 })
-        .await?
-        .try_collect::<Vec<_>>()
         .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut proyectos: Vec<Proyecto> = docs
+        .into_iter()
+        .map(|d| {
+            let dto: crate::proyectos::dto::ProyectoDto = mongodb::bson::from_document(d)
+                .map_err(|e| AppError::InternalError(format!("BSON->ProyectoDto: {e}")))?;
+            Ok::<_, AppError>(crate::proyectos::models::Proyecto::try_from(dto)?)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
     proyectos.sort_by(|a, b| {
         a.titulo_proyecto
             .to_lowercase()
@@ -520,10 +526,10 @@ pub async fn get_data_exportacion_proyectos_area(
         }
     }
 
-    let mut data: Vec<ExportDataProyectoArea> = areas
+    let mut data: Vec<ExportDataProyectoAreaDto> = areas
         .into_iter()
         .map(
-            |(area, (proyectos_list, investigadores_set))| ExportDataProyectoArea {
+            |(area, (proyectos_list, investigadores_set))| ExportDataProyectoAreaDto {
                 area,
                 cantidad_proyectos: proyectos_list.len() as i64,
                 proyectos: data_loader::join_or_none(&proyectos_list, " | "),

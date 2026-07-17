@@ -1,8 +1,9 @@
 use crate::proyectos::service as proyecto_service;
 use crate::reportes::entity_reports::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
 use crate::reportes::models::{
-    ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
-    ExportDataProyectoArea, ExportDataRecurso, ProyectosTrendItem, RenacytDistribucionItem,
+    ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
+    ExportDataProyectoAreaDto, ExportDataRecursoDto, InvestigadorProyectosCountDto,
+    KpisDashboardDto, ProyectosTrendItemDto, RenacytDistribucionItemDto,
 };
 use crate::shared::error::AppError;
 use crate::shared::rbac;
@@ -11,7 +12,7 @@ use crate::shared::state::AppState;
 pub async fn get_estadisticas_proyectos_x_investigador(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<crate::reportes::models::InvestigadorProyectosCount>, AppError> {
+) -> Result<Vec<InvestigadorProyectosCountDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::DashboardView).await?;
     proyecto_service::get_estadisticas_x_investigador(state).await
 }
@@ -19,7 +20,7 @@ pub async fn get_estadisticas_proyectos_x_investigador(
 pub async fn get_kpis_dashboard(
     state: &AppState,
     window_label: &str,
-) -> Result<crate::reportes::models::KpisDashboard, AppError> {
+) -> Result<KpisDashboardDto, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::DashboardView).await?;
     proyecto_service::get_kpis(state).await
 }
@@ -27,7 +28,7 @@ pub async fn get_kpis_dashboard(
 pub async fn get_data_exportacion_plana(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ExportData>, AppError> {
+) -> Result<Vec<ExportDataDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesExport).await?;
     proyecto_service::get_exportacion_plana(state).await
 }
@@ -35,7 +36,7 @@ pub async fn get_data_exportacion_plana(
 pub async fn get_data_exportacion_agrupada_investigador(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ExportDataConProjectos>, AppError> {
+) -> Result<Vec<ExportDataConProjectosDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesView).await?;
     proyecto_service::get_exportacion_agrupada(state).await
 }
@@ -146,7 +147,7 @@ pub async fn get_reportes_investigadores_integral(
 pub async fn get_data_exportacion_grupos(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ExportDataGrupo>, AppError> {
+) -> Result<Vec<ExportDataGrupoDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesView).await?;
     proyecto_service::get_exportacion_grupos(state).await
 }
@@ -154,7 +155,7 @@ pub async fn get_data_exportacion_grupos(
 pub async fn get_data_exportacion_recursos(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ExportDataRecurso>, AppError> {
+) -> Result<Vec<ExportDataRecursoDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesView).await?;
     proyecto_service::get_exportacion_recursos(state).await
 }
@@ -162,7 +163,7 @@ pub async fn get_data_exportacion_recursos(
 pub async fn get_data_exportacion_investigadores_perfil(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ExportDataInvestigadorPerfil>, AppError> {
+) -> Result<Vec<ExportDataInvestigadorPerfilDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesView).await?;
     proyecto_service::get_exportacion_investigadores_perfil(state).await
 }
@@ -170,7 +171,7 @@ pub async fn get_data_exportacion_investigadores_perfil(
 pub async fn get_data_exportacion_proyectos_area(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ExportDataProyectoArea>, AppError> {
+) -> Result<Vec<ExportDataProyectoAreaDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ReportesView).await?;
     proyecto_service::get_exportacion_proyectos_area(state).await
 }
@@ -178,7 +179,7 @@ pub async fn get_data_exportacion_proyectos_area(
 pub async fn get_proyectos_trend(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<ProyectosTrendItem>, AppError> {
+) -> Result<Vec<ProyectosTrendItemDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::DashboardView).await?;
     proyecto_service::get_proyectos_trend(state).await
 }
@@ -186,7 +187,7 @@ pub async fn get_proyectos_trend(
 pub async fn get_renacyt_distribucion(
     state: &AppState,
     window_label: &str,
-) -> Result<Vec<RenacytDistribucionItem>, AppError> {
+) -> Result<Vec<RenacytDistribucionItemDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::DashboardView).await?;
     proyecto_service::get_renacyt_distribucion(state).await
 }

@@ -1,9 +1,10 @@
-use crate::proyectos::models::{
-    CreateProyectoConParticipantesRequest, EliminarProyectoResultado, ExportData,
-    ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil, ExportDataProyectoArea,
-    ExportDataRecurso, InvestigadorProyectosCount, KpisDashboard, Proyecto, ProyectoDetalle,
-    ProyectosTrendItem, RenacytDistribucionItem, UpdateProyectoConParticipantesRequest,
+use crate::proyectos::dto::{
+    CreateProyectoConParticipantesRequest, EliminarProyectoResultadoDto, ExportDataConProjectosDto,
+    ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto, ExportDataProyectoAreaDto,
+    ExportDataRecursoDto, InvestigadorProyectosCountDto, KpisDashboardDto, ProyectoDetalleDto,
+    ProyectosTrendItemDto, RenacytDistribucionItemDto, UpdateProyectoConParticipantesRequest,
 };
+use crate::proyectos::models::Proyecto;
 use crate::proyectos::repository;
 use crate::proyectos::repository_export;
 use crate::proyectos::repository_queries;
@@ -78,7 +79,7 @@ pub async fn find_by_investigador(
     repository_queries::buscar_proyectos_por_investigador(db, id_investigador).await
 }
 
-pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalle>, AppError> {
+pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalleDto>, AppError> {
     let db = state.mongo_db()?;
     repository_queries::get_all_proyectos_detalle(db, None).await
 }
@@ -86,7 +87,7 @@ pub async fn get_all_detalle(state: &AppState) -> Result<Vec<ProyectoDetalle>, A
 pub async fn get_all_detalle_for_responsable(
     state: &AppState,
     responsable_id: &str,
-) -> Result<Vec<ProyectoDetalle>, AppError> {
+) -> Result<Vec<ProyectoDetalleDto>, AppError> {
     let db = state.mongo_db()?;
     repository_queries::get_all_proyectos_detalle(db, Some(responsable_id)).await
 }
@@ -108,7 +109,7 @@ pub async fn delete_relations(state: &AppState, id_proyecto: &str) -> Result<(),
 pub async fn delete(
     state: &AppState,
     id_proyecto: &str,
-) -> Result<EliminarProyectoResultado, AppError> {
+) -> Result<EliminarProyectoResultadoDto, AppError> {
     let db = state.mongo_db()?;
 
     let _ = crate::recursos::repository::delete_patentes_by_proyecto(db, id_proyecto).await;
@@ -126,62 +127,62 @@ pub async fn reactivate(state: &AppState, id_proyecto: &str) -> Result<Proyecto,
 
 pub async fn get_estadisticas_x_investigador(
     state: &AppState,
-) -> Result<Vec<InvestigadorProyectosCount>, AppError> {
+) -> Result<Vec<InvestigadorProyectosCountDto>, AppError> {
     let db = state.mongo_db()?;
     repository_stats::get_estadisticas_proyectos_x_investigador(db).await
 }
 
-pub async fn get_kpis(state: &AppState) -> Result<KpisDashboard, AppError> {
+pub async fn get_kpis(state: &AppState) -> Result<KpisDashboardDto, AppError> {
     let db = state.mongo_db()?;
     repository_stats::get_kpis_dashboard(db).await
 }
 
-pub async fn get_exportacion_plana(state: &AppState) -> Result<Vec<ExportData>, AppError> {
+pub async fn get_exportacion_plana(state: &AppState) -> Result<Vec<ExportDataDto>, AppError> {
     let db = state.mongo_db()?;
     repository_export::get_data_exportacion_plana(db).await
 }
 
 pub async fn get_exportacion_agrupada(
     state: &AppState,
-) -> Result<Vec<ExportDataConProjectos>, AppError> {
+) -> Result<Vec<ExportDataConProjectosDto>, AppError> {
     let db = state.mongo_db()?;
     repository_export::get_data_exportacion_agrupada_investigador(db).await
 }
 
-pub async fn get_exportacion_grupos(state: &AppState) -> Result<Vec<ExportDataGrupo>, AppError> {
+pub async fn get_exportacion_grupos(state: &AppState) -> Result<Vec<ExportDataGrupoDto>, AppError> {
     let db = state.mongo_db()?;
     repository_export::get_data_exportacion_grupos(db).await
 }
 
 pub async fn get_exportacion_recursos(
     state: &AppState,
-) -> Result<Vec<ExportDataRecurso>, AppError> {
+) -> Result<Vec<ExportDataRecursoDto>, AppError> {
     let db = state.mongo_db()?;
     repository_export::get_data_exportacion_recursos(db).await
 }
 
 pub async fn get_exportacion_investigadores_perfil(
     state: &AppState,
-) -> Result<Vec<ExportDataInvestigadorPerfil>, AppError> {
+) -> Result<Vec<ExportDataInvestigadorPerfilDto>, AppError> {
     let db = state.mongo_db()?;
     repository_export::get_data_exportacion_investigadores_perfil(db).await
 }
 
 pub async fn get_exportacion_proyectos_area(
     state: &AppState,
-) -> Result<Vec<ExportDataProyectoArea>, AppError> {
+) -> Result<Vec<ExportDataProyectoAreaDto>, AppError> {
     let db = state.mongo_db()?;
     repository_export::get_data_exportacion_proyectos_area(db).await
 }
 
-pub async fn get_proyectos_trend(state: &AppState) -> Result<Vec<ProyectosTrendItem>, AppError> {
+pub async fn get_proyectos_trend(state: &AppState) -> Result<Vec<ProyectosTrendItemDto>, AppError> {
     let db = state.mongo_db()?;
     repository_stats::get_proyectos_trend(db).await
 }
 
 pub async fn get_renacyt_distribucion(
     state: &AppState,
-) -> Result<Vec<RenacytDistribucionItem>, AppError> {
+) -> Result<Vec<RenacytDistribucionItemDto>, AppError> {
     let db = state.mongo_db()?;
     repository_stats::get_renacyt_distribucion(db).await
 }

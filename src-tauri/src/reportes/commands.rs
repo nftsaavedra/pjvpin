@@ -1,9 +1,9 @@
 use super::handlers;
 use crate::reportes::entity_reports::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
 use crate::reportes::models::{
-    ExportData, ExportDataConProjectos, ExportDataGrupo, ExportDataInvestigadorPerfil,
-    ExportDataProyectoArea, ExportDataRecurso, InvestigadorProyectosCount, KpisDashboard,
-    ProyectosTrendItem, RenacytDistribucionItem,
+    ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
+    ExportDataProyectoAreaDto, ExportDataRecursoDto, InvestigadorProyectosCountDto,
+    KpisDashboardDto, ProyectosTrendItemDto, RenacytDistribucionItemDto,
 };
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
@@ -13,7 +13,7 @@ use tauri::{State, Window};
 pub async fn get_estadisticas_proyectos_x_investigador(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<InvestigadorProyectosCount>, AppError> {
+) -> Result<Vec<InvestigadorProyectosCountDto>, AppError> {
     handlers::get_estadisticas_proyectos_x_investigador(&state, window.label()).await
 }
 
@@ -21,7 +21,7 @@ pub async fn get_estadisticas_proyectos_x_investigador(
 pub async fn get_kpis_dashboard(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<KpisDashboard, AppError> {
+) -> Result<KpisDashboardDto, AppError> {
     handlers::get_kpis_dashboard(&state, window.label()).await
 }
 
@@ -29,7 +29,7 @@ pub async fn get_kpis_dashboard(
 pub async fn get_data_exportacion_plana(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ExportData>, AppError> {
+) -> Result<Vec<ExportDataDto>, AppError> {
     handlers::get_data_exportacion_plana(&state, window.label()).await
 }
 
@@ -38,7 +38,7 @@ pub async fn get_data_exportacion_plana(
 pub async fn get_data_exportacion_agrupada_investigador(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ExportDataConProjectos>, AppError> {
+) -> Result<Vec<ExportDataConProjectosDto>, AppError> {
     handlers::get_data_exportacion_agrupada_investigador(&state, window.label()).await
 }
 
@@ -84,7 +84,7 @@ pub async fn get_reportes_investigadores_integral(
 pub async fn get_data_exportacion_grupos(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ExportDataGrupo>, AppError> {
+) -> Result<Vec<ExportDataGrupoDto>, AppError> {
     handlers::get_data_exportacion_grupos(&state, window.label()).await
 }
 
@@ -92,7 +92,7 @@ pub async fn get_data_exportacion_grupos(
 pub async fn get_data_exportacion_recursos(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ExportDataRecurso>, AppError> {
+) -> Result<Vec<ExportDataRecursoDto>, AppError> {
     handlers::get_data_exportacion_recursos(&state, window.label()).await
 }
 
@@ -100,7 +100,7 @@ pub async fn get_data_exportacion_recursos(
 pub async fn get_data_exportacion_investigadores_perfil(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ExportDataInvestigadorPerfil>, AppError> {
+) -> Result<Vec<ExportDataInvestigadorPerfilDto>, AppError> {
     handlers::get_data_exportacion_investigadores_perfil(&state, window.label()).await
 }
 
@@ -108,7 +108,7 @@ pub async fn get_data_exportacion_investigadores_perfil(
 pub async fn get_data_exportacion_proyectos_area(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ExportDataProyectoArea>, AppError> {
+) -> Result<Vec<ExportDataProyectoAreaDto>, AppError> {
     handlers::get_data_exportacion_proyectos_area(&state, window.label()).await
 }
 
@@ -116,7 +116,7 @@ pub async fn get_data_exportacion_proyectos_area(
 pub async fn get_proyectos_trend(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<ProyectosTrendItem>, AppError> {
+) -> Result<Vec<ProyectosTrendItemDto>, AppError> {
     handlers::get_proyectos_trend(&state, window.label()).await
 }
 
@@ -124,6 +124,6 @@ pub async fn get_proyectos_trend(
 pub async fn get_renacyt_distribucion(
     window: Window,
     state: State<'_, AppState>,
-) -> Result<Vec<RenacytDistribucionItem>, AppError> {
+) -> Result<Vec<RenacytDistribucionItemDto>, AppError> {
     handlers::get_renacyt_distribucion(&state, window.label()).await
 }
