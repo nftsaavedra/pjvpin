@@ -3,7 +3,7 @@
 ///
 /// Type parameters:
 /// - `$entity:ty` — domain struct with `new(id, request) -> Result<Self, _>` and `TryFrom<Dto>`
-/// - `$dto:ty` — serializable DTO (persistence shape)
+/// - `$dto:ty` — serializable DTO (persistence shape, used via fully-qualified or local path)
 /// - `$create_req:ty`, `$update_req:ty` — request types
 #[macro_export]
 macro_rules! impl_resource_repository {
@@ -24,19 +24,6 @@ macro_rules! impl_resource_repository {
         $error_label:expr,
         $( $upd_field:ident ),* $(,)?
     ) => {
-        #[allow(non_snake_case)]
-        mod $fn_create {
-            pub fn doc_to_dto(
-                doc: mongodb::bson::Document,
-            ) -> Result<$dto, $crate::shared::error::AppError> {
-                mongodb::bson::from_document::<$dto>(doc).map_err(|e| {
-                    $crate::shared::error::AppError::InternalError(format!(
-                        "No se pudo deserializar desde BSON: {e}"
-                    ))
-                })
-            }
-        }
-
         pub async fn $fn_create(
             db: &mongodb::Database,
             request: $create_req,
@@ -59,6 +46,7 @@ macro_rules! impl_resource_repository {
             db: &mongodb::Database,
             proyecto_id: &str,
         ) -> Result<Vec<$entity>, $crate::shared::error::AppError> {
+            use ::std::convert::TryFrom;
             use futures_util::TryStreamExt;
             let cursor = db
                 .collection::<mongodb::bson::Document>($collection)
@@ -66,7 +54,14 @@ macro_rules! impl_resource_repository {
                 .await?;
             let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
             docs.into_iter()
-                .map(|d| $fn_create::doc_to_dto(d).and_then(<$entity>::try_from))
+                .map(|d| {
+                    let dto: $dto = mongodb::bson::from_document(d).map_err(|e| {
+                        $crate::shared::error::AppError::InternalError(format!(
+                            "No se pudo deserializar desde BSON: {e}"
+                        ))
+                    })?;
+                    <$entity>::try_from(dto)
+                })
                 .collect()
         }
 
@@ -74,6 +69,7 @@ macro_rules! impl_resource_repository {
             db: &mongodb::Database,
             $id_field: &str,
         ) -> Result<$entity, $crate::shared::error::AppError> {
+            use ::std::convert::TryFrom;
             let doc_opt = db
                 .collection::<mongodb::bson::Document>($collection)
                 .find_one(mongodb::bson::doc! { stringify!($id_field): $id_field, "activo": 1 })
@@ -81,7 +77,12 @@ macro_rules! impl_resource_repository {
             let doc = doc_opt.ok_or_else(|| {
                 $crate::shared::error::AppError::NotFound($error_label.to_string())
             })?;
-            $fn_create::doc_to_dto(doc).and_then(<$entity>::try_from)
+            let dto: $dto = mongodb::bson::from_document(doc).map_err(|e| {
+                $crate::shared::error::AppError::InternalError(format!(
+                    "No se pudo deserializar desde BSON: {e}"
+                ))
+            })?;
+            <$entity>::try_from(dto)
         }
 
         pub async fn $fn_update(
