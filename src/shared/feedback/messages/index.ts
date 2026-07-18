@@ -10,6 +10,7 @@ import { configuracion } from "./configuracion";
 import { catalogos } from "./catalogos";
 import { grados } from "./grados";
 import { usuarios } from "./usuarios";
+import { dashboard } from "./dashboard";
 
 export { ui, type UiMessageKey } from "./ui";
 export { auth, type AuthMessageKey } from "./auth";
@@ -23,6 +24,7 @@ export { configuracion, type ConfiguracionMessageKey } from "./configuracion";
 export { catalogos, type CatalogosMessageKey } from "./catalogos";
 export { grados, type GradosMessageKey } from "./grados";
 export { usuarios, type UsuariosMessageKey } from "./usuarios";
+export { dashboard, type DashboardMessageKey } from "./dashboard";
 
 export const messages = {
   ui,
@@ -37,5 +39,6 @@ export const messages = {
   catalogos,
   grados,
   usuarios,
+  dashboard,
 } as const;
 export type Messages = typeof messages;
