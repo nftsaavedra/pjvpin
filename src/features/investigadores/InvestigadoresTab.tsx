@@ -117,6 +117,51 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
     );
   }
 
+  // Estado inconsistente transitorio: view==="detail" pero sin
+  // investigador seleccionado. Disparamos la corrección durante el render
+  // (patrón de "ajuste de estado durante render" de React) y devolvemos
+  // la lista como fallback seguro en lugar de null.
   handleBackToList();
-  return null;
+
+  return (
+    <InvestigadoresListView
+      canManage={canManage}
+      busqueda={table.busqueda}
+      cargarInvestigadores={table.cargarInvestigadores}
+      hasActiveFilters={table.hasActiveFilters}
+      investigadorToDelete={table.investigadorToDelete}
+      investigadores={table.investigadores}
+      investigadoresFiltrados={table.investigadoresFiltrados}
+      error={table.error}
+      estadoFiltro={table.estadoFiltro}
+      gradoFiltro={table.gradoFiltro}
+      gradosDisponibles={table.gradosDisponibles}
+      handleRefreshRenacytFormaciones={(id: string) => {
+        void table.handleRefreshRenacytFormaciones(id);
+      }}
+      handleReactivarInvestigador={(id: string) => {
+        void table.handleReactivarInvestigador(id);
+      }}
+      limpiarFiltros={table.limpiarFiltros}
+      loading={table.loading}
+      nivelesRenacytDisponibles={table.nivelesRenacytDisponibles}
+      renacytNivelFiltro={table.renacytNivelFiltro}
+      refreshingRenacytInvestigadorId={table.refreshingRenacytInvestigadorId}
+      totalActivos={table.totalActivos}
+      totalInactivos={table.totalInactivos}
+      onBusquedaChange={table.setBusqueda}
+      onEstadoFiltroChange={table.setEstadoFiltro}
+      onGradoFiltroChange={table.setGradoFiltro}
+      onRenacytNivelFiltroChange={table.setRenacytNivelFiltro}
+      onDeactivate={table.setInvestigadorToDelete}
+      onConfirmDelete={() => {
+        table.handleEliminarInvestigador().catch(() => {});
+      }}
+      onCancelDelete={() => {
+        table.setInvestigadorToDelete(null);
+      }}
+      onCreateClick={handleOpenCreate}
+      onOpenDetail={handleOpenDetail}
+    />
+  );
 };

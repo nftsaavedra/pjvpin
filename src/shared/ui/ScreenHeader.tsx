@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowLeft, type LucideIcon } from "lucide-react";
 import { AppIcon } from "./AppIcon";
+import { messages } from "@/shared/feedback/messages";
 
 interface ScreenHeaderProps {
   parentLabel: string;
@@ -41,7 +42,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
     </div>
     <div className="screen-header-right">
       <button type="button" className="btn-secondary" onClick={onBack} disabled={isLoading}>
-        Cancelar
+        {messages.ui.cancelar}
       </button>
       <button
         type="button"

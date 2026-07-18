@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useFetchGrados } from "../../configuracion/grados/hooks/useFetchGrados";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 import {
   buscarInvestigadorPorDni,
   buscarInvestigadorPorDniConRenacyt,
@@ -37,15 +38,15 @@ export const useInvestigadorCreateForm = (
   const [perfil, setPerfil] = useState<PerfilInvestigador>("docente");
   const [isLoading, setIsLoading] = useState(false);
   const [dniValidationStatus, setDniValidationStatus] = useState<DniValidationStatus>("idle");
-  const [dniValidationMessage, setDniValidationMessage] = useState(
-    "Ingrese el DNI y presione 'Validar e identificar' para consultar RENIEC y RENACYT.",
+  const [dniValidationMessage, setDniValidationMessage] = useState<string>(
+    messages.investigadores.toast.dniIdle,
   );
   const [validatedDni, setValidatedDni] = useState("");
   const [renacytQuery, setRenacytQuery] = useState("");
   const [renacytValidationStatus, setRenacytValidationStatus] =
     useState<RenacytValidationStatus>("idle");
-  const [renacytValidationMessage, setRenacytValidationMessage] = useState(
-    "RENACYT se consulta automáticamente tras validar el DNI. Puede sobrescribirlo manualmente si lo desea.",
+  const [renacytValidationMessage, setRenacytValidationMessage] = useState<string>(
+    messages.investigadores.toast.renacytIdle,
   );
   const [renacytSource, setRenacytSource] = useState<RenacytSource>(null);
   const [validatedRenacytQuery, setValidatedRenacytQuery] = useState("");
@@ -87,9 +88,7 @@ export const useInvestigadorCreateForm = (
       setRenacytQuery("");
     }
     setRenacytValidationStatus("idle");
-    setRenacytValidationMessage(
-      "RENACYT se consulta automáticamente tras validar el DNI. Puede sobrescribirlo manualmente si lo desea.",
-    );
+    setRenacytValidationMessage(messages.investigadores.toast.renacytIdle);
     setRenacytSource(null);
     setValidatedRenacytQuery("");
     setRenacytData(null);
@@ -104,9 +103,7 @@ export const useInvestigadorCreateForm = (
     setPerfil("docente");
     setValidatedDni("");
     setDniValidationStatus("idle");
-    setDniValidationMessage(
-      "Ingrese el DNI y presione 'Validar e identificar' para consultar RENIEC y RENACYT.",
-    );
+    setDniValidationMessage(messages.investigadores.toast.dniIdle);
     resetRenacyt();
   };
 
@@ -125,9 +122,7 @@ export const useInvestigadorCreateForm = (
       clearValidatedIdentity();
       resetRenacyt(true);
       setDniValidationStatus("idle");
-      setDniValidationMessage(
-        "Ingrese el DNI y presione 'Validar e identificar' para consultar RENIEC y RENACYT.",
-      );
+      setDniValidationMessage(messages.investigadores.toast.dniIdle);
     }
   };
 
@@ -146,12 +141,12 @@ export const useInvestigadorCreateForm = (
 
   const handleValidarDni = async () => {
     if (!/^\d{8}$/.test(dniLimpio)) {
-      toast.warning("Ingrese un DNI válido de 8 dígitos antes de validar");
+      toast.warning(messages.investigadores.toast.dniInvalidoAntesValidar);
       return;
     }
 
     setDniValidationStatus("checking");
-    setDniValidationMessage("Validando DNI contra la base principal y consultando RENIEC...");
+    setDniValidationMessage(messages.investigadores.toast.dniValidando);
     try {
       const investigadorExistente = await buscarInvestigadorPorDni(dniLimpio);
       if (investigadorExistente) {
@@ -160,26 +155,24 @@ export const useInvestigadorCreateForm = (
         setDniValidationStatus("duplicate");
         setDniValidationMessage(
           investigadorExistente.activo === 1
-            ? "Este investigador ya está registrado en la base principal. No puede volver a crearse."
-            : "Este investigador ya existe en la base principal y actualmente está inactivo. No puede registrarse nuevamente.",
+            ? messages.investigadores.toast.dniDuplicadoActivo
+            : messages.investigadores.toast.dniDuplicadoInactivo,
         );
-        toast.warning("El DNI ingresado ya pertenece a un investigador registrado.");
+        toast.warning(messages.investigadores.toast.dniDuplicadoRegistrado);
         return;
       }
 
-      // Paso 1: RENIEC para nombres/apellidos
       const data = await consultarDniReniec(dniLimpio);
       setNombres(formatearTextoReniec(data.first_name));
       setApellidoPaterno(formatearTextoReniec(data.first_last_name));
       setApellidoMaterno(formatearTextoReniec(data.second_last_name));
       setValidatedDni(dniLimpio);
       setDniValidationStatus("validated");
-      setDniValidationMessage("DNI validado correctamente. Datos RENIEC cargados.");
-      toast.success("DNI validado y datos RENIEC cargados correctamente.");
+      setDniValidationMessage(messages.investigadores.toast.dniValidadoMensaje);
+      toast.success(messages.investigadores.toast.dniValidadoOk);
 
-      // Paso 2: auto-RENACYT (sub-paso visible)
       setRenacytValidationStatus("auto-checking");
-      setRenacytValidationMessage("Buscando automáticamente el código RENACYT por DNI...");
+      setRenacytValidationMessage(messages.investigadores.toast.renacytBuscandoAuto);
       try {
         const lookup = await buscarInvestigadorPorDniConRenacyt(dniLimpio);
         if (lookup) {
@@ -187,29 +180,22 @@ export const useInvestigadorCreateForm = (
           setRenacytSource("auto");
           setRenacytValidationStatus("validated");
           setRenacytValidationMessage(
-            `RENACYT encontrado automáticamente${lookup.nivel ? `. Nivel actual: ${lookup.nivel}` : ""}.`,
+            lookup.nivel
+              ? messages.investigadores.toast.renacytEncontradoConNivel(lookup.nivel)
+              : messages.investigadores.toast.renacytEncontradoAuto,
           );
-          toast.success("Investigador identificado en RENACYT.");
+          toast.success(messages.investigadores.toast.renacytEncontradoAuto);
         } else {
           setRenacytData(null);
           setRenacytSource(null);
           setRenacytValidationStatus("auto-not-found");
-          setRenacytValidationMessage(
-            "El DNI no está registrado en RENACYT. Puede registrar al investigador sin RENACYT o ingresarlo manualmente.",
-          );
+          setRenacytValidationMessage(messages.investigadores.toast.renacytAutoNotFound);
         }
-      } catch (renacytError) {
-        // Si falla RENACYT, no bloqueamos el registro: permitimos continuar
-        // con solo RENIEC. Es un fallback amable.
+      } catch {
         setRenacytData(null);
         setRenacytSource(null);
         setRenacytValidationStatus("auto-not-found");
-        setRenacytValidationMessage(
-          "No se pudo consultar RENACYT automáticamente. Puede continuar sin RENACYT o ingresarlo manualmente.",
-        );
-        // No mostramos toast.error — la validación DNI ya fue exitosa.
-        // El usuario puede decidir si quiere reintentar RENACYT manualmente.
-        console.warn("Auto-RENACYT lookup failed:", renacytError);
+        setRenacytValidationMessage(messages.investigadores.toast.renacytAutoFailed);
       }
     } catch (error) {
       clearValidatedIdentity();
@@ -222,19 +208,17 @@ export const useInvestigadorCreateForm = (
 
   const handleValidarRenacyt = async () => {
     if (!dniFueValidado) {
-      toast.warning("Primero valide el DNI antes de consultar RENACYT");
+      toast.warning(messages.investigadores.toast.renacytAntesDni);
       return;
     }
 
     if (!renacytQueryNormalizado) {
-      toast.warning("Ingrese el código RENACYT o ID del investigador antes de validar");
+      toast.warning(messages.investigadores.toast.renacytIngreseCodigo);
       return;
     }
 
     setRenacytValidationStatus("checking");
-    setRenacytValidationMessage(
-      "Consultando RENACYT y verificando coincidencia con el DNI validado...",
-    );
+    setRenacytValidationMessage(messages.investigadores.toast.renacytConsultando);
 
     try {
       const result = await consultarRenacytInvestigador(renacytQueryNormalizado);
@@ -242,10 +226,8 @@ export const useInvestigadorCreateForm = (
       if (result.numero_documento && result.numero_documento.trim() !== dniLimpio) {
         resetRenacyt(true);
         setRenacytValidationStatus("error");
-        setRenacytValidationMessage(
-          "El registro RENACYT consultado no corresponde al DNI validado del investigador.",
-        );
-        toast.warning("El registro RENACYT no coincide con el DNI validado.");
+        setRenacytValidationMessage(messages.investigadores.toast.renacytNoCoincideMensaje);
+        toast.warning(messages.investigadores.toast.renacytNoCoincideDni);
         return;
       }
 
@@ -254,9 +236,11 @@ export const useInvestigadorCreateForm = (
       setValidatedRenacytQuery(renacytQueryNormalizado);
       setRenacytValidationStatus("validated");
       setRenacytValidationMessage(
-        `RENACYT validado correctamente${result.nivel ? `. Nivel actual: ${result.nivel}` : ""}.`,
+        result.nivel
+          ? messages.investigadores.toast.renacytValidadoConNivel(result.nivel)
+          : messages.investigadores.toast.renacytValidado,
       );
-      toast.success("Datos RENACYT validados correctamente.");
+      toast.success(messages.investigadores.toast.renacytValidado);
     } catch (error) {
       resetRenacyt(true);
       setRenacytValidationStatus("error");
@@ -273,31 +257,27 @@ export const useInvestigadorCreateForm = (
     const apellidoMaternoLimpio = apellidoMaterno.trim();
 
     if (!dniLimpio || !idGrado || !nombresLimpio || !apellidoPaternoLimpio) {
-      toast.warning("Complete todos los campos");
+      toast.warning(messages.investigadores.toast.submitCompleteTodos);
       return;
     }
 
     if (!dniFueValidado) {
-      toast.warning("Valide el DNI antes de registrar al investigador");
+      toast.warning(messages.investigadores.toast.submitValideDni);
       return;
     }
 
     if (renacytQueryNormalizado && !renacytFueValidado) {
-      toast.warning(
-        "Si ingresa un código RENACYT o ID de investigador, debe validarlo antes de registrar",
-      );
+      toast.warning(messages.investigadores.toast.submitRenacytValidar);
       return;
     }
 
     if (!/^\d{8}$/.test(dniLimpio)) {
-      toast.warning("El DNI debe tener exactamente 8 dígitos numéricos");
+      toast.warning(messages.investigadores.toast.submitDni8Digitos);
       return;
     }
 
     if (grados.length === 0) {
-      toast.warning(
-        "No hay grados académicos registrados. Cree un grado antes de registrar investigadores.",
-      );
+      toast.warning(messages.investigadores.toast.submitSinGrados);
       return;
     }
 
@@ -328,12 +308,14 @@ export const useInvestigadorCreateForm = (
               }
             : null,
       });
-      toast.success("Investigador registrado exitosamente");
+      toast.success(messages.investigadores.toast.investigadorCreadoOk);
       resetForm();
       onInvestigadorCreated();
       onClose();
     } catch (error) {
-      toast.error("Error al registrar investigador: " + getTauriErrorMessage(error));
+      toast.error(
+        messages.investigadores.toast.investigadorCrearError(getTauriErrorMessage(error)),
+      );
     } finally {
       setIsLoading(false);
     }

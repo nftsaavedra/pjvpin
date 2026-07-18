@@ -111,19 +111,20 @@ export const investigadores = {
       reactivar: "Reactivar investigador",
       desactivar: "Desactivar investigador",
     } as const,
+    sinProyectosTooltip: "Investigador sin proyectos asignados",
   } as const,
   list: {
     sectionTitle: "Investigadores Registrados",
     nuevoInvestigador: "Nuevo investigador",
-    modoConsulta: "Modo consulta: solo lectura de investigadores.",
     desactivarDialog: {
       title: "Desactivar investigador",
       message: (nombre: string) => `¿Desactivar a "${nombre}"?`,
       confirmText: "Sí, desactivar",
-    } as const,
+    },
   } as const,
   toolbar: {
     searchAriaLabel: "Buscar investigadores por nombre, DNI, grado o nivel RENACYT",
+    searchPlaceholder: "Buscar por nombre, DNI, grado o nivel RENACYT",
     filtroGradoAriaLabel: "Filtrar investigadores por grado",
     filtroNivelRenacytAriaLabel: "Filtrar investigadores por nivel RENACYT",
     filtroEstadoAriaLabel: "Filtrar investigadores por estado",
@@ -134,6 +135,80 @@ export const investigadores = {
       todos: "Todos los niveles RENACYT",
     } as const,
   } as const,
+  form: {
+    gradoLabel: "Grado Académico",
+    gradoHelp: "Solo se muestran grados activos.",
+    perfilLabel: "Perfil del investigador",
+    perfilHelp:
+      "Docente es el perfil por defecto; tesista y alumno egresado se usan para investigadores en formación.",
+    nombresLabel: "Nombres",
+    nombresPlaceholder: "Ej: Juan Carlos",
+    apellidoPaternoLabel: "Apellido paterno",
+    apellidoPaternoPlaceholder: "Ej: Pérez",
+    apellidoMaternoLabel: "Apellido materno",
+    apellidoMaternoPlaceholder: "Ej: García",
+    apellidoMaternoHelp: "Se completa automáticamente desde RENIEC cuando está disponible.",
+    dniPlaceholder: "Ej: 45678912",
+    dniHelp:
+      "Primero se valida si el DNI ya existe en la base principal. Si no existe, se consulta RENIEC para autocompletar los datos y, a continuación, se busca automáticamente el código RENACYT asociado. El proceso es transparente: solo debe ingresar el DNI y presionar Validar.",
+    dniButtonIdle: "Validar e identificar",
+    dniButtonBusy: "Validando e identificando...",
+    dniPreviewLabel: "Nombre a registrar",
+    dniPreviewPlaceholder: "Complete nombres y apellidos para ver la vista previa.",
+  } as const,
+  renacyt: {
+    label: "Validación RENACYT",
+    help: "RENACYT se consulta automáticamente al validar el DNI. Si el investigador no aparece, puede ingresar manualmente el código de registro o el ID para sobrescribir el resultado automático.",
+    inputPlaceholder: "Ej: P0013866 o 13866 (opcional)",
+    buttonIdle: "Buscar manualmente",
+    buttonBusy: "Validando...",
+    autoHeader: "RENACYT (identificación automática)",
+    manualHeader: "RENACYT (validación manual)",
+    autoNotFound:
+      "El DNI no figura en RENACYT. Puede registrar al investigador sin código o ingresarlo manualmente arriba.",
+  } as const,
+  toast: {
+    dniInvalidoAntesValidar: "Ingrese un DNI válido de 8 dígitos antes de validar",
+    dniDuplicadoRegistrado: "El DNI ingresado ya pertenece a un investigador registrado.",
+    dniDuplicadoActivo:
+      "Este investigador ya está registrado en la base principal. No puede volver a crearse.",
+    dniDuplicadoInactivo:
+      "Este investigador ya existe en la base principal y actualmente está inactivo. No puede registrarse nuevamente.",
+    dniValidadoOk: "DNI validado y datos RENIEC cargados correctamente.",
+    dniValidadoMensaje: "DNI validado correctamente. Datos RENIEC cargados.",
+    dniValidando: "Validando DNI contra la base principal y consultando RENIEC...",
+    dniIdle: "Ingrese el DNI y presione 'Validar e identificar' para consultar RENIEC y RENACYT.",
+    renacytValidado: "Datos RENACYT validados correctamente.",
+    renacytValidadoConNivel: (nivel: string) =>
+      `RENACYT validado correctamente. Nivel actual: ${nivel}.`,
+    renacytEncontradoConNivel: (nivel: string) =>
+      `RENACYT encontrado automáticamente. Nivel actual: ${nivel}.`,
+    renacytEncontradoAuto: "Investigador identificado en RENACYT.",
+    renacytBuscandoAuto: "Buscando automáticamente el código RENACYT por DNI...",
+    renacytAutoNotFound:
+      "El DNI no está registrado en RENACYT. Puede registrar al investigador sin RENACYT o ingresarlo manualmente.",
+    renacytAutoFailed:
+      "No se pudo consultar RENACYT automáticamente. Puede continuar sin RENACYT o ingresarlo manualmente.",
+    renacytConsultando: "Consultando RENACYT y verificando coincidencia con el DNI validado...",
+    renacytIdle:
+      "RENACYT se consulta automáticamente tras validar el DNI. Puede sobrescribirlo manualmente si lo desea.",
+    renacytAntesDni: "Primero valide el DNI antes de consultar RENACYT",
+    renacytIngreseCodigo: "Ingrese el código RENACYT o ID del investigador antes de validar",
+    renacytNoCoincideDni: "El registro RENACYT no coincide con el DNI validado.",
+    renacytNoCoincideMensaje:
+      "El registro RENACYT consultado no corresponde al DNI validado del investigador.",
+    investigadorCreadoOk: "Investigador registrado exitosamente",
+    investigadorReactivado: "Investigador reactivado correctamente",
+    investigadorCrearError: (detalle: string) => `Error al registrar investigador: ${detalle}`,
+    submitCompleteTodos: "Complete todos los campos",
+    submitValideDni: "Valide el DNI antes de registrar al investigador",
+    submitRenacytValidar:
+      "Si ingresa un código RENACYT o ID de investigador, debe validarlo antes de registrar",
+    submitDni8Digitos: "El DNI debe tener exactamente 8 dígitos numéricos",
+    submitSinGrados:
+      "No hay grados académicos registrados. Cree un grado antes de registrar investigadores.",
+  } as const,
+  publicacionLoading: "Cargando publicaciones...",
 } as const;
 
 export type InvestigadoresMessageKey = keyof typeof investigadores;

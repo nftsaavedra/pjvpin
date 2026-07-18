@@ -1,4 +1,6 @@
 import React from "react";
+import { FormInput } from "@/shared/forms/FormInput";
+import { FormSelect } from "@/shared/forms/FormSelect";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { messages } from "@/shared/feedback/messages";
 
@@ -46,56 +48,52 @@ export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProp
         {messages.configuracion.filter.inactivos(totalInactivos)}
       </StatusChip>
     </div>
-    <input
-      className="form-input filter-search"
-      placeholder="Buscar por nombre, DNI, grado o nivel RENACYT"
+    <FormInput
+      label="Buscar"
       value={busqueda}
-      onChange={(e) => {
-        onBusquedaChange(e.target.value);
-      }}
+      onChange={onBusquedaChange}
+      placeholder={messages.investigadores.toolbar.searchPlaceholder}
+      containerClassName="filter-bar-search"
       aria-label={messages.investigadores.toolbar.searchAriaLabel}
     />
-    <select
-      className="form-input filter-select"
+    <FormSelect
+      label="Grado"
       value={gradoFiltro}
-      onChange={(e) => {
-        onGradoFiltroChange(e.target.value);
-      }}
+      onChange={onGradoFiltroChange}
+      options={[
+        { value: "todos", label: messages.investigadores.toolbar.opcionesGrado.todos },
+        ...gradosDisponibles.map((grado) => ({ value: grado, label: grado })),
+      ]}
+      placeholder="—"
+      containerClassName="filter-bar-select"
       aria-label={messages.investigadores.toolbar.filtroGradoAriaLabel}
-    >
-      <option value="todos">{messages.investigadores.toolbar.opcionesGrado.todos}</option>
-      {gradosDisponibles.map((grado) => (
-        <option key={grado} value={grado}>
-          {grado}
-        </option>
-      ))}
-    </select>
-    <select
-      className="form-input filter-select"
+    />
+    <FormSelect
+      label="Nivel RENACYT"
       value={renacytNivelFiltro}
-      onChange={(e) => {
-        onRenacytNivelFiltroChange(e.target.value);
-      }}
+      onChange={onRenacytNivelFiltroChange}
+      options={[
+        { value: "todos", label: messages.investigadores.toolbar.opcionesNivel.todos },
+        ...nivelesRenacytDisponibles.map((nivel) => ({ value: nivel, label: nivel })),
+      ]}
+      placeholder="—"
+      containerClassName="filter-bar-select"
       aria-label={messages.investigadores.toolbar.filtroNivelRenacytAriaLabel}
-    >
-      <option value="todos">{messages.investigadores.toolbar.opcionesNivel.todos}</option>
-      {nivelesRenacytDisponibles.map((nivel) => (
-        <option key={nivel} value={nivel}>
-          {nivel}
-        </option>
-      ))}
-    </select>
-    <select
-      className="form-input filter-select"
+    />
+    <FormSelect
+      label="Estado"
       value={estadoFiltro}
-      onChange={(e) => {
-        onEstadoFiltroChange(e.target.value as "todos" | "activos" | "inactivos");
+      onChange={(value) => {
+        onEstadoFiltroChange(value as "todos" | "activos" | "inactivos");
       }}
+      options={[
+        { value: "todos", label: messages.configuracion.filter.opciones.todos },
+        { value: "activos", label: messages.configuracion.filter.opciones.soloActivos },
+        { value: "inactivos", label: messages.configuracion.filter.opciones.soloInactivos },
+      ]}
+      placeholder="—"
+      containerClassName="filter-bar-select"
       aria-label={messages.investigadores.toolbar.filtroEstadoAriaLabel}
-    >
-      <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
-      <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
-      <option value="inactivos">{messages.configuracion.filter.opciones.soloInactivos}</option>
-    </select>
+    />
   </div>
 );

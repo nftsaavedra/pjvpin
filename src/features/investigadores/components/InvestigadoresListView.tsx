@@ -92,7 +92,7 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
         </div>
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
-            <span>{messages.investigadores.list.modoConsulta}</span>
+            <span>{messages.ui.modoConsulta}</span>
           </div>
         )}
         {error ? (

@@ -65,116 +65,126 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
   }
 
   return (
-    <table className="table table-interactive" aria-label={messages.investigadores.table.ariaLabel}>
-      <thead>
-        <tr>
-          <th scope="col">{messages.investigadores.table.columns.dni}</th>
-          <th scope="col">{messages.investigadores.table.columns.perfilAcademico}</th>
-          <th scope="col">{messages.investigadores.table.columns.nombre}</th>
-          <th scope="col">{messages.investigadores.table.columns.proyectos}</th>
-          <th scope="col">{messages.investigadores.table.columns.estado}</th>
-          <th scope="col">{messages.investigadores.table.columns.acciones}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {investigadores.map((investigador) =>
-          (() => {
-            const tieneRenacyt = Boolean(
-              investigador.renacyt_codigo_registro || investigador.renacyt_id_investigador,
-            );
-            const tieneFormaciones = Boolean(
-              investigador.renacyt_formaciones_academicas_json?.trim(),
-            );
-            const estaActualizando =
-              refreshingRenacytInvestigadorId === investigador.id_investigador;
-            const nivelRenacyt = formatRenacytNivel(investigador.renacyt_nivel);
+    <div className="overflow-x-auto whitespace-nowrap">
+      <table
+        className="table table-interactive"
+        aria-label={messages.investigadores.table.ariaLabel}
+      >
+        <thead>
+          <tr>
+            <th scope="col">{messages.investigadores.table.columns.dni}</th>
+            <th scope="col">{messages.investigadores.table.columns.perfilAcademico}</th>
+            <th scope="col">{messages.investigadores.table.columns.nombre}</th>
+            <th scope="col">{messages.investigadores.table.columns.proyectos}</th>
+            <th scope="col">{messages.investigadores.table.columns.estado}</th>
+            <th scope="col">{messages.investigadores.table.columns.acciones}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {investigadores.map((investigador) =>
+            (() => {
+              const tieneRenacyt = Boolean(
+                investigador.renacyt_codigo_registro || investigador.renacyt_id_investigador,
+              );
+              const tieneFormaciones = Boolean(
+                investigador.renacyt_formaciones_academicas_json?.trim(),
+              );
+              const estaActualizando =
+                refreshingRenacytInvestigadorId === investigador.id_investigador;
+              const nivelRenacyt = formatRenacytNivel(investigador.renacyt_nivel);
 
-            return (
-              <tr
-                key={investigador.id_investigador}
-                className={investigador.cantidad_proyectos === 0 ? "unassigned" : ""}
-              >
-                <td>{investigador.dni || messages.investigadores.fallbacks.sinDni}</td>
-                <td>
-                  <div className="investigador-profile-cell">
-                    <strong>
-                      {investigador.grado || messages.investigadores.fallbacks.sinGrado}
-                    </strong>
-                    <Badge variant={nivelRenacyt ? "info" : "warning"}>
-                      {nivelRenacyt
-                        ? messages.investigadores.renacytSection.renacytNivel(nivelRenacyt)
-                        : messages.investigadores.fallbacks.sinNivelRenacyt}
+              return (
+                <tr
+                  key={investigador.id_investigador}
+                  className={investigador.cantidad_proyectos === 0 ? "unassigned" : ""}
+                  title={
+                    investigador.cantidad_proyectos === 0
+                      ? messages.investigadores.table.sinProyectosTooltip
+                      : undefined
+                  }
+                >
+                  <td>{investigador.dni || messages.investigadores.fallbacks.sinDni}</td>
+                  <td>
+                    <div className="investigador-profile-cell">
+                      <strong>
+                        {investigador.grado || messages.investigadores.fallbacks.sinGrado}
+                      </strong>
+                      <Badge variant={nivelRenacyt ? "info" : "warning"}>
+                        {nivelRenacyt
+                          ? messages.investigadores.renacytSection.renacytNivel(nivelRenacyt)
+                          : messages.investigadores.fallbacks.sinNivelRenacyt}
+                      </Badge>
+                    </div>
+                  </td>
+                  <td className="font-semibold">
+                    {investigador.nombres_apellidos || messages.investigadores.fallbacks.sinNombre}
+                  </td>
+                  <td>
+                    <Badge variant={investigador.cantidad_proyectos === 0 ? "warning" : "success"}>
+                      {investigador.cantidad_proyectos}
                     </Badge>
-                  </div>
-                </td>
-                <td className="font-semibold">
-                  {investigador.nombres_apellidos || messages.investigadores.fallbacks.sinNombre}
-                </td>
-                <td>
-                  <Badge variant={investigador.cantidad_proyectos === 0 ? "warning" : "success"}>
-                    {investigador.cantidad_proyectos}
-                  </Badge>
-                </td>
-                <td>
-                  {investigador.activo === 1 ? (
-                    <Badge variant="success">{messages.ui.statusActivo}</Badge>
-                  ) : (
-                    <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
-                  )}
-                </td>
-                <td className="table-actions">
-                  <TableActionButton
-                    className="btn-view"
-                    icon={Eye}
-                    label={messages.investigadores.table.actions.verDetalles}
-                    onClick={() => {
-                      onView(investigador);
-                    }}
-                  />
-                  {canManage && tieneRenacyt && (
+                  </td>
+                  <td>
+                    {investigador.activo === 1 ? (
+                      <Badge variant="success">{messages.ui.statusActivo}</Badge>
+                    ) : (
+                      <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
+                    )}
+                  </td>
+                  <td className="table-actions">
                     <TableActionButton
-                      className="btn-secondary"
-                      icon={RefreshCw}
-                      label={
-                        estaActualizando
-                          ? messages.investigadores.table.actions.actualizandoFormacion
-                          : tieneFormaciones
-                            ? messages.investigadores.table.actions.actualizarFormacion
-                            : messages.investigadores.table.actions.reintentarFormacion
-                      }
+                      className="btn-view"
+                      icon={Eye}
+                      label={messages.investigadores.table.actions.verDetalles}
                       onClick={() => {
-                        onRefreshRenacyt(investigador.id_investigador);
-                      }}
-                      disabled={estaActualizando}
-                    />
-                  )}
-                  {canManage && investigador.activo === 0 && (
-                    <TableActionButton
-                      className="btn-primary"
-                      icon={RotateCcw}
-                      iconSize={18}
-                      label={messages.investigadores.table.actions.reactivar}
-                      onClick={() => {
-                        onReactivate(investigador.id_investigador);
+                        onView(investigador);
                       }}
                     />
-                  )}
-                  {canManage && investigador.activo === 1 && (
-                    <TableActionButton
-                      className="btn-delete"
-                      icon={Trash2}
-                      label={messages.investigadores.table.actions.desactivar}
-                      onClick={() => {
-                        onDeactivate(investigador);
-                      }}
-                    />
-                  )}
-                </td>
-              </tr>
-            );
-          })(),
-        )}
-      </tbody>
-    </table>
+                    {canManage && tieneRenacyt && (
+                      <TableActionButton
+                        className="btn-secondary"
+                        icon={RefreshCw}
+                        label={
+                          estaActualizando
+                            ? messages.investigadores.table.actions.actualizandoFormacion
+                            : tieneFormaciones
+                              ? messages.investigadores.table.actions.actualizarFormacion
+                              : messages.investigadores.table.actions.reintentarFormacion
+                        }
+                        onClick={() => {
+                          onRefreshRenacyt(investigador.id_investigador);
+                        }}
+                        disabled={estaActualizando}
+                      />
+                    )}
+                    {canManage && investigador.activo === 0 && (
+                      <TableActionButton
+                        className="btn-primary"
+                        icon={RotateCcw}
+                        iconSize={18}
+                        label={messages.investigadores.table.actions.reactivar}
+                        onClick={() => {
+                          onReactivate(investigador.id_investigador);
+                        }}
+                      />
+                    )}
+                    {canManage && investigador.activo === 1 && (
+                      <TableActionButton
+                        className="btn-delete"
+                        icon={Trash2}
+                        label={messages.investigadores.table.actions.desactivar}
+                        onClick={() => {
+                          onDeactivate(investigador);
+                        }}
+                      />
+                    )}
+                  </td>
+                </tr>
+              );
+            })(),
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 };

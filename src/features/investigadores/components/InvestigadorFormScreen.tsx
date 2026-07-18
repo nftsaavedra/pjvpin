@@ -3,9 +3,10 @@ import { Plus } from "lucide-react";
 import { useInvestigadorCreateForm } from "../hooks/useInvestigadorCreateForm";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormSelect } from "@/shared/forms/FormSelect";
+import { DniField } from "@/shared/forms/DniField";
 import { ScreenHeader } from "@/shared/ui/ScreenHeader";
 import { ScreenLayout } from "@/shared/ui/ScreenLayout";
-import { DniValidationSection } from "./DniValidationSection";
+import { messages } from "@/shared/feedback/messages";
 import { RenacytValidationSection } from "./RenacytValidationSection";
 
 interface InvestigadorFormScreenProps {
@@ -74,7 +75,7 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
     >
       <div className="investigador-form-layout">
         <div className="investigador-form-grid">
-          <DniValidationSection
+          <DniField
             dni={dni}
             onDniChange={handleDniChange}
             onValidate={() => void handleValidarDni()}
@@ -83,7 +84,16 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
             validationStatus={dniValidationStatus}
             validationMessage={dniValidationMessage}
             isLoading={isLoading}
+            layout="span-2"
+            inputId="investigador-dni"
+            placeholder={messages.investigadores.form.dniPlaceholder}
+            helpText={messages.investigadores.form.dniHelp}
+            buttonIdleLabel={messages.investigadores.form.dniButtonIdle}
+            buttonBusyLabel={messages.investigadores.form.dniButtonBusy}
+            showPreview
             nombreCompletoPreview={nombreCompletoPreview}
+            previewLabel={messages.investigadores.form.dniPreviewLabel}
+            previewPlaceholder={messages.investigadores.form.dniPreviewPlaceholder}
           />
 
           <RenacytValidationSection
@@ -103,36 +113,36 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
           />
 
           <FormSelect
-            label="Grado Académico"
+            label={messages.investigadores.form.gradoLabel}
             value={idGrado}
             onChange={setIdGrado}
             options={grados
               .filter((g) => g.activo !== 0)
               .map((g) => ({ value: g.id_grado, label: g.nombre }))}
-            help="Solo se muestran grados activos."
+            help={messages.investigadores.form.gradoHelp}
             disabled={camposBloqueados}
             required
             containerClassName="investigador-form-span-1"
           />
 
           <FormSelect
-            label="Perfil del investigador"
+            label={messages.investigadores.form.perfilLabel}
             value={perfil}
             onChange={(value) => {
               setPerfil(value as typeof perfil);
             }}
             options={perfiles}
-            help="Docente es el perfil por defecto; tesista y alumno egresado se usan para investigadores en formación."
+            help={messages.investigadores.form.perfilHelp}
             disabled={camposBloqueados}
             required
             containerClassName="investigador-form-span-1"
           />
 
           <FormInput
-            label="Nombres"
+            label={messages.investigadores.form.nombresLabel}
             value={nombres}
             onChange={setNombres}
-            placeholder="Ej: Juan Carlos"
+            placeholder={messages.investigadores.form.nombresPlaceholder}
             readOnly
             disabled={camposBloqueados}
             required
@@ -140,10 +150,10 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
           />
 
           <FormInput
-            label="Apellido paterno"
+            label={messages.investigadores.form.apellidoPaternoLabel}
             value={apellidoPaterno}
             onChange={setApellidoPaterno}
-            placeholder="Ej: Pérez"
+            placeholder={messages.investigadores.form.apellidoPaternoPlaceholder}
             readOnly
             disabled={camposBloqueados}
             required
@@ -151,11 +161,11 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
           />
 
           <FormInput
-            label="Apellido materno"
+            label={messages.investigadores.form.apellidoMaternoLabel}
             value={apellidoMaterno}
             onChange={setApellidoMaterno}
-            placeholder="Ej: García"
-            help="Se completa automáticamente desde RENIEC cuando está disponible."
+            placeholder={messages.investigadores.form.apellidoMaternoPlaceholder}
+            help={messages.investigadores.form.apellidoMaternoHelp}
             readOnly
             disabled={camposBloqueados}
             containerClassName="investigador-form-span-2"

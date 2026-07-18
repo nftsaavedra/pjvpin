@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { BookOpen, ChevronDown, ChevronUp, ExternalLink, RefreshCw } from "lucide-react";
-import { openUrl } from "@tauri-apps/plugin-opener";
 import type { Publicacion, SyncPublicacionesResult } from "../api";
 import {
   getPublicacionesInvestigador,
@@ -13,6 +12,7 @@ import { InlineIconButton } from "@/shared/ui/InlineIconButton";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { parseAutores } from "@/shared/utils/investigadorUtils";
+import { openExternalUrl } from "@/shared/utils/linkUtils";
 
 interface InvestigadorPublicacionesSectionProps {
   investigadorId: string;
@@ -28,10 +28,12 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
   const [expanded, setExpanded] = useState(false);
   const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const tieneScopusId = Boolean(scopusAuthorId);
 
   const load = async (): Promise<void> => {
+    setIsLoading(true);
     try {
       const data = await getPublicacionesInvestigador(investigadorId);
       setPublicaciones(data);
@@ -39,6 +41,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
       toast.error(getTauriErrorMessage(error));
       setPublicaciones([]);
     } finally {
+      setIsLoading(false);
       setLoaded(true);
     }
   };
@@ -67,14 +70,6 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
       toast.error(getTauriErrorMessage(error));
     } finally {
       setIsSyncing(false);
-    }
-  };
-
-  const handleOpenExternal = async (url: string, errorMsg: string): Promise<void> => {
-    try {
-      await openUrl(url);
-    } catch {
-      toast.error(errorMsg);
     }
   };
 
@@ -126,7 +121,13 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
             </div>
           )}
 
-          {loaded && publicaciones.length === 0 && (
+          {isLoading && (
+            <p className="renacyt-detail-empty" aria-live="polite">
+              {messages.investigadores.publicacionLoading}
+            </p>
+          )}
+
+          {!isLoading && loaded && publicaciones.length === 0 && (
             <p className="renacyt-detail-empty">
               {messages.investigadores.publicaciones.sinPublicaciones}
             </p>
@@ -165,12 +166,12 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
                         <InlineIconButton
                           icon={ExternalLink}
                           label={messages.investigadores.publicaciones.abrirDoi}
-                          onClick={() =>
-                            void handleOpenExternal(
+                          onClick={() => {
+                            void openExternalUrl(
                               `https://doi.org/${pub.doi}`,
                               messages.investigadores.publicaciones.doiEnlaceError,
-                            )
-                          }
+                            );
+                          }}
                         />
                         {pub.doi}
                       </span>

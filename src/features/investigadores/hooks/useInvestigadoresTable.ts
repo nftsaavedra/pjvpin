@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 import {
   eliminarInvestigador,
   getAllInvestigadoresConProyectos,
@@ -15,9 +16,6 @@ import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/
 const normalizeText = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
 
 export const useInvestigadoresTable = (refreshTrigger = 0) => {
-  const [selectedInvestigador, setSelectedInvestigador] = useState<InvestigadorDetalle | null>(
-    null,
-  );
   const [investigadorToDelete, setInvestigadorToDelete] = useState<InvestigadorDetalle | null>(
     null,
   );
@@ -63,7 +61,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
   const handleReactivarInvestigador = async (id: string) => {
     try {
       await reactivarInvestigador(id);
-      toast.success("Investigador reactivado correctamente");
+      toast.success(messages.investigadores.toast.investigadorReactivado);
       await cargarInvestigadores();
     } catch (error) {
       toast.error(getTauriErrorMessage(error));
@@ -80,9 +78,6 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
         toast.info(resultado.mensaje);
       }
 
-      setSelectedInvestigador((current) =>
-        current?.id_investigador === id ? resultado.investigador : current,
-      );
       await cargarInvestigadores();
     } catch (error) {
       toast.error(getTauriErrorMessage(error));
@@ -188,13 +183,11 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
     nivelesRenacytDisponibles,
     renacytNivelFiltro,
     refreshingRenacytInvestigadorId,
-    selectedInvestigador,
     setBusqueda,
     setInvestigadorToDelete,
     setEstadoFiltro,
     setGradoFiltro,
     setRenacytNivelFiltro,
-    setSelectedInvestigador,
     totalActivos,
     totalInactivos,
   };
