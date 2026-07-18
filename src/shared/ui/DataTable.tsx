@@ -1,5 +1,6 @@
 import React from "react";
 import { messages } from "@/shared/feedback/messages";
+import { EmptyState } from "./EmptyState";
 
 export interface ColumnDef<T> {
   key: string;
@@ -12,6 +13,8 @@ interface DataTableProps<T> {
   data: T[];
   getRowKey: (row: T, index: number) => string;
   emptyMessage?: string;
+  emptyVariant?: "empty" | "filtered";
+  emptyAction?: { label: string; onClick: () => void };
   ariaLabel?: string;
 }
 
@@ -19,11 +22,21 @@ export function DataTable<T>({
   columns,
   data,
   getRowKey,
-  emptyMessage = messages.shared.dataTableEmptyDefault,
+  emptyMessage = messages.ui.emptyState("registros"),
+  emptyVariant = "empty",
+  emptyAction,
   ariaLabel,
 }: DataTableProps<T>) {
   if (data.length === 0) {
-    return <div className="empty-state">{emptyMessage}</div>;
+    return (
+      <EmptyState
+        variant={emptyVariant}
+        message={emptyMessage}
+        actionLabel={emptyAction?.label}
+        onAction={emptyAction?.onClick}
+        data-testid="data-table-empty"
+      />
+    );
   }
 
   return (

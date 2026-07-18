@@ -4,6 +4,7 @@ import type { DatosExportInvestigadorAgrupado } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { DataTable, type ColumnDef } from "@/shared/ui/DataTable";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
 import { normalizeText } from "@/shared/utils/text";
 import { messages } from "@/shared/feedback/messages";
@@ -157,40 +158,55 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
         <div className="section-header">
           <h2>{messages.reportes.vistaPrevia}</h2>
         </div>
-        {error && (
-          <div className="inline-feedback inline-feedback-warning">
-            <span>{messages.ui.sinDatos}</span>
-            <button type="button" className="btn-secondary" onClick={onRetry}>
-              {messages.ui.reintentar}
-            </button>
-          </div>
-        )}
-        {!canExport && (
-          <div className="inline-feedback inline-feedback-info">
-            <span>{messages.reportes.exportDisabledInline}</span>
-          </div>
-        )}
-        <div className="form-group mb-4">
-          <input
-            className="form-input"
-            placeholder={messages.reportes.searchPlaceholder}
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-            }}
-            aria-label={messages.reportes.searchAriaLabel}
+        {error ? (
+          <EmptyState
+            variant="error"
+            message={messages.ui.errorCarga("vista previa")}
+            actionLabel={messages.ui.reintentar}
+            onAction={onRetry}
+            data-testid="export-preview-empty-error"
           />
-        </div>
-
-        {loading ? (
-          <div className="empty-state">{messages.reportes.loadingVacio}</div>
         ) : (
-          <DataTable
-            columns={columns}
-            data={filtrados}
-            getRowKey={(row, idx) => `${row.dni}-${idx}`}
-            ariaLabel={messages.reportes.vistaPreviaAriaLabel}
-          />
+          <>
+            {!canExport && (
+              <div className="inline-feedback inline-feedback-info">
+                <span>{messages.reportes.exportDisabledInline}</span>
+              </div>
+            )}
+            <div className="form-group mb-4">
+              <input
+                className="form-input"
+                placeholder={messages.reportes.searchPlaceholder}
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                }}
+                aria-label={messages.reportes.searchAriaLabel}
+              />
+            </div>
+
+            {loading ? (
+              <div className="empty-state">{messages.reportes.loadingVacio}</div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={filtrados}
+                getRowKey={(row, idx) => `${row.dni}-${idx}`}
+                ariaLabel={messages.reportes.vistaPreviaAriaLabel}
+                emptyVariant={query.trim() ? "filtered" : "empty"}
+                emptyAction={
+                  query.trim()
+                    ? {
+                        label: messages.ui.emptyStateCtas.limpiarFiltros,
+                        onClick: () => {
+                          setQuery("");
+                        },
+                      }
+                    : undefined
+                }
+              />
+            )}
+          </>
         )}
       </div>
     </>

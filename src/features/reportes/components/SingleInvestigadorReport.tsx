@@ -1,8 +1,10 @@
 import React from "react";
 import { Download } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SectionHeader, InfoRow } from "./PdfComponents";
 import { formatBool, formatTimestamp } from "./pdfFormatters";
+import { messages } from "@/shared/feedback/messages";
 import type { ReporteInvestigadorIntegral } from "../api";
 
 export interface SingleInvestigadorReportProps {
@@ -106,7 +108,11 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
           }}
         />
         {proyectos.length === 0 ? (
-          <div className="empty-state">Sin proyectos registrados</div>
+          <EmptyState
+            variant="empty"
+            message={messages.reportes.investigadorEmptyMessages.proyectos}
+            data-testid="investigador-report-empty-proyectos"
+          />
         ) : (
           <table className="table">
             <thead>
@@ -152,7 +158,11 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
             <strong>Patentes ({recursos.total_patentes})</strong>
           </p>
           {recursos.patentes.length === 0 ? (
-            <div className="empty-state">Sin patentes</div>
+            <EmptyState
+              variant="empty"
+              message={messages.reportes.investigadorEmptyMessages.patentes}
+              data-testid="investigador-report-empty-patentes"
+            />
           ) : (
             <table className="table">
               <thead>
@@ -181,7 +191,11 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
             <strong>Productos ({recursos.total_productos})</strong>
           </p>
           {recursos.productos.length === 0 ? (
-            <div className="empty-state">Sin productos</div>
+            <EmptyState
+              variant="empty"
+              message={messages.reportes.investigadorEmptyMessages.productos}
+              data-testid="investigador-report-empty-productos"
+            />
           ) : (
             <table className="table">
               <thead>
@@ -208,7 +222,11 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
             <strong>Equipamientos ({recursos.total_equipamientos})</strong>
           </p>
           {recursos.equipamientos.length === 0 ? (
-            <div className="empty-state">Sin equipamientos</div>
+            <EmptyState
+              variant="empty"
+              message={messages.reportes.investigadorEmptyMessages.equipamientos}
+              data-testid="investigador-report-empty-equipamientos"
+            />
           ) : (
             <table className="table">
               <thead>
@@ -246,7 +264,11 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
           }}
         />
         {publicaciones.length === 0 ? (
-          <div className="empty-state">Sin publicaciones registradas</div>
+          <EmptyState
+            variant="empty"
+            message={messages.reportes.investigadorEmptyMessages.publicaciones}
+            data-testid="investigador-report-empty-publicaciones"
+          />
         ) : (
           <table className="table">
             <thead>

@@ -127,6 +127,13 @@ export const reportes = {
     equipamientos: "Sin equipamientos registrados",
     financiamientos: "Sin financiamientos registrados",
   } as const,
+  investigadorEmptyMessages: {
+    proyectos: "Sin proyectos registrados",
+    patentes: "Sin patentes",
+    productos: "Sin productos",
+    equipamientos: "Sin equipamientos",
+    publicaciones: "Sin publicaciones registradas",
+  } as const,
   proyectoInfoRowLabels: {
     idProyecto: "ID Proyecto",
     titulo: "Título",
