@@ -23,16 +23,28 @@ interface ExportPreviewPanelProps {
 }
 
 const columns: ColumnDef<DatosExportInvestigadorAgrupado>[] = [
-  { key: "investigador", label: "Investigador", render: (r) => r.investigador },
-  { key: "dni", label: "DNI", render: (r) => r.dni },
-  { key: "grado", label: "Grado", render: (r) => r.grado },
+  {
+    key: "investigador",
+    label: messages.reportes.previewColumns.investigador,
+    render: (r) => r.investigador,
+  },
+  { key: "dni", label: messages.reportes.previewColumns.dni, render: (r) => r.dni },
+  { key: "grado", label: messages.reportes.previewColumns.grado, render: (r) => r.grado },
   {
     key: "renacyt",
-    label: "Nivel RENACYT",
-    render: (r) => formatRenacytNivel(r.renacyt_nivel) ?? "No disponible",
+    label: messages.reportes.previewColumns.nivelRenacyt,
+    render: (r) => formatRenacytNivel(r.renacyt_nivel) ?? messages.ui.noDisponible,
   },
-  { key: "cantidad", label: "Cantidad Proyectos", render: (r) => r.cantidad_proyectos },
-  { key: "proyectos", label: "Proyectos", render: (r) => r.proyectos || "-" },
+  {
+    key: "cantidad",
+    label: messages.reportes.previewColumns.cantidadProyectos,
+    render: (r) => r.cantidad_proyectos,
+  },
+  {
+    key: "proyectos",
+    label: messages.reportes.previewColumns.proyectos,
+    render: (r) => r.proyectos || "-",
+  },
 ];
 
 export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
@@ -60,22 +72,22 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
     <>
       <div className="module-split-layout reportes-layout">
         <div className="form-card">
-          <h2>Centro de Reportes</h2>
+          <h2>{messages.reportes.centroReportes}</h2>
           <div className="form gap-4">
             <div className="form-group">
-              <label>Tipo de reporte</label>
+              <label>{messages.reportes.tipoReporteLabel}</label>
               <select
                 className="form-input"
                 value={tipo}
                 onChange={(e) => {
                   setTipo(e.target.value as TipoReporte);
                 }}
-                aria-label="Seleccionar tipo de reporte"
+                aria-label={messages.reportes.tipoReporteAriaLabel}
               >
                 <option value="agrupado_investigador">
-                  Investigadores con proyectos (agrupado)
+                  {messages.reportes.tipoReporteOpciones.agrupado}
                 </option>
-                <option value="plano">Detalle plano (proyecto-investigador)</option>
+                <option value="plano">{messages.reportes.tipoReporteOpciones.plano}</option>
               </select>
             </div>
 
@@ -91,7 +103,9 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
                   <span className="button-with-icon">
                     <AppIcon icon={Download} size={18} />
                     <span>
-                      {exportingFormat === "xlsx" ? "Exportando Excel..." : "Exportar Excel"}
+                      {exportingFormat === "xlsx"
+                        ? messages.reportes.exportandoExcel
+                        : messages.reportes.exportarExcel}
                     </span>
                   </span>
                 </button>
@@ -104,7 +118,11 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
                 >
                   <span className="button-with-icon">
                     <AppIcon icon={Download} size={18} />
-                    <span>{exportingFormat === "pdf" ? "Exportando PDF..." : "Exportar PDF"}</span>
+                    <span>
+                      {exportingFormat === "pdf"
+                        ? messages.reportes.exportandoPdf
+                        : messages.reportes.exportarPdf}
+                    </span>
                   </span>
                 </button>
               </div>
@@ -113,12 +131,23 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
         </div>
 
         <aside className="module-aside-card reportes-aside">
-          <span className="module-aside-kicker">Resumen rápido</span>
-          <strong>{tipo === "agrupado_investigador" ? "Agrupado" : "Plano"}</strong>
+          <span className="module-aside-kicker">{messages.reportes.aside.kicker}</span>
+          <strong>
+            {tipo === "agrupado_investigador"
+              ? messages.reportes.aside.tipoAgrupado
+              : messages.reportes.aside.tipoPlano}
+          </strong>
           <div className="module-aside-meta">
-            <Badge variant="info">Consulta actual: {query ? "Filtrada" : "Completa"}</Badge>
+            <Badge variant="info">
+              Consulta actual:{" "}
+              {query
+                ? messages.reportes.aside.consultaFiltrada
+                : messages.reportes.aside.consultaCompleta}
+            </Badge>
             <Badge variant={canExport ? "success" : "warning"}>
-              {canExport ? "Exportación habilitada" : "Solo vista previa"}
+              {canExport
+                ? messages.reportes.aside.exportHabilitada
+                : messages.reportes.aside.soloVistaPrevia}
             </Badge>
           </div>
         </aside>
@@ -126,41 +155,41 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
 
       <div className="table-container">
         <div className="section-header">
-          <h2>Vista previa: Investigadores y trazabilidad de proyectos</h2>
+          <h2>{messages.reportes.vistaPrevia}</h2>
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
             <span>{messages.ui.sinDatos}</span>
             <button type="button" className="btn-secondary" onClick={onRetry}>
-              Reintentar
+              {messages.ui.reintentar}
             </button>
           </div>
         )}
         {!canExport && (
           <div className="inline-feedback inline-feedback-info">
-            <span>Modo consulta: exportación deshabilitada.</span>
+            <span>{messages.reportes.exportDisabledInline}</span>
           </div>
         )}
         <div className="form-group mb-4">
           <input
             className="form-input"
-            placeholder="Buscar por investigador, DNI, grado o nivel RENACYT"
+            placeholder={messages.reportes.searchPlaceholder}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
             }}
-            aria-label="Buscar en la vista previa por investigador, DNI, grado o nivel RENACYT"
+            aria-label={messages.reportes.searchAriaLabel}
           />
         </div>
 
         {loading ? (
-          <div className="empty-state">Cargando...</div>
+          <div className="empty-state">{messages.reportes.loadingVacio}</div>
         ) : (
           <DataTable
             columns={columns}
             data={filtrados}
             getRowKey={(row, idx) => `${row.dni}-${idx}`}
-            ariaLabel="Tabla de vista previa de reportes"
+            ariaLabel={messages.reportes.vistaPreviaAriaLabel}
           />
         )}
       </div>

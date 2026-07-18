@@ -3,6 +3,7 @@ import ExcelJS from "exceljs";
 import { pdf } from "@react-pdf/renderer";
 import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 import { getTauriErrorMessage } from "../api";
 import { ProyectoIntegralPdf, InvestigadorIntegralPdf } from "../components/PdfComponents";
 import type { ReporteProyectoIntegral, ReporteInvestigadorIntegral } from "../api";
@@ -79,9 +80,9 @@ export function useExport({
         filters: [{ name: "Archivo Excel", extensions: ["xlsx"] }],
         mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      toast.success("Excel exportado exitosamente");
+      toast.success(messages.reportes.useExport.excelExportado);
     } catch (err) {
-      toast.error("Error exportando Excel: " + getTauriErrorMessage(err));
+      toast.error(messages.reportes.useExport.excelError(getTauriErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }
@@ -100,9 +101,9 @@ export function useExport({
         filters: [{ name: "Documento PDF", extensions: ["pdf"] }],
         mimeType: "application/pdf",
       });
-      toast.success("PDF exportado exitosamente");
+      toast.success(messages.reportes.useExport.pdfExportado);
     } catch (err) {
-      toast.error("Error exportando PDF: " + getTauriErrorMessage(err));
+      toast.error(messages.reportes.useExport.pdfError(getTauriErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }
@@ -153,9 +154,9 @@ export function useExport({
         filters: [{ name: "Archivo Excel", extensions: ["xlsx"] }],
         mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      toast.success("Excel exportado exitosamente");
+      toast.success(messages.reportes.useExport.excelExportado);
     } catch (err) {
-      toast.error("Error exportando Excel: " + getTauriErrorMessage(err));
+      toast.error(messages.reportes.useExport.excelError(getTauriErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }
@@ -181,9 +182,9 @@ export function useExport({
           mimeType: "application/pdf",
         });
       }
-      toast.success("PDF exportado exitosamente");
+      toast.success(messages.reportes.useExport.pdfExportado);
     } catch (err) {
-      toast.error("Error exportando PDF: " + getTauriErrorMessage(err));
+      toast.error(messages.reportes.useExport.pdfError(getTauriErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }

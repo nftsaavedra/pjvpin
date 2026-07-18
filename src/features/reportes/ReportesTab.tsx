@@ -8,6 +8,7 @@ import { getAllProyectosDetalle } from "@/shared/tauri/proyectos";
 import { getAllInvestigadores } from "@/shared/tauri/investigadores";
 import type { Investigador, ProyectoDetalle } from "@/shared/tauri/types";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
@@ -35,13 +36,13 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
   } = useStableFetchData<DatosExportInvestigadorAgrupado[]>(
     () => getDataExportacionAgrupada(),
     refreshTrigger,
-    "Error cargando vista previa de reportes",
+    messages.reportes.tab.errorCargandoVistaPrevia,
     [],
   );
 
   useRefreshToast({
     refreshing,
-    message: "Actualizando vista previa de reportes",
+    message: messages.reportes.tab.refreshMessage,
     toastKey: "reportes-refresh",
     cooldownMs: 120000,
   });
@@ -55,7 +56,7 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
     getAllProyectosDetalle()
       .then(setProyectos)
       .catch(() => {
-        toast.error("Error cargando proyectos");
+        toast.error(messages.reportes.tab.errorCargandoProyectos);
       })
       .finally(() => {
         setProyectosLoading(false);
@@ -66,7 +67,7 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
     getAllInvestigadores()
       .then(setInvestigadores)
       .catch(() => {
-        toast.error("Error cargando investigadores");
+        toast.error(messages.reportes.tab.errorCargandoInvestigadores);
       })
       .finally(() => {
         setInvestigadoresLoading(false);
@@ -101,13 +102,17 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
       });
 
       if (!savedFilePath) {
-        toast.info("Exportación cancelada");
+        toast.info(messages.reportes.tab.exportacionCancelada);
         return;
       }
 
-      toast.success(`Reporte ${format === "xlsx" ? "Excel" : "PDF"} exportado exitosamente`);
+      toast.success(
+        messages.reportes.tab.reporteExportado(
+          format === "xlsx" ? messages.reportes.tab.formatoExcel : messages.reportes.tab.formatoPdf,
+        ),
+      );
     } catch (err) {
-      toast.error("Error exportando reporte: " + getTauriErrorMessage(err));
+      toast.error(messages.reportes.tab.errorExportandoReporte(getTauriErrorMessage(err)));
     } finally {
       setExportingFormat(null);
     }
