@@ -10,7 +10,7 @@ pub async fn get_catalogos(
     window_label: &str,
     tipo: &str,
 ) -> Result<Vec<CatalogoItem>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::GradosRead).await?;
+    rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosRead).await?;
     catalogo_service::get_by_tipo(state, tipo).await
 }
 
@@ -19,7 +19,7 @@ pub async fn get_all_catalogos_admin(
     window_label: &str,
     tipo: &str,
 ) -> Result<Vec<CatalogoItem>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
+    rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosManage).await?;
     catalogo_service::get_all_by_tipo(state, tipo).await
 }
 

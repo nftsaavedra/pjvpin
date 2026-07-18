@@ -145,7 +145,8 @@ pub async fn get_all_usuarios(
     state: &AppState,
     window_label: &str,
 ) -> Result<Vec<Usuario>, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
     usuario_service::get_all(state, &actor.id_usuario).await
 }
 
@@ -155,7 +156,8 @@ pub async fn get_all_usuarios_paginated(
     page: u32,
     limit: u32,
 ) -> Result<PaginatedResult<Usuario>, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
     usuario_service::get_all_paginated(state, &actor.id_usuario, page, limit).await
 }
 

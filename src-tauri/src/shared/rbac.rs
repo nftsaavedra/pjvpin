@@ -17,6 +17,7 @@ pub enum AppPermission {
     GruposView,
     GruposManage,
     RecursosManage,
+    CatalogosRead,
     CatalogosManage,
     UsuariosManage,
 }
@@ -38,6 +39,7 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::GruposView
                 | AppPermission::GruposManage
                 | AppPermission::RecursosManage
+                | AppPermission::CatalogosRead
                 | AppPermission::CatalogosManage
                 | AppPermission::UsuariosManage
         ),
@@ -54,7 +56,7 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::GruposView
                 | AppPermission::GruposManage
                 | AppPermission::RecursosManage
-                | AppPermission::CatalogosManage
+                | AppPermission::CatalogosRead
         ),
         "consulta" => matches!(
             permission,

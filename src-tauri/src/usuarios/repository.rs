@@ -440,9 +440,8 @@ async fn enrich_usuarios_with_persona(
 
 pub async fn get_all_usuarios(
     db: &Database,
-    actor_user_id: &str,
+    _actor_user_id: &str,
 ) -> Result<Vec<Usuario>, AppError> {
-    validar_actor_admin(db, actor_user_id).await?;
     let mut usuarios: Vec<Usuario> = load_usuarios(db)
         .await?
         .into_iter()
@@ -455,11 +454,10 @@ pub async fn get_all_usuarios(
 
 pub async fn get_all_usuarios_paginated(
     db: &Database,
-    actor_user_id: &str,
+    _actor_user_id: &str,
     page: u32,
     limit: u32,
 ) -> Result<crate::shared::pagination::PaginatedResult<Usuario>, AppError> {
-    validar_actor_admin(db, actor_user_id).await?;
     let filter = doc! {};
     let total = db
         .collection::<Document>("usuarios")
