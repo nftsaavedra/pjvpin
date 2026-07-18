@@ -94,7 +94,6 @@ export const investigadores = {
     doiEnlaceError: "No se pudo abrir el enlace DOI.",
   } as const,
   table: {
-    emptyState: "No hay investigadores para el filtro seleccionado",
     ariaLabel: "Tabla de investigadores registrados",
     columns: {
       dni: "DNI",

@@ -389,6 +389,23 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 - `<AppIcon icon={...} size={...}>` — wrapper de `lucide-react`. SIEMPRE usar este wrapper.
 - `<FieldHelpTooltip>`, `<FloatingTooltip>` — tooltips.
 - `<Skeleton>`, `<SkeletonBlock>`, `<SkeletonTable>`, `<SkeletonFallbacks>` — loaders.
+- `<EmptyState variant="empty|filtered|error">` — empty states estandarizados. Reemplaza TODO `<div className="empty-state">` directo en components (excepto internals de `EmptyState.tsx`).
+
+### Empty states (vía componente `<EmptyState>`)
+
+Toda vista de registros (tabla, grid, list) que pueda mostrar 0 elementos DEBE usar el componente compartido `<EmptyState>` con uno de 3 variants:
+
+- `variant="empty"` — sin filtros activos y data === []: mensaje `messages.ui.emptyState('<entidad>')`, CTA "Crear primer X" (`messages.ui.emptyStateCtas.crearPrimero`) cuando `canManage`.
+- `variant="filtered"` — filtros activos y data filtrada === []: mensaje `messages.ui.filteredEmpty('<entidad>')`, CTA "Limpiar filtros" (`messages.ui.emptyStateCtas.limpiarFiltros`).
+- `variant="error"` — fetch error: mensaje `messages.ui.errorCarga('<entidad>')`, CTA "Reintentar" (`messages.ui.reintentar`).
+
+Reglas:
+
+- Toolbar y filtros NO se renderizan en estado error (reemplazados por `<EmptyState variant="error">`). Mutua exclusión error/empty.
+- Detección de "filtros activos" via helper `hasActiveFilters` en el hook/state del feature (ej: `estadoFiltro !== 'todos' || busqueda.trim() !== ''`).
+- En sub-tablas de solo lectura (reportes, detail panels) sin toolbar, usar `variant="empty"` con mensaje específico del feature (no builders genéricos, porque no hay contexto de filtro).
+- En charts (DashboardCharts), usar `variant="empty"` con `messages.dashboard.chartEmptyMessages.<key>`.
+- Prohibido: `<div className="empty-state">{string}</div>` directo en components (excepto dentro de `EmptyState.tsx` internals).
 
 ### Auditoría de runtime (importante)
 
@@ -410,6 +427,7 @@ npm run build      # OK
 rg -n "toast\.(error|success|warning|info)\(['\"]" src/ --glob "*.tsx"   # debe estar vacio
 rg -n 'aria-label="[A-ZÁÉÍÓÚÑ]' src/ --glob "*.tsx"                    # debe estar vacio
 rg -n 'title="[A-ZÁÉÍÓÚÑ][^"$]*"' src/ --glob "*.tsx" | rg -v "pendingChange"  # debe estar vacio
+rg -n 'className="empty-state"' src/ --glob "*.tsx" | rg -v "EmptyState.tsx"  # debe estar vacio (solo internals de EmptyState)
 ```
 
 Si typecheck/lint/build falla o la auditoria detecta literales no migrados al

@@ -4,6 +4,7 @@ import { type InvestigadorDetalle } from "../../investigadores/api";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonChecklist } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
@@ -100,7 +101,13 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
   }
 
   if (investigadores.length === 0) {
-    return <div className="empty-state">{messages.proyectos.checklist.emptyState}</div>;
+    return (
+      <EmptyState
+        variant="empty"
+        message={messages.proyectos.checklist.emptyState}
+        data-testid="checklist-empty"
+      />
+    );
   }
 
   return (

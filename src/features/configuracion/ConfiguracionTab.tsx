@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useMemo, useState } from "react";
 import { GraduationCap, LibraryBig, Users } from "lucide-react";
 import type { Usuario } from "../auth/api";
 import { hasPermission } from "@/shared/auth/permissions";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
 import { TabNavigation, type Tab } from "@/shared/navigation/TabNavigation";
 import { messages } from "@/shared/feedback/messages";
@@ -108,9 +109,11 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
         />
 
         {visibleSections.length === 0 ? (
-          <div className="empty-state">
-            <p>{messages.configuracion.tab.sinPermisos}</p>
-          </div>
+          <EmptyState
+            variant="empty"
+            message={messages.configuracion.tab.sinPermisos}
+            data-testid="configuracion-empty-sin-permisos"
+          />
         ) : (
           <div
             id={panelId}

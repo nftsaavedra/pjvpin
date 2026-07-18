@@ -20,6 +20,7 @@ import type {
 } from "../api";
 import { useMeasuredChart } from "../hooks/useMeasuredChart";
 import { SkeletonChart } from "@/shared/ui/Skeleton";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { messages } from "@/shared/feedback/messages";
 
 interface DashboardChartsProps {
@@ -160,9 +161,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 chartLoadingState
               )
             ) : (
-              <div className="empty-state">
-                {messages.dashboard.chartEmptyMessages.rankingAsignaciones}
-              </div>
+              <EmptyState
+                variant="empty"
+                message={messages.dashboard.chartEmptyMessages.rankingAsignaciones}
+              />
             )}
           </div>
         </div>
@@ -210,9 +212,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 chartLoadingState
               )
             ) : (
-              <div className="empty-state">
-                {messages.dashboard.chartEmptyMessages.distribucion}
-              </div>
+              <EmptyState
+                variant="empty"
+                message={messages.dashboard.chartEmptyMessages.distribucion}
+              />
             )}
           </div>
         </div>
@@ -253,7 +256,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 chartLoadingState
               )
             ) : (
-              <div className="empty-state">{messages.dashboard.chartEmptyMessages.comparacion}</div>
+              <EmptyState
+                variant="empty"
+                message={messages.dashboard.chartEmptyMessages.comparacion}
+              />
             )}
           </div>
         </div>
@@ -291,9 +297,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
               chartLoadingState
             )
           ) : (
-            <div className="empty-state">
-              {messages.dashboard.chartEmptyMessages.proyectosActivos}
-            </div>
+            <EmptyState
+              variant="empty"
+              message={messages.dashboard.chartEmptyMessages.proyectosActivos}
+            />
           )}
         </div>
       </div>
@@ -324,7 +331,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             />
           </LineChart>
         ) : (
-          <div className="empty-state">{messages.dashboard.chartEmptyMessages.tendencia}</div>
+          <EmptyState variant="empty" message={messages.dashboard.chartEmptyMessages.tendencia} />
         )}
       </div>
 
@@ -352,9 +359,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             />
           </BarChart>
         ) : (
-          <div className="empty-state">
-            {messages.dashboard.chartEmptyMessages.distribucionRenacyt}
-          </div>
+          <EmptyState
+            variant="empty"
+            message={messages.dashboard.chartEmptyMessages.distribucionRenacyt}
+          />
         )}
       </div>
     </div>

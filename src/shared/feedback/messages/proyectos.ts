@@ -72,7 +72,6 @@ export const proyectos = {
     financiamiento: "Financiamiento",
   } as const,
   table: {
-    emptyState: "No hay proyectos para el filtro seleccionado",
     ariaLabel: "Tabla de proyectos registrados",
     columns: {
       titulo: "Título",
