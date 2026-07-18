@@ -19,6 +19,7 @@ import { toast } from "@/shared/feedback/toast";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import { formatDate, parseFormacionesAcademicas } from "@/shared/utils/investigadorUtils";
 import { InvestigadorPublicacionesSection } from "./InvestigadorPublicacionesSection";
+import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadorDetailScreenProps {
   investigador: InvestigadorDetalle;
@@ -104,7 +105,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
           : undefined,
       )}
       <div className="renacyt-detail-item-content">
-        <strong>{value ?? "No disponible"}</strong>
+        <strong>{value ?? messages.ui.noDisponible}</strong>
       </div>
     </div>
   );
@@ -118,11 +119,11 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
               type="button"
               className="screen-breadcrumb-back"
               onClick={onBack}
-              aria-label="Volver a investigadores"
+              aria-label={messages.investigadores.volverAInvestigadores}
             >
               <AppIcon icon={ArrowLeft} size={14} />
             </button>
-            <span>Investigadores</span>
+            <span>{messages.investigadores.breadcrumb}</span>
             <span className="screen-breadcrumb-sep">/</span>
             <span className="screen-breadcrumb-current">{investigador.nombres_apellidos}</span>
           </div>
@@ -131,7 +132,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
           <button type="button" className="btn-secondary" onClick={onBack}>
             <span className="button-with-icon">
               <AppIcon icon={ArrowLeft} size={16} />
-              <span>Volver a la lista</span>
+              <span>{messages.investigadores.volverALista}</span>
             </span>
           </button>
         </div>
@@ -144,8 +145,10 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
               <AppIcon icon={GraduationCap} size={18} />
             </div>
             <div className="screen-kpi-copy">
-              <span className="screen-kpi-value">{investigador.grado || "Sin grado"}</span>
-              <span className="screen-kpi-label">Grado Académico</span>
+              <span className="screen-kpi-value">
+                {investigador.grado || messages.investigadores.fallbacks.sinGrado}
+              </span>
+              <span className="screen-kpi-label">{messages.investigadores.kpiLabels.grado}</span>
             </div>
           </div>
           <div className="screen-kpi-card">
@@ -154,24 +157,27 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">
-                {formatRenacytNivel(investigador.renacyt_nivel) ?? "Sin RENACYT"}
+                {formatRenacytNivel(investigador.renacyt_nivel) ??
+                  messages.investigadores.fallbacks.sinRenacyt}
               </span>
-              <span className="screen-kpi-label">Nivel RENACYT</span>
+              <span className="screen-kpi-label">
+                {messages.investigadores.kpiLabels.nivelRenacyt}
+              </span>
             </div>
           </div>
           <div className="screen-kpi-card">
             <div className="screen-kpi-icon">
               {investigador.activo === 1 ? (
-                <Badge variant="success">Activo</Badge>
+                <Badge variant="success">{messages.ui.statusActivo}</Badge>
               ) : (
-                <Badge variant="warning">Inactivo</Badge>
+                <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
               )}
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">
-                {investigador.activo === 1 ? "Activo" : "Inactivo"}
+                {investigador.activo === 1 ? messages.ui.statusActivo : messages.ui.statusInactivo}
               </span>
-              <span className="screen-kpi-label">Estado</span>
+              <span className="screen-kpi-label">{messages.investigadores.kpiLabels.estado}</span>
             </div>
           </div>
           <div className="screen-kpi-card">
@@ -180,7 +186,9 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">{investigador.cantidad_proyectos}</span>
-              <span className="screen-kpi-label">Proyectos</span>
+              <span className="screen-kpi-label">
+                {messages.investigadores.kpiLabels.proyectos}
+              </span>
             </div>
           </div>
         </div>
@@ -188,26 +196,26 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
         <div className="screen-placeholder-card">
           <p className="title-with-icon">
             <AppIcon icon={BarChart3} size={20} />
-            <span>Métricas de participación en proyectos — próximamente</span>
+            <span>{messages.investigadores.metricasPronto}</span>
           </p>
         </div>
 
         <div className="screen-section">
           <div className="investigador-info">
             <div className="info-row">
-              <label>Nombre:</label>
+              <label>{messages.investigadores.infoRowLabels.nombre}</label>
               <span>{investigador.nombres_apellidos}</span>
             </div>
             <div className="info-row">
-              <label>DNI:</label>
+              <label>{messages.investigadores.infoRowLabels.dni}</label>
               <span>{investigador.dni}</span>
             </div>
             <div className="info-row">
-              <label>Grado Académico:</label>
+              <label>{messages.investigadores.infoRowLabels.gradoAcademico}</label>
               <span>{investigador.grado}</span>
             </div>
             <div className="info-row highlight">
-              <label>Proyectos Asignados:</label>
+              <label>{messages.investigadores.infoRowLabels.proyectosAsignados}</label>
               <Badge>{investigador.cantidad_proyectos}</Badge>
             </div>
           </div>
@@ -226,12 +234,16 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
               <span className="renacyt-detail-toggle-copy">
                 <span className="title-with-icon renacyt-detail-title">
                   <AppIcon icon={BadgeCheck} size={18} />
-                  <span>Estado RENACYT</span>
+                  <span>{messages.investigadores.renacytSection.estadoRenacyt}</span>
                 </span>
                 {tieneRenacyt ? (
-                  <Badge variant="success">Vinculado</Badge>
+                  <Badge variant="success">
+                    {messages.investigadores.renacytSection.renacytVinculado}
+                  </Badge>
                 ) : (
-                  <Badge variant="warning">No registrado</Badge>
+                  <Badge variant="warning">
+                    {messages.investigadores.renacytSection.renacytNoRegistrado}
+                  </Badge>
                 )}
               </span>
               <span className="renacyt-detail-toggle-icon" aria-hidden="true">
@@ -244,63 +256,79 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                 <>
                   <div className="renacyt-detail-grid">
                     <div className="renacyt-detail-item">
-                      {renderBrandLabel("Código", "renacyt")}
-                      <strong>{investigador.renacyt_codigo_registro ?? "No disponible"}</strong>
+                      {renderBrandLabel(messages.investigadores.renacytSection.codigo, "renacyt")}
+                      <strong>
+                        {investigador.renacyt_codigo_registro ?? messages.ui.noDisponible}
+                      </strong>
                     </div>
                     {renderLinkedIdentifier(
-                      "ID investigador",
+                      messages.investigadores.renacytSection.idInvestigador,
                       investigador.renacyt_id_investigador,
                       investigador.renacyt_ficha_url ?? null,
-                      "Abrir ficha RENACYT",
-                      "No se pudo abrir la ficha pública RENACYT.",
+                      messages.investigadores.renacytActions.abrirFichaRenacyt,
+                      messages.investigadores.renacytActions.fichaRenacytError,
                       "renacyt",
                     )}
                     <div className="renacyt-detail-item">
-                      <span className="renacyt-detail-label">Nivel</span>
+                      <span className="renacyt-detail-label">
+                        {messages.investigadores.renacytSection.nivel}
+                      </span>
                       <strong>
-                        {formatRenacytNivel(investigador.renacyt_nivel) ?? "No disponible"}
+                        {formatRenacytNivel(investigador.renacyt_nivel) ?? messages.ui.noDisponible}
                       </strong>
                     </div>
                     <div className="renacyt-detail-item">
-                      <span className="renacyt-detail-label">Grupo</span>
-                      <strong>{investigador.renacyt_grupo ?? "No disponible"}</strong>
+                      <span className="renacyt-detail-label">
+                        {messages.investigadores.renacytSection.grupo}
+                      </span>
+                      <strong>{investigador.renacyt_grupo ?? messages.ui.noDisponible}</strong>
                     </div>
                     <div className="renacyt-detail-item">
-                      <span className="renacyt-detail-label">Condición</span>
-                      <strong>{investigador.renacyt_condicion ?? "No disponible"}</strong>
+                      <span className="renacyt-detail-label">
+                        {messages.investigadores.renacytSection.condicion}
+                      </span>
+                      <strong>{investigador.renacyt_condicion ?? messages.ui.noDisponible}</strong>
                     </div>
                     <div className="renacyt-detail-item">
-                      <span className="renacyt-detail-label">Registro</span>
+                      <span className="renacyt-detail-label">
+                        {messages.investigadores.renacytSection.registro}
+                      </span>
                       <strong>{formatDate(investigador.renacyt_fecha_registro)}</strong>
                     </div>
                     <div className="renacyt-detail-item">
-                      <span className="renacyt-detail-label">Informe</span>
+                      <span className="renacyt-detail-label">
+                        {messages.investigadores.renacytSection.informe}
+                      </span>
                       <strong>{formatDate(investigador.renacyt_fecha_informe_calificacion)}</strong>
                     </div>
                     <div className="renacyt-detail-item">
-                      <span className="renacyt-detail-label">Última revisión</span>
+                      <span className="renacyt-detail-label">
+                        {messages.investigadores.renacytSection.ultimaRevision}
+                      </span>
                       <strong>{formatDate(investigador.renacyt_fecha_ultima_revision)}</strong>
                     </div>
                     <div className="renacyt-detail-item">
-                      <span className="renacyt-detail-label">Última sincronización</span>
+                      <span className="renacyt-detail-label">
+                        {messages.investigadores.renacytSection.ultimaSincronizacion}
+                      </span>
                       <strong>
                         {formatDate(investigador.renacyt_fecha_ultima_sincronizacion)}
                       </strong>
                     </div>
                     {renderLinkedIdentifier(
-                      "ORCID",
+                      messages.investigadores.renacytSection.orcid,
                       investigador.renacyt_orcid,
                       orcidUrl,
-                      "Abrir ORCID",
-                      "No se pudo abrir el perfil de ORCID.",
+                      messages.investigadores.renacytActions.abrirOrcid,
+                      messages.investigadores.renacytActions.orcidError,
                       "orcid",
                     )}
                     {renderLinkedIdentifier(
-                      "Scopus Author ID",
+                      messages.investigadores.renacytSection.scopusAuthorId,
                       investigador.renacyt_scopus_author_id,
                       scopusUrl,
-                      "Abrir Scopus",
-                      "No se pudo abrir el perfil de Scopus.",
+                      messages.investigadores.renacytActions.abrirScopus,
+                      messages.investigadores.renacytActions.scopusError,
                       "scopus",
                     )}
                   </div>
@@ -319,10 +347,10 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                           <AppIcon icon={RefreshCw} size={16} />
                           <span>
                             {isRefreshingRenacyt
-                              ? "Actualizando formación..."
+                              ? messages.investigadores.renacytActions.actualizandoFormacion
                               : formacionesAcademicas.length > 0
-                                ? "Actualizar formación académica"
-                                : "Reintentar formación académica"}
+                                ? messages.investigadores.renacytActions.actualizarFormacion
+                                : messages.investigadores.renacytActions.reintentarFormacion}
                           </span>
                         </span>
                       </button>
@@ -331,7 +359,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
 
                   {canRefreshRenacyt && formacionesAcademicas.length === 0 && (
                     <div className="inline-feedback inline-feedback-info renacyt-formaciones-feedback">
-                      <span>Sin formación RENACYT sincronizada.</span>
+                      <span>{messages.investigadores.formaciones.sinFormacionSincronizada}</span>
                     </div>
                   )}
 
@@ -350,7 +378,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                             <span className="brand-mark brand-mark-renacyt" aria-hidden="true">
                               F
                             </span>
-                            <span>Formación académica</span>
+                            <span>{messages.investigadores.formaciones.titulo}</span>
                           </span>
                           <Badge variant="info">{formacionesAcademicas.length}</Badge>
                         </span>
@@ -364,35 +392,54 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                           {formacionesAcademicas.map((formacion) => (
                             <article key={formacion.id} className="renacyt-formacion-card">
                               <div className="renacyt-formacion-head">
-                                <strong>{formacion.titulo ?? "Formación sin título"}</strong>
+                                <strong>
+                                  {formacion.titulo ??
+                                    messages.investigadores.fallbacks.formacionSinTitulo}
+                                </strong>
                                 <Badge
                                   variant={formacion.considerado_para_cc ? "success" : "warning"}
                                 >
-                                  {formacion.considerado_para_cc ? "Considerado CC" : "Informativo"}
+                                  {formacion.considerado_para_cc
+                                    ? messages.investigadores.formaciones.badges.consideradoCC
+                                    : messages.investigadores.formaciones.badges.informativo}
                                 </Badge>
                               </div>
                               <div className="renacyt-formacion-grid">
                                 <span>
-                                  <strong>Grado:</strong>{" "}
-                                  {formacion.grado_academico ?? "No disponible"}
+                                  <strong>
+                                    {messages.investigadores.formaciones.fields.grado}
+                                  </strong>{" "}
+                                  {formacion.grado_academico ?? messages.ui.noDisponible}
                                 </span>
                                 <span>
-                                  <strong>Centro:</strong>{" "}
-                                  {formacion.centro_estudios ?? "No disponible"}
+                                  <strong>
+                                    {messages.investigadores.formaciones.fields.centro}
+                                  </strong>{" "}
+                                  {formacion.centro_estudios ?? messages.ui.noDisponible}
                                 </span>
                                 <span>
-                                  <strong>Inicio:</strong> {formatDate(formacion.fecha_inicio)}
+                                  <strong>
+                                    {messages.investigadores.formaciones.fields.inicio}
+                                  </strong>{" "}
+                                  {formatDate(formacion.fecha_inicio)}
                                 </span>
                                 <span>
-                                  <strong>Fin:</strong> {formatDate(formacion.fecha_fin)}
+                                  <strong>{messages.investigadores.formaciones.fields.fin}</strong>{" "}
+                                  {formatDate(formacion.fecha_fin)}
                                 </span>
                                 <span>
-                                  <strong>Puntaje:</strong>{" "}
-                                  {formacion.puntaje_obtenido ?? "No disponible"}
+                                  <strong>
+                                    {messages.investigadores.formaciones.fields.puntaje}
+                                  </strong>{" "}
+                                  {formacion.puntaje_obtenido ?? messages.ui.noDisponible}
                                 </span>
                                 <span>
-                                  <strong>Origen:</strong>{" "}
-                                  {formacion.indicador_importado ? "Importado" : "Manual"}
+                                  <strong>
+                                    {messages.investigadores.formaciones.fields.origen}
+                                  </strong>{" "}
+                                  {formacion.indicador_importado
+                                    ? messages.investigadores.formaciones.origenImportado
+                                    : messages.investigadores.formaciones.origenManual}
                                 </span>
                               </div>
                             </article>
@@ -403,7 +450,9 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                   )}
                 </>
               ) : (
-                <p className="renacyt-detail-empty">Investigador sin clasificación RENACYT.</p>
+                <p className="renacyt-detail-empty">
+                  {messages.investigadores.fallbacks.sinClasificacionRenacyt}
+                </p>
               ))}
           </div>
         </div>
@@ -418,7 +467,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
           <div className="screen-section">
             <h3 className="screen-section-title">
               <AppIcon icon={GraduationCap} size={18} />
-              <span>Proyectos en los que Participa</span>
+              <span>{messages.investigadores.proyectosEnParticipa}</span>
             </h3>
             <div className="screen-readonly-list">
               {proyectos.map((proyecto, idx) => (
@@ -433,7 +482,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
           <div className="screen-placeholder-card">
             <p className="title-with-icon">
               <AppIcon icon={TriangleAlert} size={18} />
-              <span>Este investigador no tiene proyectos asignados</span>
+              <span>{messages.investigadores.sinProyectosAsignados}</span>
             </p>
           </div>
         )}

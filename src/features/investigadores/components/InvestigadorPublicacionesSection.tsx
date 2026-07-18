@@ -11,6 +11,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 import { parseAutores } from "@/shared/utils/investigadorUtils";
 
 interface InvestigadorPublicacionesSectionProps {
@@ -55,7 +56,11 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
     try {
       const result: SyncPublicacionesResult = await sincronizarPublicacionesPure(investigadorId);
       toast.success(
-        `Sincronización Pure completada: ${result.nuevas} nuevas, ${result.actualizadas} actualizadas de ${result.total_encontradas} encontradas.`,
+        messages.investigadores.publicaciones.pureSyncSuccess(
+          result.nuevas,
+          result.actualizadas,
+          result.total_encontradas,
+        ),
       );
       await load();
     } catch (error) {
@@ -84,7 +89,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
         <span className="renacyt-detail-toggle-copy">
           <span className="title-with-icon renacyt-detail-title">
             <AppIcon icon={BookOpen} size={18} />
-            <span>Publicaciones (Pure)</span>
+            <span>{messages.investigadores.publicaciones.sectionTitle}</span>
           </span>
           {loaded && <Badge variant="info">{publicaciones.length}</Badge>}
         </span>
@@ -97,10 +102,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
         <>
           {!tieneScopusId && (
             <div className="inline-feedback inline-feedback-warning renacyt-formaciones-feedback">
-              <span>
-                Este investigador no tiene Scopus Author ID. Sincronice primero los datos RENACYT
-                para obtenerlo.
-              </span>
+              <span>{messages.investigadores.publicaciones.sinScopusId}</span>
             </div>
           )}
 
@@ -114,14 +116,20 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
               >
                 <span className="button-with-icon">
                   <AppIcon icon={RefreshCw} size={16} />
-                  <span>{isSyncing ? "Sincronizando Pure..." : "Sincronizar desde Pure"}</span>
+                  <span>
+                    {isSyncing
+                      ? messages.investigadores.publicaciones.sincronizando
+                      : messages.investigadores.publicaciones.sincronizarDesde}
+                  </span>
                 </span>
               </button>
             </div>
           )}
 
           {loaded && publicaciones.length === 0 && (
-            <p className="renacyt-detail-empty">Sin publicaciones sincronizadas.</p>
+            <p className="renacyt-detail-empty">
+              {messages.investigadores.publicaciones.sinPublicaciones}
+            </p>
           )}
 
           {publicaciones.length > 0 && (
@@ -135,29 +143,32 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
                   <div className="renacyt-formacion-grid">
                     {pub.tipo_publicacion && (
                       <span>
-                        <strong>Tipo:</strong> {pub.tipo_publicacion}
+                        <strong>{messages.investigadores.publicaciones.fields.tipo}</strong>{" "}
+                        {pub.tipo_publicacion}
                       </span>
                     )}
                     {pub.journal_titulo && (
                       <span>
-                        <strong>Journal:</strong> {pub.journal_titulo}
+                        <strong>{messages.investigadores.publicaciones.fields.journal}</strong>{" "}
+                        {pub.journal_titulo}
                       </span>
                     )}
                     {pub.estado_publicacion && (
                       <span>
-                        <strong>Estado:</strong> {pub.estado_publicacion}
+                        <strong>{messages.investigadores.publicaciones.fields.estado}</strong>{" "}
+                        {pub.estado_publicacion}
                       </span>
                     )}
                     {pub.doi && (
                       <span>
-                        <strong>DOI:</strong>{" "}
+                        <strong>{messages.investigadores.publicaciones.fields.doi}</strong>{" "}
                         <InlineIconButton
                           icon={ExternalLink}
-                          label="Abrir DOI"
+                          label={messages.investigadores.publicaciones.abrirDoi}
                           onClick={() =>
                             void handleOpenExternal(
                               `https://doi.org/${pub.doi}`,
-                              "No se pudo abrir el enlace DOI.",
+                              messages.investigadores.publicaciones.doiEnlaceError,
                             )
                           }
                         />
@@ -166,7 +177,8 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
                     )}
                     {pub.autores_json && parseAutores(pub.autores_json).length > 0 && (
                       <span className="renacyt-formacion-full-col">
-                        <strong>Autores:</strong> {parseAutores(pub.autores_json).join("; ")}
+                        <strong>{messages.investigadores.publicaciones.fields.autores}</strong>{" "}
+                        {parseAutores(pub.autores_json).join("; ")}
                       </span>
                     )}
                   </div>

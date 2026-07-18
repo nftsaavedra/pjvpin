@@ -10,6 +10,9 @@ export const ui = {
   errorInesperado: "Ocurrió un error inesperado.",
   modoConsulta: "Modo consulta: solo lectura.",
   errorConDetalle: (msg: string) => `Error: ${msg}`,
+  statusActivo: "Activo",
+  statusInactivo: "Inactivo",
+  noDisponible: "No disponible",
 } as const;
 
 export type UiMessageKey = keyof typeof ui;

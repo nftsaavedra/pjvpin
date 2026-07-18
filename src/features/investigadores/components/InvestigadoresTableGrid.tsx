@@ -5,6 +5,7 @@ import { Badge } from "@/shared/ui/Badge";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
+import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadoresTableGridProps {
   canManage: boolean;
@@ -32,19 +33,19 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
   }
 
   if (investigadores.length === 0) {
-    return <div className="empty-state">No hay investigadores para el filtro seleccionado</div>;
+    return <div className="empty-state">{messages.investigadores.table.emptyState}</div>;
   }
 
   return (
-    <table className="table table-interactive" aria-label="Tabla de investigadores registrados">
+    <table className="table table-interactive" aria-label={messages.investigadores.table.ariaLabel}>
       <thead>
         <tr>
-          <th scope="col">DNI</th>
-          <th scope="col">Perfil Académico</th>
-          <th scope="col">Nombre</th>
-          <th scope="col">Proyectos</th>
-          <th scope="col">Estado</th>
-          <th scope="col">Acciones</th>
+          <th scope="col">{messages.investigadores.table.columns.dni}</th>
+          <th scope="col">{messages.investigadores.table.columns.perfilAcademico}</th>
+          <th scope="col">{messages.investigadores.table.columns.nombre}</th>
+          <th scope="col">{messages.investigadores.table.columns.proyectos}</th>
+          <th scope="col">{messages.investigadores.table.columns.estado}</th>
+          <th scope="col">{messages.investigadores.table.columns.acciones}</th>
         </tr>
       </thead>
       <tbody>
@@ -65,17 +66,21 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                 key={investigador.id_investigador}
                 className={investigador.cantidad_proyectos === 0 ? "unassigned" : ""}
               >
-                <td>{investigador.dni || "Sin DNI"}</td>
+                <td>{investigador.dni || messages.investigadores.fallbacks.sinDni}</td>
                 <td>
                   <div className="investigador-profile-cell">
-                    <strong>{investigador.grado || "Sin grado"}</strong>
+                    <strong>
+                      {investigador.grado || messages.investigadores.fallbacks.sinGrado}
+                    </strong>
                     <Badge variant={nivelRenacyt ? "info" : "warning"}>
-                      {nivelRenacyt ? `RENACYT ${nivelRenacyt}` : "Sin nivel RENACYT"}
+                      {nivelRenacyt
+                        ? messages.investigadores.renacytSection.renacytNivel(nivelRenacyt)
+                        : messages.investigadores.fallbacks.sinNivelRenacyt}
                     </Badge>
                   </div>
                 </td>
                 <td className="font-semibold">
-                  {investigador.nombres_apellidos || "Sin nombre registrado"}
+                  {investigador.nombres_apellidos || messages.investigadores.fallbacks.sinNombre}
                 </td>
                 <td>
                   <Badge variant={investigador.cantidad_proyectos === 0 ? "warning" : "success"}>
@@ -84,16 +89,16 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                 </td>
                 <td>
                   {investigador.activo === 1 ? (
-                    <Badge variant="success">Activo</Badge>
+                    <Badge variant="success">{messages.ui.statusActivo}</Badge>
                   ) : (
-                    <Badge variant="warning">Inactivo</Badge>
+                    <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
                   )}
                 </td>
                 <td className="table-actions">
                   <TableActionButton
                     className="btn-view"
                     icon={Eye}
-                    label="Ver detalles"
+                    label={messages.investigadores.table.actions.verDetalles}
                     onClick={() => {
                       onView(investigador);
                     }}
@@ -104,10 +109,10 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                       icon={RefreshCw}
                       label={
                         estaActualizando
-                          ? "Actualizando formación RENACYT"
+                          ? messages.investigadores.table.actions.actualizandoFormacion
                           : tieneFormaciones
-                            ? "Actualizar formación RENACYT"
-                            : "Reintentar formación RENACYT"
+                            ? messages.investigadores.table.actions.actualizarFormacion
+                            : messages.investigadores.table.actions.reintentarFormacion
                       }
                       onClick={() => {
                         onRefreshRenacyt(investigador.id_investigador);
@@ -120,7 +125,7 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                       className="btn-primary"
                       icon={RotateCcw}
                       iconSize={18}
-                      label="Reactivar investigador"
+                      label={messages.investigadores.table.actions.reactivar}
                       onClick={() => {
                         onReactivate(investigador.id_investigador);
                       }}
@@ -130,7 +135,7 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                     <TableActionButton
                       className="btn-delete"
                       icon={Trash2}
-                      label="Desactivar investigador"
+                      label={messages.investigadores.table.actions.desactivar}
                       onClick={() => {
                         onDeactivate(investigador);
                       }}
