@@ -3,6 +3,7 @@ import { Server } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { FormInput } from "@/shared/forms/FormInput";
+import { messages } from "@/shared/feedback/messages";
 import type { WizardState } from "../useWizardState";
 
 interface Props {
@@ -26,8 +27,8 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
           <div className="flex items-center justify-center gap-2 mb-1.5">
             <h2 className="text-xl font-bold m-0 text-text-primary">Credenciales de servicios</h2>
             <FieldHelpTooltip
-              label="Informacion sobre credenciales"
-              content="Configure los servicios que PJVPI necesita para funcionar. Los servicios marcados con * son obligatorios."
+              label={messages.wizard.help.credenciales.label}
+              content={messages.wizard.help.credenciales.content}
             />
           </div>
         </div>
@@ -47,12 +48,10 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
               }}
               placeholder="mongodb+srv://usuario:password@cluster.mongodb.net"
               required
-              help="URI de conexion a su cluster MongoDB. Debe comenzar con mongodb:// o mongodb+srv://"
+              help={messages.wizard.formHelp.mongoUri}
             />
             {uriTrim.length > 0 && !hasValidUriFormat && (
-              <span className="form-hint form-hint-error">
-                La URI debe comenzar con mongodb:// o mongodb+srv://
-              </span>
+              <span className="form-hint form-hint-error">{messages.wizard.uriMongoInvalida}</span>
             )}
             <FormInput
               label="Nombre de la base de datos"
@@ -76,7 +75,7 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
               }}
               placeholder="sk_..."
               type="password"
-              help="Token para consulta de DNI via RENIEC. Si no lo tiene, deje vacio. Las consultas DNI se realizaran manualmente."
+              help={messages.wizard.formHelp.reniecToken}
             />
             <FormInput
               label="URL base RENACYT"
@@ -85,7 +84,7 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
                 update("renacytBaseUrl", v);
               }}
               placeholder="https://renacyt.concytec.gob.pe/renacyt-backend"
-              help="API de RENACYT para consulta de investigadores."
+              help={messages.wizard.formHelp.renacytUrl}
             />
             <FormInput
               label="Pure API Key"
@@ -95,13 +94,13 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
               }}
               placeholder="..."
               type="password"
-              help="API key de Pure (Elsevier) para sincronizacion de publicaciones."
+              help={messages.wizard.formHelp.pureKey}
             />
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-2">
             <button type="button" className="btn-secondary shrink-0" onClick={onBack}>
-              Atras
+              {messages.wizard.atras}
             </button>
             <button
               type="button"
@@ -109,7 +108,7 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
               disabled={!canContinue}
               onClick={onNext}
             >
-              Continuar
+              {messages.wizard.continuar}
             </button>
           </div>
         </div>

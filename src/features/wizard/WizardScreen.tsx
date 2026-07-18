@@ -8,17 +8,18 @@ import { StepTestConnectivity } from "./steps/StepTestConnectivity";
 import { StepCreateAdmin } from "./steps/StepCreateAdmin";
 import { StepSummary } from "./steps/StepSummary";
 import type { Usuario } from "@/shared/tauri/types";
+import { messages } from "@/shared/feedback/messages";
 
 interface Props {
   onDone: (usuario: Usuario) => void;
 }
 
 const STEP_META = [
-  { label: "Seguridad", short: "1" },
-  { label: "Servicios", short: "2" },
-  { label: "Conexion", short: "3" },
-  { label: "Usuario", short: "4" },
-  { label: "Resumen", short: "5" },
+  { label: messages.wizard.stepMeta.seguridad, short: "1" },
+  { label: messages.wizard.stepMeta.servicios, short: "2" },
+  { label: messages.wizard.stepMeta.conexion, short: "3" },
+  { label: messages.wizard.stepMeta.usuario, short: "4" },
+  { label: messages.wizard.stepMeta.resumen, short: "5" },
 ];
 
 export const WizardScreen: React.FC<Props> = ({ onDone }) => {
@@ -39,7 +40,7 @@ export const WizardScreen: React.FC<Props> = ({ onDone }) => {
               <AppIcon icon={BookOpen} size={24} />
               <span>UPI Research</span>
             </h1>
-            <p className="app-subtitle">Asistente de configuracion inicial</p>
+            <p className="app-subtitle">{messages.wizard.asistente}</p>
           </div>
         </div>
       </header>

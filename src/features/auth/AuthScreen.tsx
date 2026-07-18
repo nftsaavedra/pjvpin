@@ -4,6 +4,7 @@ import { getTauriErrorMessage, loginUsuario, type Usuario } from "./api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 
 interface AuthScreenProps {
   onAuthenticated: (usuario: Usuario) => void;
@@ -20,14 +21,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
     e.preventDefault();
 
     if (!username.trim() || !password.trim()) {
-      toast.warning("Ingrese usuario y contraseña");
+      toast.warning(messages.auth.ingreseCredenciales);
       return;
     }
 
     setIsLoading(true);
     try {
       const usuario = await loginUsuario(username, password);
-      toast.success(`Bienvenido ${usuario.nombre_completo ?? "usuario"}`);
+      toast.success(
+        messages.auth.bienvenido(usuario.nombre_completo ?? messages.auth.fallbackUsuario),
+      );
       onAuthenticated(usuario);
     } catch (error) {
       toast.error(getTauriErrorMessage(error));
@@ -43,8 +46,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
           <div className="flex items-center gap-2 mb-1.5">
             <h2 className="text-blue-900 m-0">Acceso al sistema</h2>
             <FieldHelpTooltip
-              label="Informacion de acceso"
-              content="Ingrese sus credenciales para utilizar el sistema."
+              label={messages.wizard.help.acceso.label}
+              content={messages.wizard.help.acceso.content}
             />
           </div>
         </div>

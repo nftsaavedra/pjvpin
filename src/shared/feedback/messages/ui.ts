@@ -9,8 +9,7 @@ export const ui = {
   error: "Error",
   errorInesperado: "Ocurrió un error inesperado.",
   modoConsulta: "Modo consulta: solo lectura.",
+  errorConDetalle: (msg: string) => `Error: ${msg}`,
 } as const;
 
 export type UiMessageKey = keyof typeof ui;
-
-export const messages = { ui } as const;

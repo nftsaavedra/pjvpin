@@ -2,6 +2,7 @@ import React, { useId } from "react";
 import { Shield } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
+import { messages } from "@/shared/feedback/messages";
 import type { WizardState } from "../useWizardState";
 
 interface Props {
@@ -11,11 +12,14 @@ interface Props {
 }
 
 const requirements = [
-  { test: (p: string) => p.trim().length >= 8, label: "Al menos 8 caracteres" },
-  { test: (p: string) => /[A-Z]/.test(p), label: "Al menos una mayuscula" },
-  { test: (p: string) => /[a-z]/.test(p), label: "Al menos una minuscula" },
-  { test: (p: string) => /\d/.test(p), label: "Al menos un digito" },
-  { test: (p: string) => /[^a-zA-Z0-9]/.test(p), label: "Al menos un caracter especial" },
+  { test: (p: string) => p.trim().length >= 8, label: messages.wizard.passwordRequisitos.longitud },
+  { test: (p: string) => /[A-Z]/.test(p), label: messages.wizard.passwordRequisitos.mayuscula },
+  { test: (p: string) => /[a-z]/.test(p), label: messages.wizard.passwordRequisitos.minuscula },
+  { test: (p: string) => /\d/.test(p), label: messages.wizard.passwordRequisitos.digito },
+  {
+    test: (p: string) => /[^a-zA-Z0-9]/.test(p),
+    label: messages.wizard.passwordRequisitos.especial,
+  },
 ];
 
 function allRequirementsMet(p: string) {
@@ -42,8 +46,8 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
               Contraseña maestra de configuracion
             </h2>
             <FieldHelpTooltip
-              label="Informacion sobre contraseña maestra"
-              content="Clave de proteccion de credenciales. Se valida como requisito de seguridad y se usara para cifrar la configuracion en disco en una version futura."
+              label={messages.wizard.help.password.label}
+              content={messages.wizard.help.password.content}
             />
           </div>
         </div>
@@ -82,12 +86,16 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
               required
             />
             {!match && confirmPassword.length > 0 && (
-              <span className="form-hint form-hint-error">Las contraseñas no coinciden</span>
+              <span className="form-hint form-hint-error">
+                {messages.wizard.passwordNoCoinciden}
+              </span>
             )}
           </div>
 
           <div className="rounded-xl px-4 py-3.5 bg-bg border border-border">
-            <p className="text-xs font-bold m-0 mb-2 text-text-secondary">Requisitos:</p>
+            <p className="text-xs font-bold m-0 mb-2 text-text-secondary">
+              {messages.wizard.passwordRequisitosTitle}
+            </p>
             <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
               {requirements.map((r) => (
                 <li
@@ -108,7 +116,7 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
             disabled={!canContinue}
             onClick={onNext}
           >
-            Continuar
+            {messages.wizard.continuar}
           </button>
         </div>
       </div>

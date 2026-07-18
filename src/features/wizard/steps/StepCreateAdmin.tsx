@@ -5,6 +5,7 @@ import { DniField } from "@/shared/forms/DniField";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { FormInput } from "@/shared/forms/FormInput";
 import { useWizardCreateAdmin } from "../hooks/useWizardCreateAdmin";
+import { messages } from "@/shared/feedback/messages";
 import type { Usuario } from "@/shared/tauri/types";
 
 interface Props {
@@ -47,8 +48,8 @@ export const StepCreateAdmin: React.FC<Props> = ({
   const nombresReadOnly = !isManualMode && dni.isValidated;
   const nombresDisabled = !isManualMode && !dni.isValidated;
   const helpIdentidad = reniecDisponible
-    ? "Datos autocompletados desde RENIEC. Para modificar, reingrese el DNI."
-    : "RENIEC no esta disponible. Ingrese los nombres manualmente; el DNI garantiza trazabilidad.";
+    ? messages.wizard.helpIdentidad.reniec
+    : messages.wizard.helpIdentidad.sinReniec;
 
   return (
     <div className="flex flex-col gap-6">
@@ -58,8 +59,8 @@ export const StepCreateAdmin: React.FC<Props> = ({
           <div className="flex items-center justify-center gap-2 mb-1.5">
             <h2 className="text-xl font-bold m-0 text-text-primary">Crear usuario superuser</h2>
             <FieldHelpTooltip
-              label="Informacion sobre superuser"
-              content="Primer usuario del sistema con maximo nivel de acceso. Podra gestionar usuarios, configurar servicios externos y administrar el sistema completo. Unico en el sistema: no se puede eliminar desde la interfaz."
+              label={messages.wizard.help.superuser.label}
+              content={messages.wizard.help.superuser.content}
             />
           </div>
         </div>
@@ -86,8 +87,8 @@ export const StepCreateAdmin: React.FC<Props> = ({
             inputId="wizard-admin-dni"
             helpText={
               reniecDisponible
-                ? "Ingrese el DNI del superuser. Se validara contra RENIEC para autocompletar nombres y apellidos."
-                : "Ingrese el DNI del superuser. RENIEC no esta configurado: el nombre se ingresara manualmente."
+                ? messages.wizard.helpDniField.reniecDisponible
+                : messages.wizard.helpDniField.sinReniec
             }
           />
 
@@ -123,15 +124,13 @@ export const StepCreateAdmin: React.FC<Props> = ({
 
           {isManualMode && (
             <div className="inline-feedback inline-feedback-warning">
-              RENIEC no esta configurado. El DNI queda registrado para trazabilidad. Configure el
-              token RENIEC despues desde Configuracion si requiere verificar identidades
-              automaticamente.
+              {messages.wizard.reniecNoConfiguradoInfo}
             </div>
           )}
 
           {!isManualMode && !dni.isValidated && dni.dniLimpio.length === 8 && (
             <div className="inline-feedback inline-feedback-info">
-              Valide el DNI con RENIEC para autocompletar los datos y poder continuar.
+              {messages.wizard.validarDniInfo}
             </div>
           )}
 
@@ -164,26 +163,25 @@ export const StepCreateAdmin: React.FC<Props> = ({
             required
             help={
               confirmPassword.length > 0 && password !== confirmPassword
-                ? "Las contraseñas no coinciden"
+                ? messages.wizard.passwordNoCoinciden
                 : undefined
             }
           />
 
           {confirmPassword.length > 0 && password !== confirmPassword && (
-            <span className="form-hint form-hint-error">Las contraseñas no coinciden</span>
+            <span className="form-hint form-hint-error">{messages.wizard.passwordNoCoinciden}</span>
           )}
 
           <div className="px-4 py-3 rounded-xl bg-blue-50 text-blue-900 border border-blue-200 text-sm">
-            Rol <strong>superuser</strong> — unico en el sistema, no eliminable. Identidad
-            registrada por DNI.
+            {messages.wizard.rolSuperuserInfo}
           </div>
 
           <div className="flex items-center justify-between gap-3 pt-2">
             <button type="button" className="btn-secondary shrink-0" onClick={onBack}>
-              Atras
+              {messages.wizard.atras}
             </button>
             <button type="submit" className="btn-primary ml-auto" disabled={!canSubmit}>
-              {isSubmitting ? "Creando..." : "Crear superuser"}
+              {isSubmitting ? messages.wizard.creando : messages.wizard.crearSuperuser}
             </button>
           </div>
         </form>

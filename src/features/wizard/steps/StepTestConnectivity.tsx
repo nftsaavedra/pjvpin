@@ -10,6 +10,7 @@ import {
   type ConnectivityResult,
 } from "@/shared/tauri/wizard";
 import { DEFAULT_PURE_API_BASE_URL } from "@/shared/config/defaults";
+import { messages } from "@/shared/feedback/messages";
 import type { WizardState } from "../useWizardState";
 
 interface Props {
@@ -60,7 +61,9 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
   const runTests = useCallback(async () => {
     startedRef.current = true;
 
-    setTests((prev) => prev.map((t) => ({ ...t, status: "running", message: "Probando..." })));
+    setTests((prev) =>
+      prev.map((t) => ({ ...t, status: "running", message: messages.wizard.probando })),
+    );
 
     const mongoResult: ConnectivityResult = applyResult(
       "MongoDB",
@@ -71,14 +74,14 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
     if (state.reniecToken.trim()) {
       reniecResult = applyResult("RENIEC", await wizardTestReniec(state.reniecToken));
     } else {
-      setEntry("RENIEC", "skipped", "Sin token configurado (opcional)");
+      setEntry("RENIEC", "skipped", messages.wizard.sinTokenConfigurado);
     }
 
     let renacytResult: ConnectivityResult | null = null;
     if (state.renacytBaseUrl.trim()) {
       renacytResult = applyResult("RENACYT", await wizardTestRenacyt(state.renacytBaseUrl));
     } else {
-      setEntry("RENACYT", "skipped", "Sin URL configurada (opcional)");
+      setEntry("RENACYT", "skipped", messages.wizard.sinUrlConfigurada);
     }
 
     let pureResult: ConnectivityResult | null = null;
@@ -88,7 +91,7 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
         await wizardTestPure(DEFAULT_PURE_API_BASE_URL, state.pureApiKey),
       );
     } else {
-      setEntry("Pure", "skipped", "Sin API key configurada (opcional)");
+      setEntry("Pure", "skipped", messages.wizard.sinApiKeyConfigurada);
     }
 
     setAllDone(true);
@@ -116,7 +119,9 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
   const handleRetry = () => {
     startedRef.current = false;
     setAllDone(false);
-    setTests((prev) => prev.map((t) => ({ ...t, status: "running", message: "Probando..." })));
+    setTests((prev) =>
+      prev.map((t) => ({ ...t, status: "running", message: messages.wizard.probando })),
+    );
     void runTests();
   };
 
@@ -146,8 +151,8 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
           <div className="flex items-center justify-center gap-2 mb-1.5">
             <h2 className="text-xl font-bold m-0 text-text-primary">Prueba de conectividad</h2>
             <FieldHelpTooltip
-              label="Informacion sobre servicios opcionales"
-              content="Solo MongoDB es obligatorio. RENIEC, RENACYT y Pure son opcionales: puede continuar aunque fallen y configurarlos despues desde Configuracion."
+              label={messages.wizard.help.serviciosOpcionales.label}
+              content={messages.wizard.help.serviciosOpcionales.content}
             />
           </div>
         </div>
@@ -171,11 +176,11 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
 
         <div className="flex items-center justify-between gap-3 pt-3 mt-4">
           <button type="button" className="btn-secondary shrink-0" onClick={onBack}>
-            Atras
+            {messages.wizard.atras}
           </button>
           {allDone && hasAnyFailure && (
             <button type="button" className="btn-secondary" onClick={handleRetry}>
-              Reintentar
+              {messages.ui.reintentar}
             </button>
           )}
           <button
@@ -184,7 +189,7 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
             disabled={!allDone || !mongoOk}
             onClick={onNext}
           >
-            {allDone ? "Continuar" : "Probando..."}
+            {allDone ? messages.wizard.continuar : messages.wizard.probando}
           </button>
         </div>
       </div>
