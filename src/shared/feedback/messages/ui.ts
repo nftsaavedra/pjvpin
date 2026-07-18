@@ -13,6 +13,12 @@ export const ui = {
   statusActivo: "Activo",
   statusInactivo: "Inactivo",
   noDisponible: "No disponible",
+  emptyState: (entidad: string) => `No hay ${entidad} registrados.`,
+  filteredEmpty: (entidad: string) => `No se encontraron ${entidad} con los filtros aplicados.`,
+  errorCarga: (entidad: string) => `No se pudieron cargar los ${entidad}.`,
+  emptyStateCtas: {
+    limpiarFiltros: "Limpiar filtros",
+  },
 } as const;
 
 export type UiMessageKey = keyof typeof ui;
