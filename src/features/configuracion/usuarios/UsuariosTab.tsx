@@ -12,6 +12,7 @@ import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { getRoleDefinition, getRoleLabel, getRoleOptions } from "@/shared/auth/permissions";
+import { RoleMatrixCard } from "./components/RoleMatrixCard";
 import type { Usuario } from "../../auth/api";
 
 interface UsuariosTabProps {
@@ -67,23 +68,14 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
       <div className="role-matrix-grid">
         {roles.map((roleOption) => {
           const definition = getRoleDefinition(roleOption.value);
-
           return (
-            <article
+            <RoleMatrixCard
               key={roleOption.value}
-              className={`module-aside-card role-matrix-card ${rol === roleOption.value ? "role-matrix-card-active" : ""}`}
-            >
-              <span className="module-aside-kicker">Rol operativo</span>
-              <strong>{definition.label}</strong>
-              <p>{definition.summary}</p>
-              <div className="role-matrix-list">
-                {definition.capabilities.map((capability) => (
-                  <span key={capability} className="role-matrix-item">
-                    {capability}
-                  </span>
-                ))}
-              </div>
-            </article>
+              label={definition.label}
+              summary={definition.summary}
+              capabilities={definition.capabilities}
+              isActive={rol === roleOption.value}
+            />
           );
         })}
       </div>
