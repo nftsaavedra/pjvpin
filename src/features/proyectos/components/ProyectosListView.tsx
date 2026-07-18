@@ -61,10 +61,7 @@ export const ProyectosListView: React.FC<ProyectosListViewProps> = ({
         )}
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
-            <span>
-              Modo consulta: puede revisar proyectos y participantes, pero no crear, desvincular,
-              desactivar ni reactivar.
-            </span>
+            <span>Modo consulta: solo lectura de proyectos.</span>
           </div>
         )}
         <ProyectosToolbar
@@ -95,7 +92,7 @@ export const ProyectosListView: React.FC<ProyectosListViewProps> = ({
         <ConfirmDialog
           open={Boolean(proyectoToDelete)}
           title="Desactivar proyecto"
-          message={`¿Desea desactivar el proyecto "${proyectoToDelete?.titulo_proyecto ?? ""}"? Solo se desactivará si no tiene investigadores relacionados.`}
+          message={`¿Desactivar "${proyectoToDelete?.titulo_proyecto ?? ""}"?`}
           confirmText="Sí, desactivar"
           cancelText="Cancelar"
           onConfirm={() => {

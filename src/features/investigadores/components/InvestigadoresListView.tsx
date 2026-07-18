@@ -100,10 +100,7 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
         )}
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
-            <span>
-              Modo consulta: puede revisar investigadores y su detalle, pero no crear, desactivar,
-              reactivar ni refrescar información RENACYT.
-            </span>
+            <span>Modo consulta: solo lectura de investigadores.</span>
           </div>
         )}
         <InvestigadoresTableToolbar
@@ -142,7 +139,7 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
         <ConfirmDialog
           open={Boolean(investigadorToDelete)}
           title="Desactivar investigador"
-          message={`¿Desea desactivar al investigador "${investigadorToDelete?.nombres_apellidos ?? ""}"? Su historial y relaciones se conservarán para mantener la trazabilidad.`}
+          message={`¿Desactivar a "${investigadorToDelete?.nombres_apellidos ?? ""}"?`}
           confirmText="Sí, desactivar"
           cancelText="Cancelar"
           onConfirm={() => {

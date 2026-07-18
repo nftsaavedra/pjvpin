@@ -150,10 +150,6 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
             <AppIcon icon={BarChart3} size={20} />
             <span>Métricas y gráficos de recursos — próximamente</span>
           </p>
-          <span>
-            Aquí se mostrarán indicadores como distribución de recursos por tipo, línea de tiempo y
-            registro de incidencias.
-          </span>
         </div>
 
         <div className="screen-section">
@@ -211,8 +207,8 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
 
           {activeItems.length === 0 ? (
             <p className="screen-placeholder-card">
-              No hay {resourceItems.find((r) => r.id === activeResourceTab)?.label.toLowerCase()}{" "}
-              registrados para este proyecto.
+              Sin {resourceItems.find((r) => r.id === activeResourceTab)?.label.toLowerCase()}{" "}
+              registrados.
             </p>
           ) : (
             <div className="screen-readonly-list">

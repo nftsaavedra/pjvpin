@@ -114,7 +114,6 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
         <aside className="module-aside-card reportes-aside">
           <span className="module-aside-kicker">Resumen rápido</span>
           <strong>{tipo === "agrupado_investigador" ? "Agrupado" : "Plano"}</strong>
-          <p>Ajuste el formato antes de exportar.</p>
           <div className="module-aside-meta">
             <Badge variant="info">Consulta actual: {query ? "Filtrada" : "Completa"}</Badge>
             <Badge variant={canExport ? "success" : "warning"}>
@@ -138,10 +137,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
         )}
         {!canExport && (
           <div className="inline-feedback inline-feedback-info">
-            <span>
-              Modo consulta: puede revisar la vista previa de reportes, pero la exportación a Excel
-              está deshabilitada para su rol.
-            </span>
+            <span>Modo consulta: exportación deshabilitada.</span>
           </div>
         )}
         <div className="form-group mb-4">

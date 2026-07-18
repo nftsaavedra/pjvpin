@@ -109,7 +109,7 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
             options={grados
               .filter((g) => g.activo !== 0)
               .map((g) => ({ value: g.id_grado, label: g.nombre }))}
-            help="Seleccione el grado vigente del investigador. Solo se muestran grados activos para preservar consistencia operativa."
+            help="Solo se muestran grados activos."
             disabled={camposBloqueados}
             required
             containerClassName="investigador-form-span-1"
@@ -122,7 +122,7 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
               setPerfil(value as typeof perfil);
             }}
             options={perfiles}
-            help="Define la categoría operativa del investigador. Docente es el perfil por defecto; tesista y alumno egresado se usan para investigadores en formación o recién egresados."
+            help="Docente es el perfil por defecto; tesista y alumno egresado se usan para investigadores en formación."
             disabled={camposBloqueados}
             required
             containerClassName="investigador-form-span-1"
@@ -133,7 +133,6 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
             value={nombres}
             onChange={setNombres}
             placeholder="Ej: Juan Carlos"
-            help="Ingrese los nombres del investigador. Este campo se usa junto con los apellidos para construir el nombre mostrado en la aplicación."
             readOnly
             disabled={camposBloqueados}
             required
@@ -145,7 +144,6 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
             value={apellidoPaterno}
             onChange={setApellidoPaterno}
             placeholder="Ej: Pérez"
-            help="Ingrese el apellido paterno. Es obligatorio para mejorar la identificación y futuros filtros avanzados."
             readOnly
             disabled={camposBloqueados}
             required
@@ -157,7 +155,7 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
             value={apellidoMaterno}
             onChange={setApellidoMaterno}
             placeholder="Ej: García"
-            help="Ingrese el apellido materno si corresponde. Puede completarse automáticamente desde RENIEC cuando esté disponible."
+            help="Se completa automáticamente desde RENIEC cuando está disponible."
             readOnly
             disabled={camposBloqueados}
             containerClassName="investigador-form-span-2"

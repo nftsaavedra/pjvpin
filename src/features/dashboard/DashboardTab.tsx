@@ -100,7 +100,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
     <div className="tab-panel dashboard">
       {error && !loading && (
         <div className="inline-feedback inline-feedback-warning">
-          <span>No se pudo refrescar el dashboard. Se mantienen los indicadores anteriores.</span>
+          <span>Error al refrescar. Datos anteriores visibles.</span>
           <button type="button" className="btn-secondary" onClick={() => void cargarDatos()}>
             Reintentar
           </button>

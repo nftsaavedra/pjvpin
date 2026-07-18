@@ -190,10 +190,6 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
             <AppIcon icon={BarChart3} size={20} />
             <span>Métricas de participación en proyectos — próximamente</span>
           </p>
-          <span>
-            Aquí se mostrarán indicadores como distribución de proyectos por tipo y líneas de
-            investigación.
-          </span>
         </div>
 
         <div className="screen-section">
@@ -335,10 +331,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
 
                   {canRefreshRenacyt && formacionesAcademicas.length === 0 && (
                     <div className="inline-feedback inline-feedback-info renacyt-formaciones-feedback">
-                      <span>
-                        No hay formación académica RENACYT sincronizada para este investigador.
-                        Puede reintentar la consulta.
-                      </span>
+                      <span>Sin formación RENACYT sincronizada.</span>
                     </div>
                   )}
 
@@ -410,10 +403,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
                   )}
                 </>
               ) : (
-                <p className="renacyt-detail-empty">
-                  Este investigador no tiene una clasificación RENACYT vinculada en su registro
-                  actual.
-                </p>
+                <p className="renacyt-detail-empty">Investigador sin clasificación RENACYT.</p>
               ))}
           </div>
         </div>

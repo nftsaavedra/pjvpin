@@ -51,9 +51,6 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
       <div className="screen-section-header">
         <span className="screen-section-title">Entidades relacionadas</span>
       </div>
-      <p className="screen-section-description">
-        Agregue patentes, productos, equipamiento y financiamiento asociados al proyecto.
-      </p>
 
       <div className="screen-tabs">
         {RESOURCE_TABS.map((tab) => (
@@ -75,7 +72,6 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
         <RelatedEntitiesSection
           title="Patentes"
           icon={<AppIcon icon={Beaker} size={18} />}
-          description="Agregue patentes asociadas con este proyecto (opcional)."
           items={patentes}
           fields={[
             {
@@ -115,7 +111,6 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
         <RelatedEntitiesSection
           title="Productos I+D+i"
           icon={<AppIcon icon={Lightbulb} size={18} />}
-          description="Agregue productos innovadores del proyecto (opcional)."
           items={productos}
           fields={[
             {
@@ -156,7 +151,6 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
         <RelatedEntitiesSection
           title="Equipamiento"
           icon={<AppIcon icon={Package} size={18} />}
-          description="Agregue equipamiento adquirido o desarrollado (opcional)."
           items={equipamientos}
           fields={[
             {
@@ -196,7 +190,6 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
         <RelatedEntitiesSection
           title="Financiamiento"
           icon={<AppIcon icon={DollarSign} size={18} />}
-          description="Agregue fuentes de financiamiento del proyecto (opcional)."
           items={financiamientos}
           fields={[
             {

@@ -159,9 +159,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 chartLoadingState
               )
             ) : (
-              <div className="empty-state">
-                Aun no hay proyectos asignados a investigadores para este ranking.
-              </div>
+              <div className="empty-state">Sin asignaciones para el ranking</div>
             )}
           </div>
         </div>
@@ -170,12 +168,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
           <div className="dashboard-insight-card">
             <span className="dashboard-insight-label">Investigadores con proyectos</span>
             <strong>{investigadoresConProyectos}</strong>
-            <p>Participan actualmente en al menos un proyecto.</p>
           </div>
           <div className="dashboard-insight-card">
             <span className="dashboard-insight-label">Carga media</span>
             <strong>{promedioProyectos}</strong>
-            <p>Promedio de proyectos asignados por investigador registrado.</p>
           </div>
         </div>
       </div>
@@ -211,9 +207,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 chartLoadingState
               )
             ) : (
-              <div className="empty-state">
-                No hay investigadores activos registrados para calcular la distribución.
-              </div>
+              <div className="empty-state">Sin datos de distribución</div>
             )}
           </div>
         </div>
@@ -254,9 +248,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 chartLoadingState
               )
             ) : (
-              <div className="empty-state">
-                No hay investigadores activos para comparar asignaciones.
-              </div>
+              <div className="empty-state">Sin datos para comparación</div>
             )}
           </div>
         </div>
@@ -294,9 +286,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
               chartLoadingState
             )
           ) : (
-            <div className="empty-state">
-              Los investigadores existen, pero todavia no tienen proyectos activos asignados.
-            </div>
+            <div className="empty-state">Sin proyectos activos asignados</div>
           )}
         </div>
       </div>

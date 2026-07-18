@@ -61,10 +61,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
 
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
-            <span>
-              Modo consulta: puede revisar grupos de investigación y líneas, pero no crear, editar
-              ni eliminar.
-            </span>
+            <span>Modo consulta: solo lectura de grupos.</span>
           </div>
         )}
 

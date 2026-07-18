@@ -121,10 +121,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
           )}
 
           {loaded && publicaciones.length === 0 && (
-            <p className="renacyt-detail-empty">
-              No hay publicaciones sincronizadas para este investigador.
-              {canSyncPure && tieneScopusId && " Use el botón para sincronizar desde Pure."}
-            </p>
+            <p className="renacyt-detail-empty">Sin publicaciones sincronizadas.</p>
           )}
 
           {publicaciones.length > 0 && (

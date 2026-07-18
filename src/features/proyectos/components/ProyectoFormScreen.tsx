@@ -110,7 +110,8 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   );
 
   const investigadoresSeleccionados = useMemo(
-    () => investigadores.filter((d) => form.investigadoresSeleccionados.includes(d.id_investigador)),
+    () =>
+      investigadores.filter((d) => form.investigadoresSeleccionados.includes(d.id_investigador)),
     [investigadores, form.investigadoresSeleccionados],
   );
 
@@ -262,7 +263,6 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
             value={form.titulo}
             onChange={form.setTitulo}
             placeholder="Ej: Análisis de Microalgas en Agua Dulce"
-            help="Registre el nombre con el que el proyecto será identificado en listados, reportes y relaciones con investigadores."
             required
           />
         </div>

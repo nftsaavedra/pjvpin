@@ -351,6 +351,12 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 
 - **Prosa explicativa > 1 línea en el cuerpo de pantallas: NO.** Mover a `<FieldHelpTooltip>` (icono `?` junto al título del campo/sección).
 - Tooltip content ≤ 240 caracteres. Si más, usar `<details>` collapsible.
+- **Cards de resumen (roles, configuración, métricas)**: preferir **chips de módulos** (Badge variant="default") sobre listas de capabilities en prosa. Resumir "qué módulos toca este rol" en una fila de `<Badge>` escaneable. Máximo una línea de `summary` debajo del label.
+- **Empty states verbosos**: máximo 4 palabras. `"Sin resultados"` > `"No hay elementos para el filtro seleccionado"`.
+- **Inline feedback verbose**: máximo 6 palabras. `"Modo consulta: solo lectura."` > `"Modo consulta: puede revisar pero no crear, editar, ni desactivar."`.
+- **ConfirmDialog messages**: pregunta directa + consecuencia esencial en 1 línea. Sin prosa sobre comportamiento interno del backend.
+- **Tab descriptions**: evitar descriptions debajo del label del tab — el icono + label bastan.
+- **Help texts en FormInput/FormSelect**: si el placeholder ya comunica la idea → omitir. Si aporta info real no inferible del label → pasar al `help` prop (que renderiza `<FieldHelpTooltip>` junto al label).
 - Componentes clave:
   - `<FieldHelpTooltip content={...} label={...}>` — basado en `FloatingTooltip` (`@floating-ui/react`), `size="rich"`, `placement="top-start"`.
   - `<FloatingTooltip>` para todos los tooltips.

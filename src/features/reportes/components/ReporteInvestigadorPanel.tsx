@@ -83,7 +83,6 @@ export const ReporteInvestigadorPanel: React.FC<ReporteInvestigadorPanelProps> =
       {investigadorReports.length > 1 && !investigadorReport && (
         <div className="data-card mt-4">
           <h3>{investigadorReports.length} investigadores listos para exportar</h3>
-          <p>Selecciona un investigador específico para ver su detalle.</p>
           <div className="form-actions flex gap-2">
             <button
               type="button"

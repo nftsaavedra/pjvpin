@@ -111,7 +111,7 @@ export const ReporteProyectoPanel: React.FC<ReporteProyectoPanelProps> = ({
               ))}
             </select>
           </div>
-          {generating && <p>Generando reporte...</p>}
+          {generating && <p>Generando...</p>}
         </div>
       </div>
 
@@ -285,7 +285,7 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
             Total financiamientos:{" "}
             <Badge variant="info">{report.resumen_financiero.total_financiamientos}</Badge>
           </p>
-          <p className="mt-2">Desglose por moneda:</p>
+          <p className="mt-2">Por moneda:</p>
           {report.resumen_financiero.desglose_por_moneda.length > 0 ? (
             <table className="table mt-1">
               <thead>
@@ -308,7 +308,7 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
           ) : (
             <p>-</p>
           )}
-          <p className="mt-2">Desglose por estado:</p>
+          <p className="mt-2">Por estado:</p>
           {report.resumen_financiero.desglose_por_estado.length > 0 ? (
             <table className="table mt-1">
               <thead>

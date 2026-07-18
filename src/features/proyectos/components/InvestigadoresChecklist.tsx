@@ -99,11 +99,7 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
   }
 
   if (investigadores.length === 0) {
-    return (
-      <div className="empty-state">
-        No hay investigadores registrados. Por favor, registre investigadores primero.
-      </div>
-    );
+    return <div className="empty-state">No hay investigadores registrados.</div>;
   }
 
   return (

@@ -85,7 +85,6 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
           <span>{editingGrupo ? "Editar grupo" : "Crear nuevo grupo"}</span>
         </span>
       }
-      description="Configure los detalles del grupo de investigación"
       onClose={onClose}
       onSubmit={(e) => {
         void handleSubmit(e);
