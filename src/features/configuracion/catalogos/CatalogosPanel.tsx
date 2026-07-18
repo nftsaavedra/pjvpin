@@ -1,12 +1,22 @@
-import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import { Banknote, CheckCircle, DollarSign, FileText, Layers, LibraryBig, Package, TrendingUp, type LucideIcon } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { SkeletonBlock, SkeletonTable } from '@/shared/ui/Skeleton';
-import { getAllCatalogosAdmin } from '../api';
-import type { CatalogoItem } from '@/shared/tauri/types';
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import {
+  Banknote,
+  CheckCircle,
+  Coins,
+  FileText,
+  Layers,
+  LibraryBig,
+  Package,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
+import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
+import { getAllCatalogosAdmin } from "../api";
+import type { CatalogoItem } from "@/shared/tauri/types";
 
 const CatalogosTab = lazy(async () => {
-  const module = await import('./CatalogosTab');
+  const module = await import("./CatalogosTab");
   return { default: module.CatalogosTab };
 });
 
@@ -25,34 +35,69 @@ interface CatalogoGrupo {
 
 const CATALOGO_GRUPOS: CatalogoGrupo[] = [
   {
-    categoria: 'Propiedad Intelectual',
+    categoria: "Propiedad Intelectual",
     icon: FileText,
     tipos: [
-      { tipo: 'tipo_patente', titulo: 'Tipos de Patente', icon: FileText, descripcion: 'Clasificación de patentes registradas en proyectos' },
-      { tipo: 'estado_patente', titulo: 'Estados de Patente', icon: CheckCircle, descripcion: 'Ciclo de vida de cada registro de propiedad intelectual' },
+      {
+        tipo: "tipo_patente",
+        titulo: "Tipos de Patente",
+        icon: FileText,
+        descripcion: "Clasificación de patentes registradas en proyectos",
+      },
+      {
+        tipo: "estado_patente",
+        titulo: "Estados de Patente",
+        icon: CheckCircle,
+        descripcion: "Ciclo de vida de cada registro de propiedad intelectual",
+      },
     ],
   },
   {
-    categoria: 'Productos I+D+i',
+    categoria: "Productos I+D+i",
     icon: Package,
     tipos: [
-      { tipo: 'tipo_producto', titulo: 'Tipos de Producto', icon: Package, descripcion: 'Clases de resultados de investigación y desarrollo' },
-      { tipo: 'etapa_producto', titulo: 'Etapas de Producto', icon: Layers, descripcion: 'Fases del ciclo de desarrollo de un producto' },
+      {
+        tipo: "tipo_producto",
+        titulo: "Tipos de Producto",
+        icon: Package,
+        descripcion: "Clases de resultados de investigación y desarrollo",
+      },
+      {
+        tipo: "etapa_producto",
+        titulo: "Etapas de Producto",
+        icon: Layers,
+        descripcion: "Fases del ciclo de desarrollo de un producto",
+      },
     ],
   },
   {
-    categoria: 'Financiamiento',
+    categoria: "Financiamiento",
     icon: Banknote,
     tipos: [
-      { tipo: 'tipo_financiamiento', titulo: 'Tipos de Financiamiento', icon: Banknote, descripcion: 'Origen y clasificación de los fondos de proyectos' },
-      { tipo: 'estado_financiero', titulo: 'Estados de Financiamiento', icon: TrendingUp, descripcion: 'Situación actual de cada fuente de financiamiento' },
+      {
+        tipo: "tipo_financiamiento",
+        titulo: "Tipos de Financiamiento",
+        icon: Banknote,
+        descripcion: "Origen y clasificación de los fondos de proyectos",
+      },
+      {
+        tipo: "estado_financiero",
+        titulo: "Estados de Financiamiento",
+        icon: TrendingUp,
+        descripcion: "Situación actual de cada fuente de financiamiento",
+      },
     ],
   },
   {
-    categoria: 'General',
-    icon: DollarSign,
+    categoria: "General",
+    icon: Coins,
     tipos: [
-      { tipo: 'moneda', titulo: 'Monedas', icon: DollarSign, descripcion: 'Divisas disponibles para costos y financiamientos' },
+      {
+        tipo: "moneda",
+        titulo: "Monedas",
+        icon: Coins,
+        descripcion: "Divisas disponibles para costos y financiamientos",
+      },
     ],
   },
 ];
@@ -72,13 +117,13 @@ const CatalogosSkeleton = () => (
 );
 
 interface CatalogosPanelProps {
-  currentUser: unknown;
+  canManage: boolean;
   onDataModified: () => void;
   refreshTrigger?: number;
 }
 
 export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
-  currentUser: _currentUser,
+  canManage,
   onDataModified,
   refreshTrigger = 0,
 }) => {
@@ -88,23 +133,38 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
   const [statsLoaded, setStatsLoaded] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchAll = async () => {
-      const allStats: Record<string, { activos: number; inactivos: number }> = {};
-      for (const entry of ALL_TIPOS) {
-        try {
+      const results = await Promise.allSettled(
+        ALL_TIPOS.map(async (entry) => {
           const items: CatalogoItem[] = await getAllCatalogosAdmin(entry.tipo);
-          allStats[entry.tipo] = {
-            activos: items.filter((i) => i.activo !== 0).length,
-            inactivos: items.filter((i) => i.activo === 0).length,
+          return {
+            tipo: entry.tipo,
+            stats: {
+              activos: items.filter((i) => i.activo !== 0).length,
+              inactivos: items.filter((i) => i.activo === 0).length,
+            },
           };
-        } catch {
-          allStats[entry.tipo] = { activos: 0, inactivos: 0 };
+        }),
+      );
+
+      if (cancelled) return;
+      const next: Record<string, { activos: number; inactivos: number }> = {};
+      for (const r of results) {
+        if (r.status === "fulfilled") {
+          next[r.value.tipo] = r.value.stats;
         }
       }
-      setStats(allStats);
+      for (const entry of ALL_TIPOS) {
+        if (!(entry.tipo in next)) next[entry.tipo] = { activos: 0, inactivos: 0 };
+      }
+      setStats(next);
       setStatsLoaded(true);
     };
     void fetchAll();
+    return () => {
+      cancelled = true;
+    };
   }, [refreshTrigger]);
 
   const tiposFiltrados = useMemo(() => {
@@ -117,7 +177,14 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
     if (!entry) return null;
     return (
       <div className="catalogos-detail-view">
-        <button type="button" className="catalogos-back-btn" onClick={() => { setActiveTipo(null); }} aria-label="Volver a catálogos">
+        <button
+          type="button"
+          className="catalogos-back-btn"
+          onClick={() => {
+            setActiveTipo(null);
+          }}
+          aria-label="Volver a catálogos"
+        >
           <AppIcon icon={LibraryBig} size={16} />
           <span>Ver todos los catálogos</span>
         </button>
@@ -125,7 +192,7 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
           <CatalogosTab
             tipo={entry.tipo}
             titulo={entry.titulo}
-            canManage
+            canManage={canManage}
             onModified={onDataModified}
             refreshTrigger={refreshTrigger}
           />
@@ -141,7 +208,10 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
           <AppIcon icon={LibraryBig} size={22} />
           <div>
             <h2>Catálogos del Sistema</h2>
-            <p className="catalogos-header-desc">Administre los valores de referencia para patentes, productos, financiamiento y otros parámetros configurables del sistema.</p>
+            <p className="catalogos-header-desc">
+              Administre los valores de referencia para patentes, productos, financiamiento y otros
+              parámetros configurables del sistema.
+            </p>
           </div>
         </div>
       </div>
@@ -149,8 +219,10 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
       <div className="catalogos-category-strip">
         <button
           type="button"
-          className={`catalogos-category-pill ${!categoriaActiva ? 'active' : ''}`}
-          onClick={() => { setCategoriaActiva(null); }}
+          className={`catalogos-category-pill ${!categoriaActiva ? "active" : ""}`}
+          onClick={() => {
+            setCategoriaActiva(null);
+          }}
         >
           Todos
         </button>
@@ -158,8 +230,10 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
           <button
             key={grupo.categoria}
             type="button"
-            className={`catalogos-category-pill ${categoriaActiva === grupo.categoria ? 'active' : ''}`}
-            onClick={() => { setCategoriaActiva(categoriaActiva === grupo.categoria ? null : grupo.categoria); }}
+            className={`catalogos-category-pill ${categoriaActiva === grupo.categoria ? "active" : ""}`}
+            onClick={() => {
+              setCategoriaActiva(categoriaActiva === grupo.categoria ? null : grupo.categoria);
+            }}
           >
             <AppIcon icon={grupo.icon} size={14} />
             <span>{grupo.categoria}</span>
@@ -178,7 +252,9 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
                 key={entry.tipo}
                 type="button"
                 className="catalogo-summary-card"
-                onClick={() => { setActiveTipo(entry.tipo); }}
+                onClick={() => {
+                  setActiveTipo(entry.tipo);
+                }}
                 aria-label={`Administrar ${entry.titulo}`}
               >
                 <div className="catalogo-summary-header">

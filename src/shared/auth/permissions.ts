@@ -12,6 +12,8 @@ export type AppPermission =
   | "reportes.export"
   | "configuracion.view"
   | "grados.manage"
+  | "catalogos.view"
+  | "catalogos.manage"
   | "usuarios.manage";
 
 interface RoleDefinition {
@@ -37,6 +39,8 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "reportes.export",
       "configuracion.view",
       "grados.manage",
+      "catalogos.view",
+      "catalogos.manage",
       "usuarios.manage",
     ],
     capabilities: [
@@ -60,6 +64,8 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "reportes.export",
       "configuracion.view",
       "grados.manage",
+      "catalogos.view",
+      "catalogos.manage",
       "usuarios.manage",
     ],
     capabilities: [
@@ -81,6 +87,7 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "grupos.manage",
       "reportes.view",
       "reportes.export",
+      "catalogos.view",
     ],
     capabilities: [
       "Gestiona investigadores, proyectos, grupos y sincronizaciones operativas.",

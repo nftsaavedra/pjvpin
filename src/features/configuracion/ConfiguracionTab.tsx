@@ -1,26 +1,26 @@
-import React, { lazy, Suspense, useMemo, useState } from 'react';
-import { GraduationCap, LibraryBig, Users } from 'lucide-react';
-import type { Usuario } from '../auth/api';
-import { hasPermission } from '@/shared/auth/permissions';
-import { AppIcon } from '@/shared/ui/AppIcon';
-import { SkeletonBlock, SkeletonTable } from '@/shared/ui/Skeleton';
+import React, { lazy, Suspense, useMemo, useState } from "react";
+import { GraduationCap, LibraryBig, Users } from "lucide-react";
+import type { Usuario } from "../auth/api";
+import { hasPermission } from "@/shared/auth/permissions";
+import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
+import { TabNavigation, type Tab } from "@/shared/navigation/TabNavigation";
 
 const GradosTab = lazy(async () => {
-  const module = await import('./grados/GradosTab');
+  const module = await import("./grados/GradosTab");
   return { default: module.GradosTab };
 });
 
 const CatalogosPanel = lazy(async () => {
-  const module = await import('./catalogos/CatalogosPanel');
+  const module = await import("./catalogos/CatalogosPanel");
   return { default: module.CatalogosPanel };
 });
 
 const UsuariosTab = lazy(async () => {
-  const module = await import('./usuarios/UsuariosTab');
+  const module = await import("./usuarios/UsuariosTab");
   return { default: module.UsuariosTab };
 });
 
-type ConfigSection = 'grados' | 'catalogos' | 'usuarios';
+type ConfigSection = "grados" | "catalogos" | "usuarios";
 
 interface ConfiguracionTabProps {
   currentUser: Usuario | null;
@@ -44,73 +44,76 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
   isAdmin,
   onDataModified,
 }) => {
-  const [activeSection, setActiveSection] = useState<ConfigSection>(isAdmin ? 'usuarios' : 'grados');
-  const panelId = `config-panel-${activeSection}`;
-  const canManageCatalogos = hasPermission(currentUser?.rol, 'grados.manage');
-  const effectiveSection = useMemo(() => {
-    if (!isAdmin && activeSection === 'usuarios') return 'grados';
-    if (!canManageCatalogos && activeSection === 'catalogos') return 'grados';
-    return activeSection;
-  }, [activeSection, canManageCatalogos, isAdmin]);
+  const canManageCatalogos = hasPermission(currentUser?.rol, "catalogos.manage");
+  const canViewCatalogos = canManageCatalogos;
 
-  const sections = [
+  const [activeSection, setActiveSection] = useState<ConfigSection>(
+    isAdmin ? "usuarios" : "grados",
+  );
+
+  const effectiveSection = useMemo<ConfigSection>(() => {
+    if (!isAdmin && activeSection === "usuarios") return "grados";
+    if (!canViewCatalogos && activeSection === "catalogos") return "grados";
+    return activeSection;
+  }, [activeSection, canViewCatalogos, isAdmin]);
+
+  const sections: Tab[] = [
     {
-      id: 'grados' as const,
-      label: 'Grados',
+      id: "grados",
+      label: "Grados",
       icon: GraduationCap,
-      description: 'Catálogo académico base para el sistema.',
+      description: "Catálogo académico base para el sistema.",
     },
-    ...(canManageCatalogos
+    ...(canViewCatalogos
       ? [
           {
-            id: 'catalogos' as const,
-            label: 'Catálogos',
+            id: "catalogos",
+            label: "Catálogos",
             icon: LibraryBig,
-            description: 'Tipos de patentes, productos, financiamiento y monedas.',
+            description: "Tipos de patentes, productos, financiamiento y monedas.",
           },
         ]
       : []),
     ...(isAdmin
       ? [
           {
-            id: 'usuarios' as const,
-            label: 'Usuarios',
+            id: "usuarios",
+            label: "Usuarios",
             icon: Users,
-            description: 'Altas, bajas y permisos de acceso al sistema.',
+            description: "Altas, bajas y permisos de acceso al sistema.",
           },
         ]
       : []),
   ];
 
+  const visibleSections = sections.filter((section) =>
+    section.id === "usuarios" ? isAdmin : section.id === "catalogos" ? canViewCatalogos : true,
+  );
+
+  const handleSectionChange = (sectionId: string) => {
+    if (sectionId === "grados" || sectionId === "catalogos" || sectionId === "usuarios") {
+      setActiveSection(sectionId);
+    }
+  };
+
+  const panelId = `config-panel-${effectiveSection}`;
+
   return (
     <div className="tab-panel">
       <div className="settings-shell">
-        <div className="settings-layout">
-          <div className="settings-nav-panel">
-            <div className="settings-nav" role="tablist" aria-label="Secciones de configuración">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={effectiveSection === section.id}
-                  aria-controls={`config-panel-${section.id}`}
-                  id={`config-tab-${section.id}`}
-                  className={`settings-nav-button ${effectiveSection === section.id ? 'active' : ''}`}
-                  onClick={() => { setActiveSection(section.id); }}
-                >
-                  <span className="settings-nav-icon">
-                    <AppIcon icon={section.icon} size={18} />
-                  </span>
-                  <span className="settings-nav-copy">
-                    <strong>{section.label}</strong>
-                    <small>{section.description}</small>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+        <TabNavigation
+          tabs={visibleSections}
+          activeTab={effectiveSection}
+          onTabChange={handleSectionChange}
+          variant="settings"
+          ariaLabel="Secciones de configuración"
+        />
 
+        {visibleSections.length === 0 ? (
+          <div className="empty-state">
+            <p>No tiene permisos para acceder a ninguna sección de configuración.</p>
+          </div>
+        ) : (
           <div
             id={panelId}
             role="tabpanel"
@@ -118,20 +121,28 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
             className="settings-content settings-content-panel"
           >
             <Suspense fallback={<ConfigSectionFallback />}>
-              {effectiveSection === 'grados' && (
-                currentUser ? <GradosTab onGradoModified={onDataModified} refreshTrigger={refreshTrigger} /> : null
+              {effectiveSection === "grados" && (
+                <GradosTab onGradoModified={onDataModified} refreshTrigger={refreshTrigger} />
               )}
 
-              {effectiveSection === 'catalogos' && canManageCatalogos && (
-                <CatalogosPanel currentUser={currentUser} onDataModified={onDataModified} refreshTrigger={refreshTrigger} />
+              {effectiveSection === "catalogos" && canViewCatalogos && currentUser && (
+                <CatalogosPanel
+                  canManage={canManageCatalogos}
+                  onDataModified={onDataModified}
+                  refreshTrigger={refreshTrigger}
+                />
               )}
 
-              {effectiveSection === 'usuarios' && isAdmin && (
-                currentUser ? <UsuariosTab currentUser={currentUser} onUsuarioModified={onDataModified} refreshTrigger={refreshTrigger} /> : null
+              {effectiveSection === "usuarios" && isAdmin && currentUser && (
+                <UsuariosTab
+                  currentUser={currentUser}
+                  onUsuarioModified={onDataModified}
+                  refreshTrigger={refreshTrigger}
+                />
               )}
             </Suspense>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

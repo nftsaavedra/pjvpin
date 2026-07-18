@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { BookPlus, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { useFetchGrados } from "./hooks/useFetchGrados";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
@@ -125,8 +125,11 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
     }
   };
 
-  const totalActivos = grados.filter((grado) => grado.activo !== 0).length;
-  const totalInactivos = grados.filter((grado) => grado.activo === 0).length;
+  const totalActivos = useMemo(() => grados.filter((grado) => grado.activo !== 0).length, [grados]);
+  const totalInactivos = useMemo(
+    () => grados.filter((grado) => grado.activo === 0).length,
+    [grados],
+  );
 
   const gradosFiltrados = grados
     .filter((grado) => {
@@ -200,9 +203,9 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
           <table className="table" aria-label="Tabla de grados académicos registrados">
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Acciones</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -257,7 +260,6 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             <span>{editingGrado ? "Editar Grado Académico" : "Crear Grado Académico"}</span>
           </span>
         }
-        description="Complete la información base del catálogo académico y guarde los cambios para refrescar la lista visible."
         onClose={handleCloseForm}
         onSubmit={(e) => {
           void handleSubmit(e);
@@ -270,22 +272,24 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
         }
         isLoading={isLoading}
       >
-        <FormInput
-          label="Nombre del Grado"
-          value={nombre}
-          onChange={setNombre}
-          placeholder="Ej: Licenciado"
-          help="Use la denominación académica principal con la que se clasificará a los investigadores dentro del sistema."
-          required
-        />
+        <div className="p-6">
+          <FormInput
+            label="Nombre del Grado"
+            value={nombre}
+            onChange={setNombre}
+            placeholder="Ej: Licenciado"
+            help="Use la denominación académica principal con la que se clasificará a los investigadores dentro del sistema."
+            required
+          />
 
-        <FormInput
-          label="Descripción"
-          value={descripcion}
-          onChange={setDescripcion}
-          placeholder="Ej: Licenciatura en Ciencias"
-          help="Agregue contexto opcional para diferenciar este grado de otros similares o precisar su alcance."
-        />
+          <FormInput
+            label="Descripción"
+            value={descripcion}
+            onChange={setDescripcion}
+            placeholder="Ej: Licenciatura en Ciencias"
+            help="Agregue contexto opcional para diferenciar este grado de otros similares o precisar su alcance."
+          />
+        </div>
       </FormModal>
 
       <ConfirmDialog

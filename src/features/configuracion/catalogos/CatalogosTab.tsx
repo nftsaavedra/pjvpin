@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { BookPlus, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { useFetchCatalogos } from "./hooks/useFetchCatalogos";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
@@ -160,8 +160,14 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
     }
   };
 
-  const totalActivos = catalogos.filter((item) => item.activo !== 0).length;
-  const totalInactivos = catalogos.filter((item) => item.activo === 0).length;
+  const totalActivos = useMemo(
+    () => catalogos.filter((item) => item.activo !== 0).length,
+    [catalogos],
+  );
+  const totalInactivos = useMemo(
+    () => catalogos.filter((item) => item.activo === 0).length,
+    [catalogos],
+  );
 
   const catalogosFiltrados = catalogos
     .filter((item) => {
@@ -238,10 +244,10 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
           <table className="table" aria-label={`Tabla de ${titulo}`}>
             <thead>
               <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                {canManage && <th>Acciones</th>}
+                <th scope="col">Código</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Descripción</th>
+                {canManage && <th scope="col">Acciones</th>}
               </tr>
             </thead>
             <tbody>
@@ -302,7 +308,6 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
               </span>
             </span>
           }
-          description="Complete la información del elemento de catálogo y guarde los cambios para refrescar la lista visible."
           onClose={handleCloseForm}
           onSubmit={(e) => {
             void handleSubmit(e);
@@ -315,39 +320,41 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
           }
           isLoading={isLoading}
         >
-          <FormInput
-            label="Código"
-            value={codigo}
-            onChange={setCodigo}
-            placeholder="Ej: PAT_01"
-            help="Use un código corto y descriptivo para identificar este elemento en los formularios del sistema."
-            required
-          />
+          <div className="p-6">
+            <FormInput
+              label="Código"
+              value={codigo}
+              onChange={setCodigo}
+              placeholder="Ej: PAT_01"
+              help="Use un código corto y descriptivo para identificar este elemento en los formularios del sistema."
+              required
+            />
 
-          <FormInput
-            label="Nombre"
-            value={nombre}
-            onChange={setNombre}
-            placeholder="Ej: Patente de invención"
-            help="Denominación visible del elemento que aparecerá en las listas de selección del sistema."
-            required
-          />
+            <FormInput
+              label="Nombre"
+              value={nombre}
+              onChange={setNombre}
+              placeholder="Ej: Patente de invención"
+              help="Denominación visible del elemento que aparecerá en las listas de selección del sistema."
+              required
+            />
 
-          <FormInput
-            label="Descripción"
-            value={descripcion}
-            onChange={setDescripcion}
-            placeholder="Descripción opcional del elemento"
-            help="Agregue contexto adicional para diferenciar este elemento de otros similares en el catálogo."
-          />
+            <FormInput
+              label="Descripción"
+              value={descripcion}
+              onChange={setDescripcion}
+              placeholder="Descripción opcional del elemento"
+              help="Agregue contexto adicional para diferenciar este elemento de otros similares en el catálogo."
+            />
 
-          <FormInput
-            label="Orden"
-            value={orden}
-            onChange={setOrden}
-            placeholder="Ej: 1"
-            help="Número opcional para controlar el orden de aparición en las listas. Valores menores aparecen primero."
-          />
+            <FormInput
+              label="Orden"
+              value={orden}
+              onChange={setOrden}
+              placeholder="Ej: 1"
+              help="Número opcional para controlar el orden de aparición en las listas. Valores menores aparecen primero."
+            />
+          </div>
         </FormModal>
       )}
 

@@ -145,12 +145,12 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
           <table className="table" aria-label="Tabla de usuarios registrados">
             <thead>
               <tr>
-                <th>Usuario</th>
-                <th>DNI</th>
-                <th>Nombre</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">DNI</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Rol</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -215,11 +215,6 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
             <span>{editingUsuario ? "Editar Usuario" : "Crear Usuario"}</span>
           </span>
         }
-        description={
-          isEditing
-            ? "Modifique username, rol y opcionalmente contraseña. La identidad (DNI/nombres) se gestiona desde la Persona vinculada."
-            : "Ingrese el DNI para autocompletar nombres desde RENIEC. La identidad se vincula a una Persona del sistema."
-        }
         onClose={handleCloseForm}
         onSubmit={(e) => {
           void handleSubmit(e);
@@ -232,101 +227,103 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
         }
         isLoading={isLoading}
       >
-        {!isEditing && (
-          <DniField
-            dni={dni.dni}
-            onDniChange={dni.setDni}
-            onValidate={() => {
-              void dni.handleValidar();
-            }}
-            isChecking={dni.isChecking}
-            canValidate={dni.puedeValidar}
-            validationStatus={dni.status}
-            validationMessage={dni.message}
-            isLoading={isLoading}
-            inputId="usuarios-tab-dni"
-            helpText="Valide el DNI contra RENIEC para autocompletar nombres y apellidos del nuevo usuario."
+        <div className="p-6">
+          {!isEditing && (
+            <DniField
+              dni={dni.dni}
+              onDniChange={dni.setDni}
+              onValidate={() => {
+                void dni.handleValidar();
+              }}
+              isChecking={dni.isChecking}
+              canValidate={dni.puedeValidar}
+              validationStatus={dni.status}
+              validationMessage={dni.message}
+              isLoading={isLoading}
+              inputId="usuarios-tab-dni"
+              helpText="Valide el DNI contra RENIEC para autocompletar nombres y apellidos del nuevo usuario."
+            />
+          )}
+
+          {!isEditing && dni.isValidated && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormInput
+                label="Nombres"
+                value={dni.nombres}
+                onChange={dni.setNombres}
+                placeholder=""
+                required
+                readOnly
+                disabled
+              />
+              <FormInput
+                label="Apellido paterno"
+                value={dni.apellidoPaterno}
+                onChange={dni.setApellidoPaterno}
+                placeholder=""
+                required
+                readOnly
+                disabled
+              />
+              <FormInput
+                label="Apellido materno"
+                value={dni.apellidoMaterno}
+                onChange={dni.setApellidoMaterno}
+                placeholder=""
+                readOnly
+                disabled
+              />
+            </div>
+          )}
+
+          {isEditing && dni.dni && (
+            <div className="inline-feedback inline-feedback-info">
+              Identidad vinculada al DNI <strong>{dni.dni}</strong>. La edición de identidad se
+              gestiona desde la ficha de Persona correspondiente.
+            </div>
+          )}
+
+          <FormInput
+            label="Usuario"
+            value={username}
+            onChange={setUsername}
+            placeholder="Ej: jlopez"
+            help="Use un identificador corto, sin espacios, para facilitar el acceso y la búsqueda interna del usuario."
+            required
           />
-        )}
-
-        {!isEditing && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormInput
-              label="Nombres"
-              value={dni.nombres}
-              onChange={dni.setNombres}
-              placeholder={dni.isValidated ? "" : "Valide el DNI para autocompletar"}
-              required
-              readOnly={dni.isValidated}
-              disabled={!dni.isValidated}
-            />
-            <FormInput
-              label="Apellido paterno"
-              value={dni.apellidoPaterno}
-              onChange={dni.setApellidoPaterno}
-              placeholder={dni.isValidated ? "" : "Valide el DNI para autocompletar"}
-              required
-              readOnly={dni.isValidated}
-              disabled={!dni.isValidated}
-            />
-            <FormInput
-              label="Apellido materno"
-              value={dni.apellidoMaterno}
-              onChange={dni.setApellidoMaterno}
-              placeholder={dni.isValidated ? "" : "Valide el DNI para autocompletar"}
-              readOnly={dni.isValidated}
-              disabled={!dni.isValidated}
-            />
-          </div>
-        )}
-
-        {isEditing && dni.dni && (
-          <div className="inline-feedback inline-feedback-info">
-            Identidad vinculada al DNI <strong>{dni.dni}</strong>. La edicion de identidad se
-            gestiona desde la ficha de Persona correspondiente.
-          </div>
-        )}
-
-        <FormInput
-          label="Usuario"
-          value={username}
-          onChange={setUsername}
-          placeholder="Ej: jlopez"
-          help="Use un identificador corto, sin espacios, para facilitar el acceso y la búsqueda interna del usuario."
-          required
-        />
-        <FormSelect
-          label="Rol"
-          value={rol}
-          onChange={setRol}
-          options={roles}
-          help={
-            isEditingOwnUser
-              ? "No puede cambiar su propio rol. Otro administrador debe realizar esa operación para preservar el control de accesos."
-              : "El rol define los permisos disponibles dentro del sistema. Asigne el mínimo acceso necesario según la función del usuario."
-          }
-          disabled={isEditingOwnUser}
-          required
-        />
-        {isEditingOwnUser && (
-          <div className="inline-feedback inline-feedback-info">
-            <span>
-              Puede actualizar su nombre o contraseña, pero no cambiar su propio rol ni su estado.
-            </span>
-          </div>
-        )}
-        <FormInput
-          label={editingUsuario ? "Nueva contraseña (opcional)" : "Contraseña"}
-          value={password}
-          onChange={setPassword}
-          placeholder={editingUsuario ? "Dejar vacío para conservarla" : "Mínimo 8 caracteres"}
-          help={
-            editingUsuario
-              ? "Complete este campo solo si necesita reemplazar la contraseña actual. Si lo deja vacío, se conservará la existente."
-              : "Defina una contraseña de al menos 8 caracteres. Evite claves obvias o reutilizadas."
-          }
-          required={!editingUsuario}
-        />
+          <FormSelect
+            label="Rol"
+            value={rol}
+            onChange={setRol}
+            options={roles}
+            help={
+              isEditingOwnUser
+                ? "No puede cambiar su propio rol. Otro administrador debe realizar esa operación para preservar el control de accesos."
+                : "El rol define los permisos disponibles dentro el sistema. Asigne el mínimo acceso necesario según la función del usuario."
+            }
+            disabled={isEditingOwnUser}
+            required
+          />
+          {isEditingOwnUser && (
+            <div className="inline-feedback inline-feedback-info">
+              <span>
+                Puede actualizar su nombre o contraseña, pero no cambiar su propio rol ni su estado.
+              </span>
+            </div>
+          )}
+          <FormInput
+            label={editingUsuario ? "Nueva contraseña (opcional)" : "Contraseña"}
+            value={password}
+            onChange={setPassword}
+            placeholder={editingUsuario ? "Dejar vacío para conservarla" : "Mínimo 8 caracteres"}
+            help={
+              editingUsuario
+                ? "Complete este campo solo si necesita reemplazar la contraseña actual. Si lo deja vacío, se conservará la existente."
+                : "Defina una contraseña de al menos 8 caracteres. Evite claves obvias o reutilizadas."
+            }
+            required={!editingUsuario}
+          />
+        </div>
       </FormModal>
 
       <ConfirmDialog
