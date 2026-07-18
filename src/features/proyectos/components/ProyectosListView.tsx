@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import type { ProyectoDetalle } from "../api";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { messages } from "@/shared/feedback/messages";
 import { ProyectosTableGrid } from "./ProyectosTableGrid";
 import { ProyectosToolbar } from "./ProyectosToolbar";
 import type { useProyectosListado } from "../hooks/useProyectosListado";
@@ -56,7 +57,7 @@ export const ProyectosListView: React.FC<ProyectosListViewProps> = ({
         </div>
         {proyectosError && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>No se pudo refrescar la lista. Se conservan los datos visibles.</span>
+            <span>{messages.ui.sinDatos}</span>
           </div>
         )}
         {!canManage && (

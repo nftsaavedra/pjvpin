@@ -12,6 +12,7 @@ import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { getRoleDefinition, getRoleLabel, getRoleOptions } from "@/shared/auth/permissions";
+import { messages } from "@/shared/feedback/messages";
 import { RoleMatrixCard } from "./components/RoleMatrixCard";
 import type { Usuario } from "../../auth/api";
 
@@ -94,7 +95,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>Error al refrescar: mostrando datos previos.</span>
+            <span>{messages.ui.sinDatos}</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
               Reintentar
             </button>

@@ -5,6 +5,7 @@ import { InvestigadoresTableGrid } from "./InvestigadoresTableGrid";
 import { InvestigadoresTableToolbar } from "./InvestigadoresTableToolbar";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadoresListViewProps {
   canManage: boolean;
@@ -86,7 +87,7 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>No se pudo refrescar la lista. Se muestran los datos ya cargados.</span>
+            <span>{messages.ui.sinDatos}</span>
             <button
               type="button"
               className="btn-secondary"

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { getTauriErrorMessage } from '@/shared/tauri/error';
+import { useEffect, useRef, useState } from "react";
+import { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export interface StableFetchState<T> {
   data: T;
@@ -9,7 +9,7 @@ export interface StableFetchState<T> {
   recargar: () => Promise<void>;
 }
 
-export const useStableFetch = <T,>(
+export const useStableFetch = <T>(
   fetcher: () => Promise<T>,
   refreshTrigger: number,
   errorLabel: string,
@@ -22,6 +22,7 @@ export const useStableFetch = <T,>(
   const hasLoadedRef = useRef(false);
   const fetcherRef = useRef(fetcher);
   const errorLabelRef = useRef(errorLabel);
+  const initialDataRef = useRef(initialData);
 
   useEffect(() => {
     fetcherRef.current = fetcher;
@@ -44,6 +45,7 @@ export const useStableFetch = <T,>(
       hasLoadedRef.current = true;
     } catch (err) {
       const message = getTauriErrorMessage(err);
+      setData(initialDataRef.current);
       setError(message);
       console.error(`${errorLabelRef.current}:`, err);
     } finally {

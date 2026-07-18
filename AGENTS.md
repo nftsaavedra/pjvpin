@@ -357,9 +357,24 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 - **ConfirmDialog messages**: pregunta directa + consecuencia esencial en 1 línea. Sin prosa sobre comportamiento interno del backend.
 - **Tab descriptions**: evitar descriptions debajo del label del tab — el icono + label bastan.
 - **Help texts en FormInput/FormSelect**: si el placeholder ya comunica la idea → omitir. Si aporta info real no inferible del label → pasar al `help` prop (que renderiza `<FieldHelpTooltip>` junto al label).
+- **Banner de error de refresco / carga**: en fallo de fetch, `useStableFetch` **resetea** `data` a su valor inicial. Los mensajes inline NO deben afirmar "datos previos / anteriores / conservados / actuales" — el estado post-error es data vacía + `error` seteado. Forma canónica: `messages.ui.sinDatos` + botón **Reintentar**.
 - Componentes clave:
   - `<FieldHelpTooltip content={...} label={...}>` — basado en `FloatingTooltip` (`@floating-ui/react`), `size="rich"`, `placement="top-start"`.
   - `<FloatingTooltip>` para todos los tooltips.
+
+### Mensajes centralizados
+
+- TODO string user-facing (toast, inline-feedback, ConfirmDialog, empty-state) **DEBE** importarse de `@/shared/feedback/messages`. Literales inline prohibidos en `*.tsx`.
+- Excepciones mínimas: títulos presentacionales del DOM (ej. `<h2>Catálogos</h2>`, labels de inputs que se repiten en el plan de captura).
+- Estructura del catálogo:
+  - `messages/ui.ts` — mensajes genéricos compartidos (`sinDatos`, `sinResultados`, `reintentar`, `cancelar`, `confirmar`, `guardar`, `error`, `errorInesperado`, `modoConsulta`, `cargando`).
+  - `messages/<feature>.ts` — un archivo por feature (`catalogos`, `grados`, `usuarios`, `investigadores`, `proyectos`, `grupos`, `reportes`, `dashboard`, `auth`).
+- Convenciones:
+  - Strings sin interpolación: const simple o agrupado en objeto `as const`.
+  - Strings con interpolación: builder puro: `export const eliminar = (nombre: string) => \`¿Eliminar "${nombre}"?\``
+  - Para errores con detalle del backend: `${ui.error}: ${getTauriErrorMessage(err)}` — único patrón permitido de concatenación.
+  - Exportar tipo `MessageKey = keyof typeof messages.<feature>` para autocompletado en consumers.
+- **Cero duplicación**: un mismo concepto tiene un único ID. Ajustes de tono/terminología se hacen en un único lugar.
 
 ### Padding de forms en cards
 

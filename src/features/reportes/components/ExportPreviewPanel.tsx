@@ -6,6 +6,7 @@ import { Badge } from "@/shared/ui/Badge";
 import { DataTable, type ColumnDef } from "@/shared/ui/DataTable";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
 import { normalizeText } from "@/shared/utils/text";
+import { messages } from "@/shared/feedback/messages";
 
 const normalizeSearch = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
 
@@ -129,7 +130,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>No se pudo refrescar la vista previa. Se mantienen los datos actuales.</span>
+            <span>{messages.ui.sinDatos}</span>
             <button type="button" className="btn-secondary" onClick={onRetry}>
               Reintentar
             </button>

@@ -98,15 +98,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
 
   return (
     <div className="tab-panel dashboard">
-      {error && !loading && (
-        <div className="inline-feedback inline-feedback-warning">
-          <span>Error al refrescar. Datos anteriores visibles.</span>
-          <button type="button" className="btn-secondary" onClick={() => void cargarDatos()}>
-            Reintentar
-          </button>
-        </div>
-      )}
-
       {loading ? (
         <>
           <SkeletonKpiGrid />

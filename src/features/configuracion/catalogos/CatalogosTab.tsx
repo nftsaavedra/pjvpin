@@ -3,6 +3,7 @@ import { BookPlus, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { useFetchCatalogos } from "./hooks/useFetchCatalogos";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
@@ -203,7 +204,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>Error al refrescar: mostrando datos previos.</span>
+            <span>{messages.ui.sinDatos}</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
               Reintentar
             </button>
