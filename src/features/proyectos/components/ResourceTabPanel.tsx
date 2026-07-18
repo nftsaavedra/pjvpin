@@ -61,7 +61,9 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
             key={tab.id}
             type="button"
             className={`screen-tab-button ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => { setActiveTab(tab.id); }}
+            onClick={() => {
+              setActiveTab(tab.id);
+            }}
           >
             <AppIcon icon={tab.icon} size={16} />
             <span>{tab.label}</span>
@@ -89,10 +91,19 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
               required: true,
             },
             {
+              name: "tipo",
+              label: "Tipo de Patente",
+              type: "select",
+              options: catalogos.tipoPatente,
+              placeholder: "-- Seleccionar tipo --",
+              required: false,
+            },
+            {
               name: "estado",
               label: "Estado",
               type: "select",
               options: catalogos.estadoPatente,
+              placeholder: "-- Seleccionar estado --",
               required: false,
             },
           ]}
@@ -121,10 +132,19 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
               required: false,
             },
             {
+              name: "tipo",
+              label: "Tipo de Producto",
+              type: "select",
+              options: catalogos.tipoProducto,
+              placeholder: "-- Seleccionar tipo --",
+              required: false,
+            },
+            {
               name: "etapa",
               label: "Etapa de Desarrollo",
               type: "select",
               options: catalogos.etapaProducto,
+              placeholder: "-- Seleccionar etapa --",
               required: false,
             },
           ]}
@@ -154,9 +174,17 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
             },
             {
               name: "costo",
-              label: "Costo Estimado (S/)",
+              label: "Costo Estimado",
               type: "number",
               placeholder: "0.00",
+              required: false,
+            },
+            {
+              name: "moneda",
+              label: "Moneda",
+              type: "select",
+              options: catalogos.monedas,
+              placeholder: "-- Seleccionar moneda --",
               required: false,
             },
           ]}
@@ -176,13 +204,22 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
               label: "Tipo de Financiamiento",
               type: "select",
               options: catalogos.tipoFinanciamiento,
+              placeholder: "-- Seleccionar fuente --",
               required: true,
             },
             {
               name: "monto",
-              label: "Monto (S/)",
+              label: "Monto",
               type: "number",
               placeholder: "0.00",
+              required: false,
+            },
+            {
+              name: "moneda",
+              label: "Moneda",
+              type: "select",
+              options: catalogos.monedas,
+              placeholder: "-- Seleccionar moneda --",
               required: false,
             },
             {
@@ -190,6 +227,7 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
               label: "Estado",
               type: "select",
               options: catalogos.estadoFinanciero,
+              placeholder: "-- Seleccionar estado --",
               required: false,
             },
           ]}
