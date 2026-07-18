@@ -3,6 +3,7 @@ import { Shield } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { messages } from "@/shared/feedback/messages";
+import { inputClassName } from "@/shared/forms/inputClassName";
 import type { WizardState } from "../useWizardState";
 
 interface Props {
@@ -60,7 +61,7 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
             <input
               id={passId}
               type="password"
-              className="form-input"
+              className={inputClassName}
               value={password}
               onChange={(e) => {
                 update("masterPassword", e.target.value);
@@ -76,7 +77,7 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
             <input
               id={confirmId}
               type="password"
-              className="form-input"
+              className={inputClassName}
               value={confirmPassword}
               onChange={(e) => {
                 update("confirmPassword", e.target.value);

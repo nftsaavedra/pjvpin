@@ -1,5 +1,5 @@
 @layer components {
-  .form-card { @apply bg-white rounded-xl p-8 shadow-md border border-gray-200 mb-8; }
+  .form-card { @apply bg-white text-gray-800 rounded-xl p-8 shadow-md border border-gray-200 mb-8; }
   .form-card h2 { @apply mb-6 text-2xl text-gray-800 border-b-2 border-blue-100 pb-4; }
   .form-card-title { @apply mb-6 text-2xl text-gray-800 border-b-2 border-blue-100 pb-4 flex items-center gap-2; }
   .form { @apply flex flex-col gap-5; }
@@ -21,8 +21,6 @@
   .field-help-trigger { @apply w-6 h-6 p-0 border border-blue-300/20 rounded-full bg-blue-100/70 text-blue-700 inline-flex items-center justify-center cursor-help transition-all duration-300; }
   .field-help-trigger:hover { @apply bg-blue-200 text-blue-800 border-blue-300/30; }
   .field-help-trigger:focus-visible { @apply ring-4 ring-blue-300/20; }
-  .form-input, select { @apply px-4 py-2.5 border border-gray-200 rounded-lg text-sm transition-all duration-300 bg-white font-sans min-h-[40px]; }
-  .form-input:focus-visible, select:focus-visible { @apply outline-none border-blue-400 ring-2 ring-blue-200/50; }
   .investigador-form-modal { @apply max-h-[94vh]; }
   .investigador-form-modal-body { @apply gap-3; }
   .investigador-form-layout { @apply flex flex-col gap-3 min-h-0; }

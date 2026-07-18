@@ -8,6 +8,7 @@ import { formatBool, formatTimestamp, formatArray } from "./pdfFormatters";
 import { useReporteProyecto } from "../hooks/useReporteProyecto";
 import { useExport } from "../hooks/useExport";
 import { messages } from "@/shared/feedback/messages";
+import { inputClassName } from "@/shared/forms/inputClassName";
 import type { ReporteProyectoIntegral } from "../api";
 import type {
   MiembroProyectoReporte,
@@ -219,7 +220,7 @@ export const ReporteProyectoPanel: React.FC<ReporteProyectoPanelProps> = ({
           <div className="form-group">
             <label>{messages.reportes.seleccionarProyectoLabel}</label>
             <select
-              className="form-input"
+              className={inputClassName}
               onChange={(e) => void generate(e.target.value)}
               disabled={proyectosLoading}
               aria-label={messages.reportes.seleccionarProyectoAriaLabel}

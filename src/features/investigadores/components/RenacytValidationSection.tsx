@@ -4,6 +4,7 @@ import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
+import { inputClassName } from "@/shared/forms/inputClassName";
 
 const formatDate = (value?: number | null) => {
   if (!value) return "No disponible";
@@ -95,7 +96,7 @@ export const RenacytValidationSection: React.FC<RenacytValidationSectionProps> =
               onRenacytChange(event.target.value);
             }}
             placeholder="Ej: P0013866 o 13866 (opcional)"
-            className="form-input"
+            className={inputClassName}
             autoComplete="off"
             disabled={isLoading || isChecking || !dniFueValidado}
           />

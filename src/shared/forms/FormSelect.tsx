@@ -1,5 +1,6 @@
 import React, { useId } from "react";
 import { FieldHelpTooltip } from "./FieldHelpTooltip";
+import { inputClassName } from "./inputClassName";
 
 interface FormSelectProps {
   label: string;
@@ -43,7 +44,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
           onChange(e.target.value);
         }}
         required={required}
-        className="form-input"
+        className={inputClassName}
         aria-describedby={helpId}
         disabled={disabled}
       >

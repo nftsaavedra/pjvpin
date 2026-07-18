@@ -5,6 +5,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
+import { inputClassName } from "@/shared/forms/inputClassName";
 
 interface AuthScreenProps {
   onAuthenticated: (usuario: Usuario) => void;
@@ -63,7 +64,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
               <label htmlFor={usernameId}>Usuario</label>
               <input
                 id={usernameId}
-                className="form-input"
+                className={inputClassName}
                 value={username}
                 onChange={(e) => {
                   setUsername(e.target.value);
@@ -79,7 +80,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
               <input
                 id={passwordId}
                 type="password"
-                className="form-input"
+                className={inputClassName}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);

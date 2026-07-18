@@ -2,6 +2,7 @@ import React from "react";
 import { Search } from "lucide-react";
 import { FieldHelpTooltip } from "./FieldHelpTooltip";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { inputClassName } from "./inputClassName";
 
 export type DniValidationStatus = "idle" | "checking" | "duplicate" | "validated" | "error";
 
@@ -48,7 +49,7 @@ export const DniField: React.FC<DniFieldProps> = ({
         placeholder="Ej: 45678912"
         maxLength={8}
         required
-        className="form-input"
+        className={inputClassName}
         inputMode="numeric"
         autoComplete="off"
         disabled={isLoading || isChecking}

@@ -5,6 +5,7 @@ import SingleInvestigadorReport from "./SingleInvestigadorReport";
 import { useReporteInvestigador } from "../hooks/useReporteInvestigador";
 import { useExport } from "../hooks/useExport";
 import { messages } from "@/shared/feedback/messages";
+import { inputClassName } from "@/shared/forms/inputClassName";
 import type { Investigador } from "@/shared/tauri/types";
 
 interface ReporteInvestigadorPanelProps {
@@ -33,7 +34,7 @@ export const ReporteInvestigadorPanel: React.FC<ReporteInvestigadorPanelProps> =
           <div className="form-group">
             <label>{messages.reportes.seleccionarInvestigadorLabel}</label>
             <select
-              className="form-input"
+              className={inputClassName}
               onChange={(e) => void generate(e.target.value)}
               disabled={investigadoresLoading}
               aria-label={messages.reportes.seleccionarInvestigadorAriaLabel}

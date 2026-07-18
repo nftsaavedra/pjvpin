@@ -1,6 +1,6 @@
 @layer components {
   .kpis-grid, .kpi-grid { @apply grid gap-6 mb-8; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-  .kpi-card { @apply bg-white rounded-xl p-6 flex items-center gap-6 shadow-md border border-gray-200 transition-all duration-300; }
+  .kpi-card { @apply bg-white text-gray-800 rounded-xl p-6 flex items-center gap-6 shadow-md border border-gray-200 transition-all duration-300; }
   .kpi-card:hover { @apply -translate-y-1 shadow-lg border-blue-500; }
   .kpi-icon { @apply w-16 flex-shrink-0 inline-flex items-center justify-center text-blue-500; }
   .kpi-content { @apply flex-1; }

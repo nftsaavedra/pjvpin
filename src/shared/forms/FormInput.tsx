@@ -1,5 +1,6 @@
 import React, { useId } from "react";
 import { FieldHelpTooltip } from "./FieldHelpTooltip";
+import { inputClassName } from "./inputClassName";
 
 interface FormInputProps {
   label: string;
@@ -52,7 +53,7 @@ export const FormInput: React.FC<FormInputProps> = ({
         placeholder={placeholder}
         maxLength={maxLength}
         required={required}
-        className="form-input"
+        className={inputClassName}
         aria-describedby={helpId}
         readOnly={readOnly}
         disabled={disabled}

@@ -8,6 +8,7 @@ import { EmptyState } from "@/shared/ui/EmptyState";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
 import { normalizeText } from "@/shared/utils/text";
 import { messages } from "@/shared/feedback/messages";
+import { inputClassName } from "@/shared/forms/inputClassName";
 
 const normalizeSearch = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
 
@@ -78,7 +79,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
             <div className="form-group">
               <label>{messages.reportes.tipoReporteLabel}</label>
               <select
-                className="form-input"
+                className={inputClassName}
                 value={tipo}
                 onChange={(e) => {
                   setTipo(e.target.value as TipoReporte);
@@ -175,7 +176,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
             )}
             <div className="form-group mb-4">
               <input
-                className="form-input"
+                className={inputClassName}
                 placeholder={messages.reportes.searchPlaceholder}
                 value={query}
                 onChange={(e) => {

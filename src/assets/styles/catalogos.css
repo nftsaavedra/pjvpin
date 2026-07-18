@@ -9,7 +9,7 @@
   .catalogos-category-pill.active { @apply bg-blue-500 text-white border-blue-500 shadow-[0_4px_12px_-6px_rgba(59,130,246,0.45)]; }
   .catalogos-grid { @apply grid gap-4; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
   .catalogos-grid-loading { @apply opacity-60 pointer-events-none; }
-  .catalogo-summary-card { @apply flex flex-col gap-3 px-5 py-5 rounded-2xl border border-gray-200 bg-white cursor-pointer transition-all duration-200 shadow-xs text-left; }
+  .catalogo-summary-card { @apply flex flex-col gap-3 px-5 py-5 rounded-2xl border border-gray-200 bg-white text-gray-800 cursor-pointer transition-all duration-200 shadow-xs text-left; }
   .catalogo-summary-card:hover { @apply -translate-y-1 shadow-[0_12px_28px_-14px_rgba(0,0,0,0.1)] border-blue-200; }
   .catalogo-summary-card:focus-visible { @apply outline-2 outline-blue-500 outline-offset-2; }
   .catalogo-summary-header { @apply flex items-start gap-3; }

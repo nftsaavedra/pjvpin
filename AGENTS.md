@@ -314,27 +314,11 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 
 ---
 
-## Deuda Técnica Conocida
+## Deuda Técnica Pendiente
 
 | Prioridad | Ítem |
 |-----------|------|
-| ✅ Resuelto | CSP habilitado en tauri.conf.json |
-| ✅ Resuelto | Tests: 6 Rust + 15 frontend (Vitest) |
-| ✅ Resuelto | Structured logging con tracing crate |
-| ✅ Resuelto | Sin transacciones MongoDB para operaciones multi-documento |
-| ✅ Resuelto | Sin paginación en queries de lista (tipo PaginatedResult creado, integrado en investigadores) |
-| ✅ Resuelto | `pure_cmd.rs` bypassea capa de servicios → pure_service.rs creado |
-| ✅ Resuelto | `chrono` centralizado en `time.rs` y `renacyt_client.rs` |
-| ✅ Resuelto | `access_control.rs` dividido en `rbac.rs` + handlers + auditoría genérica en 11 operaciones |
-| ✅ Resuelto | `has_existing_config` chequeaba solo archivo → `wizard_has_config` ahora consulta usuarios en MongoDB |
-| ✅ Resuelto | `load_runtime_config` auto-creaba config con defaults → ya no auto-crea, arranca en modo wizard |
-| ✅ Resuelto | `save_wizard_config` escribía `.json.enc` (cifrado dead code) → escribe `pjvpin.config.json` plaintext |
-| ✅ Resuelto | URLs hardcoded duplicadas → centralizadas en `src-tauri/src/shared/defaults.rs` y `src/shared/config/defaults.ts` |
-| ✅ Resuelto | Auditoría completa en recursos (16 ops: create/update/delete/reactivate para patente/producto/equipamiento/financiamiento) + investigadores (update/reactivate) + grados (update/reactivate) + grupos (update) |
-| ✅ Resuelto | Value Object `Dni` (`shared/dni.rs`) centraliza validación de 8 dígitos + trim; migrado en `usuarios`, `personas`, `reniec_client`, `ReniecCache` |
-| ✅ Resuelto | MongoDB connection pool configurable (`PJVPIN_MONGODB_MAX_POOL_SIZE`/`MIN_POOL_SIZE`, defaults 10/1) |
-| ✅ Resuelto | `TokenResolver` centraliza tokens externos (RENIEC + Pure) en `AppState.tokens`; mensajes de error canónicos |
-| 🟡 Medio | Cifrado de config en disco: eliminar `encryption.rs` (hecho), re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) — `TokenResolver` es la pieza que conecta con keychain |
+| 🟡 Medio | Cifrado de config en disco: re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) — `TokenResolver` es la pieza que conecta con keychain |
 | 🟡 Medio | Dropdowns de recursos aún usan placeholders; integrar con catálogos (FormSelect dinámico) |
 
 ---
@@ -407,6 +391,15 @@ Reglas:
 - En charts (DashboardCharts), usar `variant="empty"` con `messages.dashboard.chartEmptyMessages.<key>`.
 - Prohibido: `<div className="empty-state">{string}</div>` directo en components (excepto dentro de `EmptyState.tsx` internals).
 
+### Politica de color y dark mode (v0.1.0-alpha)
+
+La app es **light-only** en v0.1.0. No se implementa dark mode. Esto elimina el bug "texto blanco sobre fondo blanco" en sistemas con tema oscuro donde el WebView de Tauri hereda `color: white` para inputs nativos.
+
+- **NO** usar `@media (prefers-color-scheme: dark)` en `src/assets/styles/*.css`. El único `color-scheme: light` permitido está en `tokens.css :root`.
+- **Todo componente con `bg-white`** (sea `@apply` en CSS o `className` inline) **DEBE pinar `text-gray-800` o `text-gray-900`** en su propia regla, para evitar herencia de color blanco del agente-usuario. Aplica a: `.modal-content`, `.modal-body`, `.form-card`, `.chart-container`, `.renacyt-detail-card`, `.table-container`, `.catalogo-summary-card`, `.kpi-card`.
+- **Inputs nativos** (`<input>`, `<select>`, `<textarea>`) **DEBEN** incluir `text-gray-900` explícitamente. Usar siempre `<FormInput>` o `<FormSelect>` (que aplican `inputClassName` desde `src/shared/forms/inputClassName.ts`). El string está exportado para ser importado en pantallas que no usan los wrappers (auth, wizard, reportes, DniField, DniValidationSection, RenacytValidationSection).
+- **NO** crear reglas CSS `.form-input` o `.form-select` globales. Usar `inputClassName` (Tailwind utilities) o `<FormInput>`/`<FormSelect>`.
+
 ### Auditoría de runtime (importante)
 
 - **Verificación de login, wizard, dashboard, configuración, reportes debe hacerse en la ventana Tauri** (`npm run tauri dev`), NO en el navegador Chrome sobre `localhost:1420`. El navegador no expone el IPC Tauri → `invoke()` falla → login/wizard no procesan datos.
@@ -428,6 +421,10 @@ rg -n "toast\.(error|success|warning|info)\(['\"]" src/ --glob "*.tsx"   # debe 
 rg -n 'aria-label="[A-ZÁÉÍÓÚÑ]' src/ --glob "*.tsx"                    # debe estar vacio
 rg -n 'title="[A-ZÁÉÍÓÚÑ][^"$]*"' src/ --glob "*.tsx" | rg -v "pendingChange"  # debe estar vacio
 rg -n 'className="empty-state"' src/ --glob "*.tsx" | rg -v "EmptyState.tsx"  # debe estar vacio (solo internals de EmptyState)
+
+# Auditoria de politica de color (light-only, inputClassName)
+rg -n 'prefers-color-scheme' src/ --glob "*.css"                       # debe estar vacio (no dark mode)
+rg -n 'className="form-input"' src/ --glob "*.tsx"                    # debe estar vacio (usar inputClassName)
 ```
 
 Si typecheck/lint/build falla o la auditoria detecta literales no migrados al

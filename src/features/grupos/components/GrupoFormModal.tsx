@@ -149,7 +149,7 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
             {lineas.map((linea) => (
               <div
                 key={linea}
-                className="flex items-center justify-between gap-2 p-2 rounded-lg border border-gray-200 bg-white"
+                className="flex items-center justify-between gap-2 p-2 rounded-lg border border-gray-200 bg-white text-gray-800"
               >
                 <span>{linea}</span>
                 <button

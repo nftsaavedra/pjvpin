@@ -2,6 +2,7 @@ import React from "react";
 import { Search } from "lucide-react";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { inputClassName } from "@/shared/forms/inputClassName";
 
 interface DniValidationSectionProps {
   dni: string;
@@ -48,7 +49,7 @@ export const DniValidationSection: React.FC<DniValidationSectionProps> = ({
           placeholder="Ej: 45678912"
           maxLength={8}
           required
-          className="form-input"
+          className={inputClassName}
           inputMode="numeric"
           autoComplete="off"
           disabled={isLoading || isChecking}
