@@ -7,6 +7,7 @@ import { Badge } from "@/shared/ui/Badge";
 import { SkeletonChecklist } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
+import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadoresChecklistProps {
   investigadores: InvestigadorDetalle[];
@@ -41,7 +42,7 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
 
   useRefreshToast({
     refreshing,
-    message: "Actualizando lista de investigadores",
+    message: messages.proyectos.checklist.refreshMessage,
     toastKey: "investigadores-checklist-refresh",
     cooldownMs: 120000,
   });
@@ -99,13 +100,13 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
   }
 
   if (investigadores.length === 0) {
-    return <div className="empty-state">No hay investigadores registrados.</div>;
+    return <div className="empty-state">{messages.proyectos.checklist.emptyState}</div>;
   }
 
   return (
     <div className="form-group">
       <div className="field-header">
-        <label htmlFor={searchId}>Seleccionar Investigadores *</label>
+        <label htmlFor={searchId}>{messages.proyectos.checklist.labelSearch}</label>
       </div>
       <div className="investigadores-selector">
         <div className="investigadores-selector-toolbar">
@@ -116,28 +117,31 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
             onChange={(event) => {
               setQuery(event.target.value);
             }}
-            placeholder="Buscar investigador por nombre, DNI, grado o nivel RENACYT"
+            placeholder={messages.proyectos.checklist.placeholderSearch}
             aria-describedby={helperId}
             aria-controls={resultsId}
           />
           <div className="investigadores-selector-meta">
-            <StatusChip variant="total">Disponibles: {investigadores.length}</StatusChip>
-            <StatusChip variant="success">Seleccionados: {selectedIds.length}</StatusChip>
+            <StatusChip variant="total">
+              {messages.proyectos.checklist.chips.disponibles(investigadores.length)}
+            </StatusChip>
+            <StatusChip variant="success">
+              {messages.proyectos.checklist.chips.seleccionados(selectedIds.length)}
+            </StatusChip>
             {selectedIds.length > 0 && (
               <button
                 type="button"
                 className="btn-secondary investigadores-selector-clear"
                 onClick={limpiarSeleccion}
               >
-                Limpiar selección
+                {messages.proyectos.checklist.limpiarSeleccion}
               </button>
             )}
           </div>
         </div>
 
         <div id={helperId} className="sr-only">
-          Busque investigadores por nombre, DNI, grado o nivel RENACYT, y use los botones para
-          agregarlos o quitarlos de la selección.
+          {messages.proyectos.checklist.srHelper}
         </div>
 
         <div className="investigadores-selected-list" aria-live="polite">
@@ -150,22 +154,26 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
                 onClick={() => {
                   handleToggle(investigador.id_investigador);
                 }}
-                title="Quitar de la selección"
+                title={messages.proyectos.checklist.quitarDeSeleccionTitle}
               >
                 <span className="investigador-chip-content">
                   <span className="investigador-chip-name">{investigador.nombres_apellidos}</span>
                   {showSelectedMeta && (
                     <span className="investigador-chip-meta">
-                      {investigador.grado || "Sin grado"} ·{" "}
+                      {investigador.grado || messages.investigadores.fallbacks.sinGrado} ·{" "}
                       {formatRenacytNivel(investigador.renacyt_nivel)
-                        ? `RENACYT ${formatRenacytNivel(investigador.renacyt_nivel)}`
-                        : "Sin nivel RENACYT"}
-                      {responsableId === investigador.id_investigador ? " · Responsable" : ""}
+                        ? messages.investigadores.renacytSection.renacytNivel(
+                            formatRenacytNivel(investigador.renacyt_nivel) ?? "",
+                          )
+                        : messages.investigadores.fallbacks.sinNivelRenacyt}
+                      {responsableId === investigador.id_investigador
+                        ? messages.proyectos.checklist.responsableMeta
+                        : ""}
                     </span>
                   )}
                   {!showSelectedMeta && responsableId === investigador.id_investigador && (
                     <span className="investigador-chip-meta investigador-chip-meta-compact">
-                      Responsable actual
+                      {messages.proyectos.checklist.responsableActual}
                     </span>
                   )}
                 </span>
@@ -176,7 +184,7 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
             ))
           ) : (
             <div className="investigadores-selector-empty">
-              Aún no ha seleccionado investigadores para este proyecto.
+              {messages.proyectos.checklist.vacio}
             </div>
           )}
         </div>
@@ -184,21 +192,19 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
         <div
           id={resultsId}
           className="investigadores-checklist investigadores-selector-results"
-          aria-label="Resultados de investigadores"
+          aria-label={messages.proyectos.checklist.resultadosAriaLabel}
         >
           {requiereBusquedaMinima ? (
             <div className="investigadores-selector-empty">
-              Escriba al menos 2 caracteres para buscar dentro de una lista grande de
-              investigadores.
+              {messages.proyectos.checklist.busquedaMinima}
             </div>
           ) : !deferredQuery && investigadores.length > 25 ? (
             <div className="investigadores-selector-empty">
-              Use el buscador para encontrar investigadores y agregarlos al proyecto sin recorrer
-              una lista completa.
+              {messages.proyectos.checklist.busquedaInicial}
             </div>
           ) : investigadoresVisibles.length === 0 ? (
             <div className="investigadores-selector-empty">
-              No se encontraron investigadores con ese criterio.
+              {messages.proyectos.checklist.sinCoincidencias}
             </div>
           ) : (
             <>
@@ -221,15 +227,19 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
                       </span>
                       <span className="investigador-option-dni">DNI: {investigador.dni}</span>
                       <span className="investigador-option-meta">
-                        {investigador.grado || "Sin grado"} ·{" "}
+                        {investigador.grado || messages.investigadores.fallbacks.sinGrado} ·{" "}
                         {formatRenacytNivel(investigador.renacyt_nivel)
-                          ? `RENACYT ${formatRenacytNivel(investigador.renacyt_nivel)}`
-                          : "Sin nivel RENACYT"}
+                          ? messages.investigadores.renacytSection.renacytNivel(
+                              formatRenacytNivel(investigador.renacyt_nivel) ?? "",
+                            )
+                          : messages.investigadores.fallbacks.sinNivelRenacyt}
                       </span>
                     </div>
                     <div className="investigador-option-actions">
                       <Badge variant={seleccionado ? "success" : "info"}>
-                        {seleccionado ? "Seleccionado" : "Agregar"}
+                        {seleccionado
+                          ? messages.proyectos.checklist.selected
+                          : messages.proyectos.checklist.agregar}
                       </Badge>
                     </div>
                   </button>
@@ -237,8 +247,10 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
               })}
               {hayMasResultados && (
                 <div className="investigadores-selector-footnote">
-                  Mostrando {investigadoresVisibles.length} de {coincidencias.length} coincidencias.
-                  Refine la búsqueda para acotar resultados.
+                  {messages.proyectos.checklist.contadorRefine(
+                    investigadoresVisibles.length,
+                    coincidencias.length,
+                  )}
                 </div>
               )}
             </>
@@ -246,7 +258,7 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
         </div>
       </div>
       {showRequiredError && selectedIds.length === 0 && (
-        <small className="field-error">Seleccione al menos un investigador</small>
+        <small className="field-error">{messages.proyectos.checklist.fieldError}</small>
       )}
     </div>
   );

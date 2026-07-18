@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 import { createGrupo, updateGrupo, getTauriErrorMessage } from "../api";
 import type { Grupo } from "../hooks/useGruposTab";
 
@@ -41,12 +42,12 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
     e.preventDefault();
 
     if (!formData.nombre.trim()) {
-      toast.warning("Ingrese el nombre del grupo");
+      toast.warning(messages.grupos.validations.ingreseNombreGrupo);
       return;
     }
 
     if (lineas.length === 0) {
-      toast.warning("Agregue al menos una línea de investigación");
+      toast.warning(messages.grupos.validations.agregueLinea);
       return;
     }
 
@@ -61,10 +62,10 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
     try {
       if (editingGrupo) {
         await updateGrupo(editingGrupo.id_grupo, request);
-        toast.success("Grupo actualizado correctamente");
+        toast.success(messages.grupos.success.actualizado);
       } else {
         await createGrupo(request);
-        toast.success("Grupo creado correctamente");
+        toast.success(messages.grupos.success.creado);
       }
       onClose();
       onDataModified();
@@ -82,42 +83,46 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
       open={open}
       title={
         <span className="title-with-icon form-card-title">
-          <span>{editingGrupo ? "Editar grupo" : "Crear nuevo grupo"}</span>
+          <span>
+            {editingGrupo ? messages.grupos.modal.titleEditar : messages.grupos.modal.titleCrear}
+          </span>
         </span>
       }
       onClose={onClose}
       onSubmit={(e) => {
         void handleSubmit(e);
       }}
-      submitText={editingGrupo ? "Actualizar grupo" : "Crear grupo"}
+      submitText={
+        editingGrupo ? messages.grupos.modal.submitEditar : messages.grupos.modal.submitCrear
+      }
       isLoading={isLoading}
       size="lg"
     >
       <FormInput
-        label="Nombre del Grupo"
+        label={messages.grupos.modal.labelNombre}
         value={formData.nombre}
         onChange={(value) => {
           setFormData({ ...formData, nombre: value });
         }}
-        placeholder="Ej: Grupo de Sostenibilidad Ambiental"
+        placeholder={messages.grupos.modal.placeholderNombre}
         required
       />
 
       <div className="form-group">
-        <label htmlFor="descripcion">Descripción</label>
+        <label htmlFor="descripcion">{messages.grupos.modal.labelDescripcion}</label>
         <textarea
           id="descripcion"
           value={formData.descripcion}
           onChange={(e) => {
             setFormData({ ...formData, descripcion: e.target.value });
           }}
-          placeholder="Breve descripción del grupo y sus objetivos"
+          placeholder={messages.grupos.modal.placeholderDescripcion}
           rows={3}
         />
       </div>
 
       <div className="form-group">
-        <label htmlFor="linea">Líneas de Investigación</label>
+        <label htmlFor="linea">{messages.grupos.modal.labelLineas}</label>
         <div className="flex items-center gap-2">
           <input
             id="linea"
@@ -132,10 +137,10 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
                 handleAddLinea();
               }
             }}
-            placeholder="Ingrese una línea y presione Enter"
+            placeholder={messages.grupos.modal.placeholderLinea}
           />
           <button type="button" className="btn-secondary" onClick={handleAddLinea}>
-            Agregar
+            {messages.grupos.modal.agregar}
           </button>
         </div>
 

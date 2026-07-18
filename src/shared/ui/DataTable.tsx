@@ -1,4 +1,5 @@
 import React from "react";
+import { messages } from "@/shared/feedback/messages";
 
 export interface ColumnDef<T> {
   key: string;
@@ -18,7 +19,7 @@ export function DataTable<T>({
   columns,
   data,
   getRowKey,
-  emptyMessage = "No hay datos para mostrar",
+  emptyMessage = messages.shared.dataTableEmptyDefault,
   ariaLabel,
 }: DataTableProps<T>) {
   if (data.length === 0) {

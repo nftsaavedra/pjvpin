@@ -4,6 +4,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { toast } from "@/shared/feedback/toast";
+import { messages } from "@/shared/feedback/messages";
 
 interface RelatedEntity {
   id: string;
@@ -38,7 +39,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
   fields,
   onItemsChange,
   renderItem,
-  emptyMessage = "No hay elementos registrados",
+  emptyMessage = messages.proyectos.relatedSection.emptyDefault,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -72,7 +73,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
     // Validation
     for (const field of fields) {
       if (field.required && !editingItem[field.name]) {
-        toast.warning(`${field.label} es requerido`);
+        toast.warning(messages.proyectos.relatedSection.campoRequerido(field.label));
         return;
       }
     }
@@ -201,8 +202,8 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
           <div className="related-entity-form">
             <h4 className="related-entity-form-title">
               {editingId.startsWith("temp-")
-                ? `Agregar ${title.toLowerCase()}`
-                : `Editar ${title.toLowerCase()}`}
+                ? messages.proyectos.relatedSection.agregar(title)
+                : messages.proyectos.relatedSection.editar(title)}
             </h4>
             {fields.map((field) => (
               <div key={field.name} className="form-group">
@@ -228,7 +229,9 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
                       setEditingItem({ ...editingItem, [field.name]: e.target.value });
                     }}
                   >
-                    <option value="">{field.placeholder || "Seleccionar..."}</option>
+                    <option value="">
+                      {field.placeholder || messages.proyectos.relatedSection.selectPlaceholder}
+                    </option>
                     {field.options.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
@@ -264,7 +267,7 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
             <button type="button" className="btn-secondary" onClick={handleAddItem}>
               <span className="button-with-icon">
                 <AppIcon icon={Plus} size={16} />
-                <span>Agregar {title.toLowerCase()}</span>
+                <span>{messages.proyectos.relatedSection.botonAgregar(title)}</span>
               </span>
             </button>
           </div>
@@ -272,10 +275,10 @@ export const RelatedEntitiesSection: React.FC<RelatedEntitiesSectionProps> = ({
       </div>
       <ConfirmDialog
         open={Boolean(deleteConfirmId)}
-        title="Eliminar elemento"
-        message="¿Está seguro de que desea eliminar este elemento?"
-        confirmText="Sí, eliminar"
-        cancelText="Cancelar"
+        title={messages.proyectos.relatedSection.eliminarTitle}
+        message={messages.proyectos.relatedSection.eliminarMessage}
+        confirmText={messages.proyectos.relatedSection.eliminarConfirmText}
+        cancelText={messages.ui.cancelar}
         onConfirm={confirmDeleteItem}
         onCancel={() => {
           setDeleteConfirmId(null);

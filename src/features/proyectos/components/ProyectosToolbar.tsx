@@ -1,5 +1,6 @@
 import React from "react";
 import { StatusChip } from "@/shared/ui/StatusChip";
+import { messages } from "@/shared/feedback/messages";
 
 interface ProyectosToolbarProps {
   busqueda: string;
@@ -27,24 +28,28 @@ export const ProyectosToolbar: React.FC<ProyectosToolbarProps> = ({
   <div className="filter-bar">
     <div className="filter-summary-group">
       {loading ? (
-        <div className="filter-summary">Cargando...</div>
+        <div className="filter-summary">{messages.proyectos.toolbar.cargando}</div>
       ) : (
         <>
-          <div className="filter-summary">Visibles: {totalVisibles}</div>
-          <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
-          <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
-          <StatusChip variant="total">Todos: {totalTodos}</StatusChip>
+          <div className="filter-summary">{messages.proyectos.toolbar.visibles(totalVisibles)}</div>
+          <StatusChip variant="success">
+            {messages.proyectos.toolbar.activos(totalActivos)}
+          </StatusChip>
+          <StatusChip variant="warning">
+            {messages.proyectos.toolbar.inactivos(totalInactivos)}
+          </StatusChip>
+          <StatusChip variant="total">{messages.proyectos.toolbar.todos(totalTodos)}</StatusChip>
         </>
       )}
     </div>
     <input
       className="form-input filter-search"
-      placeholder="Buscar por título o perfil del investigador"
+      placeholder={messages.proyectos.toolbar.searchPlaceholder}
       value={busqueda}
       onChange={(e) => {
         onBusquedaChange(e.target.value);
       }}
-      aria-label="Buscar proyectos por título o perfil del investigador"
+      aria-label={messages.proyectos.toolbar.searchAriaLabel}
     />
     <select
       className="form-input filter-select"
@@ -52,11 +57,11 @@ export const ProyectosToolbar: React.FC<ProyectosToolbarProps> = ({
       onChange={(e) => {
         onEstadoFiltroChange(e.target.value as "todos" | "activos" | "inactivos");
       }}
-      aria-label="Filtrar proyectos por estado"
+      aria-label={messages.proyectos.toolbar.filtroEstadoAriaLabel}
     >
-      <option value="todos">Todos</option>
-      <option value="activos">Solo activos</option>
-      <option value="inactivos">Solo inactivos</option>
+      <option value="todos">{messages.proyectos.toolbar.opciones.todos}</option>
+      <option value="activos">{messages.proyectos.toolbar.opciones.soloActivos}</option>
+      <option value="inactivos">{messages.proyectos.toolbar.opciones.soloInactivos}</option>
     </select>
   </div>
 );

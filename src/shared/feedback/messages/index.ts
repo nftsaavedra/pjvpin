@@ -2,11 +2,17 @@ import { ui } from "./ui";
 import { auth } from "./auth";
 import { wizard } from "./wizard";
 import { investigadores } from "./investigadores";
+import { proyectos } from "./proyectos";
+import { grupos } from "./grupos";
+import { shared } from "./shared";
 
 export { ui, type UiMessageKey } from "./ui";
 export { auth, type AuthMessageKey } from "./auth";
 export { wizard, type WizardMessageKey } from "./wizard";
 export { investigadores, type InvestigadoresMessageKey } from "./investigadores";
+export { proyectos, type ProyectosMessageKey } from "./proyectos";
+export { grupos, type GruposMessageKey } from "./grupos";
+export { shared, type SharedMessageKey } from "./shared";
 
-export const messages = { ui, auth, wizard, investigadores } as const;
+export const messages = { ui, auth, wizard, investigadores, proyectos, grupos, shared } as const;
 export type Messages = typeof messages;

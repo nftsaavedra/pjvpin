@@ -7,6 +7,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import { getResponsableProyecto, parseParticipantesProyecto } from "../participantes";
+import { messages } from "@/shared/feedback/messages";
 
 interface ProyectosTableGridProps {
   canManage: boolean;
@@ -37,19 +38,19 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
   }
 
   if (proyectos.length === 0) {
-    return <div className="empty-state">No hay proyectos para el filtro seleccionado</div>;
+    return <div className="empty-state">{messages.proyectos.table.emptyState}</div>;
   }
 
   return (
     <>
-      <table className="table" aria-label="Tabla de proyectos registrados">
+      <table className="table" aria-label={messages.proyectos.table.ariaLabel}>
         <thead>
           <tr>
-            <th scope="col">Título</th>
-            <th scope="col">Responsable</th>
-            <th scope="col">Investigadores</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Acciones</th>
+            <th scope="col">{messages.proyectos.table.columns.titulo}</th>
+            <th scope="col">{messages.proyectos.table.columns.responsable}</th>
+            <th scope="col">{messages.proyectos.table.columns.investigadores}</th>
+            <th scope="col">{messages.proyectos.table.columns.estado}</th>
+            <th scope="col">{messages.proyectos.table.columns.acciones}</th>
           </tr>
         </thead>
         <tbody>
@@ -66,7 +67,9 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                       <strong>{responsable.nombre}</strong>
                     </div>
                   ) : (
-                    <span className="project-responsable-empty">Sin responsable</span>
+                    <span className="project-responsable-empty">
+                      {messages.proyectos.table.sinResponsable}
+                    </span>
                   )}
                 </td>
                 <td>
@@ -81,17 +84,19 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                     <span className="button-with-icon">
                       <AppIcon icon={Users} size={15} />
                       <span>
-                        {proyecto.cantidad_investigadores} investigador
-                        {proyecto.cantidad_investigadores === 1 ? "" : "es"}
+                        {proyecto.cantidad_investigadores}{" "}
+                        {proyecto.cantidad_investigadores === 1
+                          ? messages.proyectos.table.contadorInvestigador
+                          : messages.proyectos.table.contadoresInvestigadores}
                       </span>
                     </span>
                   </button>
                 </td>
                 <td>
                   {proyecto.activo ? (
-                    <Badge variant="success">Activo</Badge>
+                    <Badge variant="success">{messages.ui.statusActivo}</Badge>
                   ) : (
-                    <Badge variant="warning">Inactivo</Badge>
+                    <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
                   )}
                 </td>
                 <td className="table-actions">
@@ -99,7 +104,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                     <TableActionButton
                       className="btn-secondary"
                       icon={Eye}
-                      label="Ver detalle del proyecto"
+                      label={messages.proyectos.table.actions.verDetalle}
                       onClick={() => {
                         onOpenDetail(proyecto);
                       }}
@@ -111,7 +116,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                         <TableActionButton
                           className="btn-secondary"
                           icon={Pencil}
-                          label="Editar proyecto"
+                          label={messages.proyectos.table.actions.editar}
                           onClick={() => {
                             onEdit(proyecto);
                           }}
@@ -121,7 +126,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                         <TableActionButton
                           className="btn-primary"
                           icon={RotateCcw}
-                          label="Reactivar proyecto"
+                          label={messages.proyectos.table.actions.reactivar}
                           onClick={() => {
                             onReactivate(proyecto.id_proyecto);
                           }}
@@ -131,7 +136,9 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                         className="btn-delete"
                         icon={Trash2}
                         label={
-                          proyecto.activo ? "Desactivar proyecto" : "Mantener proyecto inactivo"
+                          proyecto.activo
+                            ? messages.proyectos.table.actions.desactivar
+                            : messages.proyectos.table.actions.mantenerInactivo
                         }
                         onClick={() => {
                           onDeactivate(proyecto);
@@ -139,7 +146,9 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                       />
                     </>
                   ) : (
-                    <span className="table-actions-empty">Solo lectura</span>
+                    <span className="table-actions-empty">
+                      {messages.proyectos.table.soloLectura}
+                    </span>
                   )}
                 </td>
               </tr>
@@ -164,7 +173,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
             <div className="modal-header">
               <h2 className="title-with-icon">
                 <AppIcon icon={Users} size={20} />
-                <span>Participantes del proyecto</span>
+                <span>{messages.proyectos.table.modal.participantesTitle}</span>
               </h2>
               <button
                 type="button"
@@ -172,7 +181,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                 onClick={() => {
                   setSelectedProyecto(null);
                 }}
-                aria-label="Cerrar participantes del proyecto"
+                aria-label={messages.proyectos.table.modal.cerrarParticipantes}
               >
                 <AppIcon icon={X} size={18} />
               </button>
@@ -181,7 +190,11 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
             <div className="modal-body project-participants-modal-body">
               <div className="project-participants-modal-intro">
                 <strong>{selectedProyecto.titulo}</strong>
-                <span>{selectedProyecto.participantes.length} investigadores relacionados</span>
+                <span>
+                  {messages.proyectos.table.modal.investigadoresRelacionados(
+                    selectedProyecto.participantes.length,
+                  )}
+                </span>
               </div>
               <div className="project-participants-list">
                 {selectedProyecto.participantes.map((participante, index) => (
@@ -191,11 +204,14 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                   >
                     <div className="project-participant-card-head">
                       <strong>{participante.nombre}</strong>
-                      {participante.es_responsable && <Badge variant="info">Responsable</Badge>}
+                      {participante.es_responsable && (
+                        <Badge variant="info">{messages.proyectos.detail.responsableBadge}</Badge>
+                      )}
                     </div>
                     <span>{participante.grado}</span>
                     <span>
-                      {formatRenacytNivel(participante.renacyt_nivel) ?? "Sin nivel RENACYT"}
+                      {formatRenacytNivel(participante.renacyt_nivel) ??
+                        messages.investigadores.fallbacks.sinNivelRenacyt}
                     </span>
                   </article>
                 ))}
@@ -210,7 +226,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                   setSelectedProyecto(null);
                 }}
               >
-                Cerrar
+                {messages.proyectos.table.modal.cerrar}
               </button>
             </div>
           </div>

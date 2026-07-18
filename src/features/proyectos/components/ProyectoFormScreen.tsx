@@ -14,6 +14,7 @@ import { InvestigadoresChecklist } from "./InvestigadoresChecklist";
 import { ProyectoDiffPanel } from "./ProyectoDiffPanel";
 import { ResourceTabPanel } from "./ResourceTabPanel";
 import { getResponsableProyecto, parseParticipantesProyecto } from "../participantes";
+import { messages } from "@/shared/feedback/messages";
 import type { RelatedEntity } from "./relatedEntity";
 
 interface ProyectoFormScreenProps {
@@ -146,9 +147,12 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   const requestToggleInvestigador = (investigador: InvestigadorDetalle, nextSelected: boolean) => {
     if (nextSelected) {
       requestChange({
-        title: "Agregar investigador al proyecto",
-        message: `Se agregará a ${investigador.nombres_apellidos} al proyecto "${form.titulo.trim() || proyecto?.titulo_proyecto || ""}".`,
-        confirmText: "Sí, agregar",
+        title: messages.proyectos.changeRequest.agregarInvestigador.title,
+        message: messages.proyectos.changeRequest.agregarInvestigador.message(
+          investigador.nombres_apellidos,
+          form.titulo.trim() || proyecto?.titulo_proyecto || "",
+        ),
+        confirmText: messages.proyectos.changeRequest.agregarInvestigador.confirmText,
         onConfirm: () => {
           form.setInvestigadoresSeleccionados((current) =>
             current.includes(investigador.id_investigador)
@@ -164,16 +168,17 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       form.investigadorResponsableId === investigador.id_investigador &&
       form.investigadoresSeleccionados.length > 1
     ) {
-      toast.warning(
-        "Seleccione otro investigador responsable antes de quitar al responsable actual.",
-      );
+      toast.warning(messages.proyectos.validations.seleccioneOtroResponsable);
       return;
     }
 
     requestChange({
-      title: "Quitar investigador del proyecto",
-      message: `Se quitará a ${investigador.nombres_apellidos} del proyecto "${form.titulo.trim() || proyecto?.titulo_proyecto || ""}".`,
-      confirmText: "Sí, quitar",
+      title: messages.proyectos.changeRequest.quitarInvestigador.title,
+      message: messages.proyectos.changeRequest.quitarInvestigador.message(
+        investigador.nombres_apellidos,
+        form.titulo.trim() || proyecto?.titulo_proyecto || "",
+      ),
+      confirmText: messages.proyectos.changeRequest.quitarInvestigador.confirmText,
       onConfirm: () => {
         form.setInvestigadoresSeleccionados((current) =>
           current.filter((id) => id !== investigador.id_investigador),
@@ -192,9 +197,11 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
     if (!investigador) return;
 
     requestChange({
-      title: "Cambiar investigador responsable",
-      message: `Se asignará a ${investigador.nombres_apellidos} como investigador responsable del proyecto.`,
-      confirmText: "Sí, asignar responsable",
+      title: messages.proyectos.changeRequest.cambiarResponsable.title,
+      message: messages.proyectos.changeRequest.cambiarResponsable.message(
+        investigador.nombres_apellidos,
+      ),
+      confirmText: messages.proyectos.changeRequest.cambiarResponsable.confirmText,
       onConfirm: () => {
         form.setInvestigadorResponsableId(investigadorId);
       },
@@ -205,17 +212,17 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
     e.preventDefault();
 
     if (!form.titulo.trim()) {
-      toast.warning("Ingrese el título del proyecto");
+      toast.warning(messages.proyectos.validations.ingreseTitulo);
       return;
     }
     if (form.investigadoresSeleccionados.length > 0 && !form.investigadorResponsableId) {
-      toast.warning("Seleccione un investigador responsable antes de guardar los cambios.");
+      toast.warning(messages.proyectos.validations.seleccioneResponsable);
       return;
     }
 
     if (mode === "create") {
       if (form.investigadoresSeleccionados.length === 0 || !form.investigadorResponsableId) {
-        toast.warning("Seleccione al menos un investigador y un responsable");
+        toast.warning(messages.proyectos.validations.seleccioneInvestigadorYResponsable);
         return;
       }
       await onCreate(
@@ -234,18 +241,24 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   };
 
   const breadcrumbCurrent =
-    mode === "create" ? "Registrar nuevo proyecto" : `Editar: ${proyecto?.titulo_proyecto ?? ""}`;
+    mode === "create"
+      ? messages.proyectos.breadcrumbNuevoProyecto
+      : messages.proyectos.breadcrumbEditar(proyecto?.titulo_proyecto ?? "");
 
   return (
     <>
       <ScreenLayout
         header={
           <ScreenHeader
-            parentLabel="Proyectos"
+            parentLabel={messages.proyectos.breadcrumb}
             currentLabel={breadcrumbCurrent}
             onBack={onBack}
             isLoading={isLoading}
-            submitLabel={mode === "create" ? "Crear Proyecto" : "Guardar cambios"}
+            submitLabel={
+              mode === "create"
+                ? messages.proyectos.crearProyecto
+                : messages.proyectos.guardarCambios
+            }
             submitIcon={mode === "create" ? Plus : Save}
             onSubmit={() =>
               void handleSubmitForm({ preventDefault: () => {} } as React.SyntheticEvent)
@@ -256,7 +269,9 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       >
         <div className="screen-section">
           <div className="screen-section-header">
-            <span className="screen-section-title">Información básica</span>
+            <span className="screen-section-title">
+              {messages.proyectos.sectionTitles.infoBasica}
+            </span>
           </div>
           <FormInput
             label="Título del Proyecto"
@@ -269,7 +284,9 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
 
         <div className="screen-section">
           <div className="screen-section-header">
-            <span className="screen-section-title">Equipo de investigación</span>
+            <span className="screen-section-title">
+              {messages.proyectos.sectionTitles.equipoInvestigacion}
+            </span>
           </div>
           <FormSelect
             label="Investigador responsable"
@@ -282,7 +299,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
                 : "-- Seleccionar responsable --"
             }
             disabled={form.investigadoresSeleccionados.length === 0}
-            help="Solo puede elegir como responsable a un investigador ya vinculado a este proyecto."
+            help={messages.proyectos.formHelp.responsableSelect}
           />
           <InvestigadoresChecklist
             investigadores={investigadores}
@@ -324,10 +341,10 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
 
       <ConfirmDialog
         open={Boolean(pendingChange)}
-        title={pendingChange?.title ?? "Confirmar cambio"}
+        title={pendingChange?.title ?? messages.proyectos.changeRequest.confirmarCambioFallback}
         message={pendingChange?.message ?? ""}
-        confirmText={pendingChange?.confirmText ?? "Confirmar"}
-        cancelText="Cancelar"
+        confirmText={pendingChange?.confirmText ?? messages.ui.confirmar}
+        cancelText={messages.ui.cancelar}
         onConfirm={confirmChange}
         onCancel={cancelChange}
       />

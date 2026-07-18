@@ -16,6 +16,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { getResponsableProyecto, parseParticipantesProyecto } from "../participantes";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
+import { messages } from "@/shared/feedback/messages";
 import type { RelatedEntity } from "./relatedEntity";
 
 type ResourceTab = "patentes" | "productos" | "equipamiento" | "financiamiento";
@@ -57,10 +58,30 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
     icon: typeof FolderOpen;
     items: RelatedEntity[];
   }[] = [
-    { id: "patentes", label: "Patentes", icon: Beaker, items: patentes },
-    { id: "productos", label: "Productos I+D+i", icon: Lightbulb, items: productos },
-    { id: "equipamiento", label: "Equipamiento", icon: Package, items: equipamientos },
-    { id: "financiamiento", label: "Financiamiento", icon: DollarSign, items: financiamientos },
+    {
+      id: "patentes",
+      label: messages.proyectos.resourceTabs.patentes,
+      icon: Beaker,
+      items: patentes,
+    },
+    {
+      id: "productos",
+      label: messages.proyectos.resourceTabs.productos,
+      icon: Lightbulb,
+      items: productos,
+    },
+    {
+      id: "equipamiento",
+      label: messages.proyectos.resourceTabs.equipamiento,
+      icon: Package,
+      items: equipamientos,
+    },
+    {
+      id: "financiamiento",
+      label: messages.proyectos.resourceTabs.financiamiento,
+      icon: DollarSign,
+      items: financiamientos,
+    },
   ];
 
   const activeItems = resourceItems.find((r) => r.id === activeResourceTab)?.items ?? [];
@@ -74,11 +95,11 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
               type="button"
               className="screen-breadcrumb-back"
               onClick={onBack}
-              aria-label="Volver a proyectos"
+              aria-label={messages.proyectos.detail.volverAProyectos}
             >
               <AppIcon icon={ArrowLeft} size={14} />
             </button>
-            <span>Proyectos</span>
+            <span>{messages.proyectos.breadcrumb}</span>
             <span className="screen-breadcrumb-sep">/</span>
             <span className="screen-breadcrumb-current">{proyecto.titulo_proyecto}</span>
           </div>
@@ -87,14 +108,14 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
           <button type="button" className="btn-secondary" onClick={onBack}>
             <span className="button-with-icon">
               <AppIcon icon={ArrowLeft} size={16} />
-              <span>Volver a la lista</span>
+              <span>{messages.proyectos.detail.volverALista}</span>
             </span>
           </button>
           {canManage && (
             <button type="button" className="btn-primary" onClick={onEdit}>
               <span className="button-with-icon">
                 <AppIcon icon={Pencil} size={16} />
-                <span>Editar proyecto</span>
+                <span>{messages.proyectos.detail.editarProyecto}</span>
               </span>
             </button>
           )}
@@ -109,7 +130,9 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">{participantes.length}</span>
-              <span className="screen-kpi-label">Investigadores</span>
+              <span className="screen-kpi-label">
+                {messages.proyectos.detail.kpiLabels.investigadores}
+              </span>
             </div>
           </div>
           <div className="screen-kpi-card">
@@ -117,21 +140,27 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
               <AppIcon icon={UserCheck} size={18} />
             </div>
             <div className="screen-kpi-copy">
-              <span className="screen-kpi-value">{responsable?.nombre ?? "Sin responsable"}</span>
-              <span className="screen-kpi-label">Responsable</span>
+              <span className="screen-kpi-value">
+                {responsable?.nombre ?? messages.proyectos.detail.fallbacks.sinResponsable}
+              </span>
+              <span className="screen-kpi-label">
+                {messages.proyectos.detail.kpiLabels.responsable}
+              </span>
             </div>
           </div>
           <div className="screen-kpi-card">
             <div className="screen-kpi-icon">
               {proyecto.activo ? (
-                <Badge variant="success">Activo</Badge>
+                <Badge variant="success">{messages.ui.statusActivo}</Badge>
               ) : (
-                <Badge variant="warning">Inactivo</Badge>
+                <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
               )}
             </div>
             <div className="screen-kpi-copy">
-              <span className="screen-kpi-value">{proyecto.activo ? "Activo" : "Inactivo"}</span>
-              <span className="screen-kpi-label">Estado</span>
+              <span className="screen-kpi-value">
+                {proyecto.activo ? messages.ui.statusActivo : messages.ui.statusInactivo}
+              </span>
+              <span className="screen-kpi-label">{messages.proyectos.detail.kpiLabels.estado}</span>
             </div>
           </div>
           <div className="screen-kpi-card">
@@ -140,7 +169,9 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
             </div>
             <div className="screen-kpi-copy">
               <span className="screen-kpi-value">{recursosTotal}</span>
-              <span className="screen-kpi-label">Recursos totales</span>
+              <span className="screen-kpi-label">
+                {messages.proyectos.detail.kpiLabels.recursosTotales}
+              </span>
             </div>
           </div>
         </div>
@@ -148,7 +179,7 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
         <div className="screen-placeholder-card">
           <p className="title-with-icon">
             <AppIcon icon={BarChart3} size={20} />
-            <span>Métricas y gráficos de recursos — próximamente</span>
+            <span>{messages.proyectos.detail.metricasPronto}</span>
           </p>
         </div>
 
@@ -156,12 +187,12 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
           <div className="screen-section-header">
             <span className="screen-section-title">
               <AppIcon icon={Users} size={18} />
-              <span>Investigadores participantes</span>
+              <span>{messages.proyectos.detail.investigadoresParticipantes}</span>
             </span>
           </div>
           {participantes.length === 0 ? (
             <p className="screen-placeholder-card">
-              No hay investigadores vinculados a este proyecto.
+              {messages.proyectos.detail.sinInvestigadoresVinculados}
             </p>
           ) : (
             <div className="screen-readonly-list">
@@ -172,9 +203,12 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
                     {participante.grado && <span> &mdash; {participante.grado}</span>}
                   </span>
                   <div className="screen-readonly-item-meta">
-                    {participante.es_responsable && <Badge variant="info">Responsable</Badge>}
+                    {participante.es_responsable && (
+                      <Badge variant="info">{messages.proyectos.detail.responsableBadge}</Badge>
+                    )}
                     <Badge variant="info">
-                      {formatRenacytNivel(participante.renacyt_nivel) ?? "Sin RENACYT"}
+                      {formatRenacytNivel(participante.renacyt_nivel) ??
+                        messages.proyectos.detail.fallbacks.sinRenacyt}
                     </Badge>
                   </div>
                 </div>
@@ -185,7 +219,9 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
 
         <div className="screen-section">
           <div className="screen-section-header">
-            <span className="screen-section-title">Recursos asociados</span>
+            <span className="screen-section-title">
+              {messages.proyectos.sectionTitles.recursos}
+            </span>
           </div>
 
           <div className="screen-tabs">
@@ -207,8 +243,9 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
 
           {activeItems.length === 0 ? (
             <p className="screen-placeholder-card">
-              Sin {resourceItems.find((r) => r.id === activeResourceTab)?.label.toLowerCase()}{" "}
-              registrados.
+              {messages.proyectos.detail.sinRecursos(
+                resourceItems.find((r) => r.id === activeResourceTab)?.label.toLowerCase() ?? "",
+              )}
             </p>
           ) : (
             <div className="screen-readonly-list">

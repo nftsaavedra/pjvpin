@@ -5,6 +5,7 @@ import { Badge } from "@/shared/ui/Badge";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { useGruposTab } from "./hooks/useGruposTab";
 import { GrupoFormModal } from "./components/GrupoFormModal";
+import { messages } from "@/shared/feedback/messages";
 
 interface GruposTabProps {
   canManage: boolean;
@@ -46,13 +47,13 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
     <div className="tab-panel module-shell flex flex-col gap-4">
       <div className="table-container">
         <div className="section-header">
-          <h2>Grupos de Investigación</h2>
+          <h2>{messages.grupos.sectionTitle}</h2>
           {canManage && (
             <div className="section-header-actions">
               <button type="button" className="btn-primary" onClick={handleCreate}>
                 <span className="button-with-icon">
                   <AppIcon icon={Plus} size={18} />
-                  <span>Nuevo grupo</span>
+                  <span>{messages.grupos.nuevoGrupo}</span>
                 </span>
               </button>
             </div>
@@ -61,7 +62,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
 
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
-            <span>Modo consulta: solo lectura de grupos.</span>
+            <span>{messages.grupos.modoConsulta}</span>
           </div>
         )}
 
@@ -75,7 +76,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                 void recargar();
               }}
             >
-              Reintentar
+              {messages.ui.reintentar}
             </button>
           </div>
         )}
@@ -85,7 +86,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
             <AppIcon icon={Search} size={18} />
             <input
               type="text"
-              placeholder="Buscar por nombre o coordinador..."
+              placeholder={messages.grupos.searchPlaceholder}
               value={busqueda}
               onChange={(e) => {
                 setBusqueda(e.target.value);
@@ -93,7 +94,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
               className="search-input"
             />
           </div>
-          <Badge variant="info">{gruposFiltrados.length} grupos</Badge>
+          <Badge variant="info">{messages.grupos.contador(gruposFiltrados.length)}</Badge>
         </div>
 
         <div
@@ -102,14 +103,14 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
         >
           {loading ? (
             <div className="empty-state">
-              <p>Cargando grupos...</p>
+              <p>{messages.grupos.cargando}</p>
             </div>
           ) : gruposFiltrados.length === 0 ? (
             <div className="empty-state">
-              <p>No hay grupos de investigación registrados</p>
+              <p>{messages.grupos.sinGruposRegistrados}</p>
               {canManage && (
                 <button type="button" className="btn-secondary" onClick={handleCreate}>
-                  Crear primer grupo
+                  {messages.grupos.crearPrimerGrupo}
                 </button>
               )}
             </div>
@@ -124,8 +125,8 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                     <h3 className="text-lg font-bold text-gray-800 m-0">{grupo.nombre}</h3>
                     <p className="text-sm text-blue-700 font-semibold m-0">
                       {grupo.coordinador_nombre
-                        ? `Coordinador: ${grupo.coordinador_nombre}`
-                        : "Sin coordinador asignado"}
+                        ? messages.grupos.coordinador(grupo.coordinador_nombre)
+                        : messages.grupos.sinCoordinador}
                     </p>
                   </div>
                   {canManage && (
@@ -136,7 +137,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                         onClick={() => {
                           handleUpdate(grupo);
                         }}
-                        title="Editar grupo"
+                        title={messages.grupos.editarTitle}
                       >
                         <AppIcon icon={Edit2} size={16} />
                       </button>
@@ -146,7 +147,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                         onClick={() => {
                           setDeletingId(grupo.id_grupo);
                         }}
-                        title="Eliminar grupo"
+                        title={messages.grupos.eliminarTitle}
                       >
                         <AppIcon icon={Trash2} size={16} />
                       </button>
@@ -159,7 +160,9 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                 )}
 
                 <div className="flex flex-col gap-3 flex-1">
-                  <strong className="text-sm text-gray-800">Líneas de investigación:</strong>
+                  <strong className="text-sm text-gray-800">
+                    {messages.grupos.lineasInvestigacionTitulo}
+                  </strong>
                   <div className="flex flex-wrap gap-2">
                     {grupo.lineas_investigacion.length > 0 ? (
                       grupo.lineas_investigacion.map((linea) => (
@@ -172,7 +175,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                       ))
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold italic text-gray-400">
-                        Sin líneas registradas
+                        {messages.grupos.sinLineasRegistradas}
                       </span>
                     )}
                   </div>
@@ -180,7 +183,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
 
                 <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200">
                   <Badge variant={grupo.activo !== 0 ? "success" : "warning"}>
-                    {grupo.activo !== 0 ? "Activo" : "Inactivo"}
+                    {grupo.activo !== 0 ? messages.ui.statusActivo : messages.ui.statusInactivo}
                   </Badge>
                 </div>
               </div>
@@ -206,10 +209,10 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
       {canManage && (
         <ConfirmDialog
           open={Boolean(deletingId)}
-          title="Eliminar grupo"
-          message={`¿Está seguro de que desea eliminar el grupo "${deletingGrupo?.nombre ?? ""}"?`}
-          confirmText="Sí, eliminar"
-          cancelText="Cancelar"
+          title={messages.grupos.eliminarTitle}
+          message={messages.grupos.eliminarConfirm(deletingGrupo?.nombre ?? "")}
+          confirmText={messages.grupos.eliminarConfirmText}
+          cancelText={messages.ui.cancelar}
           onConfirm={() => {
             void handleDelete();
           }}
