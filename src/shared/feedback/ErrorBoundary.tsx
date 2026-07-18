@@ -5,6 +5,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 interface Props {
   children: React.ReactNode;
   fallbackTitle?: string;
+  fallback?: React.ReactNode;
 }
 
 interface State {
@@ -28,6 +29,9 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
       return (
         <div className="flex flex-col items-center justify-center gap-2.5 px-8 py-12 text-center">
           <AppIcon icon={AlertTriangle} size={28} className="text-amber-500" />

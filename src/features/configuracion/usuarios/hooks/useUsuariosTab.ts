@@ -182,7 +182,7 @@ export const useUsuariosTab = (
           if (!texto) return true;
           return (
             usuario.username.toLowerCase().includes(texto) ||
-            usuario.nombre_completo.toLowerCase().includes(texto) ||
+            (usuario.nombre_completo ?? "").toLowerCase().includes(texto) ||
             usuario.rol.toLowerCase().includes(texto) ||
             (usuario.dni ?? "").includes(texto)
           );

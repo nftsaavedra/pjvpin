@@ -27,7 +27,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
     setIsLoading(true);
     try {
       const usuario = await loginUsuario(username, password);
-      toast.success(`Bienvenido ${usuario.nombre_completo}`);
+      toast.success(`Bienvenido ${usuario.nombre_completo ?? "usuario"}`);
       onAuthenticated(usuario);
     } catch (error) {
       toast.error(getTauriErrorMessage(error));

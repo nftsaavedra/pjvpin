@@ -169,15 +169,19 @@ function App() {
             <div className="sidebar-footer">
               <div className="sidebar-user-card">
                 <div className="sidebar-user-avatar">
-                  {currentUser.nombre_completo.charAt(0).toUpperCase()}
+                  {currentUser.nombre_completo?.charAt(0).toUpperCase() ?? "?"}
                 </div>
                 <div className="sidebar-user-copy">
-                  <strong>{currentUser.nombre_completo}</strong>
+                  <strong>{currentUser.nombre_completo ?? "Usuario"}</strong>
                   <span>@{currentUser.username}</span>
                   <small>{getRoleLabel(currentUser.rol)}</small>
                 </div>
               </div>
-              <button className="btn-secondary sidebar-logout" onClick={() => void handleLogout()}>
+              <button
+                type="button"
+                className="btn-secondary sidebar-logout"
+                onClick={() => void handleLogout()}
+              >
                 <span className="sidebar-logout-icon">
                   <AppIcon icon={LogOut} size={18} />
                 </span>

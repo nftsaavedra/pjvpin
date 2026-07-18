@@ -1,7 +1,7 @@
 export interface Usuario {
   id_usuario: string;
   username: string;
-  nombre_completo: string;
+  nombre_completo: string | null;
   rol: string;
   activo: number;
   investigador_id?: string | null;

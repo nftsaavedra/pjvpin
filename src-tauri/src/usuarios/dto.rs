@@ -11,11 +11,12 @@
 //!   (`personas`, `investigadores`, `proyectos`, `grupos`, `grados`, etc.).
 //!
 //! - **IPC (`UsuarioDto`, `*Request`)**: structs del contrato wire entre el
-//!   backend Rust y el frontend TypeScript (Tauri IPC). Los de salida usan
-//!   `#[serde(rename_all = "camelCase")]` para preservar las mismas keys que
-//!   consume hoy el frontend TS. Los de entrada (requests IPC) tambien usan
-//!   `#[serde(rename_all = "camelCase")]` para aceptar el formato que envia
-//!   el frontend.
+//!   backend Rust y el frontend TypeScript (Tauri IPC). Los de salida
+//!   (`UsuarioDto`, `AuthStatusDto`) serializan en **snake_case** (sin
+//!   `rename_all`) para casar con las interfaces TS que los consumen
+//!   (`Usuario`, `AuthStatus`). Los de entrada (`*Request`) usan
+//!   `#[serde(rename_all = "camelCase")]` para aceptar el formato camelCase
+//!   que envia el frontend (idiomático en TS).
 //!
 //! Los modelos de dominio puros viven en `crate::usuarios::models` y NO
 //! dependen de `serde`. La conversion entre modelos y DTOs/Docs se hace via
@@ -63,11 +64,12 @@ pub struct UsuarioConPasswordDoc {
 }
 
 // ============================================================================
-// IPC (wire Tauri -> frontend): camelCase.
+// IPC (wire Tauri -> frontend): snake_case para coincidir con las
+// interfaces TS (`Usuario`, `AuthStatus`). Los inputs del frontend se
+// mantienen en camelCase via los `*Request` de mas abajo.
 // ============================================================================
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct UsuarioDto {
     pub id_usuario: String,
     pub username: String,
@@ -85,7 +87,6 @@ pub struct UsuarioDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct AuthStatusDto {
     pub has_users: bool,
     pub requires_setup: bool,

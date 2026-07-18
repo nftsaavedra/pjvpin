@@ -42,8 +42,8 @@ export function useAuth(): UseAuthReturn {
     const init = async () => {
       try {
         await cargarAuthStatus();
-      } catch {
-        /* auth init error handled internally */
+      } catch (error) {
+        console.error("useAuth: init failed", error);
       }
     };
     void init();
