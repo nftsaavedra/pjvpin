@@ -9,6 +9,7 @@ import { FormModal } from "@/shared/forms/FormModal";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
@@ -147,6 +148,12 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
       );
     });
 
+  const hasActiveFilters = estadoFiltro !== "todos" || busqueda.trim() !== "";
+  const limpiarFiltros = () => {
+    setEstadoFiltro("todos");
+    setBusqueda("");
+  };
+
   return (
     <div className="tab-panel">
       <div className="table-container">
@@ -161,107 +168,129 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             </button>
           </div>
         </div>
-        {error && (
-          <div className="inline-feedback inline-feedback-warning">
-            <span>{messages.ui.sinDatos}</span>
-            <button type="button" className="btn-secondary" onClick={() => void recargar()}>
-              {messages.ui.reintentar}
-            </button>
-          </div>
-        )}
-        <div className="filter-bar">
-          <div className="filter-summary-group">
-            <div className="filter-summary">
-              {messages.configuracion.filter.visibles(gradosFiltrados.length)}
-            </div>
-            <StatusChip variant="total">
-              {messages.configuracion.filter.todos(grados.length)}
-            </StatusChip>
-            <StatusChip variant="success">
-              {messages.configuracion.filter.activos(totalActivos)}
-            </StatusChip>
-            <StatusChip variant="warning">
-              {messages.configuracion.filter.inactivos(totalInactivos)}
-            </StatusChip>
-          </div>
-          <input
-            className="form-input filter-search"
-            placeholder={messages.grados.tab.searchPlaceholder}
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.target.value);
+        {error ? (
+          <EmptyState
+            variant="error"
+            message={messages.ui.errorCarga("grados")}
+            actionLabel={messages.ui.reintentar}
+            onAction={() => {
+              void recargar();
             }}
-            aria-label={messages.grados.tab.searchAriaLabel}
+            data-testid="grados-empty-error"
           />
-          <select
-            className="form-input filter-select"
-            value={estadoFiltro}
-            onChange={(e) => {
-              setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
-            }}
-            aria-label={messages.grados.tab.filtroEstadoAriaLabel}
-          >
-            <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
-            <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
-            <option value="inactivos">
-              {messages.configuracion.filter.opciones.soloInactivos}
-            </option>
-          </select>
-        </div>
-        {loading ? (
-          <SkeletonTable columns={3} rows={5} />
-        ) : gradosFiltrados.length > 0 ? (
-          <table className="table" aria-label={messages.grados.tab.tableAriaLabel}>
-            <thead>
-              <tr>
-                <th scope="col">{messages.grados.tab.columns.nombre}</th>
-                <th scope="col">{messages.grados.tab.columns.descripcion}</th>
-                <th scope="col">{messages.grados.tab.columns.acciones}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gradosFiltrados.map((grado) => (
-                <tr key={grado.id_grado}>
-                  <td>{grado.nombre}</td>
-                  <td>{grado.descripcion || "-"}</td>
-                  <td className="table-actions">
-                    {grado.activo === 0 && (
-                      <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
-                    )}
-                    {grado.activo === 0 && (
-                      <TableActionButton
-                        className="btn-primary"
-                        icon={RotateCcw}
-                        iconSize={18}
-                        label={messages.grados.tab.actions.reactivar}
-                        onClick={() => {
-                          void handleReactivar(grado.id_grado);
-                        }}
-                      />
-                    )}
-                    <TableActionButton
-                      className="btn-edit"
-                      icon={Pencil}
-                      label={messages.grados.tab.actions.editar}
-                      onClick={() => {
-                        handleEditar(grado);
-                      }}
-                    />
-                    <TableActionButton
-                      className="btn-delete"
-                      icon={Trash2}
-                      label={messages.grados.tab.actions.desactivarEliminar}
-                      onClick={() => {
-                        setGradoToDelete(grado);
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         ) : (
-          <div className="empty-state">{messages.ui.sinResultados}</div>
+          <>
+            <div className="filter-bar">
+              <div className="filter-summary-group">
+                <div className="filter-summary">
+                  {messages.configuracion.filter.visibles(gradosFiltrados.length)}
+                </div>
+                <StatusChip variant="total">
+                  {messages.configuracion.filter.todos(grados.length)}
+                </StatusChip>
+                <StatusChip variant="success">
+                  {messages.configuracion.filter.activos(totalActivos)}
+                </StatusChip>
+                <StatusChip variant="warning">
+                  {messages.configuracion.filter.inactivos(totalInactivos)}
+                </StatusChip>
+              </div>
+              <input
+                className="form-input filter-search"
+                placeholder={messages.grados.tab.searchPlaceholder}
+                value={busqueda}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                }}
+                aria-label={messages.grados.tab.searchAriaLabel}
+              />
+              <select
+                className="form-input filter-select"
+                value={estadoFiltro}
+                onChange={(e) => {
+                  setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
+                }}
+                aria-label={messages.grados.tab.filtroEstadoAriaLabel}
+              >
+                <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
+                <option value="activos">
+                  {messages.configuracion.filter.opciones.soloActivos}
+                </option>
+                <option value="inactivos">
+                  {messages.configuracion.filter.opciones.soloInactivos}
+                </option>
+              </select>
+            </div>
+            {loading ? (
+              <SkeletonTable columns={3} rows={5} />
+            ) : gradosFiltrados.length > 0 ? (
+              <table className="table" aria-label={messages.grados.tab.tableAriaLabel}>
+                <thead>
+                  <tr>
+                    <th scope="col">{messages.grados.tab.columns.nombre}</th>
+                    <th scope="col">{messages.grados.tab.columns.descripcion}</th>
+                    <th scope="col">{messages.grados.tab.columns.acciones}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gradosFiltrados.map((grado) => (
+                    <tr key={grado.id_grado}>
+                      <td>{grado.nombre}</td>
+                      <td>{grado.descripcion || "-"}</td>
+                      <td className="table-actions">
+                        {grado.activo === 0 && (
+                          <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
+                        )}
+                        {grado.activo === 0 && (
+                          <TableActionButton
+                            className="btn-primary"
+                            icon={RotateCcw}
+                            iconSize={18}
+                            label={messages.grados.tab.actions.reactivar}
+                            onClick={() => {
+                              void handleReactivar(grado.id_grado);
+                            }}
+                          />
+                        )}
+                        <TableActionButton
+                          className="btn-edit"
+                          icon={Pencil}
+                          label={messages.grados.tab.actions.editar}
+                          onClick={() => {
+                            handleEditar(grado);
+                          }}
+                        />
+                        <TableActionButton
+                          className="btn-delete"
+                          icon={Trash2}
+                          label={messages.grados.tab.actions.desactivarEliminar}
+                          onClick={() => {
+                            setGradoToDelete(grado);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : hasActiveFilters ? (
+              <EmptyState
+                variant="filtered"
+                message={messages.ui.filteredEmpty("grados")}
+                actionLabel={messages.ui.emptyStateCtas.limpiarFiltros}
+                onAction={limpiarFiltros}
+                data-testid="grados-empty-filtered"
+              />
+            ) : (
+              <EmptyState
+                variant="empty"
+                message={messages.ui.emptyState("grados")}
+                actionLabel={messages.ui.emptyStateCtas.crearPrimero("grado")}
+                onAction={handleOpenCreate}
+                data-testid="grados-empty-initial"
+              />
+            )}
+          </>
         )}
       </div>
 

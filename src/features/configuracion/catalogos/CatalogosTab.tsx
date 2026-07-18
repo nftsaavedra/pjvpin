@@ -9,6 +9,7 @@ import { FormModal } from "@/shared/forms/FormModal";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
@@ -186,6 +187,12 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
       );
     });
 
+  const hasActiveFilters = estadoFiltro !== "todos" || busqueda.trim() !== "";
+  const limpiarFiltros = () => {
+    setEstadoFiltro("todos");
+    setBusqueda("");
+  };
+
   return (
     <div className="tab-panel">
       <div className="table-container">
@@ -202,111 +209,139 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
             </div>
           )}
         </div>
-        {error && (
-          <div className="inline-feedback inline-feedback-warning">
-            <span>{messages.ui.sinDatos}</span>
-            <button type="button" className="btn-secondary" onClick={() => void recargar()}>
-              {messages.ui.reintentar}
-            </button>
-          </div>
-        )}
-        <div className="filter-bar">
-          <div className="filter-summary-group">
-            <div className="filter-summary">
-              {messages.configuracion.filter.visibles(catalogosFiltrados.length)}
-            </div>
-            <StatusChip variant="total">
-              {messages.configuracion.filter.todos(catalogos.length)}
-            </StatusChip>
-            <StatusChip variant="success">
-              {messages.configuracion.filter.activos(totalActivos)}
-            </StatusChip>
-            <StatusChip variant="warning">
-              {messages.configuracion.filter.inactivos(totalInactivos)}
-            </StatusChip>
-          </div>
-          <input
-            className="form-input filter-search"
-            placeholder={messages.catalogos.tab.searchPlaceholder}
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.target.value);
+        {error ? (
+          <EmptyState
+            variant="error"
+            message={messages.ui.errorCarga(titulo.toLowerCase())}
+            actionLabel={messages.ui.reintentar}
+            onAction={() => {
+              void recargar();
             }}
-            aria-label={messages.catalogos.tab.searchAriaLabel(titulo)}
+            data-testid={`catalogos-${tipo}-empty-error`}
           />
-          <select
-            className="form-input filter-select"
-            value={estadoFiltro}
-            onChange={(e) => {
-              setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
-            }}
-            aria-label={messages.catalogos.tab.filtroEstadoAriaLabel(titulo)}
-          >
-            <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
-            <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
-            <option value="inactivos">
-              {messages.configuracion.filter.opciones.soloInactivos}
-            </option>
-          </select>
-        </div>
-        {loading ? (
-          <SkeletonTable columns={4} rows={5} />
-        ) : catalogosFiltrados.length > 0 ? (
-          <table className="table" aria-label={messages.catalogos.tab.tableAriaLabel(titulo)}>
-            <thead>
-              <tr>
-                <th scope="col">{messages.catalogos.tab.columns.codigo}</th>
-                <th scope="col">{messages.catalogos.tab.columns.nombre}</th>
-                <th scope="col">{messages.catalogos.tab.columns.descripcion}</th>
-                {canManage && <th scope="col">{messages.catalogos.tab.columns.acciones}</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {catalogosFiltrados.map((item) => (
-                <tr key={item.id_catalogo}>
-                  <td>{item.codigo}</td>
-                  <td>{item.nombre}</td>
-                  <td>{item.descripcion || "-"}</td>
-                  {canManage && (
-                    <td className="table-actions">
-                      {item.activo === 0 && (
-                        <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
-                      )}
-                      {item.activo === 0 && (
-                        <TableActionButton
-                          className="btn-primary"
-                          icon={RotateCcw}
-                          iconSize={18}
-                          label={messages.catalogos.tab.actions.reactivar}
-                          onClick={() => {
-                            void handleReactivar(item.id_catalogo);
-                          }}
-                        />
-                      )}
-                      <TableActionButton
-                        className="btn-edit"
-                        icon={Pencil}
-                        label={messages.catalogos.tab.actions.editar}
-                        onClick={() => {
-                          handleEditar(item);
-                        }}
-                      />
-                      <TableActionButton
-                        className="btn-delete"
-                        icon={Trash2}
-                        label={messages.catalogos.tab.actions.desactivarEliminar}
-                        onClick={() => {
-                          setItemToDelete(item);
-                        }}
-                      />
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
         ) : (
-          <div className="empty-state">{messages.ui.sinResultados}</div>
+          <>
+            <div className="filter-bar">
+              <div className="filter-summary-group">
+                <div className="filter-summary">
+                  {messages.configuracion.filter.visibles(catalogosFiltrados.length)}
+                </div>
+                <StatusChip variant="total">
+                  {messages.configuracion.filter.todos(catalogos.length)}
+                </StatusChip>
+                <StatusChip variant="success">
+                  {messages.configuracion.filter.activos(totalActivos)}
+                </StatusChip>
+                <StatusChip variant="warning">
+                  {messages.configuracion.filter.inactivos(totalInactivos)}
+                </StatusChip>
+              </div>
+              <input
+                className="form-input filter-search"
+                placeholder={messages.catalogos.tab.searchPlaceholder}
+                value={busqueda}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                }}
+                aria-label={messages.catalogos.tab.searchAriaLabel(titulo)}
+              />
+              <select
+                className="form-input filter-select"
+                value={estadoFiltro}
+                onChange={(e) => {
+                  setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
+                }}
+                aria-label={messages.catalogos.tab.filtroEstadoAriaLabel(titulo)}
+              >
+                <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
+                <option value="activos">
+                  {messages.configuracion.filter.opciones.soloActivos}
+                </option>
+                <option value="inactivos">
+                  {messages.configuracion.filter.opciones.soloInactivos}
+                </option>
+              </select>
+            </div>
+            {loading ? (
+              <SkeletonTable columns={4} rows={5} />
+            ) : catalogosFiltrados.length > 0 ? (
+              <table className="table" aria-label={messages.catalogos.tab.tableAriaLabel(titulo)}>
+                <thead>
+                  <tr>
+                    <th scope="col">{messages.catalogos.tab.columns.codigo}</th>
+                    <th scope="col">{messages.catalogos.tab.columns.nombre}</th>
+                    <th scope="col">{messages.catalogos.tab.columns.descripcion}</th>
+                    {canManage && <th scope="col">{messages.catalogos.tab.columns.acciones}</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {catalogosFiltrados.map((item) => (
+                    <tr key={item.id_catalogo}>
+                      <td>{item.codigo}</td>
+                      <td>{item.nombre}</td>
+                      <td>{item.descripcion || "-"}</td>
+                      {canManage && (
+                        <td className="table-actions">
+                          {item.activo === 0 && (
+                            <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
+                          )}
+                          {item.activo === 0 && (
+                            <TableActionButton
+                              className="btn-primary"
+                              icon={RotateCcw}
+                              iconSize={18}
+                              label={messages.catalogos.tab.actions.reactivar}
+                              onClick={() => {
+                                void handleReactivar(item.id_catalogo);
+                              }}
+                            />
+                          )}
+                          <TableActionButton
+                            className="btn-edit"
+                            icon={Pencil}
+                            label={messages.catalogos.tab.actions.editar}
+                            onClick={() => {
+                              handleEditar(item);
+                            }}
+                          />
+                          <TableActionButton
+                            className="btn-delete"
+                            icon={Trash2}
+                            label={messages.catalogos.tab.actions.desactivarEliminar}
+                            onClick={() => {
+                              setItemToDelete(item);
+                            }}
+                          />
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : hasActiveFilters ? (
+              <EmptyState
+                variant="filtered"
+                message={messages.ui.filteredEmpty(titulo.toLowerCase())}
+                actionLabel={messages.ui.emptyStateCtas.limpiarFiltros}
+                onAction={limpiarFiltros}
+                data-testid={`catalogos-${tipo}-empty-filtered`}
+              />
+            ) : canManage ? (
+              <EmptyState
+                variant="empty"
+                message={messages.ui.emptyState(titulo.toLowerCase())}
+                actionLabel={messages.ui.emptyStateCtas.crearPrimero(titulo.toLowerCase())}
+                onAction={handleOpenCreate}
+                data-testid={`catalogos-${tipo}-empty-initial`}
+              />
+            ) : (
+              <EmptyState
+                variant="empty"
+                message={messages.ui.emptyState(titulo.toLowerCase())}
+                data-testid={`catalogos-${tipo}-empty-initial`}
+              />
+            )}
+          </>
         )}
       </div>
 

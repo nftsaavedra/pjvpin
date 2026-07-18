@@ -3,6 +3,8 @@ import { Plus, Trash2, Edit2, Search } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
+import { EmptyState } from "@/shared/ui/EmptyState";
+import { SkeletonBlock } from "@/shared/ui/Skeleton";
 import { useGruposTab } from "./hooks/useGruposTab";
 import { GrupoFormModal } from "./components/GrupoFormModal";
 import { messages } from "@/shared/feedback/messages";
@@ -39,6 +41,11 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
     [busqueda, grupos],
   );
 
+  const hasActiveFilters = busqueda.trim() !== "";
+  const limpiarFiltros = () => {
+    setBusqueda("");
+  };
+
   const deletingGrupo = useMemo(() => {
     return deletingId ? (grupos.find((g) => g.id_grupo === deletingId) ?? null) : null;
   }, [deletingId, grupos]);
@@ -66,130 +73,142 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
           </div>
         )}
 
-        {error && (
-          <div className="inline-feedback inline-feedback-warning">
-            <span>{error}</span>
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                void recargar();
-              }}
-            >
-              {messages.ui.reintentar}
-            </button>
-          </div>
-        )}
-
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="search-box">
-            <AppIcon icon={Search} size={18} />
-            <input
-              type="text"
-              placeholder={messages.grupos.searchPlaceholder}
-              value={busqueda}
-              onChange={(e) => {
-                setBusqueda(e.target.value);
-              }}
-              className="search-input"
-            />
-          </div>
-          <Badge variant="info">{messages.grupos.contador(gruposFiltrados.length)}</Badge>
-        </div>
-
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}
-        >
-          {loading ? (
-            <div className="empty-state">
-              <p>{messages.grupos.cargando}</p>
+        {error ? (
+          <EmptyState
+            variant="error"
+            message={messages.ui.errorCarga("grupos de investigación")}
+            actionLabel={messages.ui.reintentar}
+            onAction={() => {
+              void recargar();
+            }}
+            data-testid="grupos-empty-error"
+          />
+        ) : (
+          <>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="search-box">
+                <AppIcon icon={Search} size={18} />
+                <input
+                  type="text"
+                  placeholder={messages.grupos.searchPlaceholder}
+                  value={busqueda}
+                  onChange={(e) => {
+                    setBusqueda(e.target.value);
+                  }}
+                  className="search-input"
+                />
+              </div>
+              <Badge variant="info">{messages.grupos.contador(gruposFiltrados.length)}</Badge>
             </div>
-          ) : gruposFiltrados.length === 0 ? (
-            <div className="empty-state">
-              <p>{messages.grupos.sinGruposRegistrados}</p>
-              {canManage && (
-                <button type="button" className="btn-secondary" onClick={handleCreate}>
-                  {messages.grupos.crearPrimerGrupo}
-                </button>
+
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}
+            >
+              {loading ? (
+                <div className="flex flex-col gap-3" aria-hidden="true">
+                  <SkeletonBlock />
+                  <SkeletonBlock />
+                  <SkeletonBlock />
+                </div>
+              ) : gruposFiltrados.length === 0 ? (
+                hasActiveFilters ? (
+                  <EmptyState
+                    variant="filtered"
+                    message={messages.ui.filteredEmpty("grupos de investigación")}
+                    actionLabel={messages.ui.emptyStateCtas.limpiarFiltros}
+                    onAction={limpiarFiltros}
+                    data-testid="grupos-empty-filtered"
+                  />
+                ) : (
+                  <EmptyState
+                    variant="empty"
+                    message={messages.ui.emptyState("grupos de investigación")}
+                    actionLabel={
+                      canManage ? messages.ui.emptyStateCtas.crearPrimero("grupo") : undefined
+                    }
+                    onAction={canManage ? handleCreate : undefined}
+                    data-testid="grupos-empty-initial"
+                  />
+                )
+              ) : (
+                gruposFiltrados.map((grupo) => (
+                  <div
+                    key={grupo.id_grupo}
+                    className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all duration-300 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 hover:border-blue-200"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-800 m-0">{grupo.nombre}</h3>
+                        <p className="text-sm text-blue-700 font-semibold m-0">
+                          {grupo.coordinador_nombre
+                            ? messages.grupos.coordinador(grupo.coordinador_nombre)
+                            : messages.grupos.sinCoordinador}
+                        </p>
+                      </div>
+                      {canManage && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            className="p-2 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center"
+                            onClick={() => {
+                              handleUpdate(grupo);
+                            }}
+                            title={messages.grupos.editarTitle}
+                          >
+                            <AppIcon icon={Edit2} size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="p-2 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-medium"
+                            onClick={() => {
+                              setDeletingId(grupo.id_grupo);
+                            }}
+                            title={messages.grupos.eliminarTitle}
+                          >
+                            <AppIcon icon={Trash2} size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {grupo.descripcion && (
+                      <p className="text-sm text-gray-600 m-0">{grupo.descripcion}</p>
+                    )}
+
+                    <div className="flex flex-col gap-3 flex-1">
+                      <strong className="text-sm text-gray-800">
+                        {messages.grupos.lineasInvestigacionTitulo}
+                      </strong>
+                      <div className="flex flex-wrap gap-2">
+                        {grupo.lineas_investigacion.length > 0 ? (
+                          grupo.lineas_investigacion.map((linea) => (
+                            <span
+                              key={linea}
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold"
+                            >
+                              {linea}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold italic text-gray-400">
+                            {messages.grupos.sinLineasRegistradas}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200">
+                      <Badge variant={grupo.activo !== 0 ? "success" : "warning"}>
+                        {grupo.activo !== 0 ? messages.ui.statusActivo : messages.ui.statusInactivo}
+                      </Badge>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
-          ) : (
-            gruposFiltrados.map((grupo) => (
-              <div
-                key={grupo.id_grupo}
-                className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all duration-300 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 hover:border-blue-200"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800 m-0">{grupo.nombre}</h3>
-                    <p className="text-sm text-blue-700 font-semibold m-0">
-                      {grupo.coordinador_nombre
-                        ? messages.grupos.coordinador(grupo.coordinador_nombre)
-                        : messages.grupos.sinCoordinador}
-                    </p>
-                  </div>
-                  {canManage && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        type="button"
-                        className="p-2 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center"
-                        onClick={() => {
-                          handleUpdate(grupo);
-                        }}
-                        title={messages.grupos.editarTitle}
-                      >
-                        <AppIcon icon={Edit2} size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-medium"
-                        onClick={() => {
-                          setDeletingId(grupo.id_grupo);
-                        }}
-                        title={messages.grupos.eliminarTitle}
-                      >
-                        <AppIcon icon={Trash2} size={16} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {grupo.descripcion && (
-                  <p className="text-sm text-gray-600 m-0">{grupo.descripcion}</p>
-                )}
-
-                <div className="flex flex-col gap-3 flex-1">
-                  <strong className="text-sm text-gray-800">
-                    {messages.grupos.lineasInvestigacionTitulo}
-                  </strong>
-                  <div className="flex flex-wrap gap-2">
-                    {grupo.lineas_investigacion.length > 0 ? (
-                      grupo.lineas_investigacion.map((linea) => (
-                        <span
-                          key={linea}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold"
-                        >
-                          {linea}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold italic text-gray-400">
-                        {messages.grupos.sinLineasRegistradas}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-200">
-                  <Badge variant={grupo.activo !== 0 ? "success" : "warning"}>
-                    {grupo.activo !== 0 ? messages.ui.statusActivo : messages.ui.statusInactivo}
-                  </Badge>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {canManage && (

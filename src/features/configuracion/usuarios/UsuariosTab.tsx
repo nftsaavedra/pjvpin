@@ -8,6 +8,7 @@ import { FormSelect } from "@/shared/forms/FormSelect";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
@@ -64,6 +65,12 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
   const isEditingOwnUser = editingUsuario?.id_usuario === currentUser.id_usuario;
   const isEditing = Boolean(editingUsuario);
 
+  const hasActiveFilters = estadoFiltro !== "todos" || busqueda.trim() !== "";
+  const limpiarFiltros = () => {
+    setEstadoFiltro("todos");
+    setBusqueda("");
+  };
+
   return (
     <div className="tab-panel">
       <div className="role-matrix-grid">
@@ -93,121 +100,145 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
             </button>
           </div>
         </div>
-        {error && (
-          <div className="inline-feedback inline-feedback-warning">
-            <span>{messages.ui.sinDatos}</span>
-            <button type="button" className="btn-secondary" onClick={() => void recargar()}>
-              {messages.ui.reintentar}
-            </button>
-          </div>
-        )}
-        <div className="filter-bar">
-          <div className="filter-summary-group">
-            <div className="filter-summary">
-              {messages.configuracion.filter.visibles(usuariosFiltrados.length)}
-            </div>
-            <StatusChip variant="total">
-              {messages.configuracion.filter.todos(usuarios.length)}
-            </StatusChip>
-            <StatusChip variant="success">
-              {messages.configuracion.filter.activos(totalActivos)}
-            </StatusChip>
-            <StatusChip variant="warning">
-              {messages.configuracion.filter.inactivos(totalInactivos)}
-            </StatusChip>
-          </div>
-          <input
-            className="form-input filter-search"
-            placeholder={messages.usuarios.tab.searchPlaceholder}
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.target.value);
+        {error ? (
+          <EmptyState
+            variant="error"
+            message={messages.ui.errorCarga("usuarios")}
+            actionLabel={messages.ui.reintentar}
+            onAction={() => {
+              void recargar();
             }}
-            aria-label={messages.usuarios.tab.searchAriaLabel}
+            data-testid="usuarios-empty-error"
           />
-          <select
-            className="form-input filter-select"
-            value={estadoFiltro}
-            onChange={(e) => {
-              setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
-            }}
-            aria-label={messages.usuarios.tab.filtroEstadoAriaLabel}
-          >
-            <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
-            <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
-            <option value="inactivos">
-              {messages.configuracion.filter.opciones.soloInactivos}
-            </option>
-          </select>
-        </div>
-
-        {loading ? (
-          <SkeletonTable columns={6} rows={5} />
-        ) : usuariosFiltrados.length === 0 ? (
-          <div className="empty-state">{messages.ui.sinResultados}</div>
         ) : (
-          <table className="table" aria-label={messages.usuarios.tab.tableAriaLabel}>
-            <thead>
-              <tr>
-                <th scope="col">{messages.usuarios.tab.columns.usuario}</th>
-                <th scope="col">{messages.usuarios.tab.columns.dni}</th>
-                <th scope="col">{messages.usuarios.tab.columns.nombre}</th>
-                <th scope="col">{messages.usuarios.tab.columns.rol}</th>
-                <th scope="col">{messages.usuarios.tab.columns.estado}</th>
-                <th scope="col">{messages.usuarios.tab.columns.acciones}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuariosFiltrados.map((usuario) => (
-                <tr key={usuario.id_usuario}>
-                  <td>{usuario.username}</td>
-                  <td>
-                    <code className="text-xs">{usuario.dni ?? "—"}</code>
-                  </td>
-                  <td>{usuario.nombre_completo}</td>
-                  <td>
-                    <Badge variant="info">{getRoleLabel(usuario.rol)}</Badge>
-                  </td>
-                  <td>
-                    {usuario.activo === 1 ? (
-                      <Badge variant="success">{messages.ui.statusActivo}</Badge>
-                    ) : (
-                      <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
-                    )}
-                  </td>
-                  <td className="table-actions">
-                    <TableActionButton
-                      className="btn-edit"
-                      icon={Pencil}
-                      label={
-                        usuario.id_usuario === currentUser.id_usuario
-                          ? messages.usuarios.tab.actions.editarPropio
-                          : messages.usuarios.tab.actions.editar
-                      }
-                      onClick={() => {
-                        void handleEditar(usuario);
-                      }}
-                    />
-                    <TableActionButton
-                      className={usuario.activo === 1 ? "btn-delete" : "btn-primary"}
-                      icon={usuario.activo === 1 ? Trash2 : RotateCcw}
-                      label={
-                        usuario.id_usuario === currentUser.id_usuario
-                          ? messages.usuarios.tab.actions.noCambiaEstado
-                          : usuario.activo === 1
-                            ? messages.usuarios.tab.actions.desactivar
-                            : messages.usuarios.tab.actions.reactivar
-                      }
-                      onClick={() => {
-                        setUsuarioToToggle(usuario);
-                      }}
-                      disabled={usuario.id_usuario === currentUser.id_usuario}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="filter-bar">
+              <div className="filter-summary-group">
+                <div className="filter-summary">
+                  {messages.configuracion.filter.visibles(usuariosFiltrados.length)}
+                </div>
+                <StatusChip variant="total">
+                  {messages.configuracion.filter.todos(usuarios.length)}
+                </StatusChip>
+                <StatusChip variant="success">
+                  {messages.configuracion.filter.activos(totalActivos)}
+                </StatusChip>
+                <StatusChip variant="warning">
+                  {messages.configuracion.filter.inactivos(totalInactivos)}
+                </StatusChip>
+              </div>
+              <input
+                className="form-input filter-search"
+                placeholder={messages.usuarios.tab.searchPlaceholder}
+                value={busqueda}
+                onChange={(e) => {
+                  setBusqueda(e.target.value);
+                }}
+                aria-label={messages.usuarios.tab.searchAriaLabel}
+              />
+              <select
+                className="form-input filter-select"
+                value={estadoFiltro}
+                onChange={(e) => {
+                  setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
+                }}
+                aria-label={messages.usuarios.tab.filtroEstadoAriaLabel}
+              >
+                <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
+                <option value="activos">
+                  {messages.configuracion.filter.opciones.soloActivos}
+                </option>
+                <option value="inactivos">
+                  {messages.configuracion.filter.opciones.soloInactivos}
+                </option>
+              </select>
+            </div>
+
+            {loading ? (
+              <SkeletonTable columns={6} rows={5} />
+            ) : usuariosFiltrados.length === 0 ? (
+              hasActiveFilters ? (
+                <EmptyState
+                  variant="filtered"
+                  message={messages.ui.filteredEmpty("usuarios")}
+                  actionLabel={messages.ui.emptyStateCtas.limpiarFiltros}
+                  onAction={limpiarFiltros}
+                  data-testid="usuarios-empty-filtered"
+                />
+              ) : (
+                <EmptyState
+                  variant="empty"
+                  message={messages.ui.emptyState("usuarios")}
+                  actionLabel={messages.ui.emptyStateCtas.crearPrimero("usuario")}
+                  onAction={handleOpenCreate}
+                  data-testid="usuarios-empty-initial"
+                />
+              )
+            ) : (
+              <table className="table" aria-label={messages.usuarios.tab.tableAriaLabel}>
+                <thead>
+                  <tr>
+                    <th scope="col">{messages.usuarios.tab.columns.usuario}</th>
+                    <th scope="col">{messages.usuarios.tab.columns.dni}</th>
+                    <th scope="col">{messages.usuarios.tab.columns.nombre}</th>
+                    <th scope="col">{messages.usuarios.tab.columns.rol}</th>
+                    <th scope="col">{messages.usuarios.tab.columns.estado}</th>
+                    <th scope="col">{messages.usuarios.tab.columns.acciones}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usuariosFiltrados.map((usuario) => (
+                    <tr key={usuario.id_usuario}>
+                      <td>{usuario.username}</td>
+                      <td>
+                        <code className="text-xs">{usuario.dni ?? "—"}</code>
+                      </td>
+                      <td>{usuario.nombre_completo}</td>
+                      <td>
+                        <Badge variant="info">{getRoleLabel(usuario.rol)}</Badge>
+                      </td>
+                      <td>
+                        {usuario.activo === 1 ? (
+                          <Badge variant="success">{messages.ui.statusActivo}</Badge>
+                        ) : (
+                          <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
+                        )}
+                      </td>
+                      <td className="table-actions">
+                        <TableActionButton
+                          className="btn-edit"
+                          icon={Pencil}
+                          label={
+                            usuario.id_usuario === currentUser.id_usuario
+                              ? messages.usuarios.tab.actions.editarPropio
+                              : messages.usuarios.tab.actions.editar
+                          }
+                          onClick={() => {
+                            void handleEditar(usuario);
+                          }}
+                        />
+                        <TableActionButton
+                          className={usuario.activo === 1 ? "btn-delete" : "btn-primary"}
+                          icon={usuario.activo === 1 ? Trash2 : RotateCcw}
+                          label={
+                            usuario.id_usuario === currentUser.id_usuario
+                              ? messages.usuarios.tab.actions.noCambiaEstado
+                              : usuario.activo === 1
+                                ? messages.usuarios.tab.actions.desactivar
+                                : messages.usuarios.tab.actions.reactivar
+                          }
+                          onClick={() => {
+                            setUsuarioToToggle(usuario);
+                          }}
+                          disabled={usuario.id_usuario === currentUser.id_usuario}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
         )}
       </div>
 
