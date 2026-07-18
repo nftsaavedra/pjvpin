@@ -51,6 +51,7 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
         canManage={canManage}
         busqueda={table.busqueda}
         cargarInvestigadores={table.cargarInvestigadores}
+        hasActiveFilters={table.hasActiveFilters}
         investigadorToDelete={table.investigadorToDelete}
         investigadores={table.investigadores}
         investigadoresFiltrados={table.investigadoresFiltrados}
@@ -64,6 +65,7 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
         handleReactivarInvestigador={(id: string) => {
           void table.handleReactivarInvestigador(id);
         }}
+        limpiarFiltros={table.limpiarFiltros}
         loading={table.loading}
         nivelesRenacytDisponibles={table.nivelesRenacytDisponibles}
         renacytNivelFiltro={table.renacytNivelFiltro}

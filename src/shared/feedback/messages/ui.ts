@@ -18,6 +18,7 @@ export const ui = {
   errorCarga: (entidad: string) => `No se pudieron cargar los ${entidad}.`,
   emptyStateCtas: {
     limpiarFiltros: "Limpiar filtros",
+    crearPrimero: (entidad: string) => `Crear primer ${entidad}`,
   },
 } as const;
 

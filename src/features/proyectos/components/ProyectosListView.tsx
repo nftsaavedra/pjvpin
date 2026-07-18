@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import type { ProyectoDetalle } from "../api";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { messages } from "@/shared/feedback/messages";
 import { ProyectosTableGrid } from "./ProyectosTableGrid";
 import { ProyectosToolbar } from "./ProyectosToolbar";
@@ -15,6 +16,7 @@ interface ProyectosListViewProps {
   loadingProyectos: boolean;
   proyectosError: string | null;
   proyectoToDelete: ProyectoDetalle | null;
+  recargarProyectos: () => Promise<void>;
   onOpenCreate: () => void;
   onOpenEdit: (proyecto: ProyectoDetalle) => void;
   onOpenDetail: (proyecto: ProyectoDetalle) => void;
@@ -31,6 +33,7 @@ export const ProyectosListView: React.FC<ProyectosListViewProps> = ({
   loadingProyectos,
   proyectosError,
   proyectoToDelete,
+  recargarProyectos,
   onOpenCreate,
   onOpenEdit,
   onOpenDetail,
@@ -55,38 +58,50 @@ export const ProyectosListView: React.FC<ProyectosListViewProps> = ({
             </div>
           )}
         </div>
-        {proyectosError && (
-          <div className="inline-feedback inline-feedback-warning">
-            <span>{messages.ui.sinDatos}</span>
-          </div>
-        )}
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
             <span>{messages.proyectos.modoConsulta}</span>
           </div>
         )}
-        <ProyectosToolbar
-          busqueda={listado.busqueda}
-          estadoFiltro={listado.estadoFiltro}
-          loading={loadingProyectos}
-          totalActivos={listado.totalActivos}
-          totalInactivos={listado.totalInactivos}
-          totalTodos={proyectos.length}
-          totalVisibles={listado.proyectosFiltrados.length}
-          onBusquedaChange={listado.setBusqueda}
-          onEstadoFiltroChange={listado.setEstadoFiltro}
-        />
-        <ProyectosTableGrid
-          loading={loadingProyectos}
-          proyectos={listado.proyectosFiltrados}
-          onDeactivate={onDeactivate}
-          onEdit={onOpenEdit}
-          onOpenDetail={onOpenDetail}
-          onReactivate={(id: string) => {
-            onReactivate(id);
-          }}
-          canManage={canManage}
-        />
+        {proyectosError ? (
+          <EmptyState
+            variant="error"
+            message={messages.ui.errorCarga("proyectos")}
+            actionLabel={messages.ui.reintentar}
+            onAction={() => {
+              void recargarProyectos();
+            }}
+            data-testid="proyectos-empty-error"
+          />
+        ) : (
+          <>
+            <ProyectosToolbar
+              busqueda={listado.busqueda}
+              estadoFiltro={listado.estadoFiltro}
+              loading={loadingProyectos}
+              totalActivos={listado.totalActivos}
+              totalInactivos={listado.totalInactivos}
+              totalTodos={proyectos.length}
+              totalVisibles={listado.proyectosFiltrados.length}
+              onBusquedaChange={listado.setBusqueda}
+              onEstadoFiltroChange={listado.setEstadoFiltro}
+            />
+            <ProyectosTableGrid
+              hasActiveFilters={listado.hasActiveFilters}
+              loading={loadingProyectos}
+              onClearFilters={listado.limpiarFiltros}
+              onCreateClick={onOpenCreate}
+              proyectos={listado.proyectosFiltrados}
+              onDeactivate={onDeactivate}
+              onEdit={onOpenEdit}
+              onOpenDetail={onOpenDetail}
+              onReactivate={(id: string) => {
+                onReactivate(id);
+              }}
+              canManage={canManage}
+            />
+          </>
+        )}
       </div>
 
       {canManage && (

@@ -21,6 +21,7 @@ export const ProyectosTab: React.FC<ProyectosTabProps> = ({
     proyectos,
     loadingProyectos,
     proyectosError,
+    cargarProyectos,
     investigadores,
     loadingInvestigadores,
     refreshingInvestigadores,
@@ -49,6 +50,7 @@ export const ProyectosTab: React.FC<ProyectosTabProps> = ({
         loadingProyectos={loadingProyectos}
         proyectosError={proyectosError}
         proyectoToDelete={proyectoToDelete}
+        recargarProyectos={cargarProyectos}
         onOpenCreate={handleOpenCreate}
         onOpenEdit={handleOpenEdit}
         onOpenDetail={handleOpenDetail}

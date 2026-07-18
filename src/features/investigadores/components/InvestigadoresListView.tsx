@@ -5,12 +5,14 @@ import { InvestigadoresTableGrid } from "./InvestigadoresTableGrid";
 import { InvestigadoresTableToolbar } from "./InvestigadoresTableToolbar";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadoresListViewProps {
   canManage: boolean;
   busqueda: string;
   cargarInvestigadores: () => Promise<void>;
+  hasActiveFilters: boolean;
   investigadorToDelete: InvestigadorDetalle | null;
   investigadores: InvestigadorDetalle[];
   investigadoresFiltrados: InvestigadorDetalle[];
@@ -20,6 +22,7 @@ interface InvestigadoresListViewProps {
   gradosDisponibles: string[];
   handleRefreshRenacytFormaciones: (id: string) => void;
   handleReactivarInvestigador: (id: string) => void;
+  limpiarFiltros: () => void;
   loading: boolean;
   nivelesRenacytDisponibles: string[];
   renacytNivelFiltro: string;
@@ -41,6 +44,7 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
   canManage,
   busqueda,
   cargarInvestigadores,
+  hasActiveFilters,
   investigadorToDelete,
   investigadores,
   investigadoresFiltrados,
@@ -50,6 +54,7 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
   gradosDisponibles,
   handleRefreshRenacytFormaciones,
   handleReactivarInvestigador,
+  limpiarFiltros,
   loading,
   nivelesRenacytDisponibles,
   renacytNivelFiltro,
@@ -85,55 +90,58 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
             </div>
           )}
         </div>
-        {error && (
-          <div className="inline-feedback inline-feedback-warning">
-            <span>{messages.ui.sinDatos}</span>
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                void cargarInvestigadores();
-              }}
-            >
-              {messages.ui.reintentar}
-            </button>
-          </div>
-        )}
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
             <span>{messages.investigadores.list.modoConsulta}</span>
           </div>
         )}
-        <InvestigadoresTableToolbar
-          busqueda={busqueda}
-          estadoFiltro={estadoFiltro}
-          gradoFiltro={gradoFiltro}
-          gradosDisponibles={gradosDisponibles}
-          nivelesRenacytDisponibles={nivelesRenacytDisponibles}
-          renacytNivelFiltro={renacytNivelFiltro}
-          totalVisibles={investigadoresFiltrados.length}
-          totalTodos={investigadores.length}
-          totalActivos={totalActivos}
-          totalInactivos={totalInactivos}
-          onBusquedaChange={onBusquedaChange}
-          onEstadoFiltroChange={onEstadoFiltroChange}
-          onGradoFiltroChange={onGradoFiltroChange}
-          onRenacytNivelFiltroChange={onRenacytNivelFiltroChange}
-        />
-        <InvestigadoresTableGrid
-          investigadores={investigadoresFiltrados}
-          loading={loading}
-          onView={onOpenDetail}
-          onRefreshRenacyt={(id: string) => {
-            handleRefreshRenacytFormaciones(id);
-          }}
-          onReactivate={(id: string) => {
-            handleReactivarInvestigador(id);
-          }}
-          onDeactivate={onDeactivate}
-          refreshingRenacytInvestigadorId={refreshingRenacytInvestigadorId}
-          canManage={canManage}
-        />
+        {error ? (
+          <EmptyState
+            variant="error"
+            message={messages.ui.errorCarga("investigadores")}
+            actionLabel={messages.ui.reintentar}
+            onAction={() => {
+              void cargarInvestigadores();
+            }}
+            data-testid="investigadores-empty-error"
+          />
+        ) : (
+          <>
+            <InvestigadoresTableToolbar
+              busqueda={busqueda}
+              estadoFiltro={estadoFiltro}
+              gradoFiltro={gradoFiltro}
+              gradosDisponibles={gradosDisponibles}
+              nivelesRenacytDisponibles={nivelesRenacytDisponibles}
+              renacytNivelFiltro={renacytNivelFiltro}
+              totalVisibles={investigadoresFiltrados.length}
+              totalTodos={investigadores.length}
+              totalActivos={totalActivos}
+              totalInactivos={totalInactivos}
+              onBusquedaChange={onBusquedaChange}
+              onEstadoFiltroChange={onEstadoFiltroChange}
+              onGradoFiltroChange={onGradoFiltroChange}
+              onRenacytNivelFiltroChange={onRenacytNivelFiltroChange}
+            />
+            <InvestigadoresTableGrid
+              hasActiveFilters={hasActiveFilters}
+              investigadores={investigadoresFiltrados}
+              loading={loading}
+              onClearFilters={limpiarFiltros}
+              onCreateClick={onCreateClick}
+              onView={onOpenDetail}
+              onRefreshRenacyt={(id: string) => {
+                handleRefreshRenacytFormaciones(id);
+              }}
+              onReactivate={(id: string) => {
+                handleReactivarInvestigador(id);
+              }}
+              onDeactivate={onDeactivate}
+              refreshingRenacytInvestigadorId={refreshingRenacytInvestigadorId}
+              canManage={canManage}
+            />
+          </>
+        )}
       </div>
 
       {canManage && (

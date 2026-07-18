@@ -2,6 +2,7 @@ import React from "react";
 import { Eye, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
 import type { InvestigadorDetalle } from "../api";
 import { Badge } from "@/shared/ui/Badge";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
@@ -9,8 +10,11 @@ import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadoresTableGridProps {
   canManage: boolean;
+  hasActiveFilters: boolean;
   investigadores: InvestigadorDetalle[];
   loading: boolean;
+  onClearFilters: () => void;
+  onCreateClick: () => void;
   onView: (investigador: InvestigadorDetalle) => void;
   onRefreshRenacyt: (id: string) => void;
   onReactivate: (id: string) => void;
@@ -20,8 +24,11 @@ interface InvestigadoresTableGridProps {
 
 export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = ({
   canManage,
+  hasActiveFilters,
   investigadores,
   loading,
+  onClearFilters,
+  onCreateClick,
   onView,
   onRefreshRenacyt,
   onReactivate,
@@ -33,7 +40,28 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
   }
 
   if (investigadores.length === 0) {
-    return <div className="empty-state">{messages.investigadores.table.emptyState}</div>;
+    if (hasActiveFilters) {
+      return (
+        <EmptyState
+          variant="filtered"
+          message={messages.ui.filteredEmpty("investigadores")}
+          actionLabel={messages.ui.emptyStateCtas.limpiarFiltros}
+          onAction={onClearFilters}
+          data-testid="investigadores-empty-filtered"
+        />
+      );
+    }
+    return (
+      <EmptyState
+        variant="empty"
+        message={messages.ui.emptyState("investigadores")}
+        actionLabel={
+          canManage ? messages.ui.emptyStateCtas.crearPrimero("investigador") : undefined
+        }
+        onAction={canManage ? onCreateClick : undefined}
+        data-testid="investigadores-empty-initial"
+      />
+    );
   }
 
   return (

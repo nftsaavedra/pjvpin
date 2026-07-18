@@ -156,9 +156,23 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
     [busqueda, investigadores, estadoFiltro, gradoFiltro, renacytNivelFiltro],
   );
 
+  const hasActiveFilters =
+    estadoFiltro !== "todos" ||
+    gradoFiltro !== "todos" ||
+    renacytNivelFiltro !== "todos" ||
+    busqueda.trim() !== "";
+
+  const limpiarFiltros = () => {
+    setEstadoFiltro("todos");
+    setGradoFiltro("todos");
+    setRenacytNivelFiltro("todos");
+    setBusqueda("");
+  };
+
   return {
     busqueda,
     cargarInvestigadores,
+    hasActiveFilters,
     investigadorToDelete,
     investigadores,
     investigadoresFiltrados,
@@ -169,6 +183,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
     handleEliminarInvestigador,
     handleRefreshRenacytFormaciones,
     handleReactivarInvestigador,
+    limpiarFiltros,
     loading,
     nivelesRenacytDisponibles,
     renacytNivelFiltro,

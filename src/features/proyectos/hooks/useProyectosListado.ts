@@ -30,11 +30,20 @@ export function useProyectosListado(proyectos: ProyectoDetalle[]) {
     [busqueda, estadoFiltro, proyectos],
   );
 
+  const hasActiveFilters = estadoFiltro !== "activos" || busqueda.trim() !== "";
+
+  const limpiarFiltros = () => {
+    setEstadoFiltro("activos");
+    setBusqueda("");
+  };
+
   return {
     estadoFiltro,
     setEstadoFiltro,
     busqueda,
     setBusqueda,
+    hasActiveFilters,
+    limpiarFiltros,
     totalActivos,
     totalInactivos,
     proyectosFiltrados,

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Eye, Pencil, RotateCcw, Trash2, Users, X } from "lucide-react";
 import type { ProyectoDetalle, ProyectoParticipanteResumen } from "../api";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { AppIcon } from "@/shared/ui/AppIcon";
@@ -11,7 +12,10 @@ import { messages } from "@/shared/feedback/messages";
 
 interface ProyectosTableGridProps {
   canManage: boolean;
+  hasActiveFilters: boolean;
   loading: boolean;
+  onClearFilters: () => void;
+  onCreateClick: () => void;
   proyectos: ProyectoDetalle[];
   onDeactivate: (proyecto: ProyectoDetalle) => void;
   onEdit: (proyecto: ProyectoDetalle) => void;
@@ -21,7 +25,10 @@ interface ProyectosTableGridProps {
 
 export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
   canManage,
+  hasActiveFilters,
   loading,
+  onClearFilters,
+  onCreateClick,
   proyectos,
   onDeactivate,
   onEdit,
@@ -38,7 +45,26 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
   }
 
   if (proyectos.length === 0) {
-    return <div className="empty-state">{messages.proyectos.table.emptyState}</div>;
+    if (hasActiveFilters) {
+      return (
+        <EmptyState
+          variant="filtered"
+          message={messages.ui.filteredEmpty("proyectos")}
+          actionLabel={messages.ui.emptyStateCtas.limpiarFiltros}
+          onAction={onClearFilters}
+          data-testid="proyectos-empty-filtered"
+        />
+      );
+    }
+    return (
+      <EmptyState
+        variant="empty"
+        message={messages.ui.emptyState("proyectos")}
+        actionLabel={canManage ? messages.ui.emptyStateCtas.crearPrimero("proyecto") : undefined}
+        onAction={canManage ? onCreateClick : undefined}
+        data-testid="proyectos-empty-initial"
+      />
+    );
   }
 
   return (
