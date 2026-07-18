@@ -186,7 +186,7 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
           aria-label="Volver a catálogos"
         >
           <AppIcon icon={LibraryBig} size={16} />
-          <span>Ver todos los catálogos</span>
+          <span>Catálogos</span>
         </button>
         <Suspense fallback={<SkeletonTable columns={4} rows={5} />}>
           <CatalogosTab
@@ -206,13 +206,7 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
       <div className="catalogos-header">
         <div className="catalogos-header-title">
           <AppIcon icon={LibraryBig} size={22} />
-          <div>
-            <h2>Catálogos del Sistema</h2>
-            <p className="catalogos-header-desc">
-              Administre los valores de referencia para patentes, productos, financiamiento y otros
-              parámetros configurables del sistema.
-            </p>
-          </div>
+          <h2>Catálogos del Sistema</h2>
         </div>
       </div>
 

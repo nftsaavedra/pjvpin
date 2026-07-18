@@ -62,7 +62,6 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
       id: "grados",
       label: "Grados",
       icon: GraduationCap,
-      description: "Catálogo académico base para el sistema.",
     },
     ...(canViewCatalogos
       ? [
@@ -70,7 +69,6 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
             id: "catalogos",
             label: "Catálogos",
             icon: LibraryBig,
-            description: "Tipos de patentes, productos, financiamiento y monedas.",
           },
         ]
       : []),
@@ -80,7 +78,6 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
             id: "usuarios",
             label: "Usuarios",
             icon: Users,
-            description: "Altas, bajas y permisos de acceso al sistema.",
           },
         ]
       : []),

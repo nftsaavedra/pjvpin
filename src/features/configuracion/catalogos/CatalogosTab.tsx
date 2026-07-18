@@ -203,7 +203,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>No se pudo refrescar la lista. Se mantienen los datos previos.</span>
+            <span>Error al refrescar: mostrando datos previos.</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
               Reintentar
             </button>
@@ -293,7 +293,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
             </tbody>
           </table>
         ) : (
-          <div className="empty-state">No hay elementos para el filtro seleccionado</div>
+          <div className="empty-state">Sin resultados</div>
         )}
       </div>
 
@@ -326,7 +326,6 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
               value={codigo}
               onChange={setCodigo}
               placeholder="Ej: PAT_01"
-              help="Use un código corto y descriptivo para identificar este elemento en los formularios del sistema."
               required
             />
 
@@ -335,7 +334,6 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
               value={nombre}
               onChange={setNombre}
               placeholder="Ej: Patente de invención"
-              help="Denominación visible del elemento que aparecerá en las listas de selección del sistema."
               required
             />
 
@@ -344,7 +342,6 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
               value={descripcion}
               onChange={setDescripcion}
               placeholder="Descripción opcional del elemento"
-              help="Agregue contexto adicional para diferenciar este elemento de otros similares en el catálogo."
             />
 
             <FormInput
@@ -352,7 +349,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
               value={orden}
               onChange={setOrden}
               placeholder="Ej: 1"
-              help="Número opcional para controlar el orden de aparición en las listas. Valores menores aparecen primero."
+              help="Menor número = primera posición"
             />
           </div>
         </FormModal>
@@ -361,7 +358,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
       <ConfirmDialog
         open={Boolean(itemToDelete)}
         title="Desactivar o eliminar elemento"
-        message={`Esta acción intentará eliminar el elemento "${itemToDelete?.nombre ?? ""}" del catálogo ${titulo}. Si está en uso en el sistema, se desactivará para conservar la integridad de la información.`}
+        message={`¿Eliminar "${itemToDelete?.nombre ?? ""}" de ${titulo}? Si está en uso, se desactivará.`}
         confirmText="Sí, continuar"
         cancelText="No, cancelar"
         onConfirm={() => {

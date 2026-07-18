@@ -20,13 +20,13 @@ interface RoleDefinition {
   label: string;
   summary: string;
   permissions: AppPermission[];
-  capabilities: string[];
+  modules: string[];
 }
 
 export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
   superuser: {
     label: "Superusuario",
-    summary: "Nivel root del sistema. Control total de configuracion y accesos.",
+    summary: "Control total del sistema.",
     permissions: [
       "dashboard.view",
       "investigadores.view",
@@ -43,15 +43,22 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "catalogos.manage",
       "usuarios.manage",
     ],
-    capabilities: [
-      "Control total del sistema.",
-      "Configuracion de servicios externos.",
-      "Unico en el sistema, inmutable desde la UI.",
+    modules: [
+      "Dashboard",
+      "Investigadores",
+      "Proyectos",
+      "Grupos",
+      "Recursos",
+      "Reportes",
+      "Grados",
+      "Catálogos",
+      "Usuarios",
+      "Configuración",
     ],
   },
   admin: {
     label: "Administrador",
-    summary: "Control total del sistema, accesos y catalogos base.",
+    summary: "Gestión total del sistema y usuarios.",
     permissions: [
       "dashboard.view",
       "investigadores.view",
@@ -68,15 +75,21 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "catalogos.manage",
       "usuarios.manage",
     ],
-    capabilities: [
-      "Gestiona usuarios, roles y estado de acceso.",
-      "Administra grados academicos y todo el dato operativo.",
-      "Puede crear, actualizar, desactivar, reactivar y exportar.",
+    modules: [
+      "Dashboard",
+      "Investigadores",
+      "Proyectos",
+      "Grupos",
+      "Recursos",
+      "Reportes",
+      "Grados",
+      "Catálogos",
+      "Usuarios",
     ],
   },
   operador: {
     label: "Operador",
-    summary: "Gestion operativa diaria de investigadores y proyectos.",
+    summary: "Gestión operativa diaria.",
     permissions: [
       "dashboard.view",
       "investigadores.view",
@@ -89,15 +102,11 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "reportes.export",
       "catalogos.view",
     ],
-    capabilities: [
-      "Gestiona investigadores, proyectos, grupos y sincronizaciones operativas.",
-      "Consulta dashboard y reportes con opcion de exportar.",
-      "No administra usuarios ni catalogos de configuracion.",
-    ],
+    modules: ["Dashboard", "Investigadores", "Proyectos", "Grupos", "Recursos", "Reportes"],
   },
   consulta: {
     label: "Consulta",
-    summary: "Acceso de solo lectura a la informacion operativa.",
+    summary: "Solo lectura de la información operativa.",
     permissions: [
       "dashboard.view",
       "investigadores.view",
@@ -105,15 +114,11 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "grupos.view",
       "reportes.view",
     ],
-    capabilities: [
-      "Visualiza dashboard, investigadores, proyectos, grupos y reportes.",
-      "No puede crear, editar, desactivar, reactivar ni sincronizar.",
-      "No puede exportar ni acceder a configuracion.",
-    ],
+    modules: ["Dashboard", "Investigadores", "Proyectos", "Grupos", "Reportes"],
   },
   responsable_proyecto: {
     label: "Resp. Proyecto",
-    summary: "Acceso a proyectos donde es responsable.",
+    summary: "Acceso a sus proyectos como responsable.",
     permissions: [
       "dashboard.view",
       "investigadores.view",
@@ -122,11 +127,7 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "reportes.view",
       "reportes.export",
     ],
-    capabilities: [
-      "Ve y gestiona solo los proyectos donde es responsable.",
-      "Accede a investigadores y recursos de sus proyectos.",
-      "Puede exportar reportes de sus proyectos.",
-    ],
+    modules: ["Dashboard", "Investigadores", "Proyectos", "Reportes"],
   },
 };
 

@@ -73,7 +73,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
               key={roleOption.value}
               label={definition.label}
               summary={definition.summary}
-              capabilities={definition.capabilities}
+              modules={definition.modules}
               isActive={rol === roleOption.value}
             />
           );
@@ -94,7 +94,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>No se pudo refrescar la lista. Se muestran los datos disponibles.</span>
+            <span>Error al refrescar: mostrando datos previos.</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
               Reintentar
             </button>
@@ -133,7 +133,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
         {loading ? (
           <SkeletonTable columns={6} rows={5} />
         ) : usuariosFiltrados.length === 0 ? (
-          <div className="empty-state">No hay usuarios para el filtro seleccionado</div>
+          <div className="empty-state">Sin resultados</div>
         ) : (
           <table className="table" aria-label="Tabla de usuarios registrados">
             <thead>
@@ -234,7 +234,6 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
               validationMessage={dni.message}
               isLoading={isLoading}
               inputId="usuarios-tab-dni"
-              helpText="Valide el DNI contra RENIEC para autocompletar nombres y apellidos del nuevo usuario."
             />
           )}
 
@@ -271,9 +270,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
 
           {isEditing && isCargandoPersona && (
             <div className="inline-feedback inline-feedback-info" aria-live="polite">
-              <span>
-                Cargando identidad vinculada al DNI <strong>{dni.dni}</strong>...
-              </span>
+              <span>Cargando...</span>
             </div>
           )}
 
@@ -307,7 +304,6 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
             value={username}
             onChange={setUsername}
             placeholder="Ej: jlopez"
-            help="Use un identificador corto, sin espacios, para facilitar el acceso y la búsqueda interna del usuario."
             required
           />
           <FormSelect
@@ -315,31 +311,15 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
             value={rol}
             onChange={setRol}
             options={roles}
-            help={
-              isEditingOwnUser
-                ? "No puede cambiar su propio rol. Otro administrador debe realizar esa operación para preservar el control de accesos."
-                : "El rol define los permisos disponibles dentro el sistema. Asigne el mínimo acceso necesario según la función del usuario."
-            }
+            help={isEditingOwnUser ? "No puede auto-asignarse otro rol." : undefined}
             disabled={isEditingOwnUser}
             required
           />
-          {isEditingOwnUser && (
-            <div className="inline-feedback inline-feedback-info">
-              <span>
-                Puede actualizar su nombre o contraseña, pero no cambiar su propio rol ni su estado.
-              </span>
-            </div>
-          )}
           <FormInput
             label={editingUsuario ? "Nueva contraseña (opcional)" : "Contraseña"}
             value={password}
             onChange={setPassword}
             placeholder={editingUsuario ? "Dejar vacío para conservarla" : "Mínimo 8 caracteres"}
-            help={
-              editingUsuario
-                ? "Complete este campo solo si necesita reemplazar la contraseña actual. Si lo deja vacío, se conservará la existente."
-                : "Defina una contraseña de al menos 8 caracteres. Evite claves obvias o reutilizadas."
-            }
             required={!editingUsuario}
           />
         </div>

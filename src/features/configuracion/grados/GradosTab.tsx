@@ -162,7 +162,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
         </div>
         {error && (
           <div className="inline-feedback inline-feedback-warning">
-            <span>No se pudo refrescar la lista. Se mantienen los datos previos.</span>
+            <span>Error al refrescar: mostrando datos previos.</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
               Reintentar
             </button>
@@ -248,7 +248,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             </tbody>
           </table>
         ) : (
-          <div className="empty-state">No hay grados para el filtro seleccionado</div>
+          <div className="empty-state">Sin resultados</div>
         )}
       </div>
 
@@ -278,7 +278,6 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             value={nombre}
             onChange={setNombre}
             placeholder="Ej: Licenciado"
-            help="Use la denominación académica principal con la que se clasificará a los investigadores dentro del sistema."
             required
           />
 
@@ -287,7 +286,6 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             value={descripcion}
             onChange={setDescripcion}
             placeholder="Ej: Licenciatura en Ciencias"
-            help="Agregue contexto opcional para diferenciar este grado de otros similares o precisar su alcance."
           />
         </div>
       </FormModal>
@@ -295,7 +293,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
       <ConfirmDialog
         open={Boolean(gradoToDelete)}
         title="Desactivar o eliminar grado académico"
-        message={`Esta acción intentará eliminar el grado "${gradoToDelete?.nombre ?? ""}". Si tiene investigadores relacionados, se desactivará para conservar la integridad de la información.`}
+        message={`¿Eliminar "${gradoToDelete?.nombre ?? ""}"? Si tiene investigadores, se desactivará.`}
         confirmText="Sí, continuar"
         cancelText="No, cancelar"
         onConfirm={() => {
