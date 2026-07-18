@@ -45,11 +45,11 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
       <table className="table" aria-label="Tabla de proyectos registrados">
         <thead>
           <tr>
-            <th>Título</th>
-            <th>Responsable</th>
-            <th>Investigadores</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+            <th scope="col">Título</th>
+            <th scope="col">Responsable</th>
+            <th scope="col">Investigadores</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Acciones</th>
           </tr>
         </thead>
         <tbody>

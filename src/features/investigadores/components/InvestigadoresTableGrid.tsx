@@ -39,12 +39,12 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
     <table className="table table-interactive" aria-label="Tabla de investigadores registrados">
       <thead>
         <tr>
-          <th>DNI</th>
-          <th>Perfil Académico</th>
-          <th>Nombre</th>
-          <th>Proyectos</th>
-          <th>Estado</th>
-          <th>Acciones</th>
+          <th scope="col">DNI</th>
+          <th scope="col">Perfil Académico</th>
+          <th scope="col">Nombre</th>
+          <th scope="col">Proyectos</th>
+          <th scope="col">Estado</th>
+          <th scope="col">Acciones</th>
         </tr>
       </thead>
       <tbody>

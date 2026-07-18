@@ -1,7 +1,7 @@
 @layer components {
   .badge { @apply inline-block px-3 py-1 rounded-full font-semibold text-sm bg-blue-100 text-blue-600; }
   .badge-success { @apply bg-green-100 text-green-600; }
-  .badge-warning { @apply bg-amber-100 text-amber-600; }
+  .badge-warning { @apply bg-amber-100 text-amber-800; }
   .badge-info { @apply bg-blue-100 text-blue-700; }
   .status-chip { @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider; }
   .status-chip-total { @apply bg-blue-100 text-blue-700 border border-blue-200; }

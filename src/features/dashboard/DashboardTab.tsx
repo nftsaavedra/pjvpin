@@ -86,7 +86,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
     return (
       <div className="tab-panel error">
         <p>{error}</p>
-        <button onClick={() => void cargarDatos()}>
+        <button type="button" onClick={() => void cargarDatos()}>
           <span className="button-with-icon">
             <AppIcon icon={RotateCcw} size={16} />
             <span>Reintentar</span>

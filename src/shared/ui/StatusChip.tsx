@@ -6,6 +6,7 @@ interface StatusChipProps {
   variant?: StatusChipVariant;
   className?: string;
   children: React.ReactNode;
+  live?: boolean;
 }
 
 const VARIANT_CLASSES: Record<StatusChipVariant, string> = {
@@ -19,9 +20,11 @@ export const StatusChip: React.FC<StatusChipProps> = ({
   variant = "total",
   className,
   children,
+  live = false,
 }) => (
   <span
     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${VARIANT_CLASSES[variant]}${className ? ` ${className}` : ""}`}
+    {...(live ? { role: "status", "aria-live": "polite" } : {})}
   >
     {children}
   </span>

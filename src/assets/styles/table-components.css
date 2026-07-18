@@ -16,5 +16,5 @@
   .table-actions .btn-secondary { @apply w-auto; }
   .table-action-button-wrapper { @apply inline-flex; }
   .table-action-button { @apply inline-flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 cursor-pointer border border-gray-200 bg-white text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300; }
-  .table-action-button:disabled { @apply opacity-40 cursor-not-allowed; }
+  .table-action-button:disabled { @apply text-gray-300 bg-gray-100 border-gray-100 cursor-not-allowed; }
 }

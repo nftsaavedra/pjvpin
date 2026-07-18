@@ -1,5 +1,6 @@
 @layer components {
   .modal-overlay { @apply fixed inset-0 bg-black/50 flex items-center justify-center p-4 overflow-y-auto z-[1000] animate-[fadeIn_0.2s_ease-in]; }
+  .modal-overlay-button { @apply bg-black/50 border-0 cursor-default text-transparent font-sans text-base text-left; }
   .modal-content { @apply bg-white rounded-xl shadow-xl max-w-[600px] w-[90%] max-h-[92vh] flex flex-col overflow-hidden border border-amber-200 animate-[modalPopIn_0.22s_ease-out]; }
   .form-modal { @apply w-full max-w-[680px] border-blue-200; }
   .form-modal-lg { @apply max-w-[860px]; }

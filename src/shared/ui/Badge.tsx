@@ -12,7 +12,7 @@ const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   default: "bg-blue-100 text-blue-600",
   info: "bg-blue-100 text-blue-700",
   success: "bg-green-100 text-green-600",
-  warning: "bg-amber-100 text-amber-600",
+  warning: "bg-amber-100 text-amber-800",
 };
 
 export const Badge: React.FC<BadgeProps> = ({ variant = "default", className, children }) => (

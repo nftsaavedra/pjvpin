@@ -1,6 +1,7 @@
-import React, { useEffect, useId } from 'react';
-import { X } from 'lucide-react';
-import { AppIcon } from '../ui/AppIcon';
+import React, { useEffect, useId, useRef } from "react";
+import { X } from "lucide-react";
+import { AppIcon } from "../ui/AppIcon";
+import { useFocusTrap } from "./hooks/useFocusTrap";
 
 interface FormModalProps {
   open: boolean;
@@ -13,7 +14,7 @@ interface FormModalProps {
   cancelText?: string;
   isLoading?: boolean;
   submitDisabled?: boolean;
-  size?: 'md' | 'lg';
+  size?: "md" | "lg";
   className?: string;
   bodyClassName?: string;
 }
@@ -25,45 +26,59 @@ export const FormModal: React.FC<FormModalProps> = ({
   children,
   onClose,
   onSubmit,
-  submitText = 'Guardar',
-  cancelText = 'Cancelar',
+  submitText = "Guardar",
+  cancelText = "Cancelar",
   isLoading = false,
   submitDisabled = false,
-  size = 'md',
+  size = "md",
   className,
   bodyClassName,
 }) => {
   const titleId = useId();
+  const contentRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(contentRef, open);
 
   useEffect(() => {
     if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !isLoading) {
+      if (event.key === "Escape" && !isLoading) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isLoading, onClose, open]);
 
   if (!open) return null;
 
   return (
-    <div className="modal-overlay" onClick={() => { if (!isLoading) onClose(); }}>
+    <button
+      type="button"
+      className="modal-overlay modal-overlay-button"
+      aria-label="Cerrar formulario"
+      onClick={() => {
+        if (!isLoading) onClose();
+      }}
+    >
       <div
-        className={className
-          ? `modal-content form-modal ${size === 'lg' ? 'form-modal-lg' : ''} ${className}`
-          : `modal-content form-modal ${size === 'lg' ? 'form-modal-lg' : ''}`}
-        onClick={(event) => { event.stopPropagation(); }}
+        ref={contentRef}
+        className={
+          className
+            ? `modal-content form-modal ${size === "lg" ? "form-modal-lg" : ""} ${className}`
+            : `modal-content form-modal ${size === "lg" ? "form-modal-lg" : ""}`
+        }
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -82,7 +97,13 @@ export const FormModal: React.FC<FormModalProps> = ({
         </div>
 
         <form onSubmit={onSubmit} className="form form-modal-form">
-          <div className={bodyClassName ? `modal-body form-modal-body ${bodyClassName}` : 'modal-body form-modal-body'}>
+          <div
+            className={
+              bodyClassName
+                ? `modal-body form-modal-body ${bodyClassName}`
+                : "modal-body form-modal-body"
+            }
+          >
             {description && <p className="form-modal-description">{description}</p>}
             {children}
           </div>
@@ -92,11 +113,11 @@ export const FormModal: React.FC<FormModalProps> = ({
               {cancelText}
             </button>
             <button type="submit" className="btn-primary" disabled={isLoading || submitDisabled}>
-              {isLoading ? 'Procesando...' : submitText}
+              {isLoading ? "Procesando..." : submitText}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </button>
   );
 };
