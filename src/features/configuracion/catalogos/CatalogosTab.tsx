@@ -63,7 +63,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
     e.preventDefault();
 
     if (!codigo.trim() || !nombre.trim()) {
-      toast.warning("Complete los campos obligatorios del catálogo");
+      toast.warning(messages.catalogos.tab.validations.completeCampos);
       return;
     }
 
@@ -79,7 +79,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
           descripcion: descripcion.trim() || undefined,
           orden: ordenNum,
         });
-        toast.success("Elemento actualizado");
+        toast.success(messages.catalogos.tab.success.actualizado);
       } else {
         await crearCatalogo({
           tipo,
@@ -88,7 +88,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
           descripcion: descripcion.trim() || undefined,
           orden: ordenNum,
         });
-        toast.success("Elemento creado");
+        toast.success(messages.catalogos.tab.success.creado);
       }
       setCodigo("");
       setNombre("");
@@ -99,7 +99,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
       await recargar();
       onModified();
     } catch (error) {
-      toast.error("Error: " + getTauriErrorMessage(error));
+      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
     } finally {
       setIsLoading(false);
     }
@@ -146,18 +146,18 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
       await recargar();
       onModified();
     } catch (error) {
-      toast.error("Error: " + getTauriErrorMessage(error));
+      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
     }
   };
 
   const handleReactivar = async (id: string) => {
     try {
       await reactivarCatalogo(id);
-      toast.success("Elemento reactivado correctamente");
+      toast.success(messages.catalogos.tab.success.reactivado);
       await recargar();
       onModified();
     } catch (error) {
-      toast.error("Error: " + getTauriErrorMessage(error));
+      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
     }
   };
 
@@ -196,7 +196,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
               <button type="button" className="btn-primary" onClick={handleOpenCreate}>
                 <span className="button-with-icon">
                   <AppIcon icon={Plus} size={18} />
-                  <span>Nuevo elemento</span>
+                  <span>{messages.catalogos.tab.nuevoElemento}</span>
                 </span>
               </button>
             </div>
@@ -206,25 +206,33 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
           <div className="inline-feedback inline-feedback-warning">
             <span>{messages.ui.sinDatos}</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
-              Reintentar
+              {messages.ui.reintentar}
             </button>
           </div>
         )}
         <div className="filter-bar">
           <div className="filter-summary-group">
-            <div className="filter-summary">Visibles: {catalogosFiltrados.length}</div>
-            <StatusChip variant="total">Todos: {catalogos.length}</StatusChip>
-            <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
-            <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
+            <div className="filter-summary">
+              {messages.configuracion.filter.visibles(catalogosFiltrados.length)}
+            </div>
+            <StatusChip variant="total">
+              {messages.configuracion.filter.todos(catalogos.length)}
+            </StatusChip>
+            <StatusChip variant="success">
+              {messages.configuracion.filter.activos(totalActivos)}
+            </StatusChip>
+            <StatusChip variant="warning">
+              {messages.configuracion.filter.inactivos(totalInactivos)}
+            </StatusChip>
           </div>
           <input
             className="form-input filter-search"
-            placeholder="Buscar por código, nombre o descripción"
+            placeholder={messages.catalogos.tab.searchPlaceholder}
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.target.value);
             }}
-            aria-label={`Buscar en ${titulo}`}
+            aria-label={messages.catalogos.tab.searchAriaLabel(titulo)}
           />
           <select
             className="form-input filter-select"
@@ -232,23 +240,25 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
             onChange={(e) => {
               setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
             }}
-            aria-label={`Filtrar ${titulo} por estado`}
+            aria-label={messages.catalogos.tab.filtroEstadoAriaLabel(titulo)}
           >
-            <option value="todos">Todos</option>
-            <option value="activos">Solo activos</option>
-            <option value="inactivos">Solo inactivos</option>
+            <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
+            <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
+            <option value="inactivos">
+              {messages.configuracion.filter.opciones.soloInactivos}
+            </option>
           </select>
         </div>
         {loading ? (
           <SkeletonTable columns={4} rows={5} />
         ) : catalogosFiltrados.length > 0 ? (
-          <table className="table" aria-label={`Tabla de ${titulo}`}>
+          <table className="table" aria-label={messages.catalogos.tab.tableAriaLabel(titulo)}>
             <thead>
               <tr>
-                <th scope="col">Código</th>
-                <th scope="col">Nombre</th>
-                <th scope="col">Descripción</th>
-                {canManage && <th scope="col">Acciones</th>}
+                <th scope="col">{messages.catalogos.tab.columns.codigo}</th>
+                <th scope="col">{messages.catalogos.tab.columns.nombre}</th>
+                <th scope="col">{messages.catalogos.tab.columns.descripcion}</th>
+                {canManage && <th scope="col">{messages.catalogos.tab.columns.acciones}</th>}
               </tr>
             </thead>
             <tbody>
@@ -259,13 +269,15 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
                   <td>{item.descripcion || "-"}</td>
                   {canManage && (
                     <td className="table-actions">
-                      {item.activo === 0 && <Badge variant="warning">Inactivo</Badge>}
+                      {item.activo === 0 && (
+                        <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
+                      )}
                       {item.activo === 0 && (
                         <TableActionButton
                           className="btn-primary"
                           icon={RotateCcw}
                           iconSize={18}
-                          label="Reactivar elemento"
+                          label={messages.catalogos.tab.actions.reactivar}
                           onClick={() => {
                             void handleReactivar(item.id_catalogo);
                           }}
@@ -274,7 +286,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
                       <TableActionButton
                         className="btn-edit"
                         icon={Pencil}
-                        label="Editar elemento"
+                        label={messages.catalogos.tab.actions.editar}
                         onClick={() => {
                           handleEditar(item);
                         }}
@@ -282,7 +294,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
                       <TableActionButton
                         className="btn-delete"
                         icon={Trash2}
-                        label="Desactivar o eliminar elemento"
+                        label={messages.catalogos.tab.actions.desactivarEliminar}
                         onClick={() => {
                           setItemToDelete(item);
                         }}
@@ -294,7 +306,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
             </tbody>
           </table>
         ) : (
-          <div className="empty-state">Sin resultados</div>
+          <div className="empty-state">{messages.ui.sinResultados}</div>
         )}
       </div>
 
@@ -305,7 +317,9 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
             <span className="title-with-icon form-card-title">
               <AppIcon icon={editingItem ? Pencil : BookPlus} size={20} />
               <span>
-                {editingItem ? "Editar Elemento" : "Crear Elemento"} — {titulo}
+                {editingItem
+                  ? messages.catalogos.tab.modal.editar(titulo)
+                  : messages.catalogos.tab.modal.crear(titulo)}
               </span>
             </span>
           }
@@ -316,7 +330,11 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
           submitText={
             <span className="button-with-icon">
               <AppIcon icon={Save} size={18} />
-              <span>{editingItem ? "Actualizar" : "Crear"}</span>
+              <span>
+                {editingItem
+                  ? messages.configuracion.actions.actualizar
+                  : messages.configuracion.actions.crear}
+              </span>
             </span>
           }
           isLoading={isLoading}
@@ -358,10 +376,10 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
 
       <ConfirmDialog
         open={Boolean(itemToDelete)}
-        title="Desactivar o eliminar elemento"
-        message={`¿Eliminar "${itemToDelete?.nombre ?? ""}" de ${titulo}? Si está en uso, se desactivará.`}
-        confirmText="Sí, continuar"
-        cancelText="No, cancelar"
+        title={messages.catalogos.tab.confirm.title}
+        message={messages.catalogos.tab.confirm.message(itemToDelete?.nombre ?? "", titulo)}
+        confirmText={messages.configuracion.confirm.siContinuar}
+        cancelText={messages.configuracion.confirm.noCancelar}
         onConfirm={() => {
           void handleEliminar();
         }}

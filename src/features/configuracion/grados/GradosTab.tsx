@@ -40,7 +40,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
 
   useRefreshToast({
     refreshing,
-    message: "Actualizando grados",
+    message: messages.grados.tab.refreshMessage,
     toastKey: "grados-refresh",
   });
 
@@ -48,7 +48,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
     e.preventDefault();
 
     if (!nombre.trim()) {
-      toast.warning("Ingrese el nombre del grado");
+      toast.warning(messages.grados.tab.validations.ingreseNombre);
       return;
     }
 
@@ -56,10 +56,10 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
     try {
       if (editingGrado) {
         await actualizarGrado(editingGrado.id_grado, nombre, descripcion || undefined);
-        toast.success("Grado actualizado");
+        toast.success(messages.grados.tab.success.actualizado);
       } else {
         await crearGrado(nombre, descripcion || undefined);
-        toast.success("Grado creado");
+        toast.success(messages.grados.tab.success.creado);
       }
       setNombre("");
       setDescripcion("");
@@ -68,7 +68,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
       await recargar();
       onGradoModified();
     } catch (error) {
-      toast.error("Error: " + getTauriErrorMessage(error));
+      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
     } finally {
       setIsLoading(false);
     }
@@ -111,18 +111,18 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
       await recargar();
       onGradoModified();
     } catch (error) {
-      toast.error("Error: " + getTauriErrorMessage(error));
+      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
     }
   };
 
   const handleReactivar = async (id: string) => {
     try {
       await reactivarGrado(id);
-      toast.success("Grado reactivado correctamente");
+      toast.success(messages.grados.tab.success.reactivado);
       await recargar();
       onGradoModified();
     } catch (error) {
-      toast.error("Error: " + getTauriErrorMessage(error));
+      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
     }
   };
 
@@ -156,7 +156,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             <button type="button" className="btn-primary" onClick={handleOpenCreate}>
               <span className="button-with-icon">
                 <AppIcon icon={Plus} size={18} />
-                <span>Nuevo grado</span>
+                <span>{messages.grados.tab.nuevoGrado}</span>
               </span>
             </button>
           </div>
@@ -165,25 +165,33 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
           <div className="inline-feedback inline-feedback-warning">
             <span>{messages.ui.sinDatos}</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
-              Reintentar
+              {messages.ui.reintentar}
             </button>
           </div>
         )}
         <div className="filter-bar">
           <div className="filter-summary-group">
-            <div className="filter-summary">Visibles: {gradosFiltrados.length}</div>
-            <StatusChip variant="total">Todos: {grados.length}</StatusChip>
-            <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
-            <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
+            <div className="filter-summary">
+              {messages.configuracion.filter.visibles(gradosFiltrados.length)}
+            </div>
+            <StatusChip variant="total">
+              {messages.configuracion.filter.todos(grados.length)}
+            </StatusChip>
+            <StatusChip variant="success">
+              {messages.configuracion.filter.activos(totalActivos)}
+            </StatusChip>
+            <StatusChip variant="warning">
+              {messages.configuracion.filter.inactivos(totalInactivos)}
+            </StatusChip>
           </div>
           <input
             className="form-input filter-search"
-            placeholder="Buscar por nombre o descripción"
+            placeholder={messages.grados.tab.searchPlaceholder}
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.target.value);
             }}
-            aria-label="Buscar grados por nombre o descripción"
+            aria-label={messages.grados.tab.searchAriaLabel}
           />
           <select
             className="form-input filter-select"
@@ -191,22 +199,24 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             onChange={(e) => {
               setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
             }}
-            aria-label="Filtrar grados por estado"
+            aria-label={messages.grados.tab.filtroEstadoAriaLabel}
           >
-            <option value="todos">Todos</option>
-            <option value="activos">Solo activos</option>
-            <option value="inactivos">Solo inactivos</option>
+            <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
+            <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
+            <option value="inactivos">
+              {messages.configuracion.filter.opciones.soloInactivos}
+            </option>
           </select>
         </div>
         {loading ? (
           <SkeletonTable columns={3} rows={5} />
         ) : gradosFiltrados.length > 0 ? (
-          <table className="table" aria-label="Tabla de grados académicos registrados">
+          <table className="table" aria-label={messages.grados.tab.tableAriaLabel}>
             <thead>
               <tr>
-                <th scope="col">Nombre</th>
-                <th scope="col">Descripción</th>
-                <th scope="col">Acciones</th>
+                <th scope="col">{messages.grados.tab.columns.nombre}</th>
+                <th scope="col">{messages.grados.tab.columns.descripcion}</th>
+                <th scope="col">{messages.grados.tab.columns.acciones}</th>
               </tr>
             </thead>
             <tbody>
@@ -215,13 +225,15 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
                   <td>{grado.nombre}</td>
                   <td>{grado.descripcion || "-"}</td>
                   <td className="table-actions">
-                    {grado.activo === 0 && <Badge variant="warning">Inactivo</Badge>}
+                    {grado.activo === 0 && (
+                      <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
+                    )}
                     {grado.activo === 0 && (
                       <TableActionButton
                         className="btn-primary"
                         icon={RotateCcw}
                         iconSize={18}
-                        label="Reactivar grado"
+                        label={messages.grados.tab.actions.reactivar}
                         onClick={() => {
                           void handleReactivar(grado.id_grado);
                         }}
@@ -230,7 +242,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
                     <TableActionButton
                       className="btn-edit"
                       icon={Pencil}
-                      label="Editar grado"
+                      label={messages.grados.tab.actions.editar}
                       onClick={() => {
                         handleEditar(grado);
                       }}
@@ -238,7 +250,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
                     <TableActionButton
                       className="btn-delete"
                       icon={Trash2}
-                      label="Desactivar o eliminar grado"
+                      label={messages.grados.tab.actions.desactivarEliminar}
                       onClick={() => {
                         setGradoToDelete(grado);
                       }}
@@ -249,7 +261,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
             </tbody>
           </table>
         ) : (
-          <div className="empty-state">Sin resultados</div>
+          <div className="empty-state">{messages.ui.sinResultados}</div>
         )}
       </div>
 
@@ -258,7 +270,9 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
         title={
           <span className="title-with-icon form-card-title">
             <AppIcon icon={editingGrado ? Pencil : BookPlus} size={20} />
-            <span>{editingGrado ? "Editar Grado Académico" : "Crear Grado Académico"}</span>
+            <span>
+              {editingGrado ? messages.grados.tab.modal.editar : messages.grados.tab.modal.crear}
+            </span>
           </span>
         }
         onClose={handleCloseForm}
@@ -268,7 +282,11 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
         submitText={
           <span className="button-with-icon">
             <AppIcon icon={Save} size={18} />
-            <span>{editingGrado ? "Actualizar" : "Crear"}</span>
+            <span>
+              {editingGrado
+                ? messages.configuracion.actions.actualizar
+                : messages.configuracion.actions.crear}
+            </span>
           </span>
         }
         isLoading={isLoading}
@@ -293,10 +311,10 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
 
       <ConfirmDialog
         open={Boolean(gradoToDelete)}
-        title="Desactivar o eliminar grado académico"
-        message={`¿Eliminar "${gradoToDelete?.nombre ?? ""}"? Si tiene investigadores, se desactivará.`}
-        confirmText="Sí, continuar"
-        cancelText="No, cancelar"
+        title={messages.grados.tab.confirm.title}
+        message={messages.grados.tab.confirm.message(gradoToDelete?.nombre ?? "")}
+        confirmText={messages.configuracion.confirm.siContinuar}
+        cancelText={messages.configuracion.confirm.noCancelar}
         onConfirm={() => {
           void handleEliminar();
         }}

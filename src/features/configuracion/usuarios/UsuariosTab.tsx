@@ -83,12 +83,12 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
 
       <div className="table-container">
         <div className="section-header">
-          <h2>Usuarios registrados</h2>
+          <h2>{messages.usuarios.tab.sectionTitle}</h2>
           <div className="section-header-actions">
             <button type="button" className="btn-primary" onClick={handleOpenCreate}>
               <span className="button-with-icon">
                 <AppIcon icon={Plus} size={18} />
-                <span>Nuevo usuario</span>
+                <span>{messages.usuarios.tab.nuevoUsuario}</span>
               </span>
             </button>
           </div>
@@ -97,25 +97,33 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
           <div className="inline-feedback inline-feedback-warning">
             <span>{messages.ui.sinDatos}</span>
             <button type="button" className="btn-secondary" onClick={() => void recargar()}>
-              Reintentar
+              {messages.ui.reintentar}
             </button>
           </div>
         )}
         <div className="filter-bar">
           <div className="filter-summary-group">
-            <div className="filter-summary">Visibles: {usuariosFiltrados.length}</div>
-            <StatusChip variant="total">Todos: {usuarios.length}</StatusChip>
-            <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
-            <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
+            <div className="filter-summary">
+              {messages.configuracion.filter.visibles(usuariosFiltrados.length)}
+            </div>
+            <StatusChip variant="total">
+              {messages.configuracion.filter.todos(usuarios.length)}
+            </StatusChip>
+            <StatusChip variant="success">
+              {messages.configuracion.filter.activos(totalActivos)}
+            </StatusChip>
+            <StatusChip variant="warning">
+              {messages.configuracion.filter.inactivos(totalInactivos)}
+            </StatusChip>
           </div>
           <input
             className="form-input filter-search"
-            placeholder="Buscar por usuario, nombre, DNI o rol"
+            placeholder={messages.usuarios.tab.searchPlaceholder}
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.target.value);
             }}
-            aria-label="Buscar usuarios por nombre, usuario, DNI o rol"
+            aria-label={messages.usuarios.tab.searchAriaLabel}
           />
           <select
             className="form-input filter-select"
@@ -123,28 +131,30 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
             onChange={(e) => {
               setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
             }}
-            aria-label="Filtrar usuarios por estado"
+            aria-label={messages.usuarios.tab.filtroEstadoAriaLabel}
           >
-            <option value="todos">Todos</option>
-            <option value="activos">Solo activos</option>
-            <option value="inactivos">Solo inactivos</option>
+            <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
+            <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
+            <option value="inactivos">
+              {messages.configuracion.filter.opciones.soloInactivos}
+            </option>
           </select>
         </div>
 
         {loading ? (
           <SkeletonTable columns={6} rows={5} />
         ) : usuariosFiltrados.length === 0 ? (
-          <div className="empty-state">Sin resultados</div>
+          <div className="empty-state">{messages.ui.sinResultados}</div>
         ) : (
-          <table className="table" aria-label="Tabla de usuarios registrados">
+          <table className="table" aria-label={messages.usuarios.tab.tableAriaLabel}>
             <thead>
               <tr>
-                <th scope="col">Usuario</th>
-                <th scope="col">DNI</th>
-                <th scope="col">Nombre</th>
-                <th scope="col">Rol</th>
-                <th scope="col">Estado</th>
-                <th scope="col">Acciones</th>
+                <th scope="col">{messages.usuarios.tab.columns.usuario}</th>
+                <th scope="col">{messages.usuarios.tab.columns.dni}</th>
+                <th scope="col">{messages.usuarios.tab.columns.nombre}</th>
+                <th scope="col">{messages.usuarios.tab.columns.rol}</th>
+                <th scope="col">{messages.usuarios.tab.columns.estado}</th>
+                <th scope="col">{messages.usuarios.tab.columns.acciones}</th>
               </tr>
             </thead>
             <tbody>
@@ -160,9 +170,9 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
                   </td>
                   <td>
                     {usuario.activo === 1 ? (
-                      <Badge variant="success">Activo</Badge>
+                      <Badge variant="success">{messages.ui.statusActivo}</Badge>
                     ) : (
-                      <Badge variant="warning">Inactivo</Badge>
+                      <Badge variant="warning">{messages.ui.statusInactivo}</Badge>
                     )}
                   </td>
                   <td className="table-actions">
@@ -171,8 +181,8 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
                       icon={Pencil}
                       label={
                         usuario.id_usuario === currentUser.id_usuario
-                          ? "Editar su propio usuario"
-                          : "Editar usuario"
+                          ? messages.usuarios.tab.actions.editarPropio
+                          : messages.usuarios.tab.actions.editar
                       }
                       onClick={() => {
                         void handleEditar(usuario);
@@ -183,10 +193,10 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
                       icon={usuario.activo === 1 ? Trash2 : RotateCcw}
                       label={
                         usuario.id_usuario === currentUser.id_usuario
-                          ? "No puede cambiar su propio estado"
+                          ? messages.usuarios.tab.actions.noCambiaEstado
                           : usuario.activo === 1
-                            ? "Desactivar usuario"
-                            : "Reactivar usuario"
+                            ? messages.usuarios.tab.actions.desactivar
+                            : messages.usuarios.tab.actions.reactivar
                       }
                       onClick={() => {
                         setUsuarioToToggle(usuario);
@@ -206,7 +216,11 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
         title={
           <span className="title-with-icon form-card-title">
             <AppIcon icon={editingUsuario ? Pencil : ShieldPlus} size={20} />
-            <span>{editingUsuario ? "Editar Usuario" : "Crear Usuario"}</span>
+            <span>
+              {editingUsuario
+                ? messages.usuarios.tab.modal.editar
+                : messages.usuarios.tab.modal.crear}
+            </span>
           </span>
         }
         onClose={handleCloseForm}
@@ -216,7 +230,11 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
         submitText={
           <span className="button-with-icon">
             <AppIcon icon={Save} size={18} />
-            <span>{editingUsuario ? "Guardar cambios" : "Crear usuario"}</span>
+            <span>
+              {editingUsuario
+                ? messages.usuarios.tab.modal.submitEditar
+                : messages.usuarios.tab.modal.submitCrear}
+            </span>
           </span>
         }
         isLoading={isLoading}
@@ -271,7 +289,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
 
           {isEditing && isCargandoPersona && (
             <div className="inline-feedback inline-feedback-info" aria-live="polite">
-              <span>Cargando...</span>
+              <span>{messages.ui.cargando}</span>
             </div>
           )}
 
@@ -328,14 +346,22 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
 
       <ConfirmDialog
         open={Boolean(usuarioToToggle)}
-        title={usuarioToToggle?.activo === 1 ? "Desactivar usuario" : "Reactivar usuario"}
+        title={
+          usuarioToToggle?.activo === 1
+            ? messages.usuarios.tab.confirm.desactivar.title
+            : messages.usuarios.tab.confirm.reactivar.title
+        }
         message={
           usuarioToToggle?.activo === 1
-            ? `¿Desea desactivar al usuario "${usuarioToToggle.username}"?`
-            : `¿Desea reactivar al usuario "${usuarioToToggle?.username}"?`
+            ? messages.usuarios.tab.confirm.desactivar.message(usuarioToToggle.username)
+            : messages.usuarios.tab.confirm.reactivar.message(usuarioToToggle?.username ?? "")
         }
-        confirmText={usuarioToToggle?.activo === 1 ? "Sí, desactivar" : "Sí, reactivar"}
-        cancelText="Cancelar"
+        confirmText={
+          usuarioToToggle?.activo === 1
+            ? messages.configuracion.confirm.siDesactivar
+            : messages.configuracion.confirm.siReactivar
+        }
+        cancelText={messages.ui.cancelar}
         onConfirm={() => {
           void handleToggleUsuario();
         }}

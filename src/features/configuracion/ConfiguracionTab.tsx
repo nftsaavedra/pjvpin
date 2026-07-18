@@ -4,6 +4,7 @@ import type { Usuario } from "../auth/api";
 import { hasPermission } from "@/shared/auth/permissions";
 import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
 import { TabNavigation, type Tab } from "@/shared/navigation/TabNavigation";
+import { messages } from "@/shared/feedback/messages";
 
 const GradosTab = lazy(async () => {
   const module = await import("./grados/GradosTab");
@@ -60,14 +61,14 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
   const sections: Tab[] = [
     {
       id: "grados",
-      label: "Grados",
+      label: messages.configuracion.tab.grados,
       icon: GraduationCap,
     },
     ...(canViewCatalogos
       ? [
           {
             id: "catalogos",
-            label: "Catálogos",
+            label: messages.configuracion.tab.catalogos,
             icon: LibraryBig,
           },
         ]
@@ -76,7 +77,7 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
       ? [
           {
             id: "usuarios",
-            label: "Usuarios",
+            label: messages.configuracion.tab.usuarios,
             icon: Users,
           },
         ]
@@ -103,12 +104,12 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
           activeTab={effectiveSection}
           onTabChange={handleSectionChange}
           variant="settings"
-          ariaLabel="Secciones de configuración"
+          ariaLabel={messages.configuracion.tab.ariaLabel}
         />
 
         {visibleSections.length === 0 ? (
           <div className="empty-state">
-            <p>No tiene permisos para acceder a ninguna sección de configuración.</p>
+            <p>{messages.configuracion.tab.sinPermisos}</p>
           </div>
         ) : (
           <div

@@ -6,6 +6,10 @@ import { proyectos } from "./proyectos";
 import { grupos } from "./grupos";
 import { reportes } from "./reportes";
 import { shared } from "./shared";
+import { configuracion } from "./configuracion";
+import { catalogos } from "./catalogos";
+import { grados } from "./grados";
+import { usuarios } from "./usuarios";
 
 export { ui, type UiMessageKey } from "./ui";
 export { auth, type AuthMessageKey } from "./auth";
@@ -15,6 +19,10 @@ export { proyectos, type ProyectosMessageKey } from "./proyectos";
 export { grupos, type GruposMessageKey } from "./grupos";
 export { reportes, type ReportesMessageKey } from "./reportes";
 export { shared, type SharedMessageKey } from "./shared";
+export { configuracion, type ConfiguracionMessageKey } from "./configuracion";
+export { catalogos, type CatalogosMessageKey } from "./catalogos";
+export { grados, type GradosMessageKey } from "./grados";
+export { usuarios, type UsuariosMessageKey } from "./usuarios";
 
 export const messages = {
   ui,
@@ -25,5 +33,9 @@ export const messages = {
   grupos,
   reportes,
   shared,
+  configuracion,
+  catalogos,
+  grados,
+  usuarios,
 } as const;
 export type Messages = typeof messages;

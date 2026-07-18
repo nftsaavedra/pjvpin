@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
+import { messages } from "@/shared/feedback/messages";
 import { getAllCatalogosAdmin } from "../api";
 import type { CatalogoItem } from "@/shared/tauri/types";
 
@@ -183,10 +184,10 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
           onClick={() => {
             setActiveTipo(null);
           }}
-          aria-label="Volver a catálogos"
+          aria-label={messages.catalogos.panel.volverA}
         >
           <AppIcon icon={LibraryBig} size={16} />
-          <span>Catálogos</span>
+          <span>{messages.catalogos.panel.breadcrumb}</span>
         </button>
         <Suspense fallback={<SkeletonTable columns={4} rows={5} />}>
           <CatalogosTab
@@ -206,7 +207,7 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
       <div className="catalogos-header">
         <div className="catalogos-header-title">
           <AppIcon icon={LibraryBig} size={22} />
-          <h2>Catálogos del Sistema</h2>
+          <h2>{messages.catalogos.panel.tituloSistema}</h2>
         </div>
       </div>
 
@@ -218,7 +219,7 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
             setCategoriaActiva(null);
           }}
         >
-          Todos
+          {messages.catalogos.panel.pillTodos}
         </button>
         {CATALOGO_GRUPOS.map((grupo) => (
           <button
@@ -249,7 +250,7 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
                 onClick={() => {
                   setActiveTipo(entry.tipo);
                 }}
-                aria-label={`Administrar ${entry.titulo}`}
+                aria-label={messages.catalogos.panel.ariaLabel(entry.titulo)}
               >
                 <div className="catalogo-summary-header">
                   <span className="catalogo-summary-icon">
@@ -263,15 +264,21 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
                 <div className="catalogo-summary-stats">
                   <span className="catalogo-stat">
                     <span className="catalogo-stat-value">{s.activos}</span>
-                    <span className="catalogo-stat-label">activos</span>
+                    <span className="catalogo-stat-label">
+                      {messages.catalogos.panel.statActivos}
+                    </span>
                   </span>
                   <span className="catalogo-stat-divider" aria-hidden="true" />
                   <span className="catalogo-stat">
                     <span className="catalogo-stat-value muted">{s.inactivos}</span>
-                    <span className="catalogo-stat-label">inactivos</span>
+                    <span className="catalogo-stat-label">
+                      {messages.catalogos.panel.statInactivos}
+                    </span>
                   </span>
                 </div>
-                <span className="catalogo-summary-hint">Administrar &rarr;</span>
+                <span className="catalogo-summary-hint">
+                  {messages.catalogos.panel.hintAdministrar}
+                </span>
               </button>
             );
           })}
