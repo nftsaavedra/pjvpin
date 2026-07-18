@@ -72,14 +72,14 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
         <div className="section-header">
           <h2 className="title-with-icon">
             <AppIcon icon={GraduationCap} size={20} />
-            <span>Investigadores Registrados</span>
+            <span>{messages.investigadores.list.sectionTitle}</span>
           </h2>
           {canManage && (
             <div className="section-header-actions">
               <button type="button" className="btn-primary" onClick={onCreateClick}>
                 <span className="button-with-icon">
                   <AppIcon icon={Plus} size={18} />
-                  <span>Nuevo investigador</span>
+                  <span>{messages.investigadores.list.nuevoInvestigador}</span>
                 </span>
               </button>
             </div>
@@ -95,13 +95,13 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
                 void cargarInvestigadores();
               }}
             >
-              Reintentar
+              {messages.ui.reintentar}
             </button>
           </div>
         )}
         {!canManage && (
           <div className="inline-feedback inline-feedback-info">
-            <span>Modo consulta: solo lectura de investigadores.</span>
+            <span>{messages.investigadores.list.modoConsulta}</span>
           </div>
         )}
         <InvestigadoresTableToolbar
@@ -139,10 +139,12 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
       {canManage && (
         <ConfirmDialog
           open={Boolean(investigadorToDelete)}
-          title="Desactivar investigador"
-          message={`¿Desactivar a "${investigadorToDelete?.nombres_apellidos ?? ""}"?`}
-          confirmText="Sí, desactivar"
-          cancelText="Cancelar"
+          title={messages.investigadores.list.desactivarDialog.title}
+          message={messages.investigadores.list.desactivarDialog.message(
+            investigadorToDelete?.nombres_apellidos ?? "",
+          )}
+          confirmText={messages.investigadores.list.desactivarDialog.confirmText}
+          cancelText={messages.ui.cancelar}
           onConfirm={() => {
             onConfirmDelete();
           }}

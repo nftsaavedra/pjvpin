@@ -1,5 +1,6 @@
 export const proyectos = {
   sectionTitle: "Proyectos Registrados",
+  relatedPanelTitle: "Entidades relacionadas",
   nuevoProyecto: "Nuevo proyecto",
   breadcrumb: "Proyectos",
   breadcrumbNuevoProyecto: "Registrar nuevo proyecto",
@@ -156,6 +157,23 @@ export const proyectos = {
     eliminarTitle: "Eliminar elemento",
     eliminarMessage: "¿Está seguro de que desea eliminar este elemento?",
     eliminarConfirmText: "Sí, eliminar",
+  } as const,
+  diffPanel: {
+    ariaLabel: "Resumen visual de cambios pendientes",
+    titulo: "Cambios pendientes",
+    conCambios: "Con cambios",
+    sinCambios: "Sin cambios",
+    vacio: "Todavía no hay diferencias respecto al proyecto actual.",
+    labels: {
+      titulo: "Título",
+      responsable: "Responsable",
+      agregados: "Agregados",
+      retirados: "Retirados",
+    } as const,
+    fallbacks: {
+      sinTitulo: "Sin título",
+      sinResponsable: "Sin responsable",
+    } as const,
   } as const,
 } as const;
 

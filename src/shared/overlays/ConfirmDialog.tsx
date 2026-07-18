@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { AppIcon } from "../ui/AppIcon";
 import { useFocusTrap } from "@/shared/forms/hooks/useFocusTrap";
+import { messages } from "@/shared/feedback/messages";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -17,8 +18,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,
   title,
   message,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
+  confirmText = messages.ui.confirmar,
+  cancelText = messages.ui.cancelar,
   onConfirm,
   onCancel,
 }) => {
@@ -44,7 +45,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <button
       type="button"
       className="modal-overlay modal-overlay-button"
-      aria-label="Cerrar diálogo"
+      aria-label={messages.shared.modal.cerrarDialogo}
       onClick={onCancel}
     >
       <div
@@ -63,7 +64,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             className="modal-close"
             onClick={onCancel}
-            aria-label="Cerrar diálogo"
+            aria-label={messages.shared.modal.cerrarDialogo}
           >
             <AppIcon icon={X} size={18} />
           </button>

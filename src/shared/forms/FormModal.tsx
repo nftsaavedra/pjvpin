@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { AppIcon } from "../ui/AppIcon";
 import { useFocusTrap } from "./hooks/useFocusTrap";
+import { messages } from "@/shared/feedback/messages";
 
 interface FormModalProps {
   open: boolean;
@@ -26,8 +27,8 @@ export const FormModal: React.FC<FormModalProps> = ({
   children,
   onClose,
   onSubmit,
-  submitText = "Guardar",
-  cancelText = "Cancelar",
+  submitText = messages.ui.guardar,
+  cancelText = messages.ui.cancelar,
   isLoading = false,
   submitDisabled = false,
   size = "md",
@@ -64,7 +65,7 @@ export const FormModal: React.FC<FormModalProps> = ({
     <button
       type="button"
       className="modal-overlay modal-overlay-button"
-      aria-label="Cerrar formulario"
+      aria-label={messages.shared.modal.cerrarFormulario}
       onClick={() => {
         if (!isLoading) onClose();
       }}
@@ -89,7 +90,7 @@ export const FormModal: React.FC<FormModalProps> = ({
             type="button"
             className="modal-close"
             onClick={onClose}
-            aria-label="Cerrar formulario"
+            aria-label={messages.shared.modal.cerrarFormulario}
             disabled={isLoading}
           >
             <AppIcon icon={X} size={18} />
@@ -113,7 +114,7 @@ export const FormModal: React.FC<FormModalProps> = ({
               {cancelText}
             </button>
             <button type="submit" className="btn-primary" disabled={isLoading || submitDisabled}>
-              {isLoading ? "Procesando..." : submitText}
+              {isLoading ? messages.shared.modal.procesando : submitText}
             </button>
           </div>
         </form>

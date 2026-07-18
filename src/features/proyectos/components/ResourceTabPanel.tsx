@@ -3,6 +3,7 @@ import { Beaker, DollarSign, Lightbulb, Package } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { RelatedEntitiesSection } from "./RelatedEntitiesSection";
+import { messages } from "@/shared/feedback/messages";
 import type { RelatedEntity } from "./relatedEntity";
 import type { CatalogosProyectos } from "../hooks/useCatalogosProyectos";
 
@@ -15,10 +16,10 @@ interface ResourceTabDef {
 }
 
 const RESOURCE_TABS: ResourceTabDef[] = [
-  { id: "patentes", label: "Patentes", icon: Beaker },
-  { id: "productos", label: "Productos I+D+i", icon: Lightbulb },
-  { id: "equipamiento", label: "Equipamiento", icon: Package },
-  { id: "financiamiento", label: "Financiamiento", icon: DollarSign },
+  { id: "patentes", label: messages.proyectos.resourceTabs.patentes, icon: Beaker },
+  { id: "productos", label: messages.proyectos.resourceTabs.productos, icon: Lightbulb },
+  { id: "equipamiento", label: messages.proyectos.resourceTabs.equipamiento, icon: Package },
+  { id: "financiamiento", label: messages.proyectos.resourceTabs.financiamiento, icon: DollarSign },
 ];
 
 interface ResourceTabPanelProps {
@@ -49,7 +50,7 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
   return (
     <div className="screen-section">
       <div className="screen-section-header">
-        <span className="screen-section-title">Entidades relacionadas</span>
+        <span className="screen-section-title">{messages.proyectos.relatedPanelTitle}</span>
       </div>
 
       <div className="screen-tabs">
@@ -70,7 +71,7 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
 
       {activeTab === "patentes" && (
         <RelatedEntitiesSection
-          title="Patentes"
+          title={messages.proyectos.resourceTabs.patentes}
           icon={<AppIcon icon={Beaker} size={18} />}
           items={patentes}
           fields={[
@@ -109,7 +110,7 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
 
       {activeTab === "productos" && (
         <RelatedEntitiesSection
-          title="Productos I+D+i"
+          title={messages.proyectos.resourceTabs.productos}
           icon={<AppIcon icon={Lightbulb} size={18} />}
           items={productos}
           fields={[
@@ -149,7 +150,7 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
 
       {activeTab === "equipamiento" && (
         <RelatedEntitiesSection
-          title="Equipamiento"
+          title={messages.proyectos.resourceTabs.equipamiento}
           icon={<AppIcon icon={Package} size={18} />}
           items={equipamientos}
           fields={[
@@ -188,7 +189,7 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
 
       {activeTab === "financiamiento" && (
         <RelatedEntitiesSection
-          title="Financiamiento"
+          title={messages.proyectos.resourceTabs.financiamiento}
           icon={<AppIcon icon={DollarSign} size={18} />}
           items={financiamientos}
           fields={[

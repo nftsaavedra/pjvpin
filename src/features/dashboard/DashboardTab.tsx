@@ -15,6 +15,7 @@ import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { SkeletonChart, SkeletonKpiGrid } from "@/shared/ui/Skeleton";
 import { KPICard } from "./components/KPICard";
+import { messages } from "@/shared/feedback/messages";
 
 const DashboardCharts = lazy(async () => {
   const module = await import("./components/DashboardCharts");
@@ -89,7 +90,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ refreshTrigger = 0 }
         <button type="button" onClick={() => void cargarDatos()}>
           <span className="button-with-icon">
             <AppIcon icon={RotateCcw} size={16} />
-            <span>Reintentar</span>
+            <span>{messages.ui.reintentar}</span>
           </span>
         </button>
       </div>

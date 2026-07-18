@@ -113,6 +113,28 @@ export const investigadores = {
       desactivar: "Desactivar investigador",
     } as const,
   } as const,
+  list: {
+    sectionTitle: "Investigadores Registrados",
+    nuevoInvestigador: "Nuevo investigador",
+    modoConsulta: "Modo consulta: solo lectura de investigadores.",
+    desactivarDialog: {
+      title: "Desactivar investigador",
+      message: (nombre: string) => `¿Desactivar a "${nombre}"?`,
+      confirmText: "Sí, desactivar",
+    } as const,
+  } as const,
+  toolbar: {
+    searchAriaLabel: "Buscar investigadores por nombre, DNI, grado o nivel RENACYT",
+    filtroGradoAriaLabel: "Filtrar investigadores por grado",
+    filtroNivelRenacytAriaLabel: "Filtrar investigadores por nivel RENACYT",
+    filtroEstadoAriaLabel: "Filtrar investigadores por estado",
+    opcionesGrado: {
+      todos: "Todos los grados",
+    } as const,
+    opcionesNivel: {
+      todos: "Todos los niveles RENACYT",
+    } as const,
+  } as const,
 } as const;
 
 export type InvestigadoresMessageKey = keyof typeof investigadores;

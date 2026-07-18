@@ -1,5 +1,6 @@
 export const auth = {
   ingreseCredenciales: "Ingrese usuario y contraseña",
+  ingresar: "Ingresar",
   bienvenido: (nombre: string) => `Bienvenido ${nombre}`,
   fallbackUsuario: "usuario",
 } as const;

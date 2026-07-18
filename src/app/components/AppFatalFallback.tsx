@@ -1,5 +1,6 @@
 import { AlertOctagon, RotateCcw } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
+import { messages } from "@/shared/feedback/messages";
 
 export function AppFatalFallback() {
   const handleReload = () => {
@@ -12,21 +13,18 @@ export function AppFatalFallback() {
         <div className="p-6 pb-4 bg-gradient-to-b from-amber-50 to-white border-b border-gray-200">
           <div className="flex items-center gap-2 mb-1.5">
             <AppIcon icon={AlertOctagon} size={22} className="text-amber-600" />
-            <h2 className="text-amber-900 m-0">Error inesperado</h2>
+            <h2 className="text-amber-900 m-0">{messages.shared.errorBoundaryTitleDefault}</h2>
           </div>
-          <p className="text-sm text-gray-600 m-0">
-            La aplicacion encontro un error al cargar la interfaz principal.
-          </p>
+          <p className="text-sm text-gray-600 m-0">{messages.shared.app.fatalFallback.message}</p>
         </div>
         <div className="p-6">
           <p className="text-sm text-gray-700 m-0 mb-4">
-            Recarga la ventana para continuar. Si el problema persiste, contacta al administrador
-            del sistema.
+            {messages.shared.app.fatalFallback.instructions}
           </p>
           <button type="button" className="btn-primary w-full" onClick={handleReload}>
             <span className="button-with-icon">
               <AppIcon icon={RotateCcw} size={18} />
-              <span>Recargar aplicacion</span>
+              <span>{messages.shared.app.fatalFallback.reloadButton}</span>
             </span>
           </button>
         </div>

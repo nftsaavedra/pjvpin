@@ -2,6 +2,7 @@ import { BookOpen } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { AuthScreen } from "@/features/auth/AuthScreen";
 import { type Usuario } from "@/features/auth/api";
+import { messages } from "@/shared/feedback/messages";
 
 interface AuthShellProps {
   onAuthenticated: (usuario: Usuario) => void;
@@ -17,7 +18,7 @@ export function AuthShell({ onAuthenticated }: AuthShellProps) {
               <AppIcon icon={BookOpen} size={24} />
               <span>UPI Research</span>
             </h1>
-            <p className="app-subtitle">Gestión de Proyectos e Investigadores</p>
+            <p className="app-subtitle">{messages.shared.app.authSubtitle}</p>
           </div>
         </div>
       </header>

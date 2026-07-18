@@ -96,7 +96,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
               ) : (
                 <span className="button-with-icon">
                   <AppIcon icon={LogIn} size={18} />
-                  <span>Ingresar</span>
+                  <span>{messages.auth.ingresar}</span>
                 </span>
               )}
             </button>

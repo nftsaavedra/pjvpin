@@ -405,7 +405,15 @@ npm run test       # 27/27 vitest
 cargo check --no-default-features  # 0 warnings
 cargo test --lib   # 71 Rust unit tests (Dni VO + validations + rbac + renacyt + tokens)
 npm run build      # OK
+
+# Auditoria de literales inline en *.tsx (cero debe sobrevivir)
+rg -n "toast\.(error|success|warning|info)\(['\"]" src/ --glob "*.tsx"   # debe estar vacio
+rg -n 'aria-label="[A-ZÁÉÍÓÚÑ]' src/ --glob "*.tsx"                    # debe estar vacio
+rg -n 'title="[A-ZÁÉÍÓÚÑ][^"$]*"' src/ --glob "*.tsx" | rg -v "pendingChange"  # debe estar vacio
 ```
+
+Si typecheck/lint/build falla o la auditoria detecta literales no migrados al
+catálogo, **detener y reportar antes de commitear**.
 
 Si typecheck/lint/build falla, **detener y reportar antes de commitear**.
 

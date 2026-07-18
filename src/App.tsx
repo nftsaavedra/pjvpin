@@ -14,6 +14,7 @@ import { useAuth } from "./app/hooks/useAuth";
 import { useAutoRefresh } from "./app/hooks/useAutoRefresh";
 import { WizardScreen } from "./features/wizard";
 import { wizardHasConfig } from "@/shared/tauri/wizard";
+import { messages } from "@/shared/feedback/messages";
 import "@/assets/styles/index.css";
 
 function App() {
@@ -104,7 +105,7 @@ function App() {
   if (checkingWizard) {
     return (
       <>
-        <AppLoadingScreen subtitle="Verificando configuracion del sistema" />
+        <AppLoadingScreen subtitle={messages.shared.app.loadingSubtitleVerificandoConfig} />
         <ToastContainer />
       </>
     );
@@ -122,7 +123,7 @@ function App() {
   if (authLoading) {
     return (
       <>
-        <AppLoadingScreen subtitle="Verificando acceso al sistema" />
+        <AppLoadingScreen subtitle={messages.shared.app.loadingSubtitleVerificandoAcceso} />
         <ToastContainer />
       </>
     );
@@ -209,13 +210,17 @@ function App() {
                   type="button"
                   className="content-sidebar-toggle"
                   onClick={handleToggleSidebar}
-                  aria-label={sidebarCollapsed ? "Expandir navegación" : "Colapsar navegación"}
+                  aria-label={
+                    sidebarCollapsed
+                      ? messages.shared.navigation.expandirNavegacion
+                      : messages.shared.navigation.colapsarNavegacion
+                  }
                   aria-controls="app-sidebar"
                   aria-expanded={!sidebarCollapsed}
                 >
                   <span className="button-with-icon">
                     <AppIcon icon={sidebarCollapsed ? ChevronRight : ChevronLeft} size={18} />
-                    <span>Menú</span>
+                    <span>{messages.shared.navigation.menu}</span>
                   </span>
                 </button>
                 <StatusChip variant="total">Rol: {getRoleLabel(currentUser.rol)}</StatusChip>

@@ -1,5 +1,6 @@
 import React from "react";
 import { StatusChip } from "@/shared/ui/StatusChip";
+import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadoresTableToolbarProps {
   busqueda: string;
@@ -36,10 +37,14 @@ export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProp
 }) => (
   <div className="filter-bar">
     <div className="filter-summary-group">
-      <div className="filter-summary">Visibles: {totalVisibles}</div>
-      <StatusChip variant="total">Todos: {totalTodos}</StatusChip>
-      <StatusChip variant="success">Activos: {totalActivos}</StatusChip>
-      <StatusChip variant="warning">Inactivos: {totalInactivos}</StatusChip>
+      <div className="filter-summary">{messages.configuracion.filter.visibles(totalVisibles)}</div>
+      <StatusChip variant="total">{messages.configuracion.filter.todos(totalTodos)}</StatusChip>
+      <StatusChip variant="success">
+        {messages.configuracion.filter.activos(totalActivos)}
+      </StatusChip>
+      <StatusChip variant="warning">
+        {messages.configuracion.filter.inactivos(totalInactivos)}
+      </StatusChip>
     </div>
     <input
       className="form-input filter-search"
@@ -48,7 +53,7 @@ export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProp
       onChange={(e) => {
         onBusquedaChange(e.target.value);
       }}
-      aria-label="Buscar investigadores por nombre, DNI, grado o nivel RENACYT"
+      aria-label={messages.investigadores.toolbar.searchAriaLabel}
     />
     <select
       className="form-input filter-select"
@@ -56,9 +61,9 @@ export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProp
       onChange={(e) => {
         onGradoFiltroChange(e.target.value);
       }}
-      aria-label="Filtrar investigadores por grado"
+      aria-label={messages.investigadores.toolbar.filtroGradoAriaLabel}
     >
-      <option value="todos">Todos los grados</option>
+      <option value="todos">{messages.investigadores.toolbar.opcionesGrado.todos}</option>
       {gradosDisponibles.map((grado) => (
         <option key={grado} value={grado}>
           {grado}
@@ -71,9 +76,9 @@ export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProp
       onChange={(e) => {
         onRenacytNivelFiltroChange(e.target.value);
       }}
-      aria-label="Filtrar investigadores por nivel RENACYT"
+      aria-label={messages.investigadores.toolbar.filtroNivelRenacytAriaLabel}
     >
-      <option value="todos">Todos los niveles RENACYT</option>
+      <option value="todos">{messages.investigadores.toolbar.opcionesNivel.todos}</option>
       {nivelesRenacytDisponibles.map((nivel) => (
         <option key={nivel} value={nivel}>
           {nivel}
@@ -86,11 +91,11 @@ export const InvestigadoresTableToolbar: React.FC<InvestigadoresTableToolbarProp
       onChange={(e) => {
         onEstadoFiltroChange(e.target.value as "todos" | "activos" | "inactivos");
       }}
-      aria-label="Filtrar investigadores por estado"
+      aria-label={messages.investigadores.toolbar.filtroEstadoAriaLabel}
     >
-      <option value="todos">Todos</option>
-      <option value="activos">Solo activos</option>
-      <option value="inactivos">Solo inactivos</option>
+      <option value="todos">{messages.configuracion.filter.opciones.todos}</option>
+      <option value="activos">{messages.configuracion.filter.opciones.soloActivos}</option>
+      <option value="inactivos">{messages.configuracion.filter.opciones.soloInactivos}</option>
     </select>
   </div>
 );
