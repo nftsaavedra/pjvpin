@@ -3,6 +3,7 @@ export {
   actualizarGrado,
   actualizarUsuario,
   consultarDniParaUsuario,
+  consultarPersonaDeUsuario,
   crearCatalogo,
   crearGrado,
   crearUsuario,
@@ -16,6 +17,7 @@ export {
   reactivarCatalogo,
   reactivarGrado,
   reactivarUsuario,
+  type ActualizarUsuarioIdentidad,
   type CrearUsuarioArgs,
 } from "@/shared/tauri/configuracion";
 
@@ -25,5 +27,6 @@ export type {
   CatalogoItem,
   EliminarCatalogoResultado,
   GradoAcademico,
+  Persona,
   Usuario,
 } from "@/shared/tauri/types";

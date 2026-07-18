@@ -569,6 +569,30 @@ pub async fn update_usuario(
         .update_one(doc! { "id_usuario": id_usuario }, doc! { "$set": updates })
         .await?;
 
+    let has_identity_update = request.nombres.is_some()
+        || request.apellido_paterno.is_some()
+        || request.apellido_materno.is_some();
+    if has_identity_update {
+        if let Some(ref persona_id) = usuario_actual.persona_id {
+            let update_request = crate::personas::dto::UpdatePersonaRequest {
+                nombres: request.nombres.clone(),
+                apellido_paterno: request.apellido_paterno.clone(),
+                apellido_materno: request.apellido_materno.clone(),
+                correo: None,
+                telefono: None,
+                direccion: None,
+                sexo: None,
+                fecha_nacimiento: None,
+            };
+            let _ = crate::personas::repository::update(db, persona_id, update_request).await?;
+        } else {
+            tracing::warn!(
+                usuario_id = %id_usuario,
+                "actualizar_usuario: identidad solicitada pero usuario sin persona_id vinculada"
+            );
+        }
+    }
+
     let mut usuario = get_usuario_by_id(db, id_usuario).await?.public_view();
     enrich_usuario_with_persona(db, &mut usuario).await?;
     Ok(usuario)

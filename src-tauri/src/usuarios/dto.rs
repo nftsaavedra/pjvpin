@@ -138,6 +138,12 @@ pub struct UpdateUsuarioRequest {
     pub password: Option<String>,
     #[serde(default)]
     pub investigador_id: Option<String>,
+    #[serde(default)]
+    pub nombres: Option<String>,
+    #[serde(default)]
+    pub apellido_paterno: Option<String>,
+    #[serde(default)]
+    pub apellido_materno: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

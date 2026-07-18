@@ -4,6 +4,7 @@ import type {
   EliminarCatalogoResultado,
   EliminarGradoResultado,
   GradoAcademico,
+  Persona,
   Usuario,
 } from "./types";
 
@@ -65,15 +66,33 @@ export const getAllUsuarios = async (): Promise<Usuario[]> => {
   return await invoke("get_all_usuarios");
 };
 
+export interface ActualizarUsuarioIdentidad {
+  nombres?: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+}
+
+export const consultarPersonaDeUsuario = async (id_usuario: string): Promise<Persona> => {
+  return await invoke("consultar_persona_de_usuario", { idUsuario: id_usuario });
+};
+
 export const actualizarUsuario = async (
   id_usuario: string,
   username: string,
   rol: string,
   password?: string,
+  identidad?: ActualizarUsuarioIdentidad,
 ): Promise<Usuario> => {
   return await invoke("actualizar_usuario", {
     idUsuario: id_usuario,
-    request: { username, rol, password: password?.trim() ? password : null },
+    request: {
+      username,
+      rol,
+      password: password?.trim() ? password : null,
+      nombres: identidad?.nombres ?? null,
+      apellidoPaterno: identidad?.apellidoPaterno ?? null,
+      apellidoMaterno: identidad?.apellidoMaterno ?? null,
+    },
   });
 };
 

@@ -38,6 +38,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
     handleOpenCreate,
     handleSubmit,
     handleToggleUsuario,
+    isCargandoPersona,
     isFormOpen,
     isLoading,
     loading,
@@ -181,7 +182,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
                           : "Editar usuario"
                       }
                       onClick={() => {
-                        handleEditar(usuario);
+                        void handleEditar(usuario);
                       }}
                     />
                     <TableActionButton
@@ -276,10 +277,36 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
             </div>
           )}
 
-          {isEditing && dni.dni && (
-            <div className="inline-feedback inline-feedback-info">
-              Identidad vinculada al DNI <strong>{dni.dni}</strong>. La edición de identidad se
-              gestiona desde la ficha de Persona correspondiente.
+          {isEditing && isCargandoPersona && (
+            <div className="inline-feedback inline-feedback-info" aria-live="polite">
+              <span>
+                Cargando identidad vinculada al DNI <strong>{dni.dni}</strong>...
+              </span>
+            </div>
+          )}
+
+          {isEditing && dni.dni && !isCargandoPersona && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormInput
+                label="Nombres"
+                value={dni.nombres}
+                onChange={dni.setNombres}
+                required
+                disabled={!dni.nombres}
+              />
+              <FormInput
+                label="Apellido paterno"
+                value={dni.apellidoPaterno}
+                onChange={dni.setApellidoPaterno}
+                required
+                disabled={!dni.apellidoPaterno}
+              />
+              <FormInput
+                label="Apellido materno"
+                value={dni.apellidoMaterno}
+                onChange={dni.setApellidoMaterno}
+                disabled={!dni.apellidoMaterno}
+              />
             </div>
           )}
 

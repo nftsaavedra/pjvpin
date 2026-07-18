@@ -181,6 +181,7 @@ pub fn run() {
             usuario_cmds::desactivar_usuario,
             usuario_cmds::reactivar_usuario,
             usuario_cmds::consultar_dni_para_usuario,
+            crate::personas::commands::consultar_persona_de_usuario,
             // Seguridad
             security_cmds::get_security_status,
             security_cmds::get_setup_guide,

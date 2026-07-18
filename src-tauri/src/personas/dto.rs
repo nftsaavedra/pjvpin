@@ -71,3 +71,13 @@ pub struct UpdatePersonaRequest {
     #[serde(default)]
     pub fecha_nacimiento: Option<i64>,
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub struct PersonaDeUsuarioDto {
+    pub id_persona: String,
+    pub dni: String,
+    pub nombres: String,
+    pub apellido_paterno: String,
+    pub apellido_materno: Option<String>,
+    pub nombre_completo: String,
+}

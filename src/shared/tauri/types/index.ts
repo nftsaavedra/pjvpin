@@ -22,6 +22,7 @@ export type {
   EliminarGradoResultado,
   CatalogoItem,
   EliminarCatalogoResultado,
+  Persona,
 } from "./catalogo.types";
 
 export type {

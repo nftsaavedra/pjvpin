@@ -5,6 +5,7 @@ import { toast } from "@/shared/feedback/toast";
 import {
   actualizarUsuario,
   consultarDniParaUsuario,
+  consultarPersonaDeUsuario,
   crearUsuario,
   desactivarUsuario,
   getTauriErrorMessage,
@@ -28,6 +29,7 @@ export const useUsuariosTab = (
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [usuarioToToggle, setUsuarioToToggle] = useState<Usuario | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCargandoPersona, setIsCargandoPersona] = useState(false);
   const [estadoFiltro, setEstadoFiltro] = useState<"todos" | "activos" | "inactivos">("activos");
   const [busqueda, setBusqueda] = useState("");
 
@@ -80,7 +82,24 @@ export const useUsuariosTab = (
           return;
         }
 
-        await actualizarUsuario(editingUsuario.id_usuario, username, rol, password || undefined);
+        const nombresTrim = dni.nombres.trim();
+        const apellidoPaternoTrim = dni.apellidoPaterno.trim();
+        const identidadValida = !!(nombresTrim && apellidoPaternoTrim);
+        const identidad = identidadValida
+          ? {
+              nombres: nombresTrim,
+              apellidoPaterno: apellidoPaternoTrim,
+              apellidoMaterno: dni.apellidoMaterno.trim() || undefined,
+            }
+          : undefined;
+
+        await actualizarUsuario(
+          editingUsuario.id_usuario,
+          username,
+          rol,
+          password || undefined,
+          identidad,
+        );
         toast.success("Usuario actualizado correctamente");
       } else {
         await crearUsuario({
@@ -106,22 +125,32 @@ export const useUsuariosTab = (
     }
   };
 
-  const handleEditar = (usuario: Usuario) => {
+  const handleEditar = async (usuario: Usuario) => {
     setEditingUsuario(usuario);
     setUsername(usuario.username);
     setRol(usuario.rol);
     setPassword("");
-    if (usuario.dni) {
-      dni.loadFromPersona({
-        dni: usuario.dni,
-        nombres: "",
-        apellidoPaterno: "",
-        apellidoMaterno: "",
-      });
-    } else {
-      dni.reset();
-    }
+    dni.reset();
     setIsFormOpen(true);
+    if (!usuario.dni) return;
+
+    setIsCargandoPersona(true);
+    try {
+      const persona = await consultarPersonaDeUsuario(usuario.id_usuario);
+      dni.loadFromPersona({
+        dni: persona.dni,
+        nombres: persona.nombres,
+        apellidoPaterno: persona.apellido_paterno,
+        apellidoMaterno: persona.apellido_materno ?? "",
+      });
+    } catch (error) {
+      dni.setDni(usuario.dni);
+      toast.warning(
+        `No se pudo cargar la persona vinculada (${getTauriErrorMessage(error)}). Puede actualizar el resto de los datos del usuario.`,
+      );
+    } finally {
+      setIsCargandoPersona(false);
+    }
   };
 
   const handleOpenCreate = () => {
@@ -201,6 +230,7 @@ export const useUsuariosTab = (
     handleOpenCreate,
     handleSubmit,
     handleToggleUsuario,
+    isCargandoPersona,
     isFormOpen,
     isLoading,
     loading,

@@ -170,6 +170,9 @@ pub async fn actualizar_usuario(
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
     let previous_user = rbac::get_user_by_id(state, id_usuario).await?;
+    let has_identity_update = request.nombres.is_some()
+        || request.apellido_paterno.is_some()
+        || request.apellido_materno.is_some();
     let usuario = usuario_service::update(state, &actor.id_usuario, id_usuario, request).await?;
 
     crate::shared::audit::write_user_audit(
@@ -185,6 +188,17 @@ pub async fn actualizar_usuario(
             usuario.activo,
         ),
     );
+
+    if has_identity_update {
+        crate::shared::audit::write_generic_audit(
+            &actor,
+            "usuario.identity.update",
+            "persona",
+            usuario.persona_id.as_deref().unwrap_or(""),
+            format!("username:{}", usuario.username),
+        );
+    }
+
     Ok(usuario)
 }
 
