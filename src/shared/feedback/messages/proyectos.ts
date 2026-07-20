@@ -136,8 +136,10 @@ export const proyectos = {
     activos: (count: number) => `Activos: ${count}`,
     inactivos: (count: number) => `Inactivos: ${count}`,
     todos: (count: number) => `Todos: ${count}`,
+    searchLabel: "Buscar",
     searchPlaceholder: "Buscar por título o perfil del investigador",
     searchAriaLabel: "Buscar proyectos por título o perfil del investigador",
+    estadoLabel: "Estado",
     filtroEstadoAriaLabel: "Filtrar proyectos por estado",
     opciones: {
       todos: "Todos",

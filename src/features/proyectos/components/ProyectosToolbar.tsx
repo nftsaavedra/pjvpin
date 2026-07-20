@@ -1,4 +1,6 @@
 import React from "react";
+import { FormInput } from "@/shared/forms/FormInput";
+import { FormSelect } from "@/shared/forms/FormSelect";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { messages } from "@/shared/feedback/messages";
 
@@ -42,26 +44,28 @@ export const ProyectosToolbar: React.FC<ProyectosToolbarProps> = ({
         </>
       )}
     </div>
-    <input
-      className="form-input filter-search"
-      placeholder={messages.proyectos.toolbar.searchPlaceholder}
+    <FormInput
+      label={messages.proyectos.toolbar.searchLabel}
       value={busqueda}
-      onChange={(e) => {
-        onBusquedaChange(e.target.value);
-      }}
+      onChange={onBusquedaChange}
+      placeholder={messages.proyectos.toolbar.searchPlaceholder}
+      containerClassName="filter-bar-search"
       aria-label={messages.proyectos.toolbar.searchAriaLabel}
     />
-    <select
-      className="form-input filter-select"
+    <FormSelect
+      label={messages.proyectos.toolbar.estadoLabel}
       value={estadoFiltro}
-      onChange={(e) => {
-        onEstadoFiltroChange(e.target.value as "todos" | "activos" | "inactivos");
+      onChange={(value) => {
+        onEstadoFiltroChange(value as "todos" | "activos" | "inactivos");
       }}
+      options={[
+        { value: "todos", label: messages.proyectos.toolbar.opciones.todos },
+        { value: "activos", label: messages.proyectos.toolbar.opciones.soloActivos },
+        { value: "inactivos", label: messages.proyectos.toolbar.opciones.soloInactivos },
+      ]}
+      placeholder="—"
+      containerClassName="filter-bar-select"
       aria-label={messages.proyectos.toolbar.filtroEstadoAriaLabel}
-    >
-      <option value="todos">{messages.proyectos.toolbar.opciones.todos}</option>
-      <option value="activos">{messages.proyectos.toolbar.opciones.soloActivos}</option>
-      <option value="inactivos">{messages.proyectos.toolbar.opciones.soloInactivos}</option>
-    </select>
+    />
   </div>
 );
