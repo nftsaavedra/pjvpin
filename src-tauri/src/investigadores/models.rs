@@ -83,11 +83,13 @@ impl Investigador {
             renacyt_orcid: renacyt
                 .as_ref()
                 .and_then(|value| value.orcid.clone())
-                .filter(|value| !value.trim().is_empty()),
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty()),
             renacyt_scopus_author_id: renacyt
                 .as_ref()
                 .and_then(|value| value.scopus_author_id.clone())
-                .filter(|value| !value.trim().is_empty()),
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty()),
             renacyt_fecha_ultima_sincronizacion: fecha_ultima_sincronizacion,
             renacyt_ficha_url: renacyt
                 .as_ref()

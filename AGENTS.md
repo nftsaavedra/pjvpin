@@ -336,8 +336,8 @@ Este proyecto tiene un **índice semántico del codebase** en `.opencode/index/`
 - `vercel-composition-patterns`: Patrones de composición React
 
 ### Testing (Pendiente)
-- Rust: `cargo test` (6 tests: 2 config_validator + 4 investigadores)
-- Frontend: Vitest + Testing Library (15 tests: permissions + error handling)
+- Rust: `cargo test` (86 tests: Dni VO + validations + rbac + renacyt + tokens + 13 investigadores)
+- Frontend: Vitest + Testing Library (27 tests: permissions + error handling + DNI validation)
 - E2E: Sin tests (Playwright recomendado con Tauri)
 
 ### CI/CD (Pendiente)
@@ -454,7 +454,7 @@ npm run typecheck  # 0 errores
 npm run lint       # baseline 6 errors + 4 warnings preexistentes
 npm run test       # 27/27 vitest
 cargo check --no-default-features  # 0 warnings
-cargo test --lib   # 73 Rust unit tests (Dni VO + validations + rbac + renacyt + tokens)
+cargo test --lib   # 86 Rust unit tests (Dni VO + validations + rbac + renacyt + tokens + investigadores)
 npm run build      # OK
 
 # Auditoria del codebase-index (debe estar sano antes de cualquier refactor)
