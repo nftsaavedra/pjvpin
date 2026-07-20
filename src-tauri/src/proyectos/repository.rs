@@ -12,7 +12,6 @@ use crate::proyectos::dto::{
     ParticipacionRecordDto, ProyectoDto, UpdateProyectoConParticipantesRequest,
 };
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
-use crate::proyectos::service;
 use crate::shared::error::AppError;
 
 const COLLECTION_PROYECTOS: &str = "proyectos";
@@ -197,7 +196,7 @@ pub async fn create_proyecto_con_participantes(
     db: &Database,
     request: CreateProyectoConParticipantesRequest,
 ) -> Result<Proyecto, AppError> {
-    let prepared = service::prepare_create_input(request)?;
+    let prepared = request.validate()?;
     validate_investigadores_activos(db, &prepared.investigadores_ids).await?;
 
     let id_proyecto = Uuid::new_v4().to_string();
@@ -256,7 +255,7 @@ pub async fn update_proyecto_con_participantes(
     id_proyecto: &str,
     request: UpdateProyectoConParticipantesRequest,
 ) -> Result<Proyecto, AppError> {
-    let prepared = service::prepare_update_input(request)?;
+    let prepared = request.validate()?;
     validate_investigadores_activos(db, &prepared.investigadores_ids).await?;
 
     let proyecto_exists = db

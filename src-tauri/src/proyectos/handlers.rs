@@ -3,7 +3,8 @@ use crate::proyectos::dto::{
     ProyectoDto, UpdateProyectoConParticipantesRequest,
 };
 use crate::proyectos::models::Proyecto;
-use crate::proyectos::service as proyecto_service;
+use crate::proyectos::repository;
+use crate::proyectos::repository_queries;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use crate::shared::rbac;
@@ -16,7 +17,8 @@ pub async fn crear_proyecto_con_participantes(
 ) -> Result<ProyectoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    let proyecto: Proyecto = proyecto_service::create(state, request).await?;
+    let proyecto: Proyecto =
+        repository::create_proyecto_con_participantes(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.create",
@@ -35,7 +37,9 @@ pub async fn update_proyecto_con_participantes(
 ) -> Result<ProyectoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    let proyecto: Proyecto = proyecto_service::update(state, id_proyecto, request).await?;
+    let proyecto: Proyecto =
+        repository::update_proyecto_con_participantes(state.mongo_db()?, id_proyecto, request)
+            .await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.update",
@@ -53,7 +57,8 @@ pub async fn buscar_proyectos_por_investigador(
 ) -> Result<Vec<ProyectoDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
     let proyectos: Vec<Proyecto> =
-        proyecto_service::find_by_investigador(state, id_investigador).await?;
+        repository_queries::buscar_proyectos_por_investigador(state.mongo_db()?, id_investigador)
+            .await?;
     Ok(proyectos.into_iter().map(ProyectoDto::from).collect())
 }
 
@@ -69,9 +74,10 @@ pub async fn get_all_proyectos_detalle(
                 "Usuario responsable_proyecto no tiene un investigador asociado.".to_string(),
             )
         })?;
-        proyecto_service::get_all_detalle_for_responsable(state, investigador_id).await
+        repository_queries::get_all_proyectos_detalle(state.mongo_db()?, Some(investigador_id))
+            .await
     } else {
-        proyecto_service::get_all_detalle(state).await
+        repository_queries::get_all_proyectos_detalle(state.mongo_db()?, None).await
     }
 }
 
@@ -94,7 +100,8 @@ pub async fn get_all_proyectos_paginated(
         None
     };
     let result: PaginatedResult<Proyecto> =
-        proyecto_service::get_all_paginated(state, page, limit, responsable_id).await?;
+        repository::get_all_proyectos_paginated(state.mongo_db()?, page, limit, responsable_id)
+            .await?;
     Ok(PaginatedResult {
         items: result.items.into_iter().map(ProyectoDto::from).collect(),
         total: result.total,
@@ -112,7 +119,12 @@ pub async fn eliminar_relacion_proyecto_investigador(
 ) -> Result<(), AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::delete_relation(state, id_proyecto, id_investigador).await?;
+    repository::eliminar_relacion_proyecto_investigador(
+        state.mongo_db()?,
+        id_proyecto,
+        id_investigador,
+    )
+    .await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.delete_relation",
@@ -130,7 +142,7 @@ pub async fn eliminar_relaciones_proyecto(
 ) -> Result<(), AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    proyecto_service::delete_relations(state, id_proyecto).await?;
+    repository::eliminar_relaciones_proyecto(state.mongo_db()?, id_proyecto).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.delete_relations",
@@ -148,7 +160,8 @@ pub async fn eliminar_proyecto(
 ) -> Result<EliminarProyectoResultadoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    let result = proyecto_service::delete(state, id_proyecto).await?;
+    let db = state.mongo_db()?;
+    let result = repository::eliminar_proyecto(db, id_proyecto).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.delete",
@@ -166,7 +179,7 @@ pub async fn reactivar_proyecto(
 ) -> Result<ProyectoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
-    let proyecto: Proyecto = proyecto_service::reactivate(state, id_proyecto).await?;
+    let proyecto: Proyecto = repository::reactivar_proyecto(state.mongo_db()?, id_proyecto).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "proyecto.reactivate",

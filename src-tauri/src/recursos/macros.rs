@@ -1,5 +1,10 @@
-/// Generates 8 CRUD repository functions for one resource entity type.
+/// Generates 7 CRUD repository functions for one resource entity type.
 /// Delete is soft-delete (activo = 0). Reactivate restores (activo = 1).
+///
+/// El borrado por proyecto (`delete_*_by_proyecto`) ya NO se genera aqui:
+/// la limpieza al desactivar un proyecto se hace via `update_many` directo
+/// en `proyectos::repository::eliminar_proyecto` (transaccional), no
+/// delegando a cada repo de recurso.
 ///
 /// Type parameters:
 /// - `$entity:ty` — domain struct with `new(id, request) -> Result<Self, _>` and `TryFrom<Dto>`
@@ -19,7 +24,6 @@ macro_rules! impl_resource_repository {
         $fn_get_by_id:ident,
         $fn_update:ident,
         $fn_delete:ident,
-        $fn_delete_by_proj:ident,
         $fn_reactivate:ident,
         $error_label:expr,
         $( $upd_field:ident ),* $(,)?
@@ -113,19 +117,6 @@ macro_rules! impl_resource_repository {
             db.collection::<mongodb::bson::Document>($collection)
                 .update_one(
                     mongodb::bson::doc! { stringify!($id_field): $id_field },
-                    mongodb::bson::doc! { "$set": { "activo": 0, "updated_at": $crate::shared::time::now_ms() } },
-                )
-                .await?;
-            Ok(())
-        }
-
-        pub async fn $fn_delete_by_proj(
-            db: &mongodb::Database,
-            proyecto_id: &str,
-        ) -> Result<(), $crate::shared::error::AppError> {
-            db.collection::<mongodb::bson::Document>($collection)
-                .update_many(
-                    mongodb::bson::doc! { "proyecto_id": proyecto_id },
                     mongodb::bson::doc! { "$set": { "activo": 0, "updated_at": $crate::shared::time::now_ms() } },
                 )
                 .await?;

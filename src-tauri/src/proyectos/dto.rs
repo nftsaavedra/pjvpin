@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::shared::error::AppError;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProyectoParticipanteResumenDto {
     pub id_investigador: String,
@@ -7,6 +9,76 @@ pub struct ProyectoParticipanteResumenDto {
     pub grado: String,
     pub renacyt_nivel: String,
     pub es_responsable: bool,
+}
+
+/// Datos validados de entrada para crear/actualizar un proyecto con sus
+/// participantes. Se obtiene via `CreateProyectoConParticipantesRequest::validate()`
+/// o `UpdateProyectoConParticipantesRequest::validate()`. Centralizar la
+/// normalizacion aqui evita inconsistencias entre create/update.
+#[derive(Debug, Clone)]
+pub struct ProyectoParticipantesInput {
+    pub titulo_proyecto: String,
+    pub investigadores_ids: Vec<String>,
+    pub investigador_responsable_id: Option<String>,
+}
+
+fn normalize_investigador_ids(investigadores_ids: &[String]) -> Result<Vec<String>, AppError> {
+    let mut normalized_ids = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+
+    for investigador_id in investigadores_ids {
+        let normalized = investigador_id.trim();
+        if normalized.is_empty() {
+            return Err(AppError::InternalError(
+                "La lista de investigadores contiene valores invalidos.".to_string(),
+            ));
+        }
+
+        if seen.insert(normalized.to_string()) {
+            normalized_ids.push(normalized.to_string());
+        }
+    }
+
+    Ok(normalized_ids)
+}
+
+fn normalize_responsable_id(investigador_responsable_id: Option<String>) -> Option<String> {
+    investigador_responsable_id
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn validate_responsable(
+    investigadores_ids: &[String],
+    investigador_responsable_id: &Option<String>,
+) -> Result<(), AppError> {
+    if investigadores_ids.is_empty() {
+        if investigador_responsable_id.is_some() {
+            return Err(AppError::InternalError(
+                "No puede asignar un investigador responsable cuando el proyecto no tiene investigadores vinculados."
+                    .to_string(),
+            ));
+        }
+        return Ok(());
+    }
+
+    let Some(responsable_id) = investigador_responsable_id.as_ref() else {
+        return Err(AppError::InternalError(
+            "Seleccione un investigador responsable para el proyecto.".to_string(),
+        ));
+    };
+
+    if !investigadores_ids
+        .iter()
+        .any(|investigador_id| investigador_id == responsable_id)
+    {
+        return Err(AppError::InternalError(
+            "El investigador responsable debe formar parte de los investigadores asignados al proyecto."
+                .to_string(),
+        ));
+    }
+
+    Ok(())
 }
 
 fn deserialize_activo_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
@@ -78,11 +150,52 @@ pub struct CreateProyectoConParticipantesRequest {
     pub investigador_responsable_id: Option<String>,
 }
 
+impl CreateProyectoConParticipantesRequest {
+    /// Valida y normaliza el input. Devuelve un `ProyectoParticipantesInput`
+    /// listo para el repositorio. Reglas:
+    /// - Al menos un investigador.
+    /// - IDs trim + dedupe (mantiene orden).
+    /// - Si hay investigadores, el responsable debe estar entre ellos.
+    pub fn validate(&self) -> Result<ProyectoParticipantesInput, AppError> {
+        let investigadores_ids = normalize_investigador_ids(&self.investigadores_ids)?;
+        if investigadores_ids.is_empty() {
+            return Err(AppError::InternalError(
+                "Seleccione al menos un investigador para crear el proyecto.".to_string(),
+            ));
+        }
+        let investigador_responsable_id =
+            normalize_responsable_id(self.investigador_responsable_id.clone());
+        validate_responsable(&investigadores_ids, &investigador_responsable_id)?;
+        Ok(ProyectoParticipantesInput {
+            titulo_proyecto: self.titulo_proyecto.clone(),
+            investigadores_ids,
+            investigador_responsable_id,
+        })
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct UpdateProyectoConParticipantesRequest {
     pub titulo_proyecto: String,
     pub investigadores_ids: Vec<String>,
     pub investigador_responsable_id: Option<String>,
+}
+
+impl UpdateProyectoConParticipantesRequest {
+    /// Variante de `validate()` para updates: NO exige al menos un
+    /// investigador (puede haber updates que solo cambian titulo).
+    /// El responsable se valida contra la lista existente.
+    pub fn validate(&self) -> Result<ProyectoParticipantesInput, AppError> {
+        let investigadores_ids = normalize_investigador_ids(&self.investigadores_ids)?;
+        let investigador_responsable_id =
+            normalize_responsable_id(self.investigador_responsable_id.clone());
+        validate_responsable(&investigadores_ids, &investigador_responsable_id)?;
+        Ok(ProyectoParticipantesInput {
+            titulo_proyecto: self.titulo_proyecto.trim().to_string(),
+            investigadores_ids,
+            investigador_responsable_id,
+        })
+    }
 }
 
 #[derive(Debug, Serialize)]
