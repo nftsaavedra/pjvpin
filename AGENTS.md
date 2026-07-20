@@ -289,10 +289,42 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 
 ## Flujo de Trabajo con OpenCode
 
+### Herramienta prioritaria de descubrimiento: plugin `opencode-codebase-index`
+
+Este proyecto tiene un **índice semántico del codebase** en `.opencode/index/` (modelo: `nomic-embed-text` vía Ollama, ~3 000 chunks). **Toda exploración de código DEBE priorizar las herramientas del plugin antes que `grep`/`read`/`glob` aislados.** Jerarquía de uso:
+
+| Necesidad | Herramienta prioritaria | Cuándo NO usar |
+|---|---|---|
+| Descubrimiento conceptual ("¿dónde se valida la sesión?") | `codebase_search` (devuelve top-N semántico) | Si necesitas matches exactos/exhaustivos → `grep` |
+| Localizar la definición de un símbolo | `implementation_lookup` o `codebase_peek` (devuelve file:line + nombre) | Para ver el código completo → `read` |
+| Blast-radius de un cambio antes de refactor | `pr_impact` (afectados directos + transitivos + hub nodes) | Si el cambio es trivial y no toca funciones compartidas |
+| Callers / callees de una función | `call_graph` (con `direction: "callers"` o `"callees"`) | Si la función es interna y trivial |
+| Path entre dos símbolos | `call_graph_path` | Si no hay relación call entre ellos |
+| Verificar salud del índice | `index_status` (cuántos chunks, branch) | — |
+| Diagnóstico de fallos del indexer | `index_logs` | — |
+
+**Reglas concretas de uso:**
+
+1. **Antes de cualquier refactor que toque una función/comando público** → correr `call_graph` con `direction: "callers"` para listar todos los call-sites, **luego** `pr_impact` para dimensionar el blast-radius en el branch.
+2. **Antes de proponer cambios arquitectónicos** (eliminar service layer, renombrar DTOs, mover funciones entre módulos) → correr `codebase_peek` con query descriptivo para encontrar **patrones replicados** en otros módulos antes de aplicar la solución.
+3. **En subagentes `explore`**: usar `codebase_search` como primera pasada conceptual (reduce ~90% de flips de lectura), luego `grep` para confirmar identificadores exactos. **Prohibido abrir 5+ archivos cuando `codebase_peek` + `call_graph` resuelven en 1 tool-call.**
+4. **Auditorías cross-module** (auditar N módulos) → usar `codebase_peek` con queries separados por feature, no abrir cada carpeta manualmente.
+5. **Si el index no está construido** (`index_status` reporta 0 chunks) → ejecutar `index_codebase` antes de cualquier `codebase_search`/`codebase_peek`. Index incremental ~50 ms en estado estable.
+6. **Mantenimiento**: si `index_status` muestra "stale" o chunks de archivos borrados → ejecutar `index_health_check` para limpiar entradas obsoletas. Auto-GC cada 7 días activado por config.
+
+**Anti-patterns explícitos (prohibidos):**
+
+- ❌ `grep` exhaustivo sobre 5+ archivos cuando `codebase_peek` con un query descriptivo los encuentra todos.
+- ❌ `read` de archivos completos >200 líneas para localizar un símbolo cuando `codebase_peek` da su ubicación.
+- ❌ Lanzar subagentes `explore` con instrucciones genéricas ("busca cómo se hace X") en vez de un query semántico concreto que el index puede resolver.
+- ❌ Proponer refactors sin `pr_impact` previo cuando el símbolo es hub (>5 callers).
+- ❌ Ejecutar `index_codebase` con `force: true` en cada sesión (es costoso: re-embedea todo). El incremental cubre diffs.
+
 ### Agentes Recomendados
-- **explore**: Para búsquedas en el codebase, encontrar patrones, analizar dependencias
-- **general**: Para tareas multi-step complejas que requieren leer + escribir
-- Usar agentes en paralelo cuando las tareas son independientes
+- **explore**: Para búsquedas en el codebase, encontrar patrones, analizar dependencias. **DEBE usar `codebase_search` + `codebase_peek` + `call_graph` como primera opción** antes de `grep`/`read`/`glob`.
+- **general**: Para tareas multi-step complejas que requieren leer + escribir. Aplica la misma jerarquía de discovery.
+- **infra-expert** / **doc-expert**: Para tareas especializadas (infraestructura, documentación). También usan el índice semántico.
+- Usar agentes en paralelo cuando las tareas son independientes. Delegar a subagente todo trabajo tool-heavy para mantener el contexto del agente principal limpio.
 
 ### Skills Disponibles
 - `tauri-v2`: Tauri v2 patterns, IPC, capacidades, build troubleshooting
@@ -320,6 +352,14 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 |-----------|------|
 | 🟡 Medio | Cifrado de config en disco: re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) — `TokenResolver` es la pieza que conecta con keychain |
 | 🟡 Medio | Dropdowns de recursos aún usan placeholders; integrar con catálogos (FormSelect dinámico) |
+| 🟡 Medio | Auditoría + refactor de los módulos restantes (Planes J–Q): `proyectos`, `recursos`, `usuarios`, `publicaciones`, `eventos`, `catalogos`, `grados`, `grupos`, `dashboard`, `auth/wizard`, `reportes`. Misma deuda transversal que `investigadores` (service.rs pasamanos, DTOs sin `#[serde(rename_all)]`, `.expect()` en producción, bare inputs, strings hardcodeados). Plan en `~/.plannotator/plans/plan-i-continuacin-planes-jq-a-2026-07-18-approved.md` |
+
+### Codebase-index (plugin opencode-codebase-index)
+
+- **Estado**: índice activo en `.opencode/index/` con ~3 000 chunks. Provider: Ollama + `nomic-embed-text`. Index incremental ~50 ms en estado estable.
+- **Auto-GC**: cada 7 días. Manual: `index_health_check`.
+- **Health check pre-refactor**: `index_status` debe reportar `chunks > 0, branch=main, no "stale"` antes de cualquier refactor mayor.
+- **Si el plugin se desinstala o el index queda corrupto**: ejecutar `index_codebase force=true` (costoso: re-embedea todo). Solo en escenarios de desastre.
 
 ---
 
@@ -413,8 +453,11 @@ npm run typecheck  # 0 errores
 npm run lint       # baseline 6 errors + 4 warnings preexistentes
 npm run test       # 27/27 vitest
 cargo check --no-default-features  # 0 warnings
-cargo test --lib   # 71 Rust unit tests (Dni VO + validations + rbac + renacyt + tokens)
+cargo test --lib   # 73 Rust unit tests (Dni VO + validations + rbac + renacyt + tokens)
 npm run build      # OK
+
+# Auditoria del codebase-index (debe estar sano antes de cualquier refactor)
+index_status       # chunks > 0, branch=main, no "stale"
 
 # Auditoria de literales inline en *.tsx (cero debe sobrevivir)
 rg -n "toast\.(error|success|warning|info)\(['\"]" src/ --glob "*.tsx"   # debe estar vacio
@@ -425,6 +468,9 @@ rg -n 'className="empty-state"' src/ --glob "*.tsx" | rg -v "EmptyState.tsx"  # 
 # Auditoria de politica de color (light-only, inputClassName)
 rg -n 'prefers-color-scheme' src/ --glob "*.css"                       # debe estar vacio (no dark mode)
 rg -n 'className="form-input"' src/ --glob "*.tsx"                    # debe estar vacio (usar inputClassName)
+
+# Auditoria de cross-module debt (replicada transversalmente, ver Plan I)
+rg -n 'pub mod service' src-tauri/src/{investigadores,proyectos,recursos,publicaciones,eventos}  # debe estar vacio en módulos donde service es pasamanos
 ```
 
 Si typecheck/lint/build falla o la auditoria detecta literales no migrados al

@@ -86,6 +86,11 @@ pub enum AppError {
     InternalError(String),
     ConfigurationError(String),
     ExternalServiceError(String),
+    /// Estado interno inconsistente (referencia colgante, documento esperado
+    /// ausente, etc.). Indica un bug de dominio o un borrado manual de la BD.
+    /// Se diferencia de `InternalError` para que la UI pueda mostrar un
+    /// mensaje canonico de "inconsistencia de datos" sin filtrar detalles.
+    DataInconsistency(String),
 }
 
 impl From<mongodb::error::Error> for AppError {
@@ -123,7 +128,8 @@ impl fmt::Display for AppError {
             | AppError::NotFound(message)
             | AppError::InternalError(message)
             | AppError::ConfigurationError(message)
-            | AppError::ExternalServiceError(message) => f.write_str(message),
+            | AppError::ExternalServiceError(message)
+            | AppError::DataInconsistency(message) => f.write_str(message),
         }
     }
 }

@@ -6,6 +6,7 @@ use crate::investigadores::dto::{
     InvestigadorDto, RefreshInvestigadorRenacytFormacionResultadoDto, RenacytLookupResult,
     ReniecDniLookupResult, UpdateInvestigadorRequest,
 };
+use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
 use crate::shared::external::renacyt_client;
 use crate::shared::external::reniec_client;
@@ -107,13 +108,14 @@ pub async fn consultar_dni_reniec(
 ) -> Result<ReniecDniLookupResult, AppError> {
     rbac::require_investigadores_manage_permission(&state, window.label()).await?;
 
-    if let Some(cached) = state.reniec_cache.get(&numero).await {
+    let dni = Dni::new(&numero)?.into_string();
+    if let Some(cached) = state.reniec_cache.get(&dni).await {
         return Ok(cached);
     }
 
     let result =
-        reniec_client::consultar_dni(&state.tokens, &state.reniec.api_base_url, &numero).await?;
-    state.reniec_cache.put(&numero, result.clone()).await;
+        reniec_client::consultar_dni(&state.tokens, &state.reniec.api_base_url, &dni).await?;
+    state.reniec_cache.put(&dni, result.clone()).await;
     Ok(result)
 }
 
@@ -149,6 +151,7 @@ pub async fn buscar_investigador_por_dni_con_renacyt(
         .await?;
     }
 
+    let dni = Dni::new(&dni)?.into_string();
     let config = &state.renacyt;
     let encontrado = renacyt_client::buscar_por_dni(config, &dni).await?;
     match encontrado {

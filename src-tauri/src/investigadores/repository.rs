@@ -26,8 +26,12 @@ fn doc_to_dto(doc: Document) -> Result<InvestigadorDto, AppError> {
     })
 }
 
-fn dto_to_model(dto: InvestigadorDto) -> Investigador {
-    Investigador::try_from(dto).expect("InvestigadorDto -> Investigador conversion failed")
+fn dto_to_model(dto: InvestigadorDto) -> Result<Investigador, AppError> {
+    Investigador::try_from(dto).map_err(|e| {
+        AppError::InternalError(format!(
+            "No se pudo convertir InvestigadorDto a Investigador: {e}"
+        ))
+    })
 }
 
 fn model_to_dto(m: &Investigador) -> InvestigadorDto {
@@ -105,7 +109,7 @@ pub async fn get_all_investigadores(db: &Database) -> Result<Vec<Investigador>, 
     let docs: Vec<Document> = cursor.try_collect().await?;
     let mut investigadores: Vec<Investigador> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     let personas = data_loader::load_personas_map(db).await?;
     investigadores.sort_by(|a, b| {
@@ -146,7 +150,7 @@ pub async fn get_all_investigadores_paginated(
     let docs: Vec<Document> = cursor.try_collect().await?;
     let investigadores: Vec<Investigador> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
 
     let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
@@ -170,7 +174,10 @@ pub async fn get_investigador_by_dni(
                 .collection::<Document>(COLLECTION_INVESTIGADORES)
                 .find_one(doc! { "persona_id": &p.id_persona })
                 .await?;
-            Ok(doc_opt.map(|d| dto_to_model(doc_to_dto(d).expect("BSON decode"))))
+            match doc_opt {
+                Some(d) => Ok(Some(dto_to_model(doc_to_dto(d)?)?)),
+                None => Ok(None),
+            }
         }
         None => Ok(None),
     }
@@ -186,7 +193,7 @@ pub async fn get_investigador_by_id(
         .await?;
     let doc =
         doc_opt.ok_or_else(|| AppError::NotFound("Investigador no encontrado.".to_string()))?;
-    Ok(dto_to_model(doc_to_dto(doc)?))
+    Ok(dto_to_model(doc_to_dto(doc)?)?)
 }
 
 pub async fn update_investigador_renacyt(
@@ -216,7 +223,7 @@ pub async fn get_all_investigadores_con_proyectos(
     let docs: Vec<Document> = cursor.try_collect().await?;
     let mut investigadores: Vec<Investigador> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     let personas = data_loader::load_personas_map(db).await?;
     investigadores.sort_by(|a, b| {
@@ -260,11 +267,21 @@ pub async fn get_all_investigadores_con_proyectos(
             let persona = personas
                 .get(&investigador.persona_id)
                 .cloned()
-                .expect("Persona must exist for investigador");
+                .ok_or_else(|| {
+                    AppError::DataInconsistency(format!(
+                        "Investigador {} referencia persona {} inexistente.",
+                        investigador.id_investigador, investigador.persona_id
+                    ))
+                })?;
 
-            InvestigadorDetalleDto::from_parts(investigador, persona, grado, proyectos_investigador)
+            Ok::<_, AppError>(InvestigadorDetalleDto::from_parts(
+                investigador,
+                persona,
+                grado,
+                proyectos_investigador,
+            ))
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(detalles)
 }
@@ -402,7 +419,7 @@ pub async fn load_all_map(db: &Database) -> Result<HashMap<String, Investigador>
     let docs: Vec<Document> = cursor.try_collect().await?;
     let investigadores: Vec<Investigador> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_model(doc_to_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(investigadores
         .into_iter()

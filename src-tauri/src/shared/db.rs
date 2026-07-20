@@ -51,10 +51,14 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .build(),
         )
         .await?;
+    // `investigadores.dni` ya no existe: el DNI vive en `personas`. El lookup
+    // canonico es `personas.find_by_dni` + `investigadores.find({ persona_id })`.
+    // Migracion: en despliegues previos, el indice `dni_1` queda vacio y debe
+    // eliminarse manualmente con `db.investigadores.dropIndex("dni_1")`.
     db.collection::<Document>("investigadores")
         .create_index(
             IndexModel::builder()
-                .keys(doc! { "dni": 1 })
+                .keys(doc! { "persona_id": 1 })
                 .options(Some(IndexOptions::builder().unique(true).build()))
                 .build(),
         )
