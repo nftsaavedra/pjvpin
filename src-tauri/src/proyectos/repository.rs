@@ -24,8 +24,10 @@ fn doc_to_proyecto_dto(doc: Document) -> Result<ProyectoDto, AppError> {
     })
 }
 
-fn dto_to_proyecto(dto: ProyectoDto) -> Proyecto {
-    Proyecto::try_from(dto).expect("ProyectoDto -> Proyecto conversion failed")
+fn dto_to_proyecto(dto: ProyectoDto) -> Result<Proyecto, AppError> {
+    Proyecto::try_from(dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo convertir ProyectoDto a Proyecto: {e}"))
+    })
 }
 
 fn doc_to_participacion_dto(doc: Document) -> Result<ParticipacionRecordDto, AppError> {
@@ -36,9 +38,12 @@ fn doc_to_participacion_dto(doc: Document) -> Result<ParticipacionRecordDto, App
     })
 }
 
-fn dto_to_participacion(dto: ParticipacionRecordDto) -> ParticipacionRecord {
-    ParticipacionRecord::try_from(dto)
-        .expect("ParticipacionRecordDto -> ParticipacionRecord conversion failed")
+fn dto_to_participacion(dto: ParticipacionRecordDto) -> Result<ParticipacionRecord, AppError> {
+    ParticipacionRecord::try_from(dto).map_err(|e| {
+        AppError::InternalError(format!(
+            "No se pudo convertir ParticipacionRecordDto a ParticipacionRecord: {e}"
+        ))
+    })
 }
 
 pub async fn es_responsable_del_proyecto(
@@ -68,7 +73,7 @@ pub async fn get_ids_proyectos_como_responsable(
     let docs: Vec<Document> = cursor.try_collect().await?;
     let participaciones: Vec<ParticipacionRecord> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_participacion(doc_to_participacion_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_participacion(doc_to_participacion_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     let mut ids: Vec<String> = participaciones.into_iter().map(|p| p.id_proyecto).collect();
     ids.sort();
@@ -92,7 +97,7 @@ pub async fn get_all_proyectos(db: &Database) -> Result<Vec<Proyecto>, AppError>
     let docs: Vec<Document> = cursor.try_collect().await?;
     let proyectos: Vec<Proyecto> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(proyectos)
 }
@@ -105,7 +110,7 @@ pub async fn load_participaciones_all(db: &Database) -> Result<Vec<Participacion
     let docs: Vec<Document> = cursor.try_collect().await?;
     let participaciones: Vec<ParticipacionRecord> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_participacion(doc_to_participacion_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_participacion(doc_to_participacion_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(participaciones)
 }
@@ -148,7 +153,7 @@ pub async fn get_all_proyectos_paginated(
     let docs: Vec<Document> = cursor.try_collect().await?;
     let proyectos: Vec<Proyecto> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
 
     let total_pages = ((total as f64) / (limit as f64)).ceil() as u32;
@@ -321,7 +326,7 @@ pub async fn update_proyecto_con_participantes(
         .find_one(doc! { "id_proyecto": id_proyecto })
         .await?
         .ok_or_else(|| AppError::NotFound("Proyecto no encontrado.".to_string()))?;
-    Ok(dto_to_proyecto(doc_to_proyecto_dto(doc)?))
+    Ok(dto_to_proyecto(doc_to_proyecto_dto(doc)?)?)
 }
 
 pub async fn eliminar_relacion_proyecto_investigador(
@@ -448,5 +453,5 @@ pub async fn reactivar_proyecto(db: &Database, id_proyecto: &str) -> Result<Proy
         .find_one(doc! { "id_proyecto": id_proyecto })
         .await?
         .ok_or_else(|| AppError::NotFound("Proyecto no encontrado.".to_string()))?;
-    Ok(dto_to_proyecto(doc_to_proyecto_dto(doc)?))
+    Ok(dto_to_proyecto(doc_to_proyecto_dto(doc)?)?)
 }

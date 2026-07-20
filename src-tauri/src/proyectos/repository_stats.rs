@@ -23,8 +23,10 @@ fn doc_to_proyecto_dto(doc: Document) -> Result<ProyectoDto, AppError> {
     })
 }
 
-fn dto_to_proyecto(dto: ProyectoDto) -> Proyecto {
-    Proyecto::try_from(dto).expect("ProyectoDto -> Proyecto conversion failed")
+fn dto_to_proyecto(dto: ProyectoDto) -> Result<Proyecto, AppError> {
+    Proyecto::try_from(dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo convertir ProyectoDto a Proyecto: {e}"))
+    })
 }
 
 pub async fn get_estadisticas_proyectos_x_investigador(
@@ -104,7 +106,7 @@ pub async fn get_proyectos_trend(db: &Database) -> Result<Vec<ProyectosTrendItem
     let docs: Vec<Document> = cursor.try_collect().await?;
     let proyectos: Vec<Proyecto> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
 
     let mut trend: HashMap<(i32, u32), i64> = HashMap::new();

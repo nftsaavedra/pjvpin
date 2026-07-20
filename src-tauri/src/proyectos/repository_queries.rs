@@ -21,8 +21,10 @@ fn doc_to_proyecto_dto(doc: Document) -> Result<ProyectoDto, AppError> {
     })
 }
 
-fn dto_to_proyecto(dto: ProyectoDto) -> Proyecto {
-    Proyecto::try_from(dto).expect("ProyectoDto -> Proyecto conversion failed")
+fn dto_to_proyecto(dto: ProyectoDto) -> Result<Proyecto, AppError> {
+    Proyecto::try_from(dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo convertir ProyectoDto a Proyecto: {e}"))
+    })
 }
 
 fn doc_to_participacion_dto(doc: Document) -> Result<ParticipacionRecordDto, AppError> {
@@ -33,9 +35,12 @@ fn doc_to_participacion_dto(doc: Document) -> Result<ParticipacionRecordDto, App
     })
 }
 
-fn dto_to_participacion(dto: ParticipacionRecordDto) -> ParticipacionRecord {
-    ParticipacionRecord::try_from(dto)
-        .expect("ParticipacionRecordDto -> ParticipacionRecord conversion failed")
+fn dto_to_participacion(dto: ParticipacionRecordDto) -> Result<ParticipacionRecord, AppError> {
+    ParticipacionRecord::try_from(dto).map_err(|e| {
+        AppError::InternalError(format!(
+            "No se pudo convertir ParticipacionRecordDto a ParticipacionRecord: {e}"
+        ))
+    })
 }
 
 pub async fn buscar_proyectos_por_investigador(
@@ -49,7 +54,7 @@ pub async fn buscar_proyectos_por_investigador(
     let docs: Vec<Document> = cursor.try_collect().await?;
     let participaciones: Vec<ParticipacionRecord> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_participacion(doc_to_participacion_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_participacion(doc_to_participacion_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
 
     let proyecto_ids: Vec<String> = participaciones
@@ -67,7 +72,7 @@ pub async fn buscar_proyectos_por_investigador(
     let docs: Vec<Document> = cursor.try_collect().await?;
     let mut proyectos: Vec<Proyecto> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     proyectos.sort_by(|a, b| {
         a.titulo_proyecto
@@ -97,7 +102,7 @@ pub async fn get_all_proyectos_detalle(
     let docs: Vec<Document> = cursor.try_collect().await?;
     let mut proyectos: Vec<Proyecto> = docs
         .into_iter()
-        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)))
+        .map(|d| Ok::<_, AppError>(dto_to_proyecto(doc_to_proyecto_dto(d)?)?))
         .collect::<Result<Vec<_>, _>>()?;
     proyectos.sort_by(|a, b| {
         a.titulo_proyecto
