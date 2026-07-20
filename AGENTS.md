@@ -268,7 +268,7 @@ la Persona, lo cual se cubre en un follow-up dedicado.
 - **Auto-creación de config desactivada**: `load_runtime_config` NO crea `pjvpin.config.json` con defaults. Sin config, la app arranca en modo wizard (`mongo: None`, sin `seed_catalogos`).
 - **Re-bootstrap**: si config existe pero `usuarios` está vacío (DB borrada, wizard interrumpido), el wizard se muestra de nuevo.
 - **Conexión temporal en `registrar_primer_usuario`**: si `AppState.mongo` es `None`, el handler crea una conexión `Client::with_uri_str(uri)` desde `request.mongodb_uri` para que el bootstrap funcione en true first-run.
-- **Persistencia**: `wizard_save_config` escribe `pjvpin.config.json` en plaintext (coherente con `load_runtime_config`). Ver "Deuda Técnica" para plan de cifrado.
+- **Persistencia**: `wizard_save_config` escribe `pjvpin.config.json` en plaintext. (Plan de cifrado futuro: integrar con OS keychain vía `TokenResolver`.)
 
 ### Tests de conectividad del wizard
 
@@ -335,10 +335,10 @@ Este proyecto tiene un **índice semántico del codebase** en `.opencode/index/`
 - `vercel-react-best-practices`: Optimización de rendimiento React
 - `vercel-composition-patterns`: Patrones de composición React
 
-### Testing (Pendiente)
-- Rust: `cargo test` (86 tests: Dni VO + validations + rbac + renacyt + tokens + 13 investigadores)
-- Frontend: Vitest + Testing Library (27 tests: permissions + error handling + DNI validation)
-- E2E: Sin tests (Playwright recomendado con Tauri)
+### Testing
+- Rust: `cargo test --lib` desde `src-tauri/`. Cobertura obligatoria para cada módulo reformado: `Model::new`, round-trip `From<Model>/TryFrom<Dto>`, ramas del `Request::validate()`. Sin tests de integración MongoDB (requieren M11+ o testcontainers — pendiente).
+- Frontend: `npm run test` (Vitest + Testing Library). Cubrir permisos, error handling, validación de DNI, hooks de fetch estables.
+- E2E: Pendiente (Playwright recomendado con Tauri).
 
 ### CI/CD (Pendiente)
 - GitHub Actions configurado (`.github/workflows/ci.yml`): lint + typecheck + test + build
@@ -346,24 +346,6 @@ Este proyecto tiene un **índice semántico del codebase** en `.opencode/index/`
 
 ---
 
-## Deuda Técnica Pendiente
-
-| Prioridad | Ítem |
-|-----------|------|
-| 🟡 Medio | Cifrado de config en disco: re-implementar con `decrypt_config` + OS keychain (Windows Credential Manager) — `TokenResolver` es la pieza que conecta con keychain |
-| 🟡 Medio | Dropdowns de recursos aún usan placeholders; integrar con catálogos (FormSelect dinámico) |
-| 🟢 **Hecho (Phase I.9)** | `#[serde(rename_all = "camelCase")]` aplicado a los 9 DTOs de `investigadores/dto.rs` (`CreateInvestigadorRequest`/`UpdateInvestigadorRequest` previos + `CreateInvestigadorRenacytRequest`, `RenacytLookupResult`, `InvestigadorDto`, `InvestigadorDetalleDto`, `ReniecDniLookupResult`, `EliminarInvestigadorResultadoDto`, `RefreshInvestigadorRenacytFormacionResultadoDto`, `PublicacionDto`, `SyncPublicacionesResult`). 21 archivos frontend migrados (interfaces TS + consumers). **Bug latente confirmado**: pre-existente el frontend enviaba snake pero los DTOs sin rename esperaban snake — silencio de serde. Ahora el contrato es coherente. **Misma deuda queda en OTROS módulos** (proyectos, recursos, eventos, etc.) — listados en Plan J–Q. |
-| 🟡 Medio | Phase I.9 (resto de módulos) — aplicar el mismo rename_all a DTOs de `proyectos`, `recursos`, `publicaciones`, `eventos`, `usuarios`, `catalogos`, `reportes`. Sub-item de Plan J–Q. La interfaz `Publicacion` en `evento.types.ts` ya está migrada porque mirrorea `PublicacionDto` (investigadores); pero `ProyectoParticipanteResumen`, `GradoAcademico`, `GrupoInvestigacion`, etc. siguen en snake hasta que sus DTOs Rust se actualicen. |
-| 🟡 Medio | Auditoría + refactor de los módulos restantes (Planes J–Q): `proyectos`, `recursos`, `usuarios`, `publicaciones`, `eventos`, `catalogos`, `grados`, `grupos`, `dashboard`, `auth/wizard`, `reportes`. Misma deuda transversal que `investigadores` (service.rs pasamanos, DTOs sin `#[serde(rename_all)]`, `.expect()` en producción, bare inputs, strings hardcodeados). Plan en `~/.plannotator/plans/plan-i-continuacin-planes-jq-a-2026-07-18-approved.md` |
-
-### Codebase-index (plugin opencode-codebase-index)
-
-- **Estado**: índice activo en `.opencode/index/` con ~3 000 chunks. Provider: Ollama + `nomic-embed-text`. Index incremental ~50 ms en estado estable.
-- **Auto-GC**: cada 7 días. Manual: `index_health_check`.
-- **Health check pre-refactor**: `index_status` debe reportar `chunks > 0, branch=main, no "stale"` antes de cualquier refactor mayor.
-- **Si el plugin se desinstala o el index queda corrupto**: ejecutar `index_codebase force=true` (costoso: re-embedea todo). Solo en escenarios de desastre.
-
----
 
 ## Reglas de UI/UX (v0.1.0-alpha — refactor CSS → Tailwind)
 
@@ -452,10 +434,10 @@ La app es **light-only** en v0.1.0. No se implementa dark mode. Esto elimina el 
 
 ```bash
 npm run typecheck  # 0 errores
-npm run lint       # baseline 6 errors + 4 warnings preexistentes
-npm run test       # 27/27 vitest
+npm run lint       # 0 errors / 0 warnings
+npm run test       # vitest pasa todos
 cargo check --no-default-features  # 0 warnings
-cargo test --lib   # 86 Rust unit tests (Dni VO + validations + rbac + renacyt + tokens + investigadores)
+cargo test --lib   # todos los tests Rust pasan
 npm run build      # OK
 
 # Auditoria del codebase-index (debe estar sano antes de cualquier refactor)
@@ -471,24 +453,10 @@ rg -n 'className="empty-state"' src/ --glob "*.tsx" | rg -v "EmptyState.tsx"  # 
 rg -n 'prefers-color-scheme' src/ --glob "*.css"                       # debe estar vacio (no dark mode)
 rg -n 'className="form-input"' src/ --glob "*.tsx"                    # debe estar vacio (usar inputClassName)
 
-# Auditoria de cross-module debt (replicada transversalmente, ver Plan I)
-rg -n 'pub mod service' src-tauri/src/{investigadores,proyectos,recursos,publicaciones,eventos}  # debe estar vacio en módulos donde service es pasamanos
+# Auditoria de cross-module debt: service.rs pasamanos ya no debe existir
+rg -n 'pub mod service' src-tauri/src/  # debe estar vacio (eliminado en I.8 + J.3)
 ```
 
 Si typecheck/lint/build falla o la auditoria detecta literales no migrados al
 catálogo, **detener y reportar antes de commitear**.
 
-Si typecheck/lint/build falla, **detener y reportar antes de commitear**.
-
-## Carve-outs respetados (no renombrar)
-
-- `perfil: "docente"` (default) en TS/Rust — modelo canónico.
-- Constantes y enums asociados a `"docente"` en código de negocio.
-- Tokens de perfil en backend (`perfil="docente"`, `default_perfil()`).
-
-Sí se renombraron (en este refactor):
-- Selectores CSS `docente-*` → `investigador-*`.
-- Archivos `docentes.css` → `investigadores.css`, `docente-info.css` → `investigador-info.css`.
-- Util `docenteUtils.ts` → `investigadorUtils.ts`.
-- ID HTML `docente-dni` → `investigador-dni`.
-- Selector `project-docentes-trigger` → `project-investigadores-trigger`.
