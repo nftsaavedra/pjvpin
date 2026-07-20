@@ -45,12 +45,6 @@ scripts/
 !.vscode/extensions.json
 .idea/
 
-# === Documentacion interna (Obsidian vault) ===
-_docs/
-
-# === Documentacion de desarrollo (planes de prueba, analisis, disenos) ===
-docs/
-
 # === Archivos de OS ===
 .DS_Store
 Thumbs.db

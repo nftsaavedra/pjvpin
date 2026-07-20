@@ -81,8 +81,6 @@ pjvpin/
 │       ├── reportes/             # Feature: Estadísticas + Exportación
 │       └── seguridad/            # Feature: Status de seguridad + guías
 │
-├── docs/                         # Documentación de arquitectura
-├── _docs/                        # Vault Obsidian (docs internas)
 ├── scripts/                      # Scripts de build (PowerShell)
 └── .agents/skills/               # Skills para agentes AI
 ```
