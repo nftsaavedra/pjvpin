@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::shared::error::AppError;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct ProyectoParticipanteResumenDto {
     pub id_investigador: String,
     pub nombre: String,
@@ -117,6 +118,7 @@ fn default_activo_true() -> bool {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProyectoDto {
     pub id_proyecto: String,
     pub titulo_proyecto: String,
@@ -139,11 +141,13 @@ pub struct ProyectoDto {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateProyectoRequest {
     pub titulo_proyecto: String,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateProyectoConParticipantesRequest {
     pub titulo_proyecto: String,
     pub investigadores_ids: Vec<String>,
@@ -175,6 +179,7 @@ impl CreateProyectoConParticipantesRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateProyectoConParticipantesRequest {
     pub titulo_proyecto: String,
     pub investigadores_ids: Vec<String>,
@@ -199,6 +204,7 @@ impl UpdateProyectoConParticipantesRequest {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProyectoDetalleDto {
     pub id_proyecto: String,
     pub titulo_proyecto: String,
@@ -210,12 +216,14 @@ pub struct ProyectoDetalleDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EliminarProyectoResultadoDto {
     pub accion: String,
     pub mensaje: String,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportDataConProjectosDto {
     pub investigador: String,
     pub dni: String,
@@ -227,12 +235,14 @@ pub struct ExportDataConProjectosDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct InvestigadorProyectosCountDto {
     pub nombre: String,
     pub cantidad: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProyectosTrendItemDto {
     pub anio: i32,
     pub mes: u32,
@@ -240,6 +250,7 @@ pub struct ProyectosTrendItemDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RenacytDistribucionItemDto {
     pub nivel: String,
     pub cantidad_investigadores: i64,
@@ -248,6 +259,7 @@ pub struct RenacytDistribucionItemDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct KpisDashboardDto {
     pub total_proyectos: i64,
     pub total_investigadores: i64,
@@ -256,6 +268,7 @@ pub struct KpisDashboardDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportDataDto {
     pub proyecto: String,
     pub grado: String,
@@ -265,6 +278,7 @@ pub struct ExportDataDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportDataGrupoDto {
     pub grupo: String,
     pub descripcion: Option<String>,
@@ -277,6 +291,7 @@ pub struct ExportDataGrupoDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportDataRecursoDto {
     pub tipo_recurso: String,
     pub titulo_o_nombre: String,
@@ -289,6 +304,7 @@ pub struct ExportDataRecursoDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportDataInvestigadorPerfilDto {
     pub dni: String,
     pub nombres_apellidos: String,
@@ -305,6 +321,7 @@ pub struct ExportDataInvestigadorPerfilDto {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportDataProyectoAreaDto {
     pub area: String,
     pub cantidad_proyectos: i64,
@@ -313,6 +330,7 @@ pub struct ExportDataProyectoAreaDto {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct ParticipacionRecordDto {
     #[serde(rename = "_id")]
     pub id: String,

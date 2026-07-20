@@ -22,8 +22,8 @@ export function useProyectosListado(proyectos: ProyectoDetalle[]) {
           const texto = busqueda.trim().toLowerCase();
           if (!texto) return true;
           return (
-            p.titulo_proyecto.toLowerCase().includes(texto) ||
-            (p.investigador_responsable || "").toLowerCase().includes(texto) ||
+            p.tituloProyecto.toLowerCase().includes(texto) ||
+            (p.investigadorResponsable || "").toLowerCase().includes(texto) ||
             (p.investigadores || "").toLowerCase().includes(texto)
           );
         }),

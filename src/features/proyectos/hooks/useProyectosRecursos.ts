@@ -25,7 +25,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     crearPatente,
     eliminarPatente,
     (raw, pid) => ({
-      proyecto_id: pid,
+      proyectoId: pid,
       titulo: (raw.titulo_patente as string) || (raw.titulo as string) || "",
       numero_patente: raw.numero_patente as string,
       estado: raw.estado as string,
@@ -39,7 +39,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     crearProducto,
     eliminarProducto,
     (raw, pid) => ({
-      proyecto_id: pid,
+      proyectoId: pid,
       nombre: (raw.nombre_producto as string) || (raw.nombre as string) || "",
       tipo: raw.tipo as string,
       etapa: raw.etapa as string,
@@ -54,7 +54,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     crearEquipamiento,
     eliminarEquipamiento,
     (raw, pid) => ({
-      proyecto_id: pid,
+      proyectoId: pid,
       nombre: (raw.nombre_equipo as string) || (raw.nombre as string) || "",
       descripcion: raw.descripcion as string,
       especificaciones: raw.especificaciones as string,
@@ -69,11 +69,11 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     crearFinanciamiento,
     eliminarFinanciamiento,
     (raw, pid) => ({
-      proyecto_id: pid,
+      proyectoId: pid,
       entidad_financiadora: (raw.fuente as string) || (raw.entidad_financiadora as string) || "",
       tipo: raw.tipo as string,
       monto: raw.monto as number,
-      estado_financiero: raw.estado_financiero as string,
+      estadoFinanciero: raw.estadoFinanciero as string,
     }),
     (f) => f.id_financiamiento,
     proyectoId,
@@ -137,7 +137,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
             (item.fuente as string) || (item.entidad_financiadora as string) || "",
           tipo: item.tipo as string,
           monto: item.monto as number,
-          estado_financiero: item.estado_financiero as string,
+          estado_financiero: item.estadoFinanciero as string,
         }).catch(() => null),
       );
     }

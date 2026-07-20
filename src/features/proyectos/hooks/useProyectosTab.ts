@@ -67,13 +67,13 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
 
   const handleOpenEdit = useCallback((proyecto: ProyectoDetalle): void => {
     setSelectedProyecto(proyecto);
-    setSelectedProyectoId(proyecto.id_proyecto);
+    setSelectedProyectoId(proyecto.idProyecto);
     setView("edit");
   }, []);
 
   const handleOpenDetail = useCallback((proyecto: ProyectoDetalle): void => {
     setSelectedProyecto(proyecto);
-    setSelectedProyectoId(proyecto.id_proyecto);
+    setSelectedProyectoId(proyecto.idProyecto);
     setView("detail");
   }, []);
 
@@ -85,10 +85,10 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
       }
       cargarProyectos()
         .then(() => {
-          const encontrado = proyectos.find((p) => p.id_proyecto === idProyecto);
+          const encontrado = proyectos.find((p) => p.idProyecto === idProyecto);
           if (encontrado) {
             setSelectedProyecto(encontrado);
-            setSelectedProyectoId(encontrado.id_proyecto);
+            setSelectedProyectoId(encontrado.idProyecto);
             setView("detail");
           } else {
             handleBackToList();
@@ -109,12 +109,12 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
     setIsLoading(true);
     try {
       const proyecto = await crudHandleCreate(titulo, investigadoresIds, investigadorResponsableId);
-      await recursosRef.current.crearRecursosParaProyecto(proyecto.id_proyecto);
+      await recursosRef.current.crearRecursosParaProyecto(proyecto.idProyecto);
 
       toast.success("Proyecto creado exitosamente");
       recursosRef.current.resetearRecursos();
       onProyectoCreated();
-      navigateToProyectoDetail(proyecto.id_proyecto);
+      navigateToProyectoDetail(proyecto.idProyecto);
     } catch (error) {
       toast.error("Error al crear proyecto: " + getTauriErrorMessage(error));
     } finally {
@@ -133,7 +133,7 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
   const handleEliminarProyecto = async (): Promise<void> => {
     if (!proyectoToDelete) return;
     try {
-      await crudHandleDelete(proyectoToDelete.id_proyecto);
+      await crudHandleDelete(proyectoToDelete.idProyecto);
       setProyectoToDelete(null);
     } catch (error) {
       toast.error(getTauriErrorMessage(error));

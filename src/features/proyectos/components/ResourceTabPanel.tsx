@@ -217,7 +217,7 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
               required: false,
             },
             {
-              name: "estado_financiero",
+              name: "estadoFinanciero",
               label: "Estado",
               type: "select",
               options: catalogos.estadoFinanciero,

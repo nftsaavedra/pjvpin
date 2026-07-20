@@ -109,7 +109,7 @@ export const ProyectosListView: React.FC<ProyectosListViewProps> = ({
           open={Boolean(proyectoToDelete)}
           title={messages.proyectos.table.actions.desactivar}
           message={messages.proyectos.table.desactivarDialog.message(
-            proyectoToDelete?.titulo_proyecto ?? "",
+            proyectoToDelete?.tituloProyecto ?? "",
           )}
           confirmText={messages.proyectos.table.desactivarDialog.confirmText}
           cancelText={messages.ui.cancelar}

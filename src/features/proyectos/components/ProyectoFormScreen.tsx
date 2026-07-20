@@ -59,20 +59,20 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   onFinanciamientosChange,
 }) => {
   const participantesIniciales = useMemo(
-    () => (mode === "edit" ? parseParticipantesProyecto(proyecto?.participantes_json) : []),
-    [mode, proyecto?.participantes_json],
+    () => (mode === "edit" ? parseParticipantesProyecto(proyecto?.participantesJson) : []),
+    [mode, proyecto?.participantesJson],
   );
 
-  const initialSelectedIds = participantesIniciales.map((p) => p.id_investigador);
+  const initialSelectedIds = participantesIniciales.map((p) => p.idInvestigador);
   const initialResponsableId =
     mode === "edit"
-      ? (getResponsableProyecto(participantesIniciales)?.id_investigador ?? null)
+      ? (getResponsableProyecto(participantesIniciales)?.idInvestigador ?? null)
       : null;
 
   const form = useProyectoFormState(
     mode === "edit"
       ? {
-          titulo: proyecto?.titulo_proyecto ?? "",
+          titulo: proyecto?.tituloProyecto ?? "",
           investigadoresSeleccionados: initialSelectedIds,
           investigadorResponsableId: initialResponsableId,
         }
@@ -90,7 +90,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   }, [mode, resetForm]);
 
   const participantesPorId = useMemo(
-    () => new Map(participantesIniciales.map((p) => [p.id_investigador, p])),
+    () => new Map(participantesIniciales.map((p) => [p.idInvestigador, p])),
     [participantesIniciales],
   );
 
@@ -124,7 +124,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
     [investigadoresSeleccionados],
   );
 
-  const tituloOriginal = proyecto?.titulo_proyecto ?? "";
+  const tituloOriginal = proyecto?.tituloProyecto ?? "";
   const responsableOriginalNombre =
     mode === "edit" && initialResponsableId
       ? (participantesPorId.get(initialResponsableId)?.nombre ?? null)
@@ -149,7 +149,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
         title: messages.proyectos.changeRequest.agregarInvestigador.title,
         message: messages.proyectos.changeRequest.agregarInvestigador.message(
           investigador.nombresApellidos,
-          form.titulo.trim() || proyecto?.titulo_proyecto || "",
+          form.titulo.trim() || proyecto?.tituloProyecto || "",
         ),
         confirmText: messages.proyectos.changeRequest.agregarInvestigador.confirmText,
         onConfirm: () => {
@@ -175,7 +175,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       title: messages.proyectos.changeRequest.quitarInvestigador.title,
       message: messages.proyectos.changeRequest.quitarInvestigador.message(
         investigador.nombresApellidos,
-        form.titulo.trim() || proyecto?.titulo_proyecto || "",
+        form.titulo.trim() || proyecto?.tituloProyecto || "",
       ),
       confirmText: messages.proyectos.changeRequest.quitarInvestigador.confirmText,
       onConfirm: () => {
@@ -231,10 +231,10 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       );
     } else {
       if (!proyecto) return;
-      await onUpdate(proyecto.id_proyecto, {
-        titulo_proyecto: form.titulo.trim(),
-        investigadores_ids: form.investigadoresSeleccionados,
-        investigador_responsable_id: form.investigadorResponsableId,
+      await onUpdate(proyecto.idProyecto, {
+        tituloProyecto: form.titulo.trim(),
+        investigadoresIds: form.investigadoresSeleccionados,
+        investigadorResponsableId: form.investigadorResponsableId,
       });
     }
   };
@@ -242,7 +242,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   const breadcrumbCurrent =
     mode === "create"
       ? messages.proyectos.breadcrumbNuevoProyecto
-      : messages.proyectos.breadcrumbEditar(proyecto?.titulo_proyecto ?? "");
+      : messages.proyectos.breadcrumbEditar(proyecto?.tituloProyecto ?? "");
 
   return (
     <>

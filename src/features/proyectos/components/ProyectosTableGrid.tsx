@@ -81,12 +81,12 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
         </thead>
         <tbody>
           {proyectos.map((proyecto) => {
-            const participantes = parseParticipantesProyecto(proyecto.participantes_json);
+            const participantes = parseParticipantesProyecto(proyecto.participantesJson);
             const responsable = getResponsableProyecto(participantes);
 
             return (
-              <tr key={proyecto.id_proyecto}>
-                <td>{proyecto.titulo_proyecto}</td>
+              <tr key={proyecto.idProyecto}>
+                <td>{proyecto.tituloProyecto}</td>
                 <td>
                   {responsable ? (
                     <div className="project-responsable-cell">
@@ -103,15 +103,15 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                     type="button"
                     className="project-investigadores-trigger"
                     onClick={() => {
-                      setSelectedProyecto({ titulo: proyecto.titulo_proyecto, participantes });
+                      setSelectedProyecto({ titulo: proyecto.tituloProyecto, participantes });
                     }}
                     disabled={participantes.length === 0}
                   >
                     <span className="button-with-icon">
                       <AppIcon icon={Users} size={15} />
                       <span>
-                        {proyecto.cantidad_investigadores}{" "}
-                        {proyecto.cantidad_investigadores === 1
+                        {proyecto.cantidadInvestigadores}{" "}
+                        {proyecto.cantidadInvestigadores === 1
                           ? messages.proyectos.table.contadorInvestigador
                           : messages.proyectos.table.contadoresInvestigadores}
                       </span>
@@ -154,7 +154,7 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                           icon={RotateCcw}
                           label={messages.proyectos.table.actions.reactivar}
                           onClick={() => {
-                            onReactivate(proyecto.id_proyecto);
+                            onReactivate(proyecto.idProyecto);
                           }}
                         />
                       )}
@@ -230,13 +230,13 @@ export const ProyectosTableGrid: React.FC<ProyectosTableGridProps> = ({
                   >
                     <div className="project-participant-card-head">
                       <strong>{participante.nombre}</strong>
-                      {participante.es_responsable && (
+                      {participante.esResponsable && (
                         <Badge variant="info">{messages.proyectos.detail.responsableBadge}</Badge>
                       )}
                     </div>
                     <span>{participante.grado}</span>
                     <span>
-                      {formatRenacytNivel(participante.renacyt_nivel) ??
+                      {formatRenacytNivel(participante.renacytNivel) ??
                         messages.investigadores.fallbacks.sinNivelRenacyt}
                     </span>
                   </article>

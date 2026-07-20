@@ -16,10 +16,11 @@ import type {
   ProductoConEtiquetas,
   EquipamientoConEtiquetas,
   FinanciamientoConEtiquetas,
+  ProyectoDetalle,
 } from "@/shared/tauri/types";
 
 interface ReporteProyectoPanelProps {
-  proyectos: Array<{ id_proyecto: string; titulo_proyecto: string }>;
+  proyectos: ProyectoDetalle[];
   proyectosLoading: boolean;
 }
 
@@ -231,8 +232,8 @@ export const ReporteProyectoPanel: React.FC<ReporteProyectoPanelProps> = ({
                   : messages.reportes.seleccionarPlaceholder}
               </option>
               {proyectos.map((p) => (
-                <option key={p.id_proyecto} value={p.id_proyecto}>
-                  {p.titulo_proyecto}
+                <option key={p.idProyecto} value={p.idProyecto}>
+                  {p.tituloProyecto}
                 </option>
               ))}
             </select>

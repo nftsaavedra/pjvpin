@@ -14,5 +14,5 @@ export const parseParticipantesProyecto = (value?: string | null): ProyectoParti
 };
 
 export const getResponsableProyecto = (participantes: ProyectoParticipanteResumen[]) => {
-  return participantes.find((participante) => participante.es_responsable) ?? null;
+  return participantes.find((participante) => participante.esResponsable) ?? null;
 };
