@@ -6,3 +6,6 @@ pub mod repository;
 pub mod repository_export;
 pub mod repository_queries;
 pub mod repository_stats;
+
+#[cfg(test)]
+mod tests;
