@@ -9,14 +9,14 @@ import { inputClassName } from "@/shared/forms/inputClassName";
 import { messages } from "@/shared/feedback/messages";
 
 interface RenacytData {
-  codigo_registro: string;
+  codigoRegistro: string;
   nivel?: string | null;
   condicion?: string | null;
   orcid?: string | null;
-  scopus_author_id?: string | null;
-  fecha_informe_calificacion?: number | null;
-  fecha_ultima_revision?: number | null;
-  formaciones_academicas_json?: string | null;
+  scopusAuthorId?: string | null;
+  fechaInformeCalificacion?: number | null;
+  fechaUltimaRevision?: number | null;
+  formacionesAcademicasJson?: string | null;
 }
 
 interface RenacytSummaryCardProps {
@@ -28,7 +28,7 @@ const RenacytSummaryCard: React.FC<RenacytSummaryCardProps> = ({ data, sourceLab
   <div className="renacyt-summary-card" aria-live="polite">
     <div className="renacyt-summary-header">
       <strong>{sourceLabel}</strong>
-      <Badge variant="info">{data.codigo_registro}</Badge>
+      <Badge variant="info">{data.codigoRegistro}</Badge>
     </div>
     <div className="renacyt-summary-grid">
       <span>
@@ -41,17 +41,17 @@ const RenacytSummaryCard: React.FC<RenacytSummaryCardProps> = ({ data, sourceLab
         <strong>ORCID:</strong> {data.orcid ?? messages.ui.noDisponible}
       </span>
       <span>
-        <strong>Scopus:</strong> {data.scopus_author_id ?? messages.ui.noDisponible}
+        <strong>Scopus:</strong> {data.scopusAuthorId ?? messages.ui.noDisponible}
       </span>
       <span>
-        <strong>Informe:</strong> {formatDate(data.fecha_informe_calificacion)}
+        <strong>Informe:</strong> {formatDate(data.fechaInformeCalificacion)}
       </span>
       <span>
-        <strong>Última revisión:</strong> {formatDate(data.fecha_ultima_revision)}
+        <strong>Última revisión:</strong> {formatDate(data.fechaUltimaRevision)}
       </span>
       <span>
         <strong>Formaciones:</strong>{" "}
-        {parseFormacionesAcademicas(data.formaciones_academicas_json).length}
+        {parseFormacionesAcademicas(data.formacionesAcademicasJson).length}
       </span>
     </div>
   </div>

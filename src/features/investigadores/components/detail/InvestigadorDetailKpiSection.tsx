@@ -30,7 +30,7 @@ export const InvestigadorDetailKpiSection: React.FC<InvestigadorDetailKpiSection
         </div>
         <div className="screen-kpi-copy">
           <span className="screen-kpi-value">
-            {formatRenacytNivel(investigador.renacyt_nivel) ??
+            {formatRenacytNivel(investigador.renacytNivel) ??
               messages.investigadores.fallbacks.sinRenacyt}
           </span>
           <span className="screen-kpi-label">{messages.investigadores.kpiLabels.nivelRenacyt}</span>
@@ -52,7 +52,7 @@ export const InvestigadorDetailKpiSection: React.FC<InvestigadorDetailKpiSection
           <AppIcon icon={GraduationCap} size={18} />
         </div>
         <div className="screen-kpi-copy">
-          <span className="screen-kpi-value">{investigador.cantidad_proyectos}</span>
+          <span className="screen-kpi-value">{investigador.cantidadProyectos}</span>
           <span className="screen-kpi-label">{messages.investigadores.kpiLabels.proyectos}</span>
         </div>
       </div>

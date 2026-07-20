@@ -39,7 +39,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
           </button>
           <span>{messages.investigadores.breadcrumb}</span>
           <span className="screen-breadcrumb-sep">/</span>
-          <span className="screen-breadcrumb-current">{investigador.nombres_apellidos}</span>
+          <span className="screen-breadcrumb-current">{investigador.nombresApellidos}</span>
         </div>
       </div>
       <div className="screen-header-right">
@@ -62,8 +62,8 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
         onRefreshRenacytFormaciones={onRefreshRenacytFormaciones}
       />
       <InvestigadorPublicacionesSection
-        investigadorId={investigador.id_investigador}
-        scopusAuthorId={investigador.renacyt_scopus_author_id}
+        investigadorId={investigador.idInvestigador}
+        scopusAuthorId={investigador.renacytScopusAuthorId}
         canSyncPure={canSyncPure}
       />
       <InvestigadorDetailProyectosSection investigador={investigador} />

@@ -84,21 +84,21 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
           {investigadores.map((investigador) =>
             (() => {
               const tieneRenacyt = Boolean(
-                investigador.renacyt_codigo_registro || investigador.renacyt_id_investigador,
+                investigador.renacytCodigoRegistro || investigador.renacytIdInvestigador,
               );
               const tieneFormaciones = Boolean(
-                investigador.renacyt_formaciones_academicas_json?.trim(),
+                investigador.renacytFormacionesAcademicasJson?.trim(),
               );
               const estaActualizando =
-                refreshingRenacytInvestigadorId === investigador.id_investigador;
-              const nivelRenacyt = formatRenacytNivel(investigador.renacyt_nivel);
+                refreshingRenacytInvestigadorId === investigador.idInvestigador;
+              const nivelRenacyt = formatRenacytNivel(investigador.renacytNivel);
 
               return (
                 <tr
-                  key={investigador.id_investigador}
-                  className={investigador.cantidad_proyectos === 0 ? "unassigned" : ""}
+                  key={investigador.idInvestigador}
+                  className={investigador.cantidadProyectos === 0 ? "unassigned" : ""}
                   title={
-                    investigador.cantidad_proyectos === 0
+                    investigador.cantidadProyectos === 0
                       ? messages.investigadores.table.sinProyectosTooltip
                       : undefined
                   }
@@ -117,11 +117,11 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                     </div>
                   </td>
                   <td className="font-semibold">
-                    {investigador.nombres_apellidos || messages.investigadores.fallbacks.sinNombre}
+                    {investigador.nombresApellidos || messages.investigadores.fallbacks.sinNombre}
                   </td>
                   <td>
-                    <Badge variant={investigador.cantidad_proyectos === 0 ? "warning" : "success"}>
-                      {investigador.cantidad_proyectos}
+                    <Badge variant={investigador.cantidadProyectos === 0 ? "warning" : "success"}>
+                      {investigador.cantidadProyectos}
                     </Badge>
                   </td>
                   <td>
@@ -152,7 +152,7 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                               : messages.investigadores.table.actions.reintentarFormacion
                         }
                         onClick={() => {
-                          onRefreshRenacyt(investigador.id_investigador);
+                          onRefreshRenacyt(investigador.idInvestigador);
                         }}
                         disabled={estaActualizando}
                       />
@@ -164,7 +164,7 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                         iconSize={18}
                         label={messages.investigadores.table.actions.reactivar}
                         onClick={() => {
-                          onReactivate(investigador.id_investigador);
+                          onReactivate(investigador.idInvestigador);
                         }}
                       />
                     )}

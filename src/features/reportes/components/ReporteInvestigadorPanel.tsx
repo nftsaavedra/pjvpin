@@ -46,8 +46,8 @@ export const ReporteInvestigadorPanel: React.FC<ReporteInvestigadorPanelProps> =
               </option>
               <option value="__todos__">{messages.reportes.todosLosInvestigadores}</option>
               {investigadores.map((d) => (
-                <option key={d.id_investigador} value={d.id_investigador}>
-                  {d.nombres_apellidos}
+                <option key={d.idInvestigador} value={d.idInvestigador}>
+                  {d.nombresApellidos}
                 </option>
               ))}
             </select>

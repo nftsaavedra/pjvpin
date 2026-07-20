@@ -111,7 +111,7 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
           table.handleRefreshRenacytFormaciones(id).catch(() => {});
         }}
         isRefreshingRenacyt={
-          table.refreshingRenacytInvestigadorId === selectedInvestigador.id_investigador
+          table.refreshingRenacytInvestigadorId === selectedInvestigador.idInvestigador
         }
       />
     );

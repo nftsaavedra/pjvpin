@@ -49,7 +49,7 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
   });
 
   const handleToggle = (id: string) => {
-    const investigador = investigadores.find((item) => item.id_investigador === id);
+    const investigador = investigadores.find((item) => item.idInvestigador === id);
     if (!investigador) {
       return;
     }
@@ -68,19 +68,19 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
   };
 
   const investigadoresSeleccionados = investigadores.filter((investigador) =>
-    selectedIds.includes(investigador.id_investigador),
+    selectedIds.includes(investigador.idInvestigador),
   );
   const requiereBusquedaMinima = investigadores.length > 25 && deferredQuery.length < 2;
   const coincidencias = requiereBusquedaMinima
     ? []
     : investigadores.filter((investigador) => {
         if (!deferredQuery)
-          return investigadores.length <= 25 && !selectedIds.includes(investigador.id_investigador);
+          return investigadores.length <= 25 && !selectedIds.includes(investigador.idInvestigador);
 
-        const nombre = normalizeText(investigador.nombres_apellidos);
+        const nombre = normalizeText(investigador.nombresApellidos);
         const dni = normalizeText(investigador.dni);
         const grado = normalizeText(investigador.grado);
-        const nivelRenacyt = normalizeRenacytNivelSearch(investigador.renacyt_nivel);
+        const nivelRenacyt = normalizeRenacytNivelSearch(investigador.renacytNivel);
 
         return (
           nombre.includes(deferredQuery) ||
@@ -155,30 +155,30 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
           {investigadoresSeleccionados.length > 0 ? (
             investigadoresSeleccionados.map((investigador) => (
               <button
-                key={investigador.id_investigador}
+                key={investigador.idInvestigador}
                 type="button"
                 className="investigador-chip"
                 onClick={() => {
-                  handleToggle(investigador.id_investigador);
+                  handleToggle(investigador.idInvestigador);
                 }}
                 title={messages.proyectos.checklist.quitarDeSeleccionTitle}
               >
                 <span className="investigador-chip-content">
-                  <span className="investigador-chip-name">{investigador.nombres_apellidos}</span>
+                  <span className="investigador-chip-name">{investigador.nombresApellidos}</span>
                   {showSelectedMeta && (
                     <span className="investigador-chip-meta">
                       {investigador.grado || messages.investigadores.fallbacks.sinGrado} ·{" "}
-                      {formatRenacytNivel(investigador.renacyt_nivel)
+                      {formatRenacytNivel(investigador.renacytNivel)
                         ? messages.investigadores.renacytSection.renacytNivel(
-                            formatRenacytNivel(investigador.renacyt_nivel) ?? "",
+                            formatRenacytNivel(investigador.renacytNivel) ?? "",
                           )
                         : messages.investigadores.fallbacks.sinNivelRenacyt}
-                      {responsableId === investigador.id_investigador
+                      {responsableId === investigador.idInvestigador
                         ? messages.proyectos.checklist.responsableMeta
                         : ""}
                     </span>
                   )}
-                  {!showSelectedMeta && responsableId === investigador.id_investigador && (
+                  {!showSelectedMeta && responsableId === investigador.idInvestigador && (
                     <span className="investigador-chip-meta investigador-chip-meta-compact">
                       {messages.proyectos.checklist.responsableActual}
                     </span>
@@ -216,28 +216,28 @@ export const InvestigadoresChecklist: React.FC<InvestigadoresChecklistProps> = (
           ) : (
             <>
               {investigadoresVisibles.map((investigador) => {
-                const seleccionado = selectedIds.includes(investigador.id_investigador);
+                const seleccionado = selectedIds.includes(investigador.idInvestigador);
 
                 return (
                   <button
-                    key={investigador.id_investigador}
+                    key={investigador.idInvestigador}
                     type="button"
                     className={`checkbox-item investigador-option ${seleccionado ? "selected" : ""}`}
                     onClick={() => {
-                      handleToggle(investigador.id_investigador);
+                      handleToggle(investigador.idInvestigador);
                     }}
                     aria-pressed={seleccionado}
                   >
                     <div className="investigador-option-main">
                       <span className="investigador-option-name">
-                        {investigador.nombres_apellidos}
+                        {investigador.nombresApellidos}
                       </span>
                       <span className="investigador-option-dni">DNI: {investigador.dni}</span>
                       <span className="investigador-option-meta">
                         {investigador.grado || messages.investigadores.fallbacks.sinGrado} ·{" "}
-                        {formatRenacytNivel(investigador.renacyt_nivel)
+                        {formatRenacytNivel(investigador.renacytNivel)
                           ? messages.investigadores.renacytSection.renacytNivel(
-                              formatRenacytNivel(investigador.renacyt_nivel) ?? "",
+                              formatRenacytNivel(investigador.renacytNivel) ?? "",
                             )
                           : messages.investigadores.fallbacks.sinNivelRenacyt}
                       </span>

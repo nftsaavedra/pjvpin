@@ -8,6 +8,7 @@ export type {
   ReniecDniLookupResult,
   EliminarInvestigadorResultado,
   RefreshInvestigadorRenacytFormacionResultado,
+  CreateInvestigadorRenacytPayload,
 } from "./investigador.types";
 
 export type {

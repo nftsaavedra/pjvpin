@@ -13,7 +13,7 @@ export const InvestigadorDetailInfoSection: React.FC<InvestigadorDetailInfoSecti
     <div className="investigador-info">
       <div className="info-row">
         <label>{messages.investigadores.infoRowLabels.nombre}</label>
-        <span>{investigador.nombres_apellidos}</span>
+        <span>{investigador.nombresApellidos}</span>
       </div>
       <div className="info-row">
         <label>{messages.investigadores.infoRowLabels.dni}</label>
@@ -25,7 +25,7 @@ export const InvestigadorDetailInfoSection: React.FC<InvestigadorDetailInfoSecti
       </div>
       <div className="info-row highlight">
         <label>{messages.investigadores.infoRowLabels.proyectosAsignados}</label>
-        <Badge>{investigador.cantidad_proyectos}</Badge>
+        <Badge>{investigador.cantidadProyectos}</Badge>
       </div>
     </div>
   </div>

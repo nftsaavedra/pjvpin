@@ -128,9 +128,9 @@ export const useDniValidation = (options: UseDniValidationOptions): UseDniValida
       }
 
       const data = await options.consultar(dniLimpio);
-      setNombres(formatReniec(data.first_name));
-      setApellidoPaterno(formatReniec(data.first_last_name));
-      setApellidoMaterno(formatReniec(data.second_last_name));
+      setNombres(formatReniec(data.firstName));
+      setApellidoPaterno(formatReniec(data.firstLastName));
+      setApellidoMaterno(formatReniec(data.secondLastName));
       setValidatedDni(dniLimpio);
       setStatus("validated");
       setMessage(

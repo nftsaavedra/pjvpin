@@ -163,9 +163,9 @@ export const useInvestigadorCreateForm = (
       }
 
       const data = await consultarDniReniec(dniLimpio);
-      setNombres(formatearTextoReniec(data.first_name));
-      setApellidoPaterno(formatearTextoReniec(data.first_last_name));
-      setApellidoMaterno(formatearTextoReniec(data.second_last_name));
+      setNombres(formatearTextoReniec(data.firstName));
+      setApellidoPaterno(formatearTextoReniec(data.firstLastName));
+      setApellidoMaterno(formatearTextoReniec(data.secondLastName));
       setValidatedDni(dniLimpio);
       setDniValidationStatus("validated");
       setDniValidationMessage(messages.investigadores.toast.dniValidadoMensaje);
@@ -223,7 +223,7 @@ export const useInvestigadorCreateForm = (
     try {
       const result = await consultarRenacytInvestigador(renacytQueryNormalizado);
 
-      if (result.numero_documento && result.numero_documento.trim() !== dniLimpio) {
+      if (result.numeroDocumento && result.numeroDocumento.trim() !== dniLimpio) {
         resetRenacyt(true);
         setRenacytValidationStatus("error");
         setRenacytValidationMessage(messages.investigadores.toast.renacytNoCoincideMensaje);
@@ -285,26 +285,26 @@ export const useInvestigadorCreateForm = (
     try {
       await crearInvestigador({
         dni: dniLimpio,
-        id_grado: idGrado,
+        idGrado: idGrado,
         nombres: nombresLimpio,
-        apellido_paterno: apellidoPaternoLimpio,
-        apellido_materno: apellidoMaternoLimpio || null,
+        apellidoPaterno: apellidoPaternoLimpio,
+        apellidoMaterno: apellidoMaternoLimpio || null,
         perfil,
         renacyt:
           renacytFueValidado && renacytData
             ? {
-                codigo_registro: renacytData.codigo_registro,
-                id_investigador: renacytData.id_investigador,
+                codigoRegistro: renacytData.codigoRegistro,
+                idInvestigador: renacytData.idInvestigador,
                 nivel: renacytData.nivel ?? null,
                 grupo: renacytData.grupo ?? null,
                 condicion: renacytData.condicion ?? null,
-                fecha_informe_calificacion: renacytData.fecha_informe_calificacion ?? null,
-                fecha_registro: renacytData.fecha_registro ?? null,
-                fecha_ultima_revision: renacytData.fecha_ultima_revision ?? null,
+                fechaInformeCalificacion: renacytData.fechaInformeCalificacion ?? null,
+                fechaRegistro: renacytData.fechaRegistro ?? null,
+                fechaUltimaRevision: renacytData.fechaUltimaRevision ?? null,
                 orcid: renacytData.orcid ?? null,
-                scopus_author_id: renacytData.scopus_author_id ?? null,
-                ficha_url: renacytData.ficha_url,
-                formaciones_academicas_json: renacytData.formaciones_academicas_json ?? null,
+                scopusAuthorId: renacytData.scopusAuthorId ?? null,
+                fichaUrl: renacytData.fichaUrl,
+                formacionesAcademicasJson: renacytData.formacionesAcademicasJson ?? null,
               }
             : null,
       });

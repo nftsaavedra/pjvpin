@@ -62,7 +62,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
         messages.investigadores.publicaciones.pureSyncSuccess(
           result.nuevas,
           result.actualizadas,
-          result.total_encontradas,
+          result.totalEncontradas,
         ),
       );
       await load();
@@ -136,28 +136,28 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
           {publicaciones.length > 0 && (
             <div className="renacyt-formaciones-list">
               {publicaciones.map((pub) => (
-                <article key={pub.id_publicacion} className="renacyt-formacion-card">
+                <article key={pub.idPublicacion} className="renacyt-formacion-card">
                   <div className="renacyt-formacion-head">
                     <strong>{pub.titulo}</strong>
-                    {pub.anio_publicacion && <Badge variant="info">{pub.anio_publicacion}</Badge>}
+                    {pub.anioPublicacion && <Badge variant="info">{pub.anioPublicacion}</Badge>}
                   </div>
                   <div className="renacyt-formacion-grid">
-                    {pub.tipo_publicacion && (
+                    {pub.tipoPublicacion && (
                       <span>
                         <strong>{messages.investigadores.publicaciones.fields.tipo}</strong>{" "}
-                        {pub.tipo_publicacion}
+                        {pub.tipoPublicacion}
                       </span>
                     )}
-                    {pub.journal_titulo && (
+                    {pub.journalTitulo && (
                       <span>
                         <strong>{messages.investigadores.publicaciones.fields.journal}</strong>{" "}
-                        {pub.journal_titulo}
+                        {pub.journalTitulo}
                       </span>
                     )}
-                    {pub.estado_publicacion && (
+                    {pub.estadoPublicacion && (
                       <span>
                         <strong>{messages.investigadores.publicaciones.fields.estado}</strong>{" "}
-                        {pub.estado_publicacion}
+                        {pub.estadoPublicacion}
                       </span>
                     )}
                     {pub.doi && (
@@ -176,10 +176,10 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
                         {pub.doi}
                       </span>
                     )}
-                    {pub.autores_json && parseAutores(pub.autores_json).length > 0 && (
+                    {pub.autoresJson && parseAutores(pub.autoresJson).length > 0 && (
                       <span className="renacyt-formacion-full-col">
                         <strong>{messages.investigadores.publicaciones.fields.autores}</strong>{" "}
-                        {parseAutores(pub.autores_json).join("; ")}
+                        {parseAutores(pub.autoresJson).join("; ")}
                       </span>
                     )}
                   </div>

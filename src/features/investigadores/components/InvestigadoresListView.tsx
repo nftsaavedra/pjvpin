@@ -149,7 +149,7 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
           open={Boolean(investigadorToDelete)}
           title={messages.investigadores.list.desactivarDialog.title}
           message={messages.investigadores.list.desactivarDialog.message(
-            investigadorToDelete?.nombres_apellidos ?? "",
+            investigadorToDelete?.nombresApellidos ?? "",
           )}
           confirmText={messages.investigadores.list.desactivarDialog.confirmText}
           cancelText={messages.ui.cancelar}

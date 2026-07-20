@@ -1,92 +1,99 @@
 export interface Investigador {
-  id_investigador: string;
+  idInvestigador: string;
   dni: string;
-  id_grado: string;
-  nombres_apellidos: string;
+  idGrado: string;
+  nombresApellidos: string;
   nombres?: string | null;
-  apellido_paterno?: string | null;
-  apellido_materno?: string | null;
+  apellidoPaterno?: string | null;
+  apellidoMaterno?: string | null;
   activo?: number;
   perfil?: string;
-  renacyt_codigo_registro?: string | null;
-  renacyt_id_investigador?: string | null;
-  renacyt_nivel?: string | null;
-  renacyt_grupo?: string | null;
-  renacyt_condicion?: string | null;
-  renacyt_fecha_informe_calificacion?: number | null;
-  renacyt_fecha_registro?: number | null;
-  renacyt_fecha_ultima_revision?: number | null;
-  renacyt_orcid?: string | null;
-  renacyt_scopus_author_id?: string | null;
-  renacyt_fecha_ultima_sincronizacion?: number | null;
-  renacyt_ficha_url?: string | null;
-  renacyt_formaciones_academicas_json?: string | null;
+  renacytCodigoRegistro?: string | null;
+  renacytIdInvestigador?: string | null;
+  renacytNivel?: string | null;
+  renacytGrupo?: string | null;
+  renacytCondicion?: string | null;
+  renacytFechaInformeCalificacion?: number | null;
+  renacytFechaRegistro?: number | null;
+  renacytFechaUltimaRevision?: number | null;
+  renacytOrcid?: string | null;
+  renacytScopusAuthorId?: string | null;
+  renacytFechaUltimaSincronizacion?: number | null;
+  renacytFichaUrl?: string | null;
+  renacytFormacionesAcademicasJson?: string | null;
+  grupoInvestigacionId?: string | null;
+  updatedAt?: number | null;
+  personaId?: string;
 }
 
 export interface InvestigadorDetalle {
-  id_investigador: string;
+  idInvestigador: string;
+  personaId: string;
   dni: string;
-  nombres_apellidos: string;
+  nombresApellidos: string;
   nombres?: string | null;
-  apellido_paterno?: string | null;
-  apellido_materno?: string | null;
+  apellidoPaterno?: string | null;
+  apellidoMaterno?: string | null;
+  correo?: string | null;
+  telefono?: string | null;
+  direccion?: string | null;
   grado: string;
-  cantidad_proyectos: number;
+  cantidadProyectos: number;
   proyectos: string | null;
   activo: number;
   perfil?: string;
-  renacyt_codigo_registro?: string | null;
-  renacyt_id_investigador?: string | null;
-  renacyt_nivel?: string | null;
-  renacyt_grupo?: string | null;
-  renacyt_condicion?: string | null;
-  renacyt_fecha_informe_calificacion?: number | null;
-  renacyt_fecha_registro?: number | null;
-  renacyt_fecha_ultima_revision?: number | null;
-  renacyt_orcid?: string | null;
-  renacyt_scopus_author_id?: string | null;
-  renacyt_fecha_ultima_sincronizacion?: number | null;
-  renacyt_ficha_url?: string | null;
-  renacyt_formaciones_academicas_json?: string | null;
+  renacytCodigoRegistro?: string | null;
+  renacytIdInvestigador?: string | null;
+  renacytNivel?: string | null;
+  renacytGrupo?: string | null;
+  renacytCondicion?: string | null;
+  renacytFechaInformeCalificacion?: number | null;
+  renacytFechaRegistro?: number | null;
+  renacytFechaUltimaRevision?: number | null;
+  renacytOrcid?: string | null;
+  renacytScopusAuthorId?: string | null;
+  renacytFechaUltimaSincronizacion?: number | null;
+  renacytFichaUrl?: string | null;
+  renacytFormacionesAcademicasJson?: string | null;
 }
 
 export interface RenacytFormacionAcademicaResumen {
   id: number;
-  centro_estudios?: string | null;
-  grado_academico?: string | null;
+  centroEstudios?: string | null;
+  gradoAcademico?: string | null;
   titulo?: string | null;
-  fecha_inicio?: number | null;
-  fecha_fin?: number | null;
-  indicador_importado: boolean;
-  puntaje_obtenido?: number | null;
-  considerado_para_cc: boolean;
-  es_calificado: boolean;
+  fechaInicio?: number | null;
+  fechaFin?: number | null;
+  indicadorImportado: boolean;
+  puntajeObtenido?: number | null;
+  consideradoParaCc: boolean;
+  esCalificado: boolean;
 }
 
 export interface RenacytLookupResult {
-  codigo_registro: string;
-  id_investigador: string;
-  nombre_completo?: string | null;
-  numero_documento?: string | null;
+  codigoRegistro: string;
+  idInvestigador: string;
+  nombreCompleto?: string | null;
+  numeroDocumento?: string | null;
   nivel?: string | null;
   grupo?: string | null;
   condicion?: string | null;
-  fecha_informe_calificacion?: number | null;
-  fecha_registro?: number | null;
-  fecha_ultima_revision?: number | null;
+  fechaInformeCalificacion?: number | null;
+  fechaRegistro?: number | null;
+  fechaUltimaRevision?: number | null;
   orcid?: string | null;
-  scopus_author_id?: string | null;
-  ficha_url: string;
-  solicitud_id: number | null;
-  formaciones_academicas_json?: string | null;
+  scopusAuthorId?: string | null;
+  fichaUrl: string;
+  solicitudId: number | null;
+  formacionesAcademicasJson?: string | null;
 }
 
 export interface ReniecDniLookupResult {
-  first_name: string;
-  first_last_name: string;
-  second_last_name: string;
-  full_name: string;
-  document_number: string;
+  firstName: string;
+  firstLastName: string;
+  secondLastName: string;
+  fullName: string;
+  documentNumber: string;
 }
 
 export interface EliminarInvestigadorResultado {
@@ -98,4 +105,19 @@ export interface RefreshInvestigadorRenacytFormacionResultado {
   investigador: InvestigadorDetalle;
   actualizada: boolean;
   mensaje: string;
+}
+
+export interface CreateInvestigadorRenacytPayload {
+  codigoRegistro: string;
+  idInvestigador: string;
+  nivel?: string | null;
+  grupo?: string | null;
+  condicion?: string | null;
+  fechaInformeCalificacion?: number | null;
+  fechaRegistro?: number | null;
+  fechaUltimaRevision?: number | null;
+  orcid?: string | null;
+  scopusAuthorId?: string | null;
+  fichaUrl: string;
+  formacionesAcademicasJson?: string | null;
 }

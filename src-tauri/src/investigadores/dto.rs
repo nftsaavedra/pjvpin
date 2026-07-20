@@ -5,6 +5,7 @@ fn default_perfil() -> String {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateInvestigadorRenacytRequest {
     pub codigo_registro: String,
     pub id_investigador: String,
@@ -21,6 +22,7 @@ pub struct CreateInvestigadorRenacytRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RenacytLookupResult {
     pub codigo_registro: String,
     pub id_investigador: String,
@@ -40,6 +42,7 @@ pub struct RenacytLookupResult {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct InvestigadorDto {
     pub id_investigador: String,
     pub persona_id: String,
@@ -115,6 +118,7 @@ pub struct UpdateInvestigadorRequest {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct InvestigadorDetalleDto {
     pub id_investigador: String,
     pub persona_id: String,
@@ -147,6 +151,7 @@ pub struct InvestigadorDetalleDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ReniecDniLookupResult {
     pub first_name: String,
     pub first_last_name: String,
@@ -156,12 +161,14 @@ pub struct ReniecDniLookupResult {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EliminarInvestigadorResultadoDto {
     pub accion: String,
     pub mensaje: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RefreshInvestigadorRenacytFormacionResultadoDto {
     pub investigador: InvestigadorDetalleDto,
     pub actualizada: bool,
@@ -169,6 +176,7 @@ pub struct RefreshInvestigadorRenacytFormacionResultadoDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PublicacionDto {
     pub id_publicacion: String,
     pub pure_uuid: String,
@@ -201,6 +209,7 @@ pub struct PublicacionDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SyncPublicacionesResult {
     pub persona_id: String,
     pub scopus_author_id: String,

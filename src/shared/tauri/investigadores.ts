@@ -1,5 +1,6 @@
 import { invoke } from "./client";
 import type {
+  CreateInvestigadorRenacytPayload,
   EliminarInvestigadorResultado,
   Investigador,
   InvestigadorDetalle,
@@ -8,27 +9,12 @@ import type {
   ReniecDniLookupResult,
 } from "./types";
 
-interface CreateInvestigadorRenacytPayload {
-  codigo_registro: string;
-  id_investigador: string;
-  nivel?: string | null;
-  grupo?: string | null;
-  condicion?: string | null;
-  fecha_informe_calificacion?: number | null;
-  fecha_registro?: number | null;
-  fecha_ultima_revision?: number | null;
-  orcid?: string | null;
-  scopus_author_id?: string | null;
-  ficha_url: string;
-  formaciones_academicas_json?: string | null;
-}
-
 export interface CrearInvestigadorArgs {
   dni: string;
-  id_grado: string;
+  idGrado: string;
   nombres: string;
-  apellido_paterno: string;
-  apellido_materno?: string | null;
+  apellidoPaterno: string;
+  apellidoMaterno?: string | null;
   perfil?: "docente" | "tesista" | "alumno_egresado";
   renacyt?: CreateInvestigadorRenacytPayload | null;
 }
@@ -37,10 +23,10 @@ export const crearInvestigador = async (args: CrearInvestigadorArgs): Promise<In
   return await invoke("crear_investigador", {
     request: {
       dni: args.dni,
-      id_grado: args.id_grado,
+      idGrado: args.idGrado,
       nombres: args.nombres,
-      apellido_paterno: args.apellido_paterno,
-      apellido_materno: args.apellido_materno ?? null,
+      apellidoPaterno: args.apellidoPaterno,
+      apellidoMaterno: args.apellidoMaterno ?? null,
       perfil: args.perfil ?? "docente",
       renacyt: args.renacyt ?? null,
     },
@@ -66,9 +52,9 @@ export const consultarDniReniec = async (numero: string): Promise<ReniecDniLooku
 };
 
 export const consultarRenacytInvestigador = async (
-  codigo_o_id: string,
+  codigoOId: string,
 ): Promise<RenacytLookupResult> => {
-  return await invoke("consultar_renacyt_investigador", { codigo_o_id });
+  return await invoke("consultar_renacyt_investigador", { codigoOId });
 };
 
 export const getAllInvestigadoresConProyectos = async (): Promise<InvestigadorDetalle[]> => {
@@ -76,32 +62,32 @@ export const getAllInvestigadoresConProyectos = async (): Promise<InvestigadorDe
 };
 
 export const eliminarInvestigador = async (
-  id_investigador: string,
+  idInvestigador: string,
 ): Promise<EliminarInvestigadorResultado> => {
-  return await invoke("eliminar_investigador", { id_investigador });
+  return await invoke("eliminar_investigador", { idInvestigador });
 };
 
-export const reactivarInvestigador = async (id_investigador: string): Promise<Investigador> => {
-  return await invoke("reactivar_investigador", { id_investigador });
+export const reactivarInvestigador = async (idInvestigador: string): Promise<Investigador> => {
+  return await invoke("reactivar_investigador", { idInvestigador });
 };
 
 export const refrescarFormacionAcademicaRenacytInvestigador = async (
-  id_investigador: string,
+  idInvestigador: string,
 ): Promise<RefreshInvestigadorRenacytFormacionResultado> => {
   return await invoke("refrescar_formacion_academica_renacyt_investigador", {
-    id_investigador,
+    idInvestigador,
   });
 };
 
 export const actualizarInvestigador = async (
-  id_investigador: string,
+  idInvestigador: string,
   request: {
     nombres?: string;
-    apellido_paterno?: string;
-    apellido_materno?: string;
-    id_grado?: string;
-    grupo_investigacion_id?: string;
+    apellidoPaterno?: string;
+    apellidoMaterno?: string;
+    idGrado?: string;
+    grupoInvestigacionId?: string;
   },
 ): Promise<Investigador> => {
-  return await invoke("actualizar_investigador", { id_investigador, request });
+  return await invoke("actualizar_investigador", { idInvestigador, request });
 };
