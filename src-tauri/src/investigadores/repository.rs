@@ -63,6 +63,14 @@ pub async fn create_investigador(
     db: &Database,
     request: CreateInvestigadorRequest,
 ) -> Result<Investigador, AppError> {
+    // 1. Insertar persona primero. Si la insercion del investigador falla
+    //    despues, esta funcion compensa haciendo soft-delete de la persona
+    //    para evitar registros huerfanos.
+    //
+    //    Nota: MongoDB Atlas M0 (free-tier) no soporta transacciones
+    //    multi-documento, asi que usamos compensation pattern en vez de
+    //    `start_session + start_transaction`. M10+ permitira migrar a
+    //    transacciones atomicas sin cambiar la API publica.
     let persona = personas::repository::create(
         db,
         CreatePersonaRequest {
@@ -79,6 +87,29 @@ pub async fn create_investigador(
     )
     .await?;
 
+    match create_investigador_after_persona(db, &request, &persona).await {
+        Ok(investigador) => Ok(investigador),
+        Err(err) => {
+            // Compensacion: si el investigador no se pudo crear, eliminar la
+            // persona recien creada. Best-effort: si esto falla, lo logueamos
+            // y devolvemos el error original (no es peor que la perdida de
+            // consistencia actual).
+            if let Err(cleanup_err) = personas::repository::delete(db, &persona.id_persona).await {
+                tracing::warn!(
+                    "Compensacion fallida: persona {} no se pudo desactivar tras error en create_investigador ({err}): {cleanup_err}",
+                    persona.id_persona,
+                );
+            }
+            Err(err)
+        }
+    }
+}
+
+async fn create_investigador_after_persona(
+    db: &Database,
+    request: &CreateInvestigadorRequest,
+    persona: &personas::models::Persona,
+) -> Result<Investigador, AppError> {
     let grado_existente = db
         .collection::<Document>("grados")
         .find_one(doc! { "id_grado": &request.id_grado })
@@ -90,7 +121,7 @@ pub async fn create_investigador(
     }
 
     let id = uuid::Uuid::new_v4().to_string();
-    let investigador = Investigador::new(id, &request)?.with_persona_id(persona.id_persona);
+    let investigador = Investigador::new(id, request)?.with_persona_id(persona.id_persona.clone());
     let dto = model_to_dto(&investigador);
     let doc = mongodb::bson::to_document(&dto).map_err(|e| {
         AppError::InternalError(format!("No se pudo serializar investigador a BSON: {e}"))

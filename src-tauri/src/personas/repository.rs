@@ -214,3 +214,22 @@ pub async fn update(
         .ok_or_else(|| AppError::NotFound(format!("Persona con id {} no encontrada", id)))?;
     Ok(dto_to_model(doc_to_dto(updated_doc)?))
 }
+
+/// Soft-delete: marca la persona como inactiva (`activo=0`).
+///
+/// Se usa principalmente como compensacion en flujos de creacion compuestos:
+/// si la insercion de un investigador falla despues de haber insertado la
+/// persona, este helper elimina la persona huerfana para mantener la
+/// invariante "toda persona activa pertenece al menos a un investigador o
+/// usuario".
+///
+/// Best-effort por diseno: el caller debe loguear errores y continuar.
+pub async fn delete(db: &Database, id: &str) -> Result<(), AppError> {
+    db.collection::<Document>("personas")
+        .update_one(
+            doc! { "id_persona": id },
+            doc! { "$set": { "activo": 0i64, "updated_at": time::now_ms() } },
+        )
+        .await?;
+    Ok(())
+}
