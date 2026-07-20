@@ -9,7 +9,6 @@ use crate::investigadores::dto::{
     InvestigadorDto, UpdateInvestigadorRequest,
 };
 use crate::investigadores::models::Investigador;
-use crate::investigadores::service::build_delete_result;
 use crate::personas;
 use crate::personas::dto::CreatePersonaRequest;
 use crate::shared::data_loader;
@@ -17,6 +16,28 @@ use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 
 const COLLECTION_INVESTIGADORES: &str = "investigadores";
+
+/// Construye el `EliminarInvestigadorResultadoDto` segun si el investigador
+/// tiene participaciones en proyectos activos.
+///
+/// Antes vivia en `service.rs` como `build_delete_result`; se mueve aca
+/// porque solo `delete_investigador` lo usa y mantenerlo en una capa
+/// intermedia era ruido arquitectonico (pasamanos).
+fn build_delete_result(has_related_projects: bool) -> EliminarInvestigadorResultadoDto {
+    if has_related_projects {
+        return EliminarInvestigadorResultadoDto {
+            accion: "desactivado".to_string(),
+            mensaje:
+                "Investigador desactivado. Mantiene trazabilidad porque tiene proyectos relacionados."
+                    .to_string(),
+        };
+    }
+
+    EliminarInvestigadorResultadoDto {
+        accion: "desactivado".to_string(),
+        mensaje: "Investigador desactivado correctamente.".to_string(),
+    }
+}
 
 fn doc_to_dto(doc: Document) -> Result<InvestigadorDto, AppError> {
     mongodb::bson::from_document::<InvestigadorDto>(doc).map_err(|e| {
