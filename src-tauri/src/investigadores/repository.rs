@@ -392,6 +392,13 @@ pub async fn reactivar_investigador(
     db: &Database,
     id_investigador: &str,
 ) -> Result<Investigador, AppError> {
+    // Early-return si el investigador ya esta activo. Evita escrituras
+    // innecesarias (con su `updated_at`) y preserva `updated_at` original.
+    let existing = get_investigador_by_id(db, id_investigador).await?;
+    if existing.activo == 1 {
+        return Ok(existing);
+    }
+
     db.collection::<Document>(COLLECTION_INVESTIGADORES)
         .update_one(
             doc! { "id_investigador": id_investigador },

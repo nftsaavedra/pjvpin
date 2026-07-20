@@ -158,7 +158,7 @@ pub async fn refrescar_formacion_academica_renacyt_investigador(
     window_label: &str,
     id_investigador: &str,
 ) -> Result<RefreshInvestigadorRenacytFormacionResultadoDto, AppError> {
-    rbac::require_permission(
+    let actor = rbac::require_permission(
         state,
         window_label,
         rbac::AppPermission::InvestigadoresManage,
@@ -189,6 +189,18 @@ pub async fn refrescar_formacion_academica_renacyt_investigador(
     repository::update_investigador_renacyt(db, &investigador).await?;
     let investigador_detalle =
         repository::get_investigador_detalle_by_id(db, id_investigador).await?;
+    let accion = if actualizada {
+        "renacyt.refresh.updated"
+    } else {
+        "renacyt.refresh.no_change"
+    };
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        accion,
+        "investigador",
+        id_investigador,
+        format!("codigo_o_id: {codigo_o_id}, tenia_formaciones: {tenia_formaciones}"),
+    );
     let mensaje = if actualizada {
         "Formación académica RENACYT actualizada correctamente.".to_string()
     } else if tenia_formaciones {
