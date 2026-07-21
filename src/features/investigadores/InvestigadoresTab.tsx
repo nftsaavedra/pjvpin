@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useInvestigadoresTable } from "./hooks/useInvestigadoresTable";
+import { useConstanciaRenacyt } from "./hooks/useConstanciaRenacyt";
 import { InvestigadoresListView } from "./components/InvestigadoresListView";
 import { InvestigadorFormScreen } from "./components/InvestigadorFormScreen";
 import { InvestigadorDetailScreen } from "./components/InvestigadorDetailScreen";
@@ -24,6 +25,7 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
   );
 
   const table = useInvestigadoresTable(refreshTrigger);
+  const constancia = useConstanciaRenacyt();
 
   const handleOpenCreate = () => {
     setSelectedInvestigador(null);
@@ -113,6 +115,10 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
         isRefreshingRenacyt={
           table.refreshingRenacytInvestigadorId === selectedInvestigador.idInvestigador
         }
+        isDownloadingConstancia={constancia.isDownloadingConstancia}
+        onDescargarConstancia={(args) => {
+          void constancia.descargarConstancia(args);
+        }}
       />
     );
   }

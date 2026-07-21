@@ -129,6 +129,7 @@ pub fn run() {
             investigador_cmds::consultar_renacyt_investigador,
             investigador_cmds::buscar_investigador_por_dni_con_renacyt,
             investigador_cmds::refrescar_formacion_academica_renacyt_investigador,
+            investigador_cmds::descargar_constancia_renacyt_investigador,
             // Proyectos
             proyecto_cmds::crear_proyecto_con_participantes,
             proyecto_cmds::actualizar_proyecto_con_participantes,

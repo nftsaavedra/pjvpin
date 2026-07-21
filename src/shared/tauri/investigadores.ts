@@ -91,3 +91,12 @@ export const actualizarInvestigador = async (
 ): Promise<Investigador> => {
   return await invoke("actualizar_investigador", { idInvestigador, request });
 };
+
+export const descargarConstanciaRenacytInvestigador = async (
+  idInvestigador: string,
+): Promise<Uint8Array> => {
+  const bytes = await invoke<number[]>("descargar_constancia_renacyt_investigador", {
+    idInvestigador,
+  });
+  return new Uint8Array(bytes);
+};

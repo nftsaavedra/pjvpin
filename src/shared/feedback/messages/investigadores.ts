@@ -56,6 +56,12 @@ export const investigadores = {
     actualizarFormacion: "Actualizar formación académica",
     reintentarFormacion: "Reintentar formación académica",
   } as const,
+  constancia: {
+    descargar: "Descargar constancia",
+    descargando: "Descargando constancia...",
+    success: (codigo: string) => `Constancia ${codigo} descargada correctamente.`,
+    error: "No se pudo descargar la constancia RENACYT.",
+  } as const,
   formaciones: {
     titulo: "Formación académica",
     sinFormacionSincronizada: "Sin formación RENACYT sincronizada.",

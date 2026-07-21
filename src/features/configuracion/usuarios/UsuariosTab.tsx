@@ -12,9 +12,8 @@ import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
-import { getRoleDefinition, getRoleLabel, getRoleOptions } from "@/shared/auth/permissions";
+import { getRoleLabel, getRoleOptions } from "@/shared/auth/permissions";
 import { messages } from "@/shared/feedback/messages";
-import { RoleMatrixCard } from "./components/RoleMatrixCard";
 import type { Usuario } from "../../auth/api";
 
 interface UsuariosTabProps {
@@ -73,21 +72,6 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
 
   return (
     <div className="tab-panel">
-      <div className="role-matrix-grid">
-        {roles.map((roleOption) => {
-          const definition = getRoleDefinition(roleOption.value);
-          return (
-            <RoleMatrixCard
-              key={roleOption.value}
-              label={definition.label}
-              summary={definition.summary}
-              modules={definition.modules}
-              isActive={rol === roleOption.value}
-            />
-          );
-        })}
-      </div>
-
       <div className="table-container">
         <div className="section-header">
           <h2>{messages.usuarios.tab.sectionTitle}</h2>

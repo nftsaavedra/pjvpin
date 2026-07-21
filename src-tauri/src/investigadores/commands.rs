@@ -177,3 +177,13 @@ pub async fn refrescar_formacion_academica_renacyt_investigador(
     )
     .await
 }
+
+#[tauri::command]
+pub async fn descargar_constancia_renacyt_investigador(
+    window: Window,
+    state: State<'_, AppState>,
+    id_investigador: String,
+) -> Result<Vec<u8>, AppError> {
+    handlers::descargar_constancia_renacyt_investigador(&state, window.label(), &id_investigador)
+        .await
+}

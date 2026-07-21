@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
@@ -482,6 +484,123 @@ pub async fn buscar_por_dni(
     }))
 }
 
+const MIN_CONSTANCIA_PDF_BYTES: usize = 1024;
+const CONSTANCIA_DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Descarga el PDF "Constancia Reporte de Actividad" emitido por RENACYT
+/// para un investigador identificado por su `codigo_registro` (formato `P0013866`).
+///
+/// Endpoint público (sin auth). Devuelve los bytes crudos del PDF; el frontend
+/// se encarga de persistirlos a disco vía `tauri-plugin-dialog::save()`.
+pub async fn descargar_constancia_reporte_actividad(
+    config: &RenacytConfig,
+    codigo_registro: &str,
+) -> Result<Vec<u8>, AppError> {
+    let codigo_normalizado = normalize_codigo_registro(codigo_registro)?;
+
+    let url = format!(
+        "{}/actoRegistral/obtenerConstanciaReporteActividad/{}",
+        config.api_base_url.trim_end_matches('/'),
+        codigo_normalizado,
+    );
+
+    let client = reqwest::Client::builder()
+        .timeout(CONSTANCIA_DOWNLOAD_TIMEOUT)
+        .build()
+        .map_err(|error| {
+            AppError::ExternalServiceError(format!(
+                "No se pudo inicializar el cliente HTTP para RENACYT: {}",
+                sanitize_external_detail(&error.to_string())
+            ))
+        })?;
+
+    let response = client.get(&url).send().await.map_err(|error| {
+        AppError::ExternalServiceError(format!(
+            "No se pudo conectar al servicio RENACYT para la constancia: {}",
+            sanitize_external_detail(&error.to_string())
+        ))
+    })?;
+
+    let status = response.status();
+    if status.as_u16() == 404 {
+        return Err(AppError::ExternalServiceError(format!(
+            "No se encontró constancia RENACYT para el código {}.",
+            codigo_normalizado
+        )));
+    }
+    if !status.is_success() {
+        return Err(AppError::ExternalServiceError(format!(
+            "RENACYT devolvió {} al solicitar la constancia {}.",
+            status, codigo_normalizado
+        )));
+    }
+
+    let content_type = response
+        .headers()
+        .get(reqwest::header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .map(|value| value.to_ascii_lowercase())
+        .unwrap_or_default();
+
+    if !content_type.contains("pdf") {
+        return Err(AppError::ExternalServiceError(format!(
+            "La respuesta RENACYT para {} no es un PDF (Content-Type: {}).",
+            codigo_normalizado,
+            if content_type.is_empty() {
+                "vacío"
+            } else {
+                content_type.as_str()
+            }
+        )));
+    }
+
+    let bytes = response.bytes().await.map_err(|error| {
+        AppError::ExternalServiceError(format!(
+            "No se pudo leer el cuerpo de la constancia RENACYT: {}",
+            sanitize_external_detail(&error.to_string())
+        ))
+    })?;
+
+    let bytes_vec = bytes.to_vec();
+    if bytes_vec.len() < MIN_CONSTANCIA_PDF_BYTES {
+        return Err(AppError::ExternalServiceError(format!(
+            "La constancia RENACYT para {} es demasiado pequeña ({} bytes); posible página de error.",
+            codigo_normalizado,
+            bytes_vec.len()
+        )));
+    }
+
+    Ok(bytes_vec)
+}
+
+fn normalize_codigo_registro(value: &str) -> Result<String, AppError> {
+    let trimmed = value.trim().to_uppercase();
+    if trimmed.is_empty() {
+        return Err(AppError::ExternalServiceError(
+            "Ingrese un código RENACYT válido.".to_string(),
+        ));
+    }
+
+    let Some(rest) = trimmed.strip_prefix('P') else {
+        return Err(AppError::ExternalServiceError(format!(
+            "El código RENACYT '{}' debe iniciar con el prefijo 'P'.",
+            value.trim()
+        )));
+    };
+
+    if rest.is_empty()
+        || rest.len() > 10
+        || !rest.chars().all(|character| character.is_ascii_digit())
+    {
+        return Err(AppError::ExternalServiceError(format!(
+            "El código RENACYT '{}' debe tener el formato P seguido de dígitos (ej. P0013866).",
+            value.trim()
+        )));
+    }
+
+    Ok(trimmed)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -550,6 +669,85 @@ mod tests {
             Err(error) => {
                 eprintln!(
                     "Test omitido por indisponibilidad del servicio RENACYT: {}",
+                    error
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn normalize_codigo_registro_acepta_formato_valido() {
+        assert_eq!(
+            normalize_codigo_registro("P0013866").expect("ok"),
+            "P0013866"
+        );
+        assert_eq!(
+            normalize_codigo_registro("  p0016945  ").expect("ok"),
+            "P0016945"
+        );
+    }
+
+    #[test]
+    fn normalize_codigo_registro_rechaza_formato_invalido() {
+        for invalido in ["", "0013866", "P", "PABCDEF", "P12345A6", "P1234567890123"] {
+            assert!(
+                normalize_codigo_registro(invalido).is_err(),
+                "valor '{}' debería ser rechazado",
+                invalido
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn descargar_constancia_devuelve_error_para_codigo_invalido() {
+        let config = config_test();
+        assert!(descargar_constancia_reporte_actividad(&config, "")
+            .await
+            .is_err());
+        assert!(descargar_constancia_reporte_actividad(&config, "0013866")
+            .await
+            .is_err());
+        assert!(descargar_constancia_reporte_actividad(&config, "PABCDEF")
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
+    async fn descargar_constancia_devuelve_pdf_para_codigo_valido() {
+        let config = config_test();
+        match descargar_constancia_reporte_actividad(&config, "P0016945").await {
+            Ok(bytes) => {
+                assert!(
+                    bytes.len() >= MIN_CONSTANCIA_PDF_BYTES,
+                    "el PDF debe ser al menos {} bytes, obtuvo {}",
+                    MIN_CONSTANCIA_PDF_BYTES,
+                    bytes.len()
+                );
+                assert!(
+                    bytes.starts_with(b"%PDF"),
+                    "el archivo debe iniciar con la firma %PDF"
+                );
+            }
+            Err(error) => {
+                eprintln!(
+                    "Test omitido por indisponibilidad del servicio RENACYT: {}",
+                    error
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn descargar_constancia_devuelve_error_para_codigo_inexistente() {
+        let config = config_test();
+        match descargar_constancia_reporte_actividad(&config, "P9999999").await {
+            Ok(bytes) => panic!(
+                "P9999999 no debería devolver un PDF válido (recibió {} bytes)",
+                bytes.len()
+            ),
+            Err(error) => {
+                eprintln!(
+                    "Resultado esperado de error para código inexistente: {}",
                     error
                 );
             }

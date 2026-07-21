@@ -4,6 +4,7 @@ export {
   consultarRenacytInvestigador,
   consultarDniReniec,
   crearInvestigador,
+  descargarConstanciaRenacytInvestigador,
   eliminarInvestigador,
   getAllInvestigadores,
   getAllInvestigadoresConProyectos,

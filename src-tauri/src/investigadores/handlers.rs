@@ -214,3 +214,52 @@ pub async fn refrescar_formacion_academica_renacyt_investigador(
         mensaje,
     })
 }
+
+/// Descarga el PDF "Constancia Reporte de Actividad" emitido por RENACYT para
+/// el investigador identificado por `id_investigador`. El permiso requerido es
+/// `InvestigadoresView` (mismo nivel que abrir la ficha pública RENACYT).
+pub async fn descargar_constancia_renacyt_investigador(
+    state: &AppState,
+    window_label: &str,
+    id_investigador: &str,
+) -> Result<Vec<u8>, AppError> {
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView)
+            .await?;
+
+    let db = state.mongo_db()?;
+    let investigador = repository::get_investigador_by_id(db, id_investigador).await?;
+    let codigo_registro = investigador
+        .renacyt_codigo_registro
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| {
+            AppError::ExternalServiceError(
+                "El investigador no tiene un código RENACYT vinculado.".to_string(),
+            )
+        })?
+        .to_string();
+
+    let bytes =
+        renacyt_client::descargar_constancia_reporte_actividad(&state.renacyt, &codigo_registro)
+            .await?;
+
+    let persona = personas_repo::find_by_id_persona(db, &investigador.persona_id).await?;
+    let (dni_audit, nombre_audit) = match persona {
+        Some(ref p) => (p.dni.clone(), p.nombre_completo.clone()),
+        None => (String::new(), String::new()),
+    };
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "investigador.constancia_renacyt",
+        "investigador",
+        &dni_audit,
+        format!(
+            "{nombre_audit}; codigo_registro: {codigo_registro}; bytes: {}",
+            bytes.len()
+        ),
+    );
+
+    Ok(bytes)
+}

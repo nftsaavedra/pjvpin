@@ -4,7 +4,10 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { messages } from "@/shared/feedback/messages";
 import { InvestigadorDetailKpiSection } from "./detail/InvestigadorDetailKpiSection";
 import { InvestigadorDetailInfoSection } from "./detail/InvestigadorDetailInfoSection";
-import { InvestigadorDetailRenacytSection } from "./detail/InvestigadorDetailRenacytSection";
+import {
+  InvestigadorDetailRenacytSection,
+  type DescargarConstanciaArgs,
+} from "./detail/InvestigadorDetailRenacytSection";
 import { InvestigadorDetailProyectosSection } from "./detail/InvestigadorDetailProyectosSection";
 import { InvestigadorPublicacionesSection } from "./InvestigadorPublicacionesSection";
 
@@ -15,6 +18,8 @@ interface InvestigadorDetailScreenProps {
   onBack: () => void;
   onRefreshRenacytFormaciones: (id: string) => void;
   isRefreshingRenacyt: boolean;
+  isDownloadingConstancia: boolean;
+  onDescargarConstancia: (args: DescargarConstanciaArgs) => void;
 }
 
 export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> = ({
@@ -24,6 +29,8 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
   onBack,
   onRefreshRenacytFormaciones,
   isRefreshingRenacyt,
+  isDownloadingConstancia,
+  onDescargarConstancia,
 }) => (
   <div className="screen-layout">
     <div className="screen-header">
@@ -59,7 +66,9 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
         investigador={investigador}
         canRefreshRenacyt={canRefreshRenacyt}
         isRefreshingRenacyt={isRefreshingRenacyt}
+        isDownloadingConstancia={isDownloadingConstancia}
         onRefreshRenacytFormaciones={onRefreshRenacytFormaciones}
+        onDescargarConstancia={onDescargarConstancia}
       />
       <InvestigadorPublicacionesSection
         investigadorId={investigador.idInvestigador}

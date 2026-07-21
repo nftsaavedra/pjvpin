@@ -146,9 +146,6 @@ export const normalizeAppRole = (value: string | null | undefined): AppRole => {
 export const getRoleLabel = (value: string | null | undefined) =>
   ROLE_DEFINITIONS[normalizeAppRole(value)].label;
 
-export const getRoleDefinition = (value: string | null | undefined) =>
-  ROLE_DEFINITIONS[normalizeAppRole(value)];
-
 export const hasPermission = (role: string | null | undefined, permission: AppPermission) =>
   ROLE_DEFINITIONS[normalizeAppRole(role)].permissions.includes(permission);
 

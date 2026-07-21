@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { BadgeCheck, ChevronDown, ChevronUp, ExternalLink, RefreshCw } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  ExternalLink,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
@@ -11,18 +19,28 @@ import type { InvestigadorDetalle } from "../../api";
 
 type ExternalBrand = "renacyt" | "orcid" | "scopus";
 
+export interface DescargarConstanciaArgs {
+  idInvestigador: string;
+  codigoRegistro: string;
+  nombresApellidos: string;
+}
+
 interface InvestigadorDetailRenacytSectionProps {
   investigador: InvestigadorDetalle;
   canRefreshRenacyt: boolean;
   isRefreshingRenacyt: boolean;
+  isDownloadingConstancia: boolean;
   onRefreshRenacytFormaciones: (id: string) => void;
+  onDescargarConstancia: (args: DescargarConstanciaArgs) => void;
 }
 
 export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacytSectionProps> = ({
   investigador,
   canRefreshRenacyt,
   isRefreshingRenacyt,
+  isDownloadingConstancia,
   onRefreshRenacytFormaciones,
+  onDescargarConstancia,
 }) => {
   const [renacytExpanded, setRenacytExpanded] = useState(true);
   const [formacionesExpanded, setFormacionesExpanded] = useState(false);
@@ -125,9 +143,7 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
               <div className="renacyt-detail-grid">
                 <div className="renacyt-detail-item">
                   {renderBrandLabel(messages.investigadores.renacytSection.codigo, "renacyt")}
-                  <strong>
-                    {investigador.renacytCodigoRegistro ?? messages.ui.noDisponible}
-                  </strong>
+                  <strong>{investigador.renacytCodigoRegistro ?? messages.ui.noDisponible}</strong>
                 </div>
                 {renderLinkedIdentifier(
                   messages.investigadores.renacytSection.idInvestigador,
@@ -201,6 +217,31 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
 
               {canRefreshRenacyt && (
                 <div className="renacyt-detail-actions">
+                  {investigador.renacytCodigoRegistro && (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => {
+                        const codigoRegistro = investigador.renacytCodigoRegistro;
+                        if (!codigoRegistro) return;
+                        onDescargarConstancia({
+                          idInvestigador: investigador.idInvestigador,
+                          codigoRegistro,
+                          nombresApellidos: investigador.nombresApellidos,
+                        });
+                      }}
+                      disabled={isDownloadingConstancia || isRefreshingRenacyt}
+                    >
+                      <span className="button-with-icon">
+                        <AppIcon icon={isDownloadingConstancia ? Loader2 : Download} size={16} />
+                        <span>
+                          {isDownloadingConstancia
+                            ? messages.investigadores.constancia.descargando
+                            : messages.investigadores.constancia.descargar}
+                        </span>
+                      </span>
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="btn-secondary"
