@@ -9,10 +9,12 @@ import {
   type DescargarConstanciaArgs,
 } from "./detail/InvestigadorDetailRenacytSection";
 import { InvestigadorDetailProyectosSection } from "./detail/InvestigadorDetailProyectosSection";
+import { InvestigadorEventosSection } from "./InvestigadorEventosSection";
 import { InvestigadorPublicacionesSection } from "./InvestigadorPublicacionesSection";
 
 interface InvestigadorDetailScreenProps {
   investigador: InvestigadorDetalle;
+  currentRol: string | null;
   canRefreshRenacyt: boolean;
   canSyncPure: boolean;
   onBack: () => void;
@@ -24,6 +26,7 @@ interface InvestigadorDetailScreenProps {
 
 export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> = ({
   investigador,
+  currentRol,
   canRefreshRenacyt,
   canSyncPure,
   onBack,
@@ -69,6 +72,11 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
         isDownloadingConstancia={isDownloadingConstancia}
         onRefreshRenacytFormaciones={onRefreshRenacytFormaciones}
         onDescargarConstancia={onDescargarConstancia}
+      />
+      <InvestigadorEventosSection
+        investigadorId={investigador.idInvestigador}
+        currentRol={currentRol}
+        nombreCompleto={investigador.nombresApellidos}
       />
       <InvestigadorPublicacionesSection
         investigadorId={investigador.idInvestigador}

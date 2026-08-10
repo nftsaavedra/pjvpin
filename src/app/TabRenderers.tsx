@@ -62,6 +62,7 @@ export function TabRenderers({
           <Suspense fallback={<FormAndTableFallback columns={6} />}>
             <InvestigadoresTab
               canManage={hasPermission(currentRole, "investigadores.manage")}
+              currentRol={currentRole}
               refreshTrigger={refreshTrigger}
               onDataModified={onDataModified}
             />

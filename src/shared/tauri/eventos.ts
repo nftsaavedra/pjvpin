@@ -6,8 +6,8 @@ export { type EventoAcademico, type ParticipanteEvento };
 export const crearEvento = async (request: {
   nombre: string;
   tipo: string;
-  fecha_inicio?: number;
-  fecha_fin?: number;
+  fechaInicio?: number;
+  fechaFin?: number;
   lugar?: string;
   descripcion?: string;
   participantes?: ParticipanteEvento[];
@@ -34,8 +34,8 @@ export const actualizarEvento = async (
   request: {
     nombre?: string;
     tipo?: string;
-    fecha_inicio?: number;
-    fecha_fin?: number;
+    fechaInicio?: number;
+    fechaFin?: number;
     lugar?: string;
     descripcion?: string;
     participantes?: ParticipanteEvento[];

@@ -5,6 +5,7 @@ fn default_activo() -> i64 {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ParticipanteEventoDto {
     pub investigador_id: String,
     pub rol: String,
@@ -36,6 +37,7 @@ pub struct EventoAcademicoDto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateEventoRequest {
     pub nombre: String,
     pub tipo: String,
@@ -48,6 +50,7 @@ pub struct CreateEventoRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateEventoRequest {
     pub nombre: Option<String>,
     pub tipo: Option<String>,

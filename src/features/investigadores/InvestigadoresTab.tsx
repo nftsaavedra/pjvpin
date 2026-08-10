@@ -10,12 +10,14 @@ type InvestigadoresView = "list" | "create" | "detail";
 
 interface InvestigadoresTabProps {
   canManage: boolean;
+  currentRol: string | null;
   refreshTrigger?: number;
   onDataModified: () => void;
 }
 
 export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
   canManage,
+  currentRol,
   refreshTrigger = 0,
   onDataModified,
 }) => {
@@ -106,6 +108,7 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
     return (
       <InvestigadorDetailScreen
         investigador={selectedInvestigador}
+        currentRol={currentRol}
         canRefreshRenacyt={canManage}
         canSyncPure={canManage}
         onBack={handleBackToList}

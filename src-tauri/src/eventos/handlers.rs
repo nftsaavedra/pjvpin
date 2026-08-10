@@ -1,6 +1,6 @@
 use crate::eventos::dto::{CreateEventoRequest, UpdateEventoRequest};
 use crate::eventos::models::EventoAcademico;
-use crate::eventos::service as evento_service;
+use crate::eventos::repository;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
@@ -16,7 +16,7 @@ pub async fn crear_evento(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    evento_service::create(state, request).await
+    repository::create(state.mongo_db()?, request).await
 }
 
 pub async fn get_all_eventos(
@@ -24,7 +24,7 @@ pub async fn get_all_eventos(
     window_label: &str,
 ) -> Result<Vec<EventoAcademico>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    evento_service::get_all(state).await
+    repository::get_all(state.mongo_db()?).await
 }
 
 pub async fn get_evento_by_id(
@@ -33,7 +33,7 @@ pub async fn get_evento_by_id(
     id: &str,
 ) -> Result<EventoAcademico, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    evento_service::get_by_id(state, id).await
+    repository::get_by_id(state.mongo_db()?, id).await
 }
 
 pub async fn get_eventos_by_investigador(
@@ -42,7 +42,7 @@ pub async fn get_eventos_by_investigador(
     id_investigador: &str,
 ) -> Result<Vec<EventoAcademico>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    evento_service::get_by_investigador(state, id_investigador).await
+    repository::get_by_investigador(state.mongo_db()?, id_investigador).await
 }
 
 pub async fn actualizar_evento(
@@ -57,7 +57,7 @@ pub async fn actualizar_evento(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    evento_service::update(state, id, request).await
+    repository::update(state.mongo_db()?, id, request).await
 }
 
 pub async fn eliminar_evento(
@@ -71,7 +71,7 @@ pub async fn eliminar_evento(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    evento_service::delete(state, id).await
+    repository::delete(state.mongo_db()?, id).await
 }
 
 pub async fn reactivar_evento(
@@ -85,5 +85,5 @@ pub async fn reactivar_evento(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    evento_service::reactivate(state, id).await
+    repository::reactivate(state.mongo_db()?, id).await
 }
