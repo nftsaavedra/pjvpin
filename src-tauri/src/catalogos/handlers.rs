@@ -1,6 +1,6 @@
 use crate::catalogos::dto::{CreateCatalogoRequest, EliminarCatalogoResultadoDto};
 use crate::catalogos::models::CatalogoItem;
-use crate::catalogos::service as catalogo_service;
+use crate::catalogos::repository;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
@@ -11,7 +11,7 @@ pub async fn get_catalogos(
     tipo: &str,
 ) -> Result<Vec<CatalogoItem>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosRead).await?;
-    catalogo_service::get_by_tipo(state, tipo).await
+    repository::get_catalogos_by_tipo(state.mongo_db()?, tipo).await
 }
 
 pub async fn get_all_catalogos_admin(
@@ -20,7 +20,7 @@ pub async fn get_all_catalogos_admin(
     tipo: &str,
 ) -> Result<Vec<CatalogoItem>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosManage).await?;
-    catalogo_service::get_all_by_tipo(state, tipo).await
+    repository::get_all_catalogos(state.mongo_db()?, tipo).await
 }
 
 pub async fn crear_catalogo(
@@ -30,7 +30,7 @@ pub async fn crear_catalogo(
 ) -> Result<CatalogoItem, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosManage).await?;
-    let item = catalogo_service::create(state, request).await?;
+    let item = repository::create_catalogo(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "catalogo.create",
@@ -49,7 +49,7 @@ pub async fn actualizar_catalogo(
 ) -> Result<CatalogoItem, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosManage).await?;
-    let item = catalogo_service::update(state, id, request).await?;
+    let item = repository::update_catalogo(state.mongo_db()?, id, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "catalogo.update",
@@ -67,7 +67,7 @@ pub async fn eliminar_catalogo(
 ) -> Result<EliminarCatalogoResultadoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosManage).await?;
-    let result = catalogo_service::delete(state, id).await?;
+    let result = repository::delete_catalogo(state.mongo_db()?, id).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "catalogo.delete",
@@ -85,7 +85,7 @@ pub async fn reactivar_catalogo(
 ) -> Result<CatalogoItem, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::CatalogosManage).await?;
-    let item = catalogo_service::reactivate(state, id).await?;
+    let item = repository::reactivar_catalogo(state.mongo_db()?, id).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "catalogo.reactivate",
