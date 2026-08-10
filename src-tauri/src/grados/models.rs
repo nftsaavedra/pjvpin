@@ -72,3 +72,51 @@ impl From<GradoAcademico> for GradoAcademicoDto {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_request(nombre: &str) -> CreateGradoRequest {
+        CreateGradoRequest {
+            nombre: nombre.to_string(),
+            descripcion: Some("Descripcion".to_string()),
+        }
+    }
+
+    #[test]
+    fn grado_new_acepta_datos_validos() {
+        let grado = GradoAcademico::new("G001".to_string(), make_request("Doctor")).unwrap();
+        assert_eq!(grado.id_grado, "G001");
+        assert_eq!(grado.nombre, "Doctor");
+        assert_eq!(grado.descripcion.as_deref(), Some("Descripcion"));
+        assert_eq!(grado.activo, 1);
+        assert!(grado.created_at > 0);
+        assert!(grado.updated_at.is_some());
+    }
+
+    #[test]
+    fn grado_new_rechaza_id_vacio() {
+        let result = GradoAcademico::new("   ".to_string(), make_request("Doctor"));
+        assert!(result.is_err(), "Debe rechazar id vacio");
+    }
+
+    #[test]
+    fn grado_new_rechaza_nombre_vacio() {
+        let result = GradoAcademico::new("G001".to_string(), make_request("   "));
+        assert!(result.is_err(), "Debe rechazar nombre vacio");
+    }
+
+    #[test]
+    fn grado_doc_roundtrip_conserva_campos() {
+        let grado = GradoAcademico::new("G001".to_string(), make_request("Doctor")).unwrap();
+        let doc: GradoAcademicoDoc = grado.clone().into();
+        let restored: GradoAcademico = doc.into();
+        assert_eq!(restored.id_grado, grado.id_grado);
+        assert_eq!(restored.nombre, grado.nombre);
+        assert_eq!(restored.descripcion, grado.descripcion);
+        assert_eq!(restored.activo, grado.activo);
+        assert_eq!(restored.created_at, grado.created_at);
+        assert_eq!(restored.updated_at, grado.updated_at);
+    }
+}

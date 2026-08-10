@@ -1,6 +1,6 @@
 use crate::grados::dto::{CreateGradoRequest, EliminarGradoResultadoDto};
 use crate::grados::models::GradoAcademico;
-use crate::grados::service as grado_service;
+use crate::grados::repository;
 use crate::shared::error::AppError;
 use crate::shared::pagination::PaginatedResult;
 use crate::shared::rbac;
@@ -11,7 +11,7 @@ pub async fn get_all_grados(
     window_label: &str,
 ) -> Result<Vec<GradoAcademico>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::GradosRead).await?;
-    grado_service::get_all(state).await
+    repository::get_all_grados(state.mongo_db()?).await
 }
 
 pub async fn get_all_grados_paginated(
@@ -21,7 +21,7 @@ pub async fn get_all_grados_paginated(
     limit: u32,
 ) -> Result<PaginatedResult<GradoAcademico>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::GradosRead).await?;
-    grado_service::get_all_paginated(state, page, limit).await
+    repository::get_all_grados_paginated(state.mongo_db()?, page, limit).await
 }
 
 pub async fn crear_grado(
@@ -31,7 +31,7 @@ pub async fn crear_grado(
 ) -> Result<GradoAcademico, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
-    let grado = grado_service::create(state, request).await?;
+    let grado = repository::create_grado(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "grado.create",
@@ -50,7 +50,7 @@ pub async fn actualizar_grado(
 ) -> Result<GradoAcademico, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
-    let grado = grado_service::update(state, id_grado, request).await?;
+    let grado = repository::update_grado(state.mongo_db()?, id_grado, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "grado.update",
@@ -68,7 +68,7 @@ pub async fn eliminar_grado(
 ) -> Result<EliminarGradoResultadoDto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
-    let result = grado_service::delete(state, id_grado).await?;
+    let result = repository::delete_grado(state.mongo_db()?, id_grado).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "grado.delete",
@@ -86,7 +86,7 @@ pub async fn reactivar_grado(
 ) -> Result<GradoAcademico, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::GradosManage).await?;
-    let grado = grado_service::reactivate(state, id_grado).await?;
+    let grado = repository::reactivar_grado(state.mongo_db()?, id_grado).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "grado.reactivate",

@@ -6,6 +6,7 @@ import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
+import { inputClassName } from "@/shared/forms/inputClassName";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
@@ -196,7 +197,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
                 </StatusChip>
               </div>
               <input
-                className="form-input filter-search"
+                className={inputClassName}
                 placeholder={messages.grados.tab.searchPlaceholder}
                 value={busqueda}
                 onChange={(e) => {
@@ -205,7 +206,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
                 aria-label={messages.grados.tab.searchAriaLabel}
               />
               <select
-                className="form-input filter-select"
+                className={inputClassName}
                 value={estadoFiltro}
                 onChange={(e) => {
                   setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");
