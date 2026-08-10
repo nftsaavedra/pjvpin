@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
+import { inputClassName } from "@/shared/forms/inputClassName";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { createGrupo, updateGrupo, getTauriErrorMessage } from "../api";
@@ -138,6 +139,7 @@ export const GrupoFormModal: React.FC<GrupoFormModalProps> = ({
               }
             }}
             placeholder={messages.grupos.modal.placeholderLinea}
+            className={inputClassName}
           />
           <button type="button" className="btn-secondary" onClick={handleAddLinea}>
             {messages.grupos.modal.agregar}

@@ -7,6 +7,7 @@ import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonBlock } from "@/shared/ui/Skeleton";
 import { useGruposTab } from "./hooks/useGruposTab";
 import { GrupoFormModal } from "./components/GrupoFormModal";
+import { inputClassName } from "@/shared/forms/inputClassName";
 import { messages } from "@/shared/feedback/messages";
 
 interface GruposTabProps {
@@ -95,7 +96,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                   onChange={(e) => {
                     setBusqueda(e.target.value);
                   }}
-                  className="search-input"
+                  className={inputClassName}
                 />
               </div>
               <Badge variant="info">{messages.grupos.contador(gruposFiltrados.length)}</Badge>

@@ -18,6 +18,7 @@ pub struct GrupoInvestigacionDto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateGrupoInvestigacionRequest {
     pub nombre: String,
     pub descripcion: Option<String>,
@@ -27,6 +28,7 @@ pub struct CreateGrupoInvestigacionRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateGrupoInvestigacionRequest {
     pub nombre: String,
     pub descripcion: Option<String>,
