@@ -5,6 +5,7 @@ import { DniField } from "@/shared/forms/DniField";
 import { FormInput } from "@/shared/forms/FormInput";
 import { FormModal } from "@/shared/forms/FormModal";
 import { FormSelect } from "@/shared/forms/FormSelect";
+import { inputClassName } from "@/shared/forms/inputClassName";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
@@ -112,7 +113,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
                 </StatusChip>
               </div>
               <input
-                className="form-input filter-search"
+                className={inputClassName}
                 placeholder={messages.usuarios.tab.searchPlaceholder}
                 value={busqueda}
                 onChange={(e) => {
@@ -121,7 +122,7 @@ export const UsuariosTab: React.FC<UsuariosTabProps> = ({
                 aria-label={messages.usuarios.tab.searchAriaLabel}
               />
               <select
-                className="form-input filter-select"
+                className={inputClassName}
                 value={estadoFiltro}
                 onChange={(e) => {
                   setEstadoFiltro(e.target.value as "todos" | "activos" | "inactivos");

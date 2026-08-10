@@ -1,7 +1,7 @@
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 use crate::usuarios::models::Usuario;
-use crate::usuarios::service as usuario_service;
+use crate::usuarios::repository as usuario_repository;
 
 #[derive(Debug)]
 pub enum AppPermission {
@@ -141,5 +141,6 @@ pub async fn get_session_actor_user(
 }
 
 pub(crate) async fn get_user_by_id(state: &AppState, user_id: &str) -> Result<Usuario, AppError> {
-    usuario_service::get_by_id_public(state, user_id).await
+    let db = state.mongo_db()?;
+    usuario_repository::get_usuario_by_id_public(db, user_id).await
 }

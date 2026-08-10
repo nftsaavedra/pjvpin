@@ -8,7 +8,7 @@ use crate::usuarios::dto::{
     UpdateUsuarioRequest,
 };
 use crate::usuarios::models::Usuario;
-use crate::usuarios::service as usuario_service;
+use crate::usuarios::repository;
 
 pub async fn crear_usuario(
     state: &AppState,
@@ -17,7 +17,7 @@ pub async fn crear_usuario(
 ) -> Result<Usuario, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
-    let usuario = usuario_service::create(state, &actor.id_usuario, request).await?;
+    let usuario = repository::create_usuario(state.mongo_db()?, &actor.id_usuario, request).await?;
 
     crate::shared::audit::write_user_audit(
         &actor,
@@ -29,7 +29,7 @@ pub async fn crear_usuario(
 }
 
 pub async fn get_auth_status(state: &AppState) -> Result<AuthStatusDto, AppError> {
-    usuario_service::get_auth_status(state).await
+    repository::get_auth_status(state.mongo_db()?).await
 }
 
 pub async fn registrar_primer_usuario(
@@ -43,7 +43,7 @@ pub async fn registrar_primer_usuario(
         request.mongodb_db.as_deref(),
     )
     .await?;
-    let usuario = super::repository::bootstrap_admin(&db, request).await?;
+    let usuario = repository::bootstrap_admin(&db, request).await?;
 
     state
         .set_current_session(window_label, usuario.id_usuario.clone())
@@ -91,7 +91,7 @@ pub async fn login_usuario(
     let username = request.username.clone();
     state.rate_limiter.check_and_record(&username).await?;
 
-    let usuario = match usuario_service::login(state, request).await {
+    let usuario = match repository::login_usuario(state.mongo_db()?, request).await {
         Ok(usuario) => {
             state.rate_limiter.clear(&username).await;
             usuario
@@ -147,7 +147,7 @@ pub async fn get_all_usuarios(
 ) -> Result<Vec<Usuario>, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
-    usuario_service::get_all(state, &actor.id_usuario).await
+    repository::get_all_usuarios(state.mongo_db()?, &actor.id_usuario).await
 }
 
 pub async fn get_all_usuarios_paginated(
@@ -158,7 +158,7 @@ pub async fn get_all_usuarios_paginated(
 ) -> Result<PaginatedResult<Usuario>, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
-    usuario_service::get_all_paginated(state, &actor.id_usuario, page, limit).await
+    repository::get_all_usuarios_paginated(state.mongo_db()?, &actor.id_usuario, page, limit).await
 }
 
 pub async fn actualizar_usuario(
@@ -173,7 +173,9 @@ pub async fn actualizar_usuario(
     let has_identity_update = request.nombres.is_some()
         || request.apellido_paterno.is_some()
         || request.apellido_materno.is_some();
-    let usuario = usuario_service::update(state, &actor.id_usuario, id_usuario, request).await?;
+    let usuario =
+        repository::update_usuario(state.mongo_db()?, &actor.id_usuario, id_usuario, request)
+            .await?;
 
     crate::shared::audit::write_user_audit(
         &actor,
@@ -184,7 +186,7 @@ pub async fn actualizar_usuario(
             previous_user.username,
             usuario.username,
             previous_user.rol,
-            usuario.rol,
+            usuario.activo,
             usuario.activo,
         ),
     );
@@ -209,7 +211,8 @@ pub async fn desactivar_usuario(
 ) -> Result<Usuario, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
-    let usuario = usuario_service::deactivate(state, &actor.id_usuario, id_usuario).await?;
+    let usuario =
+        repository::desactivar_usuario(state.mongo_db()?, &actor.id_usuario, id_usuario).await?;
 
     crate::shared::audit::write_user_audit(
         &actor,
@@ -227,7 +230,8 @@ pub async fn reactivar_usuario(
 ) -> Result<Usuario, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::UsuariosManage).await?;
-    let usuario = usuario_service::reactivate(state, &actor.id_usuario, id_usuario).await?;
+    let usuario =
+        repository::reactivate_usuario(state.mongo_db()?, &actor.id_usuario, id_usuario).await?;
 
     crate::shared::audit::write_user_audit(
         &actor,
