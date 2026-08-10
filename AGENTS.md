@@ -338,8 +338,6 @@ Este proyecto tiene un **índice semántico del codebase** en `.opencode/index/`
 - Frontend: `npm run test` (Vitest + Testing Library). Cubrir permisos, error handling, validación de DNI, hooks de fetch estables.
 - E2E: Pendiente (Playwright recomendado con Tauri).
 
-### CI/CD (Pendiente)
-- GitHub Actions configurado (`.github/workflows/ci.yml`): lint + typecheck + test + build
 - Build scripts en `scripts/tauri-build.ps1`
 
 ---

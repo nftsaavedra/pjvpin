@@ -5,6 +5,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { DataTable, type ColumnDef } from "@/shared/ui/DataTable";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { SkeletonTable } from "@/shared/ui/Skeleton";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
 import { normalizeText } from "@/shared/utils/text";
 import { messages } from "@/shared/feedback/messages";
@@ -187,7 +188,7 @@ export const ExportPreviewPanel: React.FC<ExportPreviewPanelProps> = ({
             </div>
 
             {loading ? (
-              <div className="empty-state">{messages.reportes.loadingVacio}</div>
+              <SkeletonTable columns={columns.length} rows={6} />
             ) : (
               <DataTable
                 columns={columns}

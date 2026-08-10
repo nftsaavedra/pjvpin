@@ -37,7 +37,6 @@ export const reportes = {
   exportDisabledInline: "Modo consulta: exportación deshabilitada.",
   exportandoExcel: "Exportando Excel...",
   exportandoPdf: "Exportando PDF...",
-  loadingVacio: "Cargando...",
   useExport: {
     excelExportado: "Excel exportado exitosamente",
     pdfExportado: "PDF exportado exitosamente",
