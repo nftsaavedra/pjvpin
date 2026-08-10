@@ -4,28 +4,28 @@ import type { Patente, Producto, Equipamiento, Financiamiento } from "./types";
 // ── Patentes ────────────────────────────────────────────────────────────────
 
 export interface CreatePatentePayload {
-  proyecto_id?: string;
-  investigador_id?: string;
+  proyectoId?: string;
+  investigadorId?: string;
   titulo: string;
-  numero_patente?: string;
+  numeroPatente?: string;
   tipo?: string;
   estado?: string;
-  fecha_solicitud?: number;
-  fecha_concesion?: number;
+  fechaSolicitud?: number;
+  fechaConcesion?: number;
   pais?: string;
-  entidad_concedente?: string;
+  entidadConcedente?: string;
   descripcion?: string;
 }
 
 export interface UpdatePatentePayload {
   titulo?: string;
-  numero_patente?: string;
+  numeroPatente?: string;
   tipo?: string;
   estado?: string;
-  fecha_solicitud?: number;
-  fecha_concesion?: number;
+  fechaSolicitud?: number;
+  fechaConcesion?: number;
   pais?: string;
-  entidad_concedente?: string;
+  entidadConcedente?: string;
   descripcion?: string;
 }
 
@@ -51,13 +51,13 @@ export const eliminarPatente = async (idPatente: string): Promise<void> => {
 // ── Productos ────────────────────────────────────────────────────────────────
 
 export interface CreateProductoPayload {
-  proyecto_id?: string;
-  investigador_id?: string;
+  proyectoId?: string;
+  investigadorId?: string;
   nombre: string;
   tipo?: string;
   etapa?: string;
   descripcion?: string;
-  fecha_registro?: number;
+  fechaRegistro?: number;
 }
 
 export interface UpdateProductoPayload {
@@ -65,7 +65,7 @@ export interface UpdateProductoPayload {
   tipo?: string;
   etapa?: string;
   descripcion?: string;
-  fecha_registro?: number;
+  fechaRegistro?: number;
 }
 
 export const crearProducto = async (request: CreateProductoPayload): Promise<Producto> => {
@@ -90,24 +90,24 @@ export const eliminarProducto = async (idProducto: string): Promise<void> => {
 // ── Equipamientos ────────────────────────────────────────────────────────────
 
 export interface CreateEquipamientoPayload {
-  proyecto_id?: string;
+  proyectoId?: string;
   nombre: string;
   descripcion?: string;
   especificaciones?: string;
-  valor_estimado?: number;
+  valorEstimado?: number;
   moneda?: string;
   proveedor?: string;
-  fecha_adquisicion?: number;
+  fechaAdquisicion?: number;
 }
 
 export interface UpdateEquipamientoPayload {
   nombre?: string;
   descripcion?: string;
   especificaciones?: string;
-  valor_estimado?: number;
+  valorEstimado?: number;
   moneda?: string;
   proveedor?: string;
-  fecha_adquisicion?: number;
+  fechaAdquisicion?: number;
 }
 
 export const crearEquipamiento = async (
@@ -134,26 +134,26 @@ export const eliminarEquipamiento = async (idEquipamiento: string): Promise<void
 // ── Financiamientos ──────────────────────────────────────────────────────────
 
 export interface CreateFinanciamientoPayload {
-  proyecto_id?: string;
-  entidad_financiadora: string;
+  proyectoId?: string;
+  entidadFinanciadora: string;
   tipo?: string;
   monto?: number;
   moneda?: string;
-  fecha_inicio?: number;
-  fecha_fin?: number;
+  fechaInicio?: number;
+  fechaFin?: number;
   descripcion?: string;
-  estado_financiero?: string;
+  estadoFinanciero?: string;
 }
 
 export interface UpdateFinanciamientoPayload {
-  entidad_financiadora?: string;
+  entidadFinanciadora?: string;
   tipo?: string;
   monto?: number;
   moneda?: string;
-  fecha_inicio?: number;
-  fecha_fin?: number;
+  fechaInicio?: number;
+  fechaFin?: number;
   descripcion?: string;
-  estado_financiero?: string;
+  estadoFinanciero?: string;
 }
 
 export const crearFinanciamiento = async (

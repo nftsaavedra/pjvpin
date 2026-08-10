@@ -4,7 +4,7 @@ use crate::recursos::dto::{
     UpdatePatenteRequest, UpdateProductoRequest,
 };
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
-use crate::recursos::service as recurso_service;
+use crate::recursos::repository;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
@@ -52,7 +52,7 @@ pub async fn crear_patente(
 ) -> Result<Patente, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    let patente = recurso_service::create_patente(state, request).await?;
+    let patente = repository::create_patente(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "patente.create",
@@ -69,7 +69,7 @@ pub async fn get_patentes_proyecto(
     proyecto_id: &str,
 ) -> Result<Vec<Patente>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    recurso_service::get_patentes_by_proyecto(state, proyecto_id).await
+    repository::get_patentes_by_proyecto(state.mongo_db()?, proyecto_id).await
 }
 
 pub async fn actualizar_patente(
@@ -79,11 +79,11 @@ pub async fn actualizar_patente(
     request: UpdatePatenteRequest,
 ) -> Result<Patente, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    let proyecto_id = recurso_service::get_patente_by_id(state, id_patente)
+    let proyecto_id = repository::get_patente_by_id(state.mongo_db()?, id_patente)
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
-    let patente = recurso_service::update_patente(state, id_patente, request).await?;
+    let patente = repository::update_patente(state.mongo_db()?, id_patente, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "patente.update",
@@ -101,7 +101,7 @@ pub async fn eliminar_patente(
 ) -> Result<(), AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    recurso_service::delete_patente(state, id_patente).await?;
+    repository::delete_patente(state.mongo_db()?, id_patente).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "patente.delete",
@@ -119,7 +119,7 @@ pub async fn reactivar_patente(
 ) -> Result<Patente, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    let patente = recurso_service::reactivate_patente(state, id_patente).await?;
+    let patente = repository::reactivate_patente(state.mongo_db()?, id_patente).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "patente.reactivate",
@@ -139,7 +139,7 @@ pub async fn crear_producto(
 ) -> Result<Producto, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    let producto = recurso_service::create_producto(state, request).await?;
+    let producto = repository::create_producto(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "producto.create",
@@ -156,7 +156,7 @@ pub async fn get_productos_proyecto(
     proyecto_id: &str,
 ) -> Result<Vec<Producto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    recurso_service::get_productos_by_proyecto(state, proyecto_id).await
+    repository::get_productos_by_proyecto(state.mongo_db()?, proyecto_id).await
 }
 
 pub async fn actualizar_producto(
@@ -166,11 +166,11 @@ pub async fn actualizar_producto(
     request: UpdateProductoRequest,
 ) -> Result<Producto, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    let proyecto_id = recurso_service::get_producto_by_id(state, id_producto)
+    let proyecto_id = repository::get_producto_by_id(state.mongo_db()?, id_producto)
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
-    let producto = recurso_service::update_producto(state, id_producto, request).await?;
+    let producto = repository::update_producto(state.mongo_db()?, id_producto, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "producto.update",
@@ -188,7 +188,7 @@ pub async fn eliminar_producto(
 ) -> Result<(), AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    recurso_service::delete_producto(state, id_producto).await?;
+    repository::delete_producto(state.mongo_db()?, id_producto).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "producto.delete",
@@ -206,7 +206,7 @@ pub async fn reactivar_producto(
 ) -> Result<Producto, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    let producto = recurso_service::reactivate_producto(state, id_producto).await?;
+    let producto = repository::reactivate_producto(state.mongo_db()?, id_producto).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "producto.reactivate",
@@ -226,7 +226,7 @@ pub async fn crear_equipamiento(
 ) -> Result<Equipamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    let equipamiento = recurso_service::create_equipamiento(state, request).await?;
+    let equipamiento = repository::create_equipamiento(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "equipamiento.create",
@@ -243,7 +243,7 @@ pub async fn get_equipamientos_proyecto(
     proyecto_id: &str,
 ) -> Result<Vec<Equipamiento>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    recurso_service::get_equipamientos_by_proyecto(state, proyecto_id).await
+    repository::get_equipamientos_by_proyecto(state.mongo_db()?, proyecto_id).await
 }
 
 pub async fn actualizar_equipamiento(
@@ -253,12 +253,12 @@ pub async fn actualizar_equipamiento(
     request: UpdateEquipamientoRequest,
 ) -> Result<Equipamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    let proyecto_id = recurso_service::get_equipamiento_by_id(state, id_equipamiento)
+    let proyecto_id = repository::get_equipamiento_by_id(state.mongo_db()?, id_equipamiento)
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
     let equipamiento =
-        recurso_service::update_equipamiento(state, id_equipamiento, request).await?;
+        repository::update_equipamiento(state.mongo_db()?, id_equipamiento, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "equipamiento.update",
@@ -276,7 +276,7 @@ pub async fn eliminar_equipamiento(
 ) -> Result<(), AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    recurso_service::delete_equipamiento(state, id_equipamiento).await?;
+    repository::delete_equipamiento(state.mongo_db()?, id_equipamiento).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "equipamiento.delete",
@@ -294,7 +294,8 @@ pub async fn reactivar_equipamiento(
 ) -> Result<Equipamiento, AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    let equipamiento = recurso_service::reactivate_equipamiento(state, id_equipamiento).await?;
+    let equipamiento =
+        repository::reactivate_equipamiento(state.mongo_db()?, id_equipamiento).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "equipamiento.reactivate",
@@ -314,7 +315,7 @@ pub async fn crear_financiamiento(
 ) -> Result<Financiamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
     require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    let financiamiento = recurso_service::create_financiamiento(state, request).await?;
+    let financiamiento = repository::create_financiamiento(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "financiamiento.create",
@@ -331,7 +332,7 @@ pub async fn get_financiamientos_proyecto(
     proyecto_id: &str,
 ) -> Result<Vec<Financiamiento>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    recurso_service::get_financiamientos_by_proyecto(state, proyecto_id).await
+    repository::get_financiamientos_by_proyecto(state.mongo_db()?, proyecto_id).await
 }
 
 pub async fn actualizar_financiamiento(
@@ -341,12 +342,12 @@ pub async fn actualizar_financiamiento(
     request: UpdateFinanciamientoRequest,
 ) -> Result<Financiamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    let proyecto_id = recurso_service::get_financiamiento_by_id(state, id_financiamiento)
+    let proyecto_id = repository::get_financiamiento_by_id(state.mongo_db()?, id_financiamiento)
         .await?
         .proyecto_id;
     require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
     let financiamiento =
-        recurso_service::update_financiamiento(state, id_financiamiento, request).await?;
+        repository::update_financiamiento(state.mongo_db()?, id_financiamiento, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "financiamiento.update",
@@ -364,7 +365,7 @@ pub async fn eliminar_financiamiento(
 ) -> Result<(), AppError> {
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    recurso_service::delete_financiamiento(state, id_financiamiento).await?;
+    repository::delete_financiamiento(state.mongo_db()?, id_financiamiento).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "financiamiento.delete",
@@ -383,7 +384,7 @@ pub async fn reactivar_financiamiento(
     let actor =
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
     let financiamiento =
-        recurso_service::reactivate_financiamiento(state, id_financiamiento).await?;
+        repository::reactivate_financiamiento(state.mongo_db()?, id_financiamiento).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "financiamiento.reactivate",

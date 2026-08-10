@@ -39,6 +39,7 @@ pub struct PatenteDto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreatePatenteRequest {
     #[serde(default)]
     pub proyecto_id: Option<String>,
@@ -64,6 +65,7 @@ pub struct CreatePatenteRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdatePatenteRequest {
     pub titulo: Option<String>,
     pub numero_patente: Option<String>,
@@ -103,6 +105,7 @@ pub struct ProductoDto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateProductoRequest {
     #[serde(default)]
     pub proyecto_id: Option<String>,
@@ -120,6 +123,7 @@ pub struct CreateProductoRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateProductoRequest {
     pub nombre: Option<String>,
     pub tipo: Option<String>,
@@ -157,6 +161,7 @@ pub struct EquipamientoDto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateEquipamientoRequest {
     #[serde(default)]
     pub proyecto_id: Option<String>,
@@ -176,6 +181,7 @@ pub struct CreateEquipamientoRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateEquipamientoRequest {
     pub nombre: Option<String>,
     pub descripcion: Option<String>,
@@ -217,6 +223,7 @@ pub struct FinanciamientoDto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateFinanciamientoRequest {
     #[serde(default)]
     pub proyecto_id: Option<String>,
@@ -238,6 +245,7 @@ pub struct CreateFinanciamientoRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateFinanciamientoRequest {
     pub entidad_financiadora: Option<String>,
     pub tipo: Option<String>,
