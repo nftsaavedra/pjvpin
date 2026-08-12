@@ -3,7 +3,7 @@ import type { PublicacionCientifica } from "./types";
 
 export const crearPublicacion = async (request: {
   titulo: string;
-  autores_ids: string[];
+  autoresIds: string[];
   revista?: string;
   doi?: string;
   issn?: string;
@@ -12,8 +12,8 @@ export const crearPublicacion = async (request: {
   tipo: string;
   url?: string;
   resumen?: string;
-  palabras_clave?: string[];
-  pure_id?: string;
+  palabrasClave?: string[];
+  pureId?: string;
 }): Promise<PublicacionCientifica> => {
   return await invoke("crear_publicacion", { request });
 };
@@ -40,7 +40,7 @@ export const actualizarPublicacion = async (
   id: string,
   request: {
     titulo?: string;
-    autores_ids?: string[];
+    autoresIds?: string[];
     revista?: string;
     doi?: string;
     issn?: string;
@@ -49,7 +49,7 @@ export const actualizarPublicacion = async (
     tipo?: string;
     url?: string;
     resumen?: string;
-    palabras_clave?: string[];
+    palabrasClave?: string[];
   },
 ): Promise<PublicacionCientifica> => {
   return await invoke("actualizar_publicacion", { id, request });

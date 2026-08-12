@@ -1,6 +1,6 @@
 use crate::publicaciones::dto::{CreatePublicacionRequest, UpdatePublicacionRequest};
 use crate::publicaciones::models::PublicacionCientifica;
-use crate::publicaciones::service as publicacion_service;
+use crate::publicaciones::repository;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
@@ -16,7 +16,7 @@ pub async fn crear_publicacion(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    publicacion_service::create(state, request).await
+    repository::create(state.mongo_db()?, request).await
 }
 
 pub async fn get_all_publicaciones(
@@ -24,7 +24,7 @@ pub async fn get_all_publicaciones(
     window_label: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    publicacion_service::get_all(state).await
+    repository::get_all(state.mongo_db()?).await
 }
 
 pub async fn get_publicacion_by_id(
@@ -33,7 +33,7 @@ pub async fn get_publicacion_by_id(
     id: &str,
 ) -> Result<PublicacionCientifica, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    publicacion_service::get_by_id(state, id).await
+    repository::get_by_id(state.mongo_db()?, id).await
 }
 
 pub async fn get_publicaciones_by_investigador(
@@ -42,7 +42,7 @@ pub async fn get_publicaciones_by_investigador(
     id_investigador: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    publicacion_service::get_by_investigador(state, id_investigador).await
+    repository::get_by_investigador(state.mongo_db()?, id_investigador).await
 }
 
 pub async fn get_publicaciones_by_anio(
@@ -51,7 +51,7 @@ pub async fn get_publicaciones_by_anio(
     anio: i32,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
-    publicacion_service::get_by_anio(state, anio).await
+    repository::get_by_anio(state.mongo_db()?, anio).await
 }
 
 pub async fn actualizar_publicacion(
@@ -66,7 +66,7 @@ pub async fn actualizar_publicacion(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    publicacion_service::update(state, id, request).await
+    repository::update(state.mongo_db()?, id, request).await
 }
 
 pub async fn eliminar_publicacion(
@@ -80,7 +80,7 @@ pub async fn eliminar_publicacion(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    publicacion_service::delete(state, id).await
+    repository::delete(state.mongo_db()?, id).await
 }
 
 pub async fn reactivar_publicacion(
@@ -94,5 +94,5 @@ pub async fn reactivar_publicacion(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    publicacion_service::reactivate(state, id).await
+    repository::reactivate(state.mongo_db()?, id).await
 }

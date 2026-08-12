@@ -42,7 +42,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+      <div className="w-full max-w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden text-gray-800">
         <div className="p-6 pb-4 bg-gradient-to-b from-blue-50 to-white border-b border-gray-200">
           <div className="flex items-center gap-2 mb-1.5">
             <h2 className="text-blue-900 m-0">Acceso al sistema</h2>

@@ -318,7 +318,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             />
             <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
             <Tooltip
-              labelFormatter={(label) => `Periodo: ${label}`}
+              labelFormatter={(label) => {
+                const safeLabel =
+                  typeof label === "string" || typeof label === "number" ? String(label) : "";
+                return `Periodo: ${safeLabel}`;
+              }}
               formatter={(value) => [`${String(value)} proyectos`, "Cantidad"]}
             />
             <Line

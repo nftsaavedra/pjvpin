@@ -9,7 +9,7 @@ export function AppFatalFallback() {
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+      <div className="w-full max-w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden text-gray-800">
         <div className="p-6 pb-4 bg-gradient-to-b from-amber-50 to-white border-b border-gray-200">
           <div className="flex items-center gap-2 mb-1.5">
             <AppIcon icon={AlertOctagon} size={22} className="text-amber-600" />

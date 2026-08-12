@@ -34,6 +34,7 @@ pub struct PublicacionCientificaDto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreatePublicacionRequest {
     pub titulo: String,
     pub autores_ids: Vec<String>,
@@ -51,6 +52,7 @@ pub struct CreatePublicacionRequest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdatePublicacionRequest {
     pub titulo: Option<String>,
     pub autores_ids: Option<Vec<String>>,

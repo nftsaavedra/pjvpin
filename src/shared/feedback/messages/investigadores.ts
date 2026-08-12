@@ -108,9 +108,15 @@ export const investigadores = {
     sectionTitle: "Publicaciones (Pure)",
     sinScopusId:
       "Este investigador no tiene Scopus Author ID. Sincronice primero los datos RENACYT para obtenerlo.",
-    sincronizando: "Sincronizando Pure...",
+    sincronizando: "Sincronizando con Pure...",
     sincronizarDesde: "Sincronizar desde Pure",
     sinPublicaciones: "Sin publicaciones sincronizadas.",
+    pureNoConfigurado:
+      "Pure API no esta configurado. Configure PJVPIN_PURE_API_KEY en el archivo de configuracion.",
+    pureSinResultados:
+      "Pure no devolvio publicaciones para este investigador. Verifique que el Scopus Author ID sea correcto.",
+    pureError:
+      "Error al sincronizar con Pure. Revise la conectividad y configuracion de la API key.",
     pureSyncSuccess: (nuevas: number, actualizadas: number, total: number) =>
       `Sincronización Pure completada: ${nuevas} nuevas, ${actualizadas} actualizadas de ${total} encontradas.`,
     fields: {

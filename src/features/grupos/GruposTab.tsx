@@ -136,7 +136,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                 gruposFiltrados.map((grupo) => (
                   <div
                     key={grupo.id_grupo}
-                    className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all duration-300 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 hover:border-blue-200"
+                    className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all duration-300 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 hover:border-blue-200 text-gray-900"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>

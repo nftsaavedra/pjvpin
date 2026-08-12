@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from "react";
 import {
   FloatingArrow,
   FloatingPortal,
@@ -14,7 +14,7 @@ import {
   useHover,
   useInteractions,
   useRole,
-} from '@floating-ui/react';
+} from "@floating-ui/react";
 
 interface FloatingTooltipProps {
   content: React.ReactNode;
@@ -22,7 +22,7 @@ interface FloatingTooltipProps {
     ref: React.RefCallback<HTMLButtonElement>;
     triggerProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
   }) => React.ReactNode;
-  size?: 'sm' | 'md' | 'rich';
+  size?: "sm" | "md" | "rich";
   placement?: Placement;
   offsetValue?: number;
   tooltipClassName?: string;
@@ -33,8 +33,8 @@ interface FloatingTooltipProps {
 export const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
   content,
   renderTrigger,
-  size = 'md',
-  placement = 'top-start',
+  size = "md",
+  placement = "top-start",
   offsetValue = 10,
   tooltipClassName,
   contentClassName,
@@ -47,11 +47,7 @@ export const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
     open,
     onOpenChange: setOpen,
     placement,
-    middleware: [
-      offset(offsetValue),
-      flip({ padding: 8 }),
-      shift({ padding: 8 }),
-    ],
+    middleware: [offset(offsetValue), flip({ padding: 8 }), shift({ padding: 8 })],
     whileElementsMounted: autoUpdate,
   });
 
@@ -62,23 +58,28 @@ export const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
   });
   const focus = useFocus(context);
   const dismiss = useDismiss(context);
-  const role = useRole(context, { role: 'tooltip' });
+  const role = useRole(context, { role: "tooltip" });
 
-  const { getReferenceProps, getFloatingProps } = useInteractions([
-    hover,
-    focus,
-    dismiss,
-    role,
-  ]);
+  const { getReferenceProps, getFloatingProps } = useInteractions([hover, focus, dismiss, role]);
 
+  // @floating-ui/react garantiza que refs.setReference y refs.setFloating son
+  // referencias estables durante el ciclo de vida del componente (no cambian entre
+  // renders). Por contrato de la librería podemos incluirlos en el array de deps sin
+  // perder reactividad. Las reglas @typescript-eslint/unbound-method y
+  // react-hooks/exhaustive-deps reportan falsos positivos conocidos para este patrón
+  // idiomático de la librería.
   const referenceRef = useCallback(
-    (node: HTMLElement | null) => { refs.setReference(node); },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    (node: HTMLElement | null) => {
+      refs.setReference(node);
+    },
+    // eslint-disable-next-line @typescript-eslint/unbound-method, react-hooks/exhaustive-deps
     [refs.setReference],
   );
   const floatingRef = useCallback(
-    (node: HTMLElement | null) => { refs.setFloating(node); },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    (node: HTMLElement | null) => {
+      refs.setFloating(node);
+    },
+    // eslint-disable-next-line @typescript-eslint/unbound-method, react-hooks/exhaustive-deps
     [refs.setFloating],
   );
 
@@ -93,16 +94,32 @@ export const FloatingTooltip: React.FC<FloatingTooltipProps> = ({
           <div
             ref={floatingRef}
             style={floatingStyles}
-            className={tooltipClassName ? `floating-tooltip floating-tooltip-${size} ${tooltipClassName}` : `floating-tooltip floating-tooltip-${size}`}
+            className={
+              tooltipClassName
+                ? `floating-tooltip floating-tooltip-${size} ${tooltipClassName}`
+                : `floating-tooltip floating-tooltip-${size}`
+            }
             {...getFloatingProps()}
           >
             <FloatingArrow
               ref={arrowRef}
               context={context}
-              className={arrowClassName ? `floating-tooltip-arrow ${arrowClassName}` : 'floating-tooltip-arrow'}
+              className={
+                arrowClassName
+                  ? `floating-tooltip-arrow ${arrowClassName}`
+                  : "floating-tooltip-arrow"
+              }
               fill="rgba(15, 23, 42, 0.96)"
             />
-            <div className={contentClassName ? `floating-tooltip-content ${contentClassName}` : 'floating-tooltip-content'}>{content}</div>
+            <div
+              className={
+                contentClassName
+                  ? `floating-tooltip-content ${contentClassName}`
+                  : "floating-tooltip-content"
+              }
+            >
+              {content}
+            </div>
           </div>
         </FloatingPortal>
       )}

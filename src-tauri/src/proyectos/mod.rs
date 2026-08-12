@@ -1,5 +1,6 @@
 pub mod commands;
 pub mod dto;
+pub mod export_queries;
 pub mod handlers;
 pub mod models;
 pub mod repository;

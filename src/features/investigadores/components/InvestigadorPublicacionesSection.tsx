@@ -8,7 +8,9 @@ import {
 } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
+import { EmptyState } from "@/shared/ui/EmptyState";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
+import { SkeletonBlock } from "@/shared/ui/Skeleton";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { parseAutores } from "@/shared/utils/investigadorUtils";
@@ -20,6 +22,10 @@ interface InvestigadorPublicacionesSectionProps {
   canSyncPure: boolean;
 }
 
+const isNotConfiguredError = (errorMessage: string): boolean =>
+  /PURE_API_KEY|api.?key|pure|config/i.test(errorMessage) &&
+  /no.?config|falt|missing|not configured/i.test(errorMessage);
+
 export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacionesSectionProps> = ({
   investigadorId,
   scopusAuthorId,
@@ -30,6 +36,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
   const [loaded, setLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [pureNoConfigurado, setPureNoConfigurado] = useState(false);
   const tieneScopusId = Boolean(scopusAuthorId);
 
   const load = async (): Promise<void> => {
@@ -58,16 +65,27 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
     setIsSyncing(true);
     try {
       const result: SyncPublicacionesResult = await sincronizarPublicacionesPure(investigadorId);
-      toast.success(
-        messages.investigadores.publicaciones.pureSyncSuccess(
-          result.nuevas,
-          result.actualizadas,
-          result.totalEncontradas,
-        ),
-      );
+      setPureNoConfigurado(false);
+      if (result.totalEncontradas === 0) {
+        toast.warning(messages.investigadores.publicaciones.pureSinResultados);
+      } else {
+        toast.success(
+          messages.investigadores.publicaciones.pureSyncSuccess(
+            result.nuevas,
+            result.actualizadas,
+            result.totalEncontradas,
+          ),
+        );
+      }
       await load();
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      const errorMessage = getTauriErrorMessage(error);
+      if (isNotConfiguredError(errorMessage)) {
+        setPureNoConfigurado(true);
+        toast.error(messages.investigadores.publicaciones.pureNoConfigurado);
+      } else {
+        toast.error(`${messages.investigadores.publicaciones.pureError}: ${errorMessage}`);
+      }
     } finally {
       setIsSyncing(false);
     }
@@ -78,7 +96,9 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
       <button
         type="button"
         className="renacyt-detail-toggle"
-        onClick={() => void handleToggle()}
+        onClick={() => {
+          void handleToggle();
+        }}
         aria-expanded={expanded}
       >
         <span className="renacyt-detail-toggle-copy">
@@ -106,7 +126,9 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
               <button
                 type="button"
                 className="btn-secondary"
-                onClick={() => void handleSync()}
+                onClick={() => {
+                  void handleSync();
+                }}
                 disabled={isSyncing}
               >
                 <span className="button-with-icon">
@@ -121,16 +143,25 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
             </div>
           )}
 
+          {pureNoConfigurado && (
+            <div className="inline-feedback inline-feedback-warning renacyt-formaciones-feedback">
+              <span>{messages.investigadores.publicaciones.pureNoConfigurado}</span>
+            </div>
+          )}
+
           {isLoading && (
-            <p className="renacyt-detail-empty" aria-live="polite">
-              {messages.investigadores.publicacionLoading}
-            </p>
+            <div className="space-y-2" aria-live="polite">
+              <SkeletonBlock className="skeleton skeleton-line" />
+              <SkeletonBlock className="skeleton skeleton-line" />
+              <SkeletonBlock className="skeleton skeleton-line skeleton-line-soft" />
+            </div>
           )}
 
           {!isLoading && loaded && publicaciones.length === 0 && (
-            <p className="renacyt-detail-empty">
-              {messages.investigadores.publicaciones.sinPublicaciones}
-            </p>
+            <EmptyState
+              variant="empty"
+              message={messages.investigadores.publicaciones.sinPublicaciones}
+            />
           )}
 
           {publicaciones.length > 0 && (
