@@ -80,6 +80,8 @@ pub struct InvestigadorDto {
     pub renacyt_formaciones_academicas_json: Option<String>,
     #[serde(default)]
     pub grupo_investigacion_id: Option<String>,
+    #[serde(default)]
+    pub tipo_documento: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -99,6 +101,9 @@ pub struct CreateInvestigadorRequest {
     pub perfil: String,
     #[serde(default)]
     pub renacyt: Option<CreateInvestigadorRenacytRequest>,
+    /// Fase N0-D (D11): DNI | CE | PASAPORTE. Default DNI.
+    #[serde(default)]
+    pub tipo_documento: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

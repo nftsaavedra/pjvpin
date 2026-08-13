@@ -24,6 +24,8 @@ mod tests {
     fn proyecto_new_asigna_campos_basicos() {
         let req = CreateProyectoRequest {
             titulo_proyecto: "Analisis de datos abiertos".to_string(),
+            codigo: Some("PRJ-001".to_string()),
+            ..Default::default()
         };
         let p = Proyecto::new("p-1".to_string(), req).unwrap();
         assert_eq!(p.id_proyecto, "p-1");
@@ -39,6 +41,8 @@ mod tests {
     fn proyecto_new_rechaza_id_vacio() {
         let req = CreateProyectoRequest {
             titulo_proyecto: "X".to_string(),
+            codigo: Some("P".to_string()),
+            ..Default::default()
         };
         let err = Proyecto::new("   ".to_string(), req).expect_err("id vacio -> error");
         assert!(matches!(err, AppError::InternalError(_)), "got {err:?}");
@@ -49,6 +53,8 @@ mod tests {
         for titulo in ["", "   ", "\t\n"] {
             let req = CreateProyectoRequest {
                 titulo_proyecto: titulo.to_string(),
+                codigo: Some("P".to_string()),
+                ..Default::default()
             };
             let err = Proyecto::new("p".to_string(), req).expect_err("titulo vacio -> error");
             assert!(matches!(err, AppError::InternalError(_)), "got {err:?}");
@@ -62,11 +68,17 @@ mod tests {
         let original = Proyecto {
             id_proyecto: "p-2".to_string(),
             titulo_proyecto: "Titulo".to_string(),
+            codigo: "PRJ-002".to_string(),
             activo: true,
             created_at: Some(1_700_000_000_000),
             updated_at: Some(1_700_000_001_000),
             campo_ocde: Some("1.1".to_string()),
             programas_relacionados: vec!["prog-a".to_string(), "prog-b".to_string()],
+            tipo_actividad_ocde: None,
+            ambito_geografico: None,
+            estado_concytec: None,
+            tematica_ambiental: None,
+            tematica_salud: None,
         };
         let dto = ProyectoDto::from(original.clone());
         let recovered = Proyecto::try_from(dto).expect("round-trip valido");
@@ -88,6 +100,12 @@ mod tests {
             "p-3".to_string(),
             CreateProyectoRequest {
                 titulo_proyecto: "X".to_string(),
+                codigo: Some("PRJ-003".to_string()),
+                tipo_actividad_ocde: None,
+                ambito_geografico: None,
+                estado_concytec: None,
+                tematica_ambiental: None,
+                tematica_salud: None,
             },
         )
         .unwrap();
@@ -106,6 +124,8 @@ mod tests {
             id_proyecto: "p-1".to_string(),
             id_investigador: "inv-1".to_string(),
             es_responsable: true,
+            rol: crate::shared::vocab_mapper::ROLE_INVESTIGADOR_PRINCIPAL.to_string(),
+            ..Default::default()
         };
         let dto = ParticipacionRecordDto::from(original.clone());
         let recovered = ParticipacionRecord::try_from(dto).unwrap();
@@ -122,6 +142,8 @@ mod tests {
             id_proyecto: "p-1".to_string(),
             id_investigador: "inv-2".to_string(),
             es_responsable: false,
+            rol: crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR.to_string(),
+            ..Default::default()
         };
         let dto = ParticipacionRecordDto::from(original.clone());
         let recovered = ParticipacionRecord::try_from(dto).unwrap();

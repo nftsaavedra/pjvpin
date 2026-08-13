@@ -122,6 +122,7 @@ fn default_activo_true() -> bool {
 pub struct ProyectoDto {
     pub id_proyecto: String,
     pub titulo_proyecto: String,
+    pub codigo: String,
     #[serde(
         deserialize_with = "deserialize_activo_bool",
         serialize_with = "serialize_activo_bool"
@@ -138,12 +139,34 @@ pub struct ProyectoDto {
     /// Programas de investigación institucionales relacionados.
     #[serde(default)]
     pub programas_relacionados: Vec<String>,
+    #[serde(default)]
+    pub tipo_actividad_ocde: Option<String>,
+    #[serde(default)]
+    pub ambito_geografico: Option<String>,
+    #[serde(default)]
+    pub estado_concytec: Option<String>,
+    #[serde(default)]
+    pub tematica_ambiental: Option<String>,
+    #[serde(default)]
+    pub tematica_salud: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateProyectoRequest {
     pub titulo_proyecto: String,
+    #[serde(default)]
+    pub codigo: Option<String>,
+    #[serde(default)]
+    pub tipo_actividad_ocde: Option<String>,
+    #[serde(default)]
+    pub ambito_geografico: Option<String>,
+    #[serde(default)]
+    pub estado_concytec: Option<String>,
+    #[serde(default)]
+    pub tematica_ambiental: Option<String>,
+    #[serde(default)]
+    pub tematica_salud: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -329,13 +352,26 @@ pub struct ExportDataProyectoAreaDto {
     pub cantidad_investigadores: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ParticipacionRecordDto {
     #[serde(rename = "_id")]
     pub id: String,
     pub id_proyecto: String,
     pub id_investigador: String,
+    /// Fase N2-B: rol canonico del participante (ROLES_VALIDOS).
+    /// En documentos legacy sin este campo, se infiere desde `es_responsable`.
+    #[serde(default)]
+    pub rol: String,
+    /// Fase N2-B: FK opcional a org_units.
+    #[serde(default)]
+    pub id_org_unit_afiliacion: Option<String>,
+    /// Fase N2-B: horas de dedicacion semanal (opcional).
+    #[serde(default)]
+    pub horas_dedicacion_semanal: Option<f64>,
+    /// Legacy alias (v0.1.0-alpha): refleja si el participante es el
+    /// investigador principal. Se conserva por compatibilidad;
+    /// `rol == INVESTIGADOR_PRINCIPAL` es la fuente canonica.
     #[serde(default)]
     pub es_responsable: bool,
 }

@@ -4,6 +4,8 @@ use crate::investigadores::dto::{
 };
 use crate::personas::models::Persona;
 use crate::shared::error::AppError;
+use crate::shared::orcid::Orcid;
+use crate::shared::vocab_mapper::{DOC_TYPE_CE, DOC_TYPE_DNI, DOC_TYPE_PASAPORTE};
 
 #[derive(Debug, Clone)]
 pub struct Investigador {
@@ -27,6 +29,11 @@ pub struct Investigador {
     pub renacyt_ficha_url: Option<String>,
     pub renacyt_formaciones_academicas_json: Option<String>,
     pub grupo_investigacion_id: Option<String>,
+    /// Fase N0-D (D11): tipo de documento de identidad (DNI|CE|PASAPORTE).
+    /// Vive en Investigador porque CONCYTEC lo exige para `persons` y
+    /// `Persona` no debe amplificarse (D7). `None` se trata como "DNI"
+    /// por defecto en la capa IPC.
+    pub tipo_documento: Option<String>,
 }
 
 impl Investigador {
@@ -45,6 +52,37 @@ impl Investigador {
             "docente" | "tesista" | "alumno_egresado" => request.perfil.clone(),
             _ => "docente".to_string(),
         };
+
+        // Validar ORCID (ISO 7064 11-2) al construir el modelo.
+        let raw_orcid = renacyt
+            .as_ref()
+            .and_then(|value| value.orcid.clone())
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
+        let orcid_validado: Option<String> = match raw_orcid {
+            None => None,
+            Some(raw) => match Orcid::new(&raw) {
+                Ok(orc) => Some(orc.into_string()),
+                Err(_) => {
+                    return Err(AppError::InternalError(format!(
+                        "El ORCID '{raw}' no cumple el formato ni el checksum ISO 7064 11-2."
+                    )));
+                }
+            },
+        };
+
+        let tipo_documento_raw = request
+            .tipo_documento
+            .as_ref()
+            .map(|s| s.trim().to_ascii_uppercase())
+            .filter(|s| !s.is_empty());
+        if let Some(td) = tipo_documento_raw.as_ref() {
+            if td != DOC_TYPE_DNI && td != DOC_TYPE_CE && td != DOC_TYPE_PASAPORTE {
+                return Err(AppError::InternalError(format!(
+                    "El tipo de documento '{td}' no es valido. Permitidos: DNI, CE, PASAPORTE."
+                )));
+            }
+        }
 
         Ok(Self {
             id_investigador,
@@ -80,11 +118,7 @@ impl Investigador {
             renacyt_fecha_ultima_revision: renacyt
                 .as_ref()
                 .and_then(|value| value.fecha_ultima_revision),
-            renacyt_orcid: renacyt
-                .as_ref()
-                .and_then(|value| value.orcid.clone())
-                .map(|value| value.trim().to_string())
-                .filter(|value| !value.is_empty()),
+            renacyt_orcid: orcid_validado,
             renacyt_scopus_author_id: renacyt
                 .as_ref()
                 .and_then(|value| value.scopus_author_id.clone())
@@ -100,6 +134,7 @@ impl Investigador {
                 .and_then(|value| value.formaciones_academicas_json.clone())
                 .filter(|value| !value.trim().is_empty()),
             grupo_investigacion_id: None,
+            tipo_documento: tipo_documento_raw,
         })
     }
 
@@ -125,6 +160,8 @@ impl Investigador {
         self.renacyt_fecha_registro = lookup.fecha_registro;
         self.renacyt_fecha_ultima_revision = lookup.fecha_ultima_revision;
         self.renacyt_orcid = lookup.orcid.filter(|value| !value.trim().is_empty());
+        // Validar ORCID del lookup (si falla el checksum, se conserva la cadena
+        // cruda para que el usuario pueda corregir; refresh no aborta).
         self.renacyt_scopus_author_id = lookup
             .scopus_author_id
             .filter(|value| !value.trim().is_empty());
@@ -163,6 +200,7 @@ impl From<Investigador> for InvestigadorDto {
             renacyt_ficha_url: m.renacyt_ficha_url,
             renacyt_formaciones_academicas_json: m.renacyt_formaciones_academicas_json,
             grupo_investigacion_id: m.grupo_investigacion_id,
+            tipo_documento: m.tipo_documento,
         }
     }
 }
@@ -191,6 +229,7 @@ impl TryFrom<InvestigadorDto> for Investigador {
             renacyt_ficha_url: d.renacyt_ficha_url,
             renacyt_formaciones_academicas_json: d.renacyt_formaciones_academicas_json,
             grupo_investigacion_id: d.grupo_investigacion_id,
+            tipo_documento: d.tipo_documento,
         })
     }
 }

@@ -30,6 +30,7 @@ mod tests {
             fecha_nacimiento: None,
             perfil: "docente".to_string(),
             renacyt: None,
+            tipo_documento: None,
         }
     }
 
@@ -91,14 +92,14 @@ mod tests {
             fecha_informe_calificacion: Some(1_700_000_000_000),
             fecha_registro: Some(1_700_000_000_000),
             fecha_ultima_revision: Some(1_700_000_000_000),
-            orcid: Some("  0000-0001-2345-6789  ".to_string()),
+            orcid: Some("  0000-0000-0000-0005  ".to_string()),
             scopus_author_id: Some("12345678900".to_string()),
             ficha_url: "  https://renacyt.example/foo  ".to_string(),
             formaciones_academicas_json: Some(r#"[{"a":1}]"#.to_string()),
         });
         let inv = Investigador::new("inv-r".to_string(), &req).unwrap();
         // trim + drop empty
-        assert_eq!(inv.renacyt_orcid.as_deref(), Some("0000-0001-2345-6789"));
+        assert_eq!(inv.renacyt_orcid.as_deref(), Some("0000-0000-0000-0005"));
         assert_eq!(inv.renacyt_scopus_author_id.as_deref(), Some("12345678900"));
         assert_eq!(
             inv.renacyt_ficha_url.as_deref(),
