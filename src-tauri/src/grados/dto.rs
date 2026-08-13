@@ -25,6 +25,11 @@ pub struct GradoAcademicoDoc {
     pub nombre: String,
     #[serde(default)]
     pub descripcion: Option<String>,
+    /// FK suave al esquema `renati_level` del vocabulario CONCYTEC
+    /// (alineamiento con PeruCRIS). No enforced para no romper datos legacy;
+    /// UI de mapeo en fase de captura posterior.
+    #[serde(default)]
+    pub codigo_skos: Option<String>,
     pub activo: i64,
     pub created_at: i64,
     #[serde(default)]
@@ -40,6 +45,9 @@ pub struct GradoAcademicoDto {
     pub id_grado: String,
     pub nombre: String,
     pub descripcion: Option<String>,
+    /// FK suave al esquema `renati_level` (CONCYTEC/PeruCRIS).
+    #[serde(default)]
+    pub codigo_skos: Option<String>,
     pub activo: i64,
     #[serde(default)]
     pub updated_at: Option<i64>,
@@ -61,4 +69,6 @@ pub struct CreateGradoRequest {
     pub nombre: String,
     #[serde(default)]
     pub descripcion: Option<String>,
+    #[serde(default)]
+    pub codigo_skos: Option<String>,
 }

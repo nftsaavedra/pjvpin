@@ -33,6 +33,7 @@ fn grado_doc_roundtrip_bson() {
         id_grado: "g-1".to_string(),
         nombre: "Maestría".to_string(),
         descripcion: Some("Segundo ciclo de posgrado".to_string()),
+        codigo_skos: Some("maestria".to_string()),
         activo: 1,
         created_at: 1_700_000_000_000,
         updated_at: Some(1_700_000_000_000),
@@ -54,6 +55,7 @@ fn grado_dto_serializes_snake_case() {
         id_grado: "g-1".to_string(),
         nombre: "Maestría".to_string(),
         descripcion: None,
+        codigo_skos: None,
         activo: 1,
         updated_at: None,
     };

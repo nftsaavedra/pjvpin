@@ -6,6 +6,8 @@ pub struct GradoAcademico {
     pub id_grado: String,
     pub nombre: String,
     pub descripcion: Option<String>,
+    /// FK suave al esquema `renati_level` (CONCYTEC/PeruCRIS).
+    pub codigo_skos: Option<String>,
     pub activo: i64,
     pub created_at: i64,
     pub updated_at: Option<i64>,
@@ -23,11 +25,16 @@ impl GradoAcademico {
                 "El nombre del grado no puede estar vacio.".to_string(),
             ));
         }
+        let codigo_skos = request
+            .codigo_skos
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
         let now = crate::shared::time::now_ms();
         Ok(Self {
             id_grado,
             nombre: request.nombre,
             descripcion: request.descripcion,
+            codigo_skos,
             activo: 1,
             created_at: now,
             updated_at: Some(now),
@@ -41,6 +48,7 @@ impl From<GradoAcademicoDoc> for GradoAcademico {
             id_grado: doc.id_grado,
             nombre: doc.nombre,
             descripcion: doc.descripcion,
+            codigo_skos: doc.codigo_skos,
             activo: doc.activo,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
@@ -54,6 +62,7 @@ impl From<GradoAcademico> for GradoAcademicoDoc {
             id_grado: m.id_grado,
             nombre: m.nombre,
             descripcion: m.descripcion,
+            codigo_skos: m.codigo_skos.clone(),
             activo: m.activo,
             created_at: m.created_at,
             updated_at: m.updated_at,
@@ -67,6 +76,7 @@ impl From<GradoAcademico> for GradoAcademicoDto {
             id_grado: m.id_grado,
             nombre: m.nombre,
             descripcion: m.descripcion,
+            codigo_skos: m.codigo_skos,
             activo: m.activo,
             updated_at: m.updated_at,
         }
@@ -81,6 +91,7 @@ mod tests {
         CreateGradoRequest {
             nombre: nombre.to_string(),
             descripcion: Some("Descripcion".to_string()),
+            codigo_skos: Some("doctor".to_string()),
         }
     }
 
