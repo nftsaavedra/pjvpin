@@ -1,3 +1,4 @@
+pub mod autores;
 pub mod commands;
 pub mod dto;
 pub mod handlers;

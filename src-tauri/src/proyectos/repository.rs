@@ -208,6 +208,12 @@ pub async fn create_proyecto_con_participantes(
             id_proyecto.clone(),
             CreateProyectoRequest {
                 titulo_proyecto: prepared.titulo_proyecto,
+                codigo: None,
+                tipo_actividad_ocde: None,
+                ambito_geografico: None,
+                estado_concytec: None,
+                tematica_ambiental: None,
+                tematica_salud: None,
             },
         )?;
         let proyecto_dto: ProyectoDto = ProyectoDto::from(&proyecto);
@@ -219,12 +225,20 @@ pub async fn create_proyecto_con_participantes(
             .await?;
 
         for investigador_id in prepared.investigadores_ids {
+            let es_resp =
+                prepared.investigador_responsable_id.as_deref() == Some(investigador_id.as_str());
+            let rol = if es_resp {
+                crate::shared::vocab_mapper::ROLE_INVESTIGADOR_PRINCIPAL
+            } else {
+                crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR
+            };
             let participacion = ParticipacionRecord {
                 id: format!("{}:{}", proyecto.id_proyecto, investigador_id),
                 id_proyecto: proyecto.id_proyecto.clone(),
-                es_responsable: prepared.investigador_responsable_id.as_deref()
-                    == Some(investigador_id.as_str()),
+                es_responsable: es_resp,
                 id_investigador: investigador_id,
+                rol: rol.to_string(),
+                ..Default::default()
             };
             let participacion_dto: ParticipacionRecordDto =
                 ParticipacionRecordDto::from(&participacion);
@@ -290,12 +304,20 @@ pub async fn update_proyecto_con_participantes(
             .await?;
 
         for investigador_id in prepared.investigadores_ids {
+            let es_resp =
+                prepared.investigador_responsable_id.as_deref() == Some(investigador_id.as_str());
+            let rol = if es_resp {
+                crate::shared::vocab_mapper::ROLE_INVESTIGADOR_PRINCIPAL
+            } else {
+                crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR
+            };
             let participacion = ParticipacionRecord {
                 id: format!("{}:{}", id_proyecto, investigador_id),
                 id_proyecto: id_proyecto.to_string(),
-                es_responsable: prepared.investigador_responsable_id.as_deref()
-                    == Some(investigador_id.as_str()),
+                es_responsable: es_resp,
                 id_investigador: investigador_id,
+                rol: rol.to_string(),
+                ..Default::default()
             };
             let participacion_dto: ParticipacionRecordDto =
                 ParticipacionRecordDto::from(&participacion);
@@ -379,12 +401,6 @@ pub async fn eliminar_proyecto(
             .session(&mut session)
             .await?;
         recursos_desc.push("patentes");
-
-        db.collection::<mongodb::bson::Document>("productos")
-            .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())
-            .session(&mut session)
-            .await?;
-        recursos_desc.push("productos");
 
         db.collection::<mongodb::bson::Document>("equipamientos")
             .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())

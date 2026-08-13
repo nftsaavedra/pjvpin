@@ -1,9 +1,8 @@
 use crate::recursos::dto::{
     CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest,
-    CreateProductoRequest, UpdateEquipamientoRequest, UpdateFinanciamientoRequest,
-    UpdatePatenteRequest, UpdateProductoRequest,
+    UpdateEquipamientoRequest, UpdateFinanciamientoRequest, UpdatePatenteRequest,
 };
-use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
+use crate::recursos::models::{Equipamiento, Financiamiento, Patente};
 use crate::recursos::repository;
 use crate::shared::error::AppError;
 use crate::shared::rbac;
@@ -129,95 +128,6 @@ pub async fn reactivar_patente(
     );
     Ok(patente)
 }
-
-// ── Productos ─────────────────────────────────────────────────────────────────
-
-pub async fn crear_producto(
-    state: &AppState,
-    window_label: &str,
-    request: CreateProductoRequest,
-) -> Result<Producto, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
-    require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
-    let producto = repository::create_producto(state.mongo_db()?, request).await?;
-    crate::shared::audit::write_generic_audit(
-        &actor,
-        "producto.create",
-        "producto",
-        &producto.id_producto,
-        producto.nombre.clone(),
-    );
-    Ok(producto)
-}
-
-pub async fn get_productos_proyecto(
-    state: &AppState,
-    window_label: &str,
-    proyecto_id: &str,
-) -> Result<Vec<Producto>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
-    repository::get_productos_by_proyecto(state.mongo_db()?, proyecto_id).await
-}
-
-pub async fn actualizar_producto(
-    state: &AppState,
-    window_label: &str,
-    id_producto: &str,
-    request: UpdateProductoRequest,
-) -> Result<Producto, AppError> {
-    let actor = rbac::get_session_actor_user(state, window_label).await?;
-    let proyecto_id = repository::get_producto_by_id(state.mongo_db()?, id_producto)
-        .await?
-        .proyecto_id;
-    require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
-    let producto = repository::update_producto(state.mongo_db()?, id_producto, request).await?;
-    crate::shared::audit::write_generic_audit(
-        &actor,
-        "producto.update",
-        "producto",
-        id_producto,
-        producto.nombre.clone(),
-    );
-    Ok(producto)
-}
-
-pub async fn eliminar_producto(
-    state: &AppState,
-    window_label: &str,
-    id_producto: &str,
-) -> Result<(), AppError> {
-    let actor =
-        rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    repository::delete_producto(state.mongo_db()?, id_producto).await?;
-    crate::shared::audit::write_generic_audit(
-        &actor,
-        "producto.delete",
-        "producto",
-        id_producto,
-        "soft-delete".to_string(),
-    );
-    Ok(())
-}
-
-pub async fn reactivar_producto(
-    state: &AppState,
-    window_label: &str,
-    id_producto: &str,
-) -> Result<Producto, AppError> {
-    let actor =
-        rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
-    let producto = repository::reactivate_producto(state.mongo_db()?, id_producto).await?;
-    crate::shared::audit::write_generic_audit(
-        &actor,
-        "producto.reactivate",
-        "producto",
-        id_producto,
-        "activo=1".to_string(),
-    );
-    Ok(producto)
-}
-
-// ── Equipamientos ─────────────────────────────────────────────────────────────
 
 pub async fn crear_equipamiento(
     state: &AppState,

@@ -11,7 +11,7 @@ use crate::catalogos::models::CatalogoItem;
 use crate::investigadores::models::Publicacion;
 use crate::proyectos::dto::{ParticipacionRecordDto, ProyectoDto};
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
-use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
+use crate::recursos::models::{Equipamiento, Financiamiento, Patente};
 use crate::reportes::dto::*;
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
@@ -136,27 +136,33 @@ pub async fn build_reporte_proyecto_integral(
         .map(|p| PatenteConEtiquetas::from_patente(p, &catalogo_map))
         .collect();
 
-    let productos_raw: Vec<Producto> = {
-        use crate::recursos::dto::ProductoDto;
+    // D5: productos -> publicaciones tipo=Software. Filtramos por id_proyecto
+    // desnormalizado (FK directa por consistencia con el resto del modelo).
+    let software_raw: Vec<crate::publicaciones::models::PublicacionCientifica> = {
+        use crate::publicaciones::dto::PublicacionCientificaDto;
         use std::convert::TryFrom;
         let cursor = db
-            .collection::<mongodb::bson::Document>("productos")
-            .find(doc! { "proyecto_id": id_proyecto })
+            .collection::<mongodb::bson::Document>("publicaciones_cientificas")
+            .find(doc! {
+                "id_proyecto": id_proyecto,
+                "tipo": crate::shared::vocab_mapper::PUBLICACION_TIPO_SOFTWARE,
+            })
             .await?;
         let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
-                let dto: ProductoDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->ProductoDto: {e}")))?;
-                Producto::try_from(dto)
+                let dto: PublicacionCientificaDto = mongodb::bson::from_document(d).map_err(
+                    |e| AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}")),
+                )?;
+                crate::publicaciones::models::PublicacionCientifica::try_from(dto)
             })
             .collect::<Result<Vec<_>, _>>()?
     };
 
-    let total_productos = productos_raw.len();
-    let productos: Vec<ProductoConEtiquetas> = productos_raw
+    let total_software = software_raw.len();
+    let software_publicaciones: Vec<SoftwareConEtiquetas> = software_raw
         .iter()
-        .map(|p| ProductoConEtiquetas::from_producto(p, &catalogo_map))
+        .map(SoftwareConEtiquetas::from_publicacion)
         .collect();
 
     let equipamientos_raw: Vec<Equipamiento> = {
@@ -214,8 +220,8 @@ pub async fn build_reporte_proyecto_integral(
         total_investigadores,
         patentes,
         total_patentes,
-        productos,
-        total_productos,
+        software_publicaciones,
+        total_software,
         equipamientos,
         total_equipamientos,
         financiamientos,

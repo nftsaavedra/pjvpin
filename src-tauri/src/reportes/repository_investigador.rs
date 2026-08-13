@@ -2,7 +2,7 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Database};
 
 use crate::proyectos::models::ParticipacionRecord;
-use crate::recursos::models::{Equipamiento, Patente, Producto};
+use crate::recursos::models::{Equipamiento, Patente};
 use crate::reportes::dto::*;
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
@@ -111,9 +111,13 @@ pub async fn build_reporte_investigador_integral(
             .collection::<mongodb::bson::Document>("patentes")
             .count_documents(doc! { "proyecto_id": proyecto_id })
             .await? as usize;
-        let productos_count = db
-            .collection::<mongodb::bson::Document>("productos")
-            .count_documents(doc! { "proyecto_id": proyecto_id })
+        // D5: "productos" ahora son publicaciones con tipo=Software.
+        let software_count = db
+            .collection::<mongodb::bson::Document>("publicaciones_cientificas")
+            .count_documents(doc! {
+                "id_proyecto": proyecto_id,
+                "tipo": crate::shared::vocab_mapper::PUBLICACION_TIPO_SOFTWARE,
+            })
             .await? as usize;
         let equipamientos_count = db
             .collection::<mongodb::bson::Document>("equipamientos")
@@ -134,7 +138,7 @@ pub async fn build_reporte_investigador_integral(
             colegas,
             recursos_en_proyecto: RecursosProyectoResumen {
                 patentes: patentes_count,
-                productos: productos_count,
+                software: software_count,
                 equipamientos: equipamientos_count,
                 financiamientos: financiamientos_count,
             },
@@ -143,7 +147,7 @@ pub async fn build_reporte_investigador_integral(
 
     let total_proyectos = proyectos_detalle.len();
 
-    use crate::recursos::dto::{EquipamientoDto, PatenteDto, ProductoDto};
+    use crate::recursos::dto::{EquipamientoDto, PatenteDto};
     use std::convert::TryFrom;
 
     let patentes_raw: Vec<Patente> = {
@@ -167,25 +171,32 @@ pub async fn build_reporte_investigador_integral(
         .map(|p| PatenteConEtiquetas::from_patente(p, &catalogo_map))
         .collect();
 
-    let productos_raw: Vec<Producto> = {
+    // D5: productos -> publicaciones Software. Filtramos por investigadores
+    // via `autores_ids` (es la lista canonica en PublicacionCientifica).
+    let software_raw: Vec<crate::publicaciones::models::PublicacionCientifica> = {
         let cursor = db
-            .collection::<mongodb::bson::Document>("productos")
-            .find(doc! { "investigador_id": id_investigador })
+            .collection::<mongodb::bson::Document>("publicaciones_cientificas")
+            .find(doc! {
+                "autores_ids": id_investigador,
+                "tipo": crate::shared::vocab_mapper::PUBLICACION_TIPO_SOFTWARE,
+            })
             .await?;
         let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
-                let dto: ProductoDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->ProductoDto: {e}")))?;
-                Producto::try_from(dto)
+                let dto: crate::publicaciones::dto::PublicacionCientificaDto =
+                    mongodb::bson::from_document(d).map_err(|e| {
+                        AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}"))
+                    })?;
+                crate::publicaciones::models::PublicacionCientifica::try_from(dto)
             })
             .collect::<Result<Vec<_>, _>>()?
     };
 
-    let total_productos = productos_raw.len();
-    let productos: Vec<ProductoConEtiquetas> = productos_raw
+    let total_software = software_raw.len();
+    let software: Vec<SoftwareConEtiquetas> = software_raw
         .iter()
-        .map(|p| ProductoConEtiquetas::from_producto(p, &catalogo_map))
+        .map(SoftwareConEtiquetas::from_publicacion)
         .collect();
 
     let equipamientos_raw: Vec<Equipamiento> = if proyecto_ids.is_empty() {
@@ -259,10 +270,10 @@ pub async fn build_reporte_investigador_integral(
         total_proyectos,
         recursos: RecursosInvestigadorResumen {
             patentes,
-            productos,
+            software,
             equipamientos,
             total_patentes,
-            total_productos,
+            total_software,
             total_equipamientos,
         },
         publicaciones,

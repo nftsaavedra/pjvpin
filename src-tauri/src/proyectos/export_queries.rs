@@ -14,8 +14,8 @@ use crate::proyectos::dto::{
     ExportDataProyectoAreaDto, ExportDataRecursoDto,
 };
 use crate::proyectos::models::Proyecto;
-use crate::recursos::dto::{EquipamientoDto, FinanciamientoDto, PatenteDto, ProductoDto};
-use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
+use crate::recursos::dto::{EquipamientoDto, FinanciamientoDto, PatenteDto};
+use crate::recursos::models::{Equipamiento, Financiamiento, Patente};
 use crate::shared::data_loader;
 use crate::shared::error::AppError;
 
@@ -223,17 +223,23 @@ pub async fn get_data_exportacion_recursos(
             .collect::<Result<Vec<_>, _>>()?
     };
 
-    let productos: Vec<Producto> = {
+    // D5: productos -> publicaciones Software.
+    let software_publicaciones: Vec<crate::publicaciones::models::PublicacionCientifica> = {
+        use std::convert::TryFrom;
         let cursor = db
-            .collection::<mongodb::bson::Document>("productos")
-            .find(doc! {})
+            .collection::<mongodb::bson::Document>("publicaciones_cientificas")
+            .find(doc! {
+                "tipo": crate::shared::vocab_mapper::PUBLICACION_TIPO_SOFTWARE,
+            })
             .await?;
         let docs: Vec<Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
-                let dto: ProductoDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->ProductoDto: {e}")))?;
-                Producto::try_from(dto)
+                let dto: crate::publicaciones::dto::PublicacionCientificaDto =
+                    mongodb::bson::from_document(d).map_err(|e| {
+                        AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}"))
+                    })?;
+                crate::publicaciones::models::PublicacionCientifica::try_from(dto)
             })
             .collect::<Result<Vec<_>, _>>()?
     };
@@ -319,14 +325,14 @@ pub async fn get_data_exportacion_recursos(
         });
     }
 
-    for p in productos {
+    for p in software_publicaciones {
         data.push(ExportDataRecursoDto {
-            tipo_recurso: "Producto".to_string(),
-            titulo_o_nombre: p.nombre.clone(),
-            proyecto: resolve_proyecto(&proyectos, &p.proyecto_id),
-            investigador: resolve_investigador(&investigadores, &personas, &p.investigador_id),
-            tipo: resolve_label(&catalogo_map, "tipo_producto", &p.tipo),
-            estado: resolve_label(&catalogo_map, "etapa_producto", &p.etapa),
+            tipo_recurso: "Software".to_string(),
+            titulo_o_nombre: p.titulo.clone(),
+            proyecto: resolve_proyecto(&proyectos, &p.id_proyecto),
+            investigador: None,
+            tipo: Some(p.tipo.clone()),
+            estado: None,
             moneda: None,
             monto: None,
         });

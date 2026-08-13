@@ -2,7 +2,6 @@
 mod tests {
     use crate::recursos::dto::{
         CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest,
-        CreateProductoRequest,
     };
     use serde_json::json;
 
@@ -45,22 +44,6 @@ mod tests {
             "proyecto_id en snake_case debe ser ignorado"
         );
         assert_eq!(req.titulo, "Sistema X");
-    }
-
-    #[test]
-    fn create_producto_request_acepta_camel_case() {
-        let json = json!({
-            "proyectoId": "P001",
-            "nombre": "Producto X",
-            "tipo": "Software",
-            "etapa": "MVP",
-            "fechaRegistro": 1700000000i64,
-        });
-        let req: CreateProductoRequest = serde_json::from_value(json).expect("must parse");
-        assert_eq!(req.nombre, "Producto X");
-        assert_eq!(req.tipo.as_deref(), Some("Software"));
-        assert_eq!(req.etapa.as_deref(), Some("MVP"));
-        assert_eq!(req.fecha_registro, Some(1700000000));
     }
 
     #[test]

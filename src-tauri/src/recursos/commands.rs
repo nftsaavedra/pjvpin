@@ -2,10 +2,9 @@ use tauri::{State, Window};
 
 use super::handlers;
 use crate::recursos::dto::{
-    CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest,
-    CreateProductoRequest, EquipamientoDto, FinanciamientoDto, PatenteDto, ProductoDto,
-    UpdateEquipamientoRequest, UpdateFinanciamientoRequest, UpdatePatenteRequest,
-    UpdateProductoRequest,
+    CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest, EquipamientoDto,
+    FinanciamientoDto, PatenteDto, UpdateEquipamientoRequest, UpdateFinanciamientoRequest,
+    UpdatePatenteRequest,
 };
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
@@ -53,52 +52,6 @@ pub async fn reactivar_patente(
     id_patente: String,
 ) -> Result<PatenteDto, AppError> {
     let item = handlers::reactivar_patente(&state, window.label(), &id_patente).await?;
-    Ok(item.into())
-}
-
-#[tauri::command]
-pub async fn crear_producto(
-    window: Window,
-    state: State<'_, AppState>,
-    request: CreateProductoRequest,
-) -> Result<ProductoDto, AppError> {
-    let item = handlers::crear_producto(&state, window.label(), request).await?;
-    Ok(item.into())
-}
-#[tauri::command]
-pub async fn get_productos_proyecto(
-    window: Window,
-    state: State<'_, AppState>,
-    proyecto_id: String,
-) -> Result<Vec<ProductoDto>, AppError> {
-    let items = handlers::get_productos_proyecto(&state, window.label(), &proyecto_id).await?;
-    Ok(items.into_iter().map(Into::into).collect())
-}
-#[tauri::command]
-pub async fn actualizar_producto(
-    window: Window,
-    state: State<'_, AppState>,
-    id_producto: String,
-    request: UpdateProductoRequest,
-) -> Result<ProductoDto, AppError> {
-    let item = handlers::actualizar_producto(&state, window.label(), &id_producto, request).await?;
-    Ok(item.into())
-}
-#[tauri::command]
-pub async fn eliminar_producto(
-    window: Window,
-    state: State<'_, AppState>,
-    id_producto: String,
-) -> Result<(), AppError> {
-    handlers::eliminar_producto(&state, window.label(), &id_producto).await
-}
-#[tauri::command]
-pub async fn reactivar_producto(
-    window: Window,
-    state: State<'_, AppState>,
-    id_producto: String,
-) -> Result<ProductoDto, AppError> {
-    let item = handlers::reactivar_producto(&state, window.label(), &id_producto).await?;
     Ok(item.into())
 }
 

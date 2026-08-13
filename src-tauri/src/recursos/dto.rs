@@ -4,7 +4,7 @@ fn default_activo() -> i64 {
     1
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PatenteDto {
     #[serde(rename = "_id")]
     pub id: String,
@@ -36,9 +36,13 @@ pub struct PatenteDto {
     pub updated_at: Option<i64>,
     #[serde(default = "default_activo")]
     pub activo: i64,
+    #[serde(default)]
+    pub clasificacion_ipc: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_concedente: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatePatenteRequest {
     #[serde(default)]
@@ -62,9 +66,13 @@ pub struct CreatePatenteRequest {
     pub entidad_concedente: Option<String>,
     #[serde(default)]
     pub descripcion: Option<String>,
+    #[serde(default)]
+    pub clasificacion_ipc: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_concedente: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdatePatenteRequest {
     pub titulo: Option<String>,
@@ -76,63 +84,13 @@ pub struct UpdatePatenteRequest {
     pub pais: Option<String>,
     pub entidad_concedente: Option<String>,
     pub descripcion: Option<String>,
+    #[serde(default)]
+    pub clasificacion_ipc: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_concedente: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProductoDto {
-    #[serde(rename = "_id")]
-    pub id: String,
-    pub id_producto: String,
-    #[serde(default)]
-    pub proyecto_id: Option<String>,
-    #[serde(default)]
-    pub investigador_id: Option<String>,
-    pub nombre: String,
-    #[serde(default)]
-    pub tipo: Option<String>,
-    #[serde(default)]
-    pub etapa: Option<String>,
-    #[serde(default)]
-    pub descripcion: Option<String>,
-    #[serde(default)]
-    pub fecha_registro: Option<i64>,
-    #[serde(default)]
-    pub created_at: Option<i64>,
-    #[serde(default)]
-    pub updated_at: Option<i64>,
-    #[serde(default = "default_activo")]
-    pub activo: i64,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateProductoRequest {
-    #[serde(default)]
-    pub proyecto_id: Option<String>,
-    #[serde(default)]
-    pub investigador_id: Option<String>,
-    pub nombre: String,
-    #[serde(default)]
-    pub tipo: Option<String>,
-    #[serde(default)]
-    pub etapa: Option<String>,
-    #[serde(default)]
-    pub descripcion: Option<String>,
-    #[serde(default)]
-    pub fecha_registro: Option<i64>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateProductoRequest {
-    pub nombre: Option<String>,
-    pub tipo: Option<String>,
-    pub etapa: Option<String>,
-    pub descripcion: Option<String>,
-    pub fecha_registro: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct EquipamientoDto {
     #[serde(rename = "_id")]
     pub id: String,
@@ -158,9 +116,19 @@ pub struct EquipamientoDto {
     pub updated_at: Option<i64>,
     #[serde(default = "default_activo")]
     pub activo: i64,
+    #[serde(default)]
+    pub codigo_institucional: Option<String>,
+    #[serde(default)]
+    pub tipo_equipamiento: Option<String>,
+    #[serde(default)]
+    pub uso_equipamiento: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_propietaria: Option<String>,
+    #[serde(default)]
+    pub id_financiamiento: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateEquipamientoRequest {
     #[serde(default)]
@@ -178,9 +146,19 @@ pub struct CreateEquipamientoRequest {
     pub proveedor: Option<String>,
     #[serde(default)]
     pub fecha_adquisicion: Option<i64>,
+    #[serde(default)]
+    pub codigo_institucional: Option<String>,
+    #[serde(default)]
+    pub tipo_equipamiento: Option<String>,
+    #[serde(default)]
+    pub uso_equipamiento: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_propietaria: Option<String>,
+    #[serde(default)]
+    pub id_financiamiento: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateEquipamientoRequest {
     pub nombre: Option<String>,
@@ -190,6 +168,16 @@ pub struct UpdateEquipamientoRequest {
     pub moneda: Option<String>,
     pub proveedor: Option<String>,
     pub fecha_adquisicion: Option<i64>,
+    #[serde(default)]
+    pub codigo_institucional: Option<String>,
+    #[serde(default)]
+    pub tipo_equipamiento: Option<String>,
+    #[serde(default)]
+    pub uso_equipamiento: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_propietaria: Option<String>,
+    #[serde(default)]
+    pub id_financiamiento: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -198,7 +186,19 @@ pub struct FinanciamientoDto {
     pub id: String,
     pub id_financiamiento: String,
     #[serde(default)]
+    pub codigo: Option<String>,
+    #[serde(default)]
+    pub nombre: Option<String>,
+    #[serde(default)]
+    pub modalidad: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_financiadora: Option<String>,
+    #[serde(default)]
+    pub parent_id: Option<String>,
+    #[serde(default)]
     pub proyecto_id: Option<String>,
+    /// Legacy: nombre textual de la entidad financiadora (no null).
+    /// Se conserva por compatibilidad con consumidores que escriben este campo.
     pub entidad_financiadora: String,
     #[serde(default)]
     pub tipo: Option<String>,
@@ -225,6 +225,21 @@ pub struct FinanciamientoDto {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateFinanciamientoRequest {
+    /// Fase N1-B (N1-B): codigo UNIQUE institucional.
+    #[serde(default)]
+    pub codigo: Option<String>,
+    /// Fase N1-B: nombre/denominacion oficial del fondo.
+    #[serde(default)]
+    pub nombre: Option<String>,
+    /// Fase N1-B: modalidad (vocab concytec_terminos).
+    #[serde(default)]
+    pub modalidad: Option<String>,
+    /// Fase N1-B: FK org_units -> entidad financiadora.
+    #[serde(default)]
+    pub id_org_unit_financiadora: Option<String>,
+    /// Fase N1-B: FK self-ref -> programa marco.
+    #[serde(default)]
+    pub parent_id: Option<String>,
     #[serde(default)]
     pub proyecto_id: Option<String>,
     pub entidad_financiadora: String,
@@ -247,6 +262,16 @@ pub struct CreateFinanciamientoRequest {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateFinanciamientoRequest {
+    #[serde(default)]
+    pub codigo: Option<String>,
+    #[serde(default)]
+    pub nombre: Option<String>,
+    #[serde(default)]
+    pub modalidad: Option<String>,
+    #[serde(default)]
+    pub id_org_unit_financiadora: Option<String>,
+    #[serde(default)]
+    pub parent_id: Option<String>,
     pub entidad_financiadora: Option<String>,
     pub tipo: Option<String>,
     pub monto: Option<f64>,

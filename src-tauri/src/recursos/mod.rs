@@ -6,8 +6,9 @@ pub mod macros;
 pub mod model_equipamiento;
 pub mod model_financiamiento;
 pub mod model_patente;
-pub mod model_producto;
 pub mod models;
+pub mod patente_inventores;
+pub mod patente_titulares;
 pub mod repository;
 
 #[cfg(test)]

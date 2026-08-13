@@ -28,7 +28,7 @@ fn dto_to_model(dto: PublicacionCientificaDto) -> PublicacionCientifica {
         titulo: dto.titulo,
         autores_ids: dto.autores_ids,
         revista: dto.revista,
-        doi: dto.doi,
+        doi: dto.doi.clone(),
         issn: dto.issn,
         anio: dto.anio,
         cuartil: dto.cuartil,
@@ -40,6 +40,25 @@ fn dto_to_model(dto: PublicacionCientificaDto) -> PublicacionCientifica {
         created_at: dto.created_at,
         updated_at: dto.updated_at,
         activo: dto.activo,
+        doi_val: dto.doi,
+        handle_url: dto.handle_url,
+        fecha_publicacion: dto.fecha_publicacion,
+        editorial: dto.editorial,
+        id_org_unit_editora: dto.id_org_unit_editora,
+        revista_titulo: dto.revista_titulo,
+        isbn: dto.isbn,
+        scimago_cuartil: dto.scimago_cuartil,
+        wos_cuartil: dto.wos_cuartil,
+        es_revisado_por_pares: dto.es_revisado_por_pares,
+        acceso_abierto: dto.acceso_abierto,
+        idioma: dto.idioma,
+        volumen: dto.volumen,
+        numero_issue: dto.numero_issue,
+        paginas: dto.paginas,
+        dominio_origen: dto.dominio_origen,
+        pure_uuid: dto.pure_uuid,
+        estado_publicacion: dto.estado_publicacion,
+        id_proyecto: dto.id_proyecto,
     }
 }
 
@@ -62,6 +81,24 @@ fn model_to_dto(m: &PublicacionCientifica) -> PublicacionCientificaDto {
         created_at: m.created_at,
         updated_at: m.updated_at,
         activo: m.activo,
+        handle_url: m.handle_url.clone(),
+        fecha_publicacion: m.fecha_publicacion,
+        editorial: m.editorial.clone(),
+        id_org_unit_editora: m.id_org_unit_editora.clone(),
+        revista_titulo: m.revista_titulo.clone(),
+        isbn: m.isbn.clone(),
+        scimago_cuartil: m.scimago_cuartil.clone(),
+        wos_cuartil: m.wos_cuartil.clone(),
+        es_revisado_por_pares: m.es_revisado_por_pares,
+        acceso_abierto: m.acceso_abierto.clone(),
+        idioma: m.idioma.clone(),
+        volumen: m.volumen.clone(),
+        numero_issue: m.numero_issue.clone(),
+        paginas: m.paginas.clone(),
+        dominio_origen: m.dominio_origen.clone(),
+        pure_uuid: m.pure_uuid.clone(),
+        estado_publicacion: m.estado_publicacion.clone(),
+        id_proyecto: m.id_proyecto.clone(),
     }
 }
 
@@ -126,6 +163,27 @@ pub async fn get_by_anio(db: &Database, anio: i32) -> Result<Vec<PublicacionCien
         .collect()
 }
 
+/// Lista las publicaciones Software asociadas a un proyecto (reemplaza
+/// `get_productos_by_proyecto` tras la consolidacion D5).
+pub async fn get_software_by_proyecto(
+    db: &Database,
+    id_proyecto: &str,
+) -> Result<Vec<PublicacionCientifica>, AppError> {
+    use crate::shared::vocab_mapper::PUBLICACION_TIPO_SOFTWARE;
+    let cursor = db
+        .collection::<Document>("publicaciones_cientificas")
+        .find(doc! {
+            "id_proyecto": id_proyecto,
+            "tipo": PUBLICACION_TIPO_SOFTWARE,
+            "activo": 1,
+        })
+        .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    docs.into_iter()
+        .map(|d| doc_to_dto(d).map(dto_to_model))
+        .collect()
+}
+
 pub async fn update(
     db: &Database,
     id: &str,
@@ -166,6 +224,60 @@ pub async fn update(
     }
     if let Some(v) = request.palabras_clave {
         set.insert("palabras_clave", v);
+    }
+    if let Some(v) = request.handle_url {
+        set.insert("handle_url", v);
+    }
+    if let Some(v) = request.fecha_publicacion {
+        set.insert("fecha_publicacion", v);
+    }
+    if let Some(v) = request.editorial {
+        set.insert("editorial", v);
+    }
+    if let Some(v) = request.id_org_unit_editora {
+        set.insert("id_org_unit_editora", v);
+    }
+    if let Some(v) = request.revista_titulo {
+        set.insert("revista_titulo", v);
+    }
+    if let Some(v) = request.isbn {
+        set.insert("isbn", v);
+    }
+    if let Some(v) = request.scimago_cuartil {
+        set.insert("scimago_cuartil", v);
+    }
+    if let Some(v) = request.wos_cuartil {
+        set.insert("wos_cuartil", v);
+    }
+    if let Some(v) = request.es_revisado_por_pares {
+        set.insert("es_revisado_por_pares", v);
+    }
+    if let Some(v) = request.acceso_abierto {
+        set.insert("acceso_abierto", v);
+    }
+    if let Some(v) = request.idioma {
+        set.insert("idioma", v);
+    }
+    if let Some(v) = request.volumen {
+        set.insert("volumen", v);
+    }
+    if let Some(v) = request.numero_issue {
+        set.insert("numero_issue", v);
+    }
+    if let Some(v) = request.paginas {
+        set.insert("paginas", v);
+    }
+    if let Some(v) = request.dominio_origen {
+        set.insert("dominio_origen", v);
+    }
+    if let Some(v) = request.pure_uuid {
+        set.insert("pure_uuid", v);
+    }
+    if let Some(v) = request.estado_publicacion {
+        set.insert("estado_publicacion", v);
+    }
+    if let Some(v) = request.id_proyecto {
+        set.insert("id_proyecto", v);
     }
 
     db.collection::<Document>("publicaciones_cientificas")

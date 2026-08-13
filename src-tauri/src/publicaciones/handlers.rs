@@ -54,6 +54,18 @@ pub async fn get_publicaciones_by_anio(
     repository::get_by_anio(state.mongo_db()?, anio).await
 }
 
+/// Lista las publicaciones Software (D5: productos consolidados) asociadas
+/// a un proyecto. Reemplaza `get_productos_proyecto` en el frontend de
+/// recursos del proyecto.
+pub async fn get_software_by_proyecto(
+    state: &AppState,
+    window_label: &str,
+    id_proyecto: &str,
+) -> Result<Vec<PublicacionCientifica>, AppError> {
+    rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosView).await?;
+    repository::get_software_by_proyecto(state.mongo_db()?, id_proyecto).await
+}
+
 pub async fn actualizar_publicacion(
     state: &AppState,
     window_label: &str,

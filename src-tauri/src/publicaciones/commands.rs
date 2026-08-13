@@ -59,6 +59,16 @@ pub async fn get_publicaciones_by_anio(
 }
 
 #[tauri::command]
+pub async fn get_software_by_proyecto(
+    window: Window,
+    state: State<'_, AppState>,
+    id_proyecto: String,
+) -> Result<Vec<PublicacionCientificaDto>, AppError> {
+    let items = handlers::get_software_by_proyecto(&state, window.label(), &id_proyecto).await?;
+    Ok(items.into_iter().map(Into::into).collect())
+}
+
+#[tauri::command]
 pub async fn actualizar_publicacion(
     window: Window,
     state: State<'_, AppState>,

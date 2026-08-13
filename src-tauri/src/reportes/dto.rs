@@ -11,8 +11,8 @@ pub struct ReporteProyectoIntegral {
     pub total_investigadores: usize,
     pub patentes: Vec<PatenteConEtiquetas>,
     pub total_patentes: usize,
-    pub productos: Vec<ProductoConEtiquetas>,
-    pub total_productos: usize,
+    pub software_publicaciones: Vec<SoftwareConEtiquetas>,
+    pub total_software: usize,
     pub equipamientos: Vec<EquipamientoConEtiquetas>,
     pub total_equipamientos: usize,
     pub financiamientos: Vec<FinanciamientoConEtiquetas>,
@@ -70,15 +70,16 @@ pub struct PatenteConEtiquetas {
 }
 
 #[derive(Debug, Serialize)]
-pub struct ProductoConEtiquetas {
-    pub id_producto: String,
-    pub nombre: String,
-    pub tipo_codigo: Option<String>,
-    pub tipo_nombre: Option<String>,
-    pub etapa_codigo: Option<String>,
-    pub etapa_nombre: Option<String>,
+pub struct SoftwareConEtiquetas {
+    pub id_publicacion: String,
+    pub titulo: String,
+    pub tipo: String,
+    pub doi: Option<String>,
+    pub fecha_publicacion: Option<i64>,
     pub descripcion: Option<String>,
-    pub fecha_registro: Option<i64>,
+    pub idioma: Option<String>,
+    pub acceso_abierto: Option<String>,
+    pub pure_uuid: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -196,7 +197,7 @@ pub struct ColegaProyecto {
 #[derive(Debug, Serialize)]
 pub struct RecursosProyectoResumen {
     pub patentes: usize,
-    pub productos: usize,
+    pub software: usize,
     pub equipamientos: usize,
     pub financiamientos: usize,
 }
@@ -204,10 +205,10 @@ pub struct RecursosProyectoResumen {
 #[derive(Debug, Serialize)]
 pub struct RecursosInvestigadorResumen {
     pub patentes: Vec<PatenteConEtiquetas>,
-    pub productos: Vec<ProductoConEtiquetas>,
+    pub software: Vec<SoftwareConEtiquetas>,
     pub equipamientos: Vec<EquipamientoConEtiquetas>,
     pub total_patentes: usize,
-    pub total_productos: usize,
+    pub total_software: usize,
     pub total_equipamientos: usize,
 }
 
@@ -273,33 +274,22 @@ impl PatenteConEtiquetas {
     }
 }
 
-impl ProductoConEtiquetas {
-    pub fn from_producto(
-        p: &crate::recursos::models::Producto,
-        catalogo_map: &std::collections::HashMap<
-            (String, String),
-            crate::catalogos::models::CatalogoItem,
-        >,
+impl SoftwareConEtiquetas {
+    /// Construye un `SoftwareConEtiquetas` a partir de una `PublicacionCientifica`
+    /// de tipo Software (D5: productos -> publicaciones Software).
+    pub fn from_publicacion(
+        p: &crate::publicaciones::models::PublicacionCientifica,
     ) -> Self {
-        let tipo_lbl = p.tipo.as_ref().and_then(|c| {
-            catalogo_map
-                .get(&("tipo_producto".to_string(), c.clone()))
-                .map(|i| i.nombre.clone())
-        });
-        let etapa_lbl = p.etapa.as_ref().and_then(|c| {
-            catalogo_map
-                .get(&("etapa_producto".to_string(), c.clone()))
-                .map(|i| i.nombre.clone())
-        });
         Self {
-            id_producto: p.id_producto.clone(),
-            nombre: p.nombre.clone(),
-            tipo_codigo: p.tipo.clone(),
-            tipo_nombre: tipo_lbl,
-            etapa_codigo: p.etapa.clone(),
-            etapa_nombre: etapa_lbl,
-            descripcion: p.descripcion.clone(),
-            fecha_registro: p.fecha_registro,
+            id_publicacion: p.id_publicacion.clone(),
+            titulo: p.titulo.clone(),
+            tipo: p.tipo.clone(),
+            doi: p.doi.clone(),
+            fecha_publicacion: p.fecha_publicacion,
+            descripcion: p.resumen.clone(),
+            idioma: p.idioma.clone(),
+            acceso_abierto: p.acceso_abierto.clone(),
+            pure_uuid: p.pure_uuid.clone(),
         }
     }
 }

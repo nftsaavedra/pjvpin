@@ -1,10 +1,9 @@
 use crate::recursos::dto::{
-    CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest,
-    CreateProductoRequest, EquipamientoDto, FinanciamientoDto, PatenteDto, ProductoDto,
-    UpdateEquipamientoRequest, UpdateFinanciamientoRequest, UpdatePatenteRequest,
-    UpdateProductoRequest,
+    CreateEquipamientoRequest, CreateFinanciamientoRequest, CreatePatenteRequest, EquipamientoDto,
+    FinanciamientoDto, PatenteDto, UpdateEquipamientoRequest, UpdateFinanciamientoRequest,
+    UpdatePatenteRequest,
 };
-use crate::recursos::models::{Equipamiento, Financiamiento, Patente, Producto};
+use crate::recursos::models::{Equipamiento, Financiamiento, Patente};
 
 impl_resource_repository!(
     Patente,
@@ -28,28 +27,9 @@ impl_resource_repository!(
     fecha_concesion,
     pais,
     entidad_concedente,
-    descripcion
-);
-
-impl_resource_repository!(
-    Producto,
-    ProductoDto,
-    CreateProductoRequest,
-    UpdateProductoRequest,
-    "productos",
-    id_producto,
-    create_producto,
-    get_productos_by_proyecto,
-    get_producto_by_id,
-    update_producto,
-    delete_producto,
-    reactivate_producto,
-    "Producto no encontrado.",
-    nombre,
-    tipo,
-    etapa,
     descripcion,
-    fecha_registro
+    clasificacion_ipc,
+    id_org_unit_concedente
 );
 
 impl_resource_repository!(
@@ -72,7 +52,12 @@ impl_resource_repository!(
     valor_estimado,
     moneda,
     proveedor,
-    fecha_adquisicion
+    fecha_adquisicion,
+    codigo_institucional,
+    tipo_equipamiento,
+    uso_equipamiento,
+    id_org_unit_propietaria,
+    id_financiamiento
 );
 
 impl_resource_repository!(
