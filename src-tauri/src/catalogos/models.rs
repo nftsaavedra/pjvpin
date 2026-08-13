@@ -1,6 +1,9 @@
 use crate::catalogos::dto::{CatalogoItemDoc, CatalogoItemDto, CreateCatalogoRequest};
 use crate::shared::error::AppError;
 
+/// Estados marcados como vocabularios oficiales CONCYTEC (no editables).
+pub const ESQUEMA_CONCYTEC_TERMINOS: &str = "concytec_terminos";
+
 #[derive(Debug, Clone)]
 pub struct CatalogoItem {
     pub id_catalogo: String,
@@ -12,6 +15,25 @@ pub struct CatalogoItem {
     pub activo: i64,
     pub created_at: i64,
     pub updated_at: Option<i64>,
+
+    // ---- Extension SKOS (D11/Fase N0-C) ----
+    /// Vocabulario CONCYTEC al que pertenece el item (`ocde_ford`,
+    /// `concytec_terminos`, etc.). None para los catalogos internos
+    /// legacy (tipo_patente, moneda, etc.).
+    pub esquema: Option<String>,
+    /// Codigo SKOS notation tal como aparece en el vocabulario oficial
+    /// (ej: `1.1`, `2.10.02`). Para catalogos internos = mismo que `codigo`.
+    pub codigo_skos: Option<String>,
+    /// Padre SKOS (broader). Construye la jerarquia dentro de un esquema.
+    /// Ej: `2.10` es padre de `2.10.02` en `ocde_ford`.
+    pub padre_codigo: Option<String>,
+    /// Nivel de profundidad (1=dominio mayor, 2=subcampo, 3=rama).
+    pub nivel: Option<i32>,
+    /// Etiquetas alternativas (altLabels). JSON-style string o None.
+    pub etiquetas: Option<Vec<String>>,
+    /// 1 si el item puede ser editado por el usuario; 0 si es oficial
+    /// CONCYTEC (bloqueado a reimports).
+    pub editable: i64,
 }
 
 impl CatalogoItem {
@@ -37,6 +59,12 @@ impl CatalogoItem {
             activo: 1,
             created_at: now,
             updated_at: Some(now),
+            esquema: request.esquema,
+            codigo_skos: request.codigo_skos,
+            padre_codigo: request.padre_codigo,
+            nivel: request.nivel,
+            etiquetas: request.etiquetas,
+            editable: if request.editable { 1 } else { 0 },
         })
     }
 }
@@ -53,6 +81,12 @@ impl From<CatalogoItemDoc> for CatalogoItem {
             activo: doc.activo,
             created_at: doc.created_at,
             updated_at: doc.updated_at,
+            esquema: doc.esquema,
+            codigo_skos: doc.codigo_skos,
+            padre_codigo: doc.padre_codigo,
+            nivel: doc.nivel,
+            etiquetas: doc.etiquetas,
+            editable: doc.editable,
         }
     }
 }
@@ -69,6 +103,12 @@ impl From<CatalogoItem> for CatalogoItemDoc {
             activo: m.activo,
             created_at: m.created_at,
             updated_at: m.updated_at,
+            esquema: m.esquema,
+            codigo_skos: m.codigo_skos,
+            padre_codigo: m.padre_codigo,
+            nivel: m.nivel,
+            etiquetas: m.etiquetas,
+            editable: m.editable,
         }
     }
 }
@@ -84,6 +124,11 @@ impl From<CatalogoItem> for CatalogoItemDto {
             orden: m.orden,
             activo: m.activo,
             updated_at: m.updated_at,
+            esquema: m.esquema,
+            codigo_skos: m.codigo_skos,
+            padre_codigo: m.padre_codigo,
+            nivel: m.nivel,
+            editable: m.editable,
         }
     }
 }
