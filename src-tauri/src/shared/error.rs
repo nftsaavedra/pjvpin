@@ -91,6 +91,10 @@ pub enum AppError {
     /// Se diferencia de `InternalError` para que la UI pueda mostrar un
     /// mensaje canonico de "inconsistencia de datos" sin filtrar detalles.
     DataInconsistency(String),
+    /// Violacion de integridad referencial simulada en capa Rust: una FK
+    /// apunta a un id inexistente o desactivado, o un borrado maestro
+    /// chocaria con referencias vivas (RESTRICT).
+    ReferentialIntegrity(String),
 }
 
 impl From<mongodb::error::Error> for AppError {
@@ -129,7 +133,8 @@ impl fmt::Display for AppError {
             | AppError::InternalError(message)
             | AppError::ConfigurationError(message)
             | AppError::ExternalServiceError(message)
-            | AppError::DataInconsistency(message) => f.write_str(message),
+            | AppError::DataInconsistency(message)
+            | AppError::ReferentialIntegrity(message) => f.write_str(message),
         }
     }
 }
