@@ -134,7 +134,7 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
                   <td>{p.campo_ocde ?? "-"}</td>
                   <td>{p.colegas.map((c) => c.nombres_apellidos).join("; ") || "-"}</td>
                   <td>
-                    P:{p.recursos_en_proyecto.patentes} PR:{p.recursos_en_proyecto.productos} E:
+                    P:{p.recursos_en_proyecto.patentes} SW:{p.recursos_en_proyecto.software} E:
                     {p.recursos_en_proyecto.equipamientos} F:
                     {p.recursos_en_proyecto.financiamientos}
                   </td>
@@ -188,31 +188,31 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
             </table>
           )}
           <p className="mt-4">
-            <strong>Productos ({recursos.total_productos})</strong>
+            <strong>Software ({recursos.total_software})</strong>
           </p>
-          {recursos.productos.length === 0 ? (
+          {recursos.software.length === 0 ? (
             <EmptyState
               variant="empty"
-              message={messages.reportes.investigadorEmptyMessages.productos}
-              data-testid="investigador-report-empty-productos"
+              message={messages.reportes.investigadorEmptyMessages.software}
+              data-testid="investigador-report-empty-software"
             />
           ) : (
             <table className="table">
               <thead>
                 <tr>
-                  <th>Nombre</th>
+                  <th>Título</th>
                   <th>Tipo</th>
-                  <th>Etapa</th>
-                  <th>F. Registro</th>
+                  <th>DOI</th>
+                  <th>F. Publicación</th>
                 </tr>
               </thead>
               <tbody>
-                {recursos.productos.map((p) => (
-                  <tr key={p.id_producto}>
-                    <td>{p.nombre}</td>
-                    <td>{p.tipo_nombre ?? "-"}</td>
-                    <td>{p.etapa_nombre ?? "-"}</td>
-                    <td>{formatTimestamp(p.fecha_registro)}</td>
+                {recursos.software.map((p) => (
+                  <tr key={p.id_publicacion}>
+                    <td>{p.titulo}</td>
+                    <td>{p.tipo}</td>
+                    <td>{p.doi ?? "-"}</td>
+                    <td>{formatTimestamp(p.fecha_publicacion)}</td>
                   </tr>
                 ))}
               </tbody>

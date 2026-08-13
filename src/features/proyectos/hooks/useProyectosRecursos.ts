@@ -3,9 +3,9 @@ import {
   crearPatente,
   getPatentesProyecto,
   eliminarPatente,
-  crearProducto,
-  getProductosProyecto,
-  eliminarProducto,
+  crearSoftware,
+  getSoftwareProyecto,
+  eliminarSoftware,
   crearEquipamiento,
   getEquipamientosProyecto,
   eliminarEquipamiento,
@@ -13,11 +13,16 @@ import {
   getFinanciamientosProyecto,
   eliminarFinanciamiento,
   type CreatePatentePayload,
-  type CreateProductoPayload,
+  type CreateSoftwarePayload,
   type CreateEquipamientoPayload,
   type CreateFinanciamientoPayload,
 } from "@/shared/tauri/recursos";
-import type { Patente, Producto, Equipamiento, Financiamiento } from "@/shared/tauri/types";
+import type {
+  Patente,
+  Producto,
+  Equipamiento,
+  Financiamiento,
+} from "@/shared/tauri/types";
 
 export const useProyectosRecursos = (proyectoId: string | undefined) => {
   const patentesCrud = useRecursoCrud<Patente, CreatePatentePayload>(
@@ -34,18 +39,22 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     proyectoId,
   );
 
-  const productosCrud = useRecursoCrud<Producto, CreateProductoPayload>(
-    getProductosProyecto,
-    crearProducto,
-    eliminarProducto,
+  // D5: productos -> publicaciones tipo=software. `Producto` se mantiene
+  // como alias type de `PublicacionCientifica` para no romper consumidores
+  // que ya usaban `productos` como nombre de variable.
+  const softwareCrud = useRecursoCrud<Producto, CreateSoftwarePayload>(
+    getSoftwareProyecto,
+    crearSoftware,
+    eliminarSoftware,
     (raw, pid) => ({
-      proyectoId: pid,
-      nombre: (raw.nombre_producto as string) || (raw.nombre as string) || "",
-      tipo: raw.tipo as string,
-      etapa: raw.etapa as string,
-      descripcion: raw.descripcion as string,
+      idProyecto: pid,
+      titulo: (raw.titulo as string) || "",
+      tipo: "software",
+      resumen: raw.descripcion as string,
+      doi: raw.doi as string,
+      fechaPublicacion: raw.fecha_registro as number,
     }),
-    (p) => p.id_producto,
+    (s) => s.id_publicacion,
     proyectoId,
   );
 
@@ -82,7 +91,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
   const cargarRecursos = async (pid: string): Promise<void> => {
     await Promise.all([
       patentesCrud.loadItems(pid),
-      productosCrud.loadItems(pid),
+      softwareCrud.loadItems(pid),
       equipamientosCrud.loadItems(pid),
       financiamientosCrud.loadItems(pid),
     ]);
@@ -90,7 +99,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
 
   const resetearRecursos = (): void => {
     patentesCrud.resetItems();
-    productosCrud.resetItems();
+    softwareCrud.resetItems();
     equipamientosCrud.resetItems();
     financiamientosCrud.resetItems();
   };
@@ -107,14 +116,14 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
         }).catch(() => null),
       );
     }
-    for (const item of productosCrud.items as unknown as Array<Record<string, unknown>>) {
+    for (const item of softwareCrud.items as unknown as Array<Record<string, unknown>>) {
       promesas.push(
-        crearProducto({
-          proyectoId: pid,
-          nombre: (item.nombre_producto as string) || (item.nombre as string) || "",
-          tipo: item.tipo as string,
-          etapa: item.etapa as string,
-          descripcion: item.descripcion as string,
+        crearSoftware({
+          idProyecto: pid,
+          titulo: (item.titulo as string) || (item.nombre as string) || "",
+          tipo: "software",
+          resumen: item.descripcion as string,
+          doi: item.doi as string,
         }).catch(() => null),
       );
     }
@@ -148,11 +157,17 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
 
   return {
     patentes: patentesCrud.items,
-    productos: productosCrud.items,
+    /// Alias de `software` para preservar compatibilidad con consumidores
+    /// que esperan `productos`. El shape es PublicacionCientifica.
+    productos: softwareCrud.items,
+    software: softwareCrud.items,
     equipamientos: equipamientosCrud.items,
     financiamientos: financiamientosCrud.items,
     patentesNormalizados: patentesCrud.items.map((p) => ({ ...p, id: p.id_patente })),
-    productosNormalizados: productosCrud.items.map((p) => ({ ...p, id: p.id_producto })),
+    productosNormalizados: softwareCrud.items.map((s) => ({
+      ...s,
+      id: s.id_publicacion,
+    })),
     equipamientosNormalizados: equipamientosCrud.items.map((e) => ({
       ...e,
       id: e.id_equipamiento,
@@ -162,7 +177,8 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
       id: f.id_financiamiento,
     })),
     handlePatentesChange: patentesCrud.handleChange,
-    handleProductosChange: productosCrud.handleChange,
+    handleProductosChange: softwareCrud.handleChange,
+    handleSoftwareChange: softwareCrud.handleChange,
     handleEquipamientosChange: equipamientosCrud.handleChange,
     handleFinanciamientosChange: financiamientosCrud.handleChange,
     cargarRecursos,

@@ -103,7 +103,7 @@ export const ProyectoIntegralPdf = ({ report }: { report: ReporteProyectoIntegra
     cabecera,
     equipo,
     patentes,
-    productos,
+    software_publicaciones,
     equipamientos,
     financiamientos,
     resumen_financiero,
@@ -181,15 +181,15 @@ export const ProyectoIntegralPdf = ({ report }: { report: ReporteProyectoIntegra
         </View>
 
         <View>
-          <Text style={pdfDefaults.sectionTitle}>Productos ({report.total_productos})</Text>
+          <Text style={pdfDefaults.sectionTitle}>Software ({report.total_software})</Text>
           <PdfTable
-            columns={["Nombre", "Tipo", "Etapa", "F. Registro"]}
-            widths={["40%", "22%", "18%", "20%"]}
-            rows={productos.map((p) => [
-              p.nombre,
-              p.tipo_nombre ?? "-",
-              p.etapa_nombre ?? "-",
-              formatTimestamp(p.fecha_registro),
+            columns={["Título", "Tipo", "DOI", "F. Publicación"]}
+            widths={["42%", "20%", "20%", "18%"]}
+            rows={software_publicaciones.map((p) => [
+              p.titulo,
+              p.tipo,
+              p.doi ?? "-",
+              formatTimestamp(p.fecha_publicacion),
             ])}
           />
         </View>
@@ -280,14 +280,14 @@ export const InvestigadorIntegralPdf = ({ report }: { report: ReporteInvestigado
               formatBool(p.activo),
               p.campo_ocde ?? "-",
               p.colegas.map((c) => c.nombres_apellidos).join("; ") || "-",
-              `P:${p.recursos_en_proyecto.patentes} PR:${p.recursos_en_proyecto.productos} E:${p.recursos_en_proyecto.equipamientos} F:${p.recursos_en_proyecto.financiamientos}`,
+              `P:${p.recursos_en_proyecto.patentes} SW:${p.recursos_en_proyecto.software} E:${p.recursos_en_proyecto.equipamientos} F:${p.recursos_en_proyecto.financiamientos}`,
             ])}
           />
         </View>
 
         <View>
           <Text style={pdfDefaults.sectionTitle}>
-            Recursos (P:{recursos.total_patentes} | PR:{recursos.total_productos} | E:
+            Recursos (P:{recursos.total_patentes} | SW:{recursos.total_software} | E:
             {recursos.total_equipamientos})
           </Text>
         </View>

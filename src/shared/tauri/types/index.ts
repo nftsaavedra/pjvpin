@@ -58,6 +58,7 @@ export type {
   RecursosInvestigadorResumen,
   TrazabilidadInvestigador,
   ReporteInvestigadorIntegral,
+  SoftwareConEtiquetas,
 } from "./reporte.types";
 
 export type {

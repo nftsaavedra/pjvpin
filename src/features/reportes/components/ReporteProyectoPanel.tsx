@@ -13,10 +13,10 @@ import type { ReporteProyectoIntegral } from "../api";
 import type {
   MiembroProyectoReporte,
   PatenteConEtiquetas,
-  ProductoConEtiquetas,
   EquipamientoConEtiquetas,
   FinanciamientoConEtiquetas,
   ProyectoDetalle,
+  SoftwareConEtiquetas,
 } from "@/shared/tauri/types";
 
 interface ReporteProyectoPanelProps {
@@ -106,31 +106,31 @@ const patenteColumns: ColumnDef<PatenteConEtiquetas>[] = [
   },
 ];
 
-const productoColumns: ColumnDef<ProductoConEtiquetas>[] = [
+const softwareColumns: ColumnDef<SoftwareConEtiquetas>[] = [
   {
-    key: "nombre",
-    label: messages.reportes.proyectoColumns.producto.nombre,
-    render: (p) => p.nombre,
+    key: "titulo",
+    label: messages.reportes.proyectoColumns.software.titulo,
+    render: (p) => p.titulo,
   },
   {
     key: "tipo",
-    label: messages.reportes.proyectoColumns.producto.tipo,
-    render: (p) => p.tipo_nombre ?? "-",
+    label: messages.reportes.proyectoColumns.software.tipo,
+    render: (p) => p.tipo,
   },
   {
-    key: "etapa",
-    label: messages.reportes.proyectoColumns.producto.etapa,
-    render: (p) => p.etapa_nombre ?? "-",
+    key: "doi",
+    label: messages.reportes.proyectoColumns.software.doi,
+    render: (p) => p.doi ?? "-",
   },
   {
-    key: "desc",
-    label: messages.reportes.proyectoColumns.producto.descripcion,
-    render: (p) => p.descripcion ?? "-",
+    key: "idioma",
+    label: messages.reportes.proyectoColumns.software.idioma,
+    render: (p) => p.idioma ?? "-",
   },
   {
     key: "fecha",
-    label: messages.reportes.proyectoColumns.producto.fechaRegistro,
-    render: (p) => formatTimestamp(p.fecha_registro),
+    label: messages.reportes.proyectoColumns.software.fecha,
+    render: (p) => formatTimestamp(p.fecha_publicacion),
   },
 ];
 
@@ -384,19 +384,19 @@ const ProyectoReportView: React.FC<ProyectoReportViewProps> = ({
       />
     </details>
 
-    <details open={expandedSections["proy-productos"]}>
+    <details open={expandedSections["proy-software"]}>
       <SectionHeader
-        label={messages.reportes.proyectoSections.productos}
-        count={report.total_productos}
-        open={expandedSections["proy-productos"] ?? false}
+        label={messages.reportes.proyectoSections.software}
+        count={report.total_software}
+        open={expandedSections["proy-software"] ?? false}
         onToggle={() => {
-          toggleSection("proy-productos");
+          toggleSection("proy-software");
         }}
       />
       <DataTable
-        columns={productoColumns}
-        data={report.productos}
-        getRowKey={(p) => p.id_producto}
+        columns={softwareColumns}
+        data={report.software_publicaciones}
+        getRowKey={(p) => p.id_publicacion}
         emptyMessage={messages.reportes.proyectoEmptyMessages.productos}
       />
     </details>

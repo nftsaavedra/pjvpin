@@ -7,7 +7,7 @@ import { messages } from "@/shared/feedback/messages";
 import type { RelatedEntity } from "./relatedEntity";
 import type { CatalogosProyectos } from "../hooks/useCatalogosProyectos";
 
-type ResourceTab = "patentes" | "productos" | "equipamiento" | "financiamiento";
+type ResourceTab = "patentes" | "software" | "equipamiento" | "financiamiento";
 
 interface ResourceTabDef {
   id: ResourceTab;
@@ -17,7 +17,7 @@ interface ResourceTabDef {
 
 const RESOURCE_TABS: ResourceTabDef[] = [
   { id: "patentes", label: messages.proyectos.resourceTabs.patentes, icon: Beaker },
-  { id: "productos", label: messages.proyectos.resourceTabs.productos, icon: Lightbulb },
+  { id: "software", label: messages.proyectos.resourceTabs.software, icon: Lightbulb },
   { id: "equipamiento", label: messages.proyectos.resourceTabs.equipamiento, icon: Package },
   { id: "financiamiento", label: messages.proyectos.resourceTabs.financiamiento, icon: DollarSign },
 ];
@@ -25,11 +25,15 @@ const RESOURCE_TABS: ResourceTabDef[] = [
 interface ResourceTabPanelProps {
   catalogos: CatalogosProyectos;
   patentes: RelatedEntity[];
-  productos: RelatedEntity[];
+  /// D5: `software` reemplaza a `productos` (publicaciones tipo software).
+  /// Se mantiene el alias `productos` para no romper callers legacy.
+  software?: RelatedEntity[];
+  productos?: RelatedEntity[];
   equipamientos: RelatedEntity[];
   financiamientos: RelatedEntity[];
   onPatentesChange: (items: RelatedEntity[]) => void;
-  onProductosChange: (items: RelatedEntity[]) => void;
+  onSoftwareChange?: (items: RelatedEntity[]) => void;
+  onProductosChange?: (items: RelatedEntity[]) => void;
   onEquipamientosChange: (items: RelatedEntity[]) => void;
   onFinanciamientosChange: (items: RelatedEntity[]) => void;
 }
@@ -37,14 +41,19 @@ interface ResourceTabPanelProps {
 export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
   catalogos,
   patentes,
+  software,
   productos,
   equipamientos,
   financiamientos,
   onPatentesChange,
+  onSoftwareChange,
   onProductosChange,
   onEquipamientosChange,
   onFinanciamientosChange,
 }) => {
+  const softwareItems = software ?? productos ?? [];
+  const handleSoftwareChange = onSoftwareChange ?? onProductosChange ?? (() => undefined);
+
   const [activeTab, setActiveTab] = useState<ResourceTab>("patentes");
 
   return (
@@ -108,43 +117,33 @@ export const ResourceTabPanel: React.FC<ResourceTabPanelProps> = ({
         />
       )}
 
-      {activeTab === "productos" && (
+      {activeTab === "software" && (
         <RelatedEntitiesSection
-          title={messages.proyectos.resourceTabs.productos}
+          title={messages.proyectos.resourceTabs.software}
           icon={<AppIcon icon={Lightbulb} size={18} />}
-          items={productos}
+          items={softwareItems}
           fields={[
             {
-              name: "nombre_producto",
-              label: "Nombre del Producto",
+              name: "titulo",
+              label: "Nombre del Software",
               placeholder: "Ej: Sistema de tratamiento",
               required: true,
             },
             {
               name: "descripcion",
               label: "Descripción",
-              placeholder: "Breve descripción del producto",
+              placeholder: "Breve descripción del software",
               type: "textarea",
               required: false,
             },
             {
-              name: "tipo",
-              label: "Tipo de Producto",
-              type: "select",
-              options: catalogos.tipoProducto,
-              placeholder: "-- Seleccionar tipo --",
-              required: false,
-            },
-            {
-              name: "etapa",
-              label: "Etapa de Desarrollo",
-              type: "select",
-              options: catalogos.etapaProducto,
-              placeholder: "-- Seleccionar etapa --",
+              name: "doi",
+              label: "DOI",
+              placeholder: "10.xxxx/... (opcional)",
               required: false,
             },
           ]}
-          onItemsChange={onProductosChange}
+          onItemsChange={handleSoftwareChange}
         />
       )}
 

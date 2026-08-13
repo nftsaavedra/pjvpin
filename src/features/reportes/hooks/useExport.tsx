@@ -50,7 +50,7 @@ export function useExport({
       ]);
       addSheet("Equipo", proyectoReport.equipo);
       addSheet("Patentes", proyectoReport.patentes);
-      addSheet("Productos", proyectoReport.productos);
+      addSheet("Software", proyectoReport.software_publicaciones);
       addSheet("Equipamientos", proyectoReport.equipamientos);
       addSheet("Financiamiento", proyectoReport.financiamientos);
 
@@ -140,7 +140,7 @@ export function useExport({
           })),
         );
         addSheet("Patentes", rep.recursos.patentes);
-        addSheet("Productos", rep.recursos.productos);
+        addSheet("Software", rep.recursos.software);
         addSheet("Equipamientos", rep.recursos.equipamientos);
         addSheet("Publicaciones", rep.publicaciones);
         addSheet("Trazabilidad", [{ ...rep.trazabilidad }]);

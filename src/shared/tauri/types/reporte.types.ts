@@ -1,10 +1,23 @@
 import type {
   PatenteConEtiquetas,
-  ProductoConEtiquetas,
   EquipamientoConEtiquetas,
   FinanciamientoConEtiquetas,
 } from "./recursos.types";
 import type { PublicacionConEtiquetas } from "./evento.types";
+
+/// D5: el reporte de proyecto/investigador muestra publicaciones Software
+/// en lugar de productos tecnologicos.
+export interface SoftwareConEtiquetas {
+  id_publicacion: string;
+  titulo: string;
+  tipo: string;
+  doi?: string | null;
+  fecha_publicacion?: number | null;
+  descripcion?: string | null;
+  idioma?: string | null;
+  acceso_abierto?: string | null;
+  pure_uuid?: string | null;
+}
 
 export interface ProyectoCabeceraReporte {
   id_proyecto: string;
@@ -58,8 +71,8 @@ export interface ReporteProyectoIntegral {
   total_investigadores: number;
   patentes: PatenteConEtiquetas[];
   total_patentes: number;
-  productos: ProductoConEtiquetas[];
-  total_productos: number;
+  software_publicaciones: SoftwareConEtiquetas[];
+  total_software: number;
   equipamientos: EquipamientoConEtiquetas[];
   total_equipamientos: number;
   financiamientos: FinanciamientoConEtiquetas[];
@@ -101,7 +114,7 @@ export interface ColegaProyecto {
 
 export interface RecursosProyectoResumen {
   patentes: number;
-  productos: number;
+  software: number;
   equipamientos: number;
   financiamientos: number;
 }
@@ -119,10 +132,10 @@ export interface ProyectoInvestigadorDetalle {
 
 export interface RecursosInvestigadorResumen {
   patentes: PatenteConEtiquetas[];
-  productos: ProductoConEtiquetas[];
+  software: SoftwareConEtiquetas[];
   equipamientos: EquipamientoConEtiquetas[];
   total_patentes: number;
-  total_productos: number;
+  total_software: number;
   total_equipamientos: number;
 }
 

@@ -4,9 +4,7 @@ import {
   CheckCircle,
   Coins,
   FileText,
-  Layers,
   LibraryBig,
-  Package,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
@@ -50,24 +48,6 @@ const CATALOGO_GRUPOS: CatalogoGrupo[] = [
         titulo: "Estados de Patente",
         icon: CheckCircle,
         descripcion: "Ciclo de vida de cada registro de propiedad intelectual",
-      },
-    ],
-  },
-  {
-    categoria: "Productos I+D+i",
-    icon: Package,
-    tipos: [
-      {
-        tipo: "tipo_producto",
-        titulo: "Tipos de Producto",
-        icon: Package,
-        descripcion: "Clases de resultados de investigación y desarrollo",
-      },
-      {
-        tipo: "etapa_producto",
-        titulo: "Etapas de Producto",
-        icon: Layers,
-        descripcion: "Fases del ciclo de desarrollo de un producto",
       },
     ],
   },

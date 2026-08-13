@@ -14,17 +14,10 @@ export interface Patente {
   updated_at?: number | null;
 }
 
-export interface Producto {
-  id_producto: string;
-  proyecto_id?: string | null;
-  investigador_id?: string | null;
-  nombre: string;
-  tipo?: string | null;
-  descripcion?: string | null;
-  fecha_registro?: number | null;
-  created_at?: number | null;
-  updated_at?: number | null;
-}
+/// D5: los productos tecnologicos ahora viven como `Publicacion { tipo:
+/// "software", id_proyecto }`. Mantenemos este alias para no romper imports
+/// legacy en componentes que ya referencian `Producto` directamente.
+export type Producto = import("./evento.types").PublicacionCientifica;
 
 export interface Equipamiento {
   id_equipamiento: string;
@@ -69,16 +62,10 @@ export interface PatenteConEtiquetas {
   descripcion?: string | null;
 }
 
-export interface ProductoConEtiquetas {
-  id_producto: string;
-  nombre: string;
-  tipo_codigo?: string | null;
-  tipo_nombre?: string | null;
-  etapa_codigo?: string | null;
-  etapa_nombre?: string | null;
-  descripcion?: string | null;
-  fecha_registro?: number | null;
-}
+/// D5: el reporte ya no usa `ProductoConEtiquetas`; en su lugar usa
+/// `SoftwareConEtiquetas` (definido en `reporte.types.ts`).
+export type ProductoConEtiquetas =
+  import("./reporte.types").SoftwareConEtiquetas;
 
 export interface EquipamientoConEtiquetas {
   id_equipamiento: string;

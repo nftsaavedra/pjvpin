@@ -93,6 +93,13 @@ export const reportes = {
       descripcion: "Descripción",
       fechaRegistro: "F. Registro",
     } as const,
+    software: {
+      titulo: "Título",
+      tipo: "Tipo",
+      doi: "DOI",
+      idioma: "Idioma",
+      fecha: "F. Publicación",
+    } as const,
     equipamiento: {
       nombre: "Nombre",
       valorEstimado: "Valor Estimado",
@@ -114,7 +121,9 @@ export const reportes = {
     cabecera: "Cabecera",
     equipo: "Equipo",
     patentes: "Patentes",
-    productos: "Productos",
+    /// D5: productos -> software (publicaciones tipo Software).
+    productos: "Software / Productos",
+    software: "Software / Productos",
     equipamientos: "Equipamientos",
     financiamiento: "Financiamiento",
     resumenFinanciero: "Resumen Financiero",
@@ -122,14 +131,16 @@ export const reportes = {
   proyectoEmptyMessages: {
     miembros: "Sin miembros registrados",
     patentes: "Sin patentes registradas",
-    productos: "Sin productos registrados",
+    productos: "Sin software/productos registrados",
+    software: "Sin software/productos registrados",
     equipamientos: "Sin equipamientos registrados",
     financiamientos: "Sin financiamientos registrados",
   } as const,
   investigadorEmptyMessages: {
     proyectos: "Sin proyectos registrados",
     patentes: "Sin patentes",
-    productos: "Sin productos",
+    productos: "Sin software/productos",
+    software: "Sin software/productos",
     equipamientos: "Sin equipamientos",
     publicaciones: "Sin publicaciones registradas",
   } as const,

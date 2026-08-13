@@ -67,7 +67,9 @@ export const proyectos = {
   } as const,
   resourceTabs: {
     patentes: "Patentes",
-    productos: "Productos I+D+i",
+    /// D5: los productos tecnologicos ahora son publicaciones tipo Software.
+    software: "Software / Productos I+D+i",
+    productos: "Software / Productos I+D+i",
     equipamiento: "Equipamiento",
     financiamiento: "Financiamiento",
   } as const,

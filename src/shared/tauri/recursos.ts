@@ -1,5 +1,10 @@
 import { invoke } from "./client";
-import type { Patente, Producto, Equipamiento, Financiamiento } from "./types";
+import type {
+  Patente,
+  Equipamiento,
+  Financiamiento,
+  PublicacionCientifica,
+} from "./types";
 
 // ── Patentes ────────────────────────────────────────────────────────────────
 
@@ -48,43 +53,53 @@ export const eliminarPatente = async (idPatente: string): Promise<void> => {
   await invoke("eliminar_patente", { idPatente });
 };
 
-// ── Productos ────────────────────────────────────────────────────────────────
+// ── Software (D5: productos consolidados en publicaciones tipo=Software) ──────
 
-export interface CreateProductoPayload {
-  proyectoId?: string;
-  investigadorId?: string;
-  nombre: string;
-  tipo?: string;
-  etapa?: string;
-  descripcion?: string;
-  fechaRegistro?: number;
+export interface CreateSoftwarePayload {
+  titulo: string;
+  tipo?: string; // default "software"
+  idProyecto?: string;
+  resumen?: string;
+  doi?: string;
+  fechaPublicacion?: number;
+  idioma?: string;
+  accesoAbierto?: string;
+  palabrasClave?: string[];
 }
 
-export interface UpdateProductoPayload {
-  nombre?: string;
+export interface UpdateSoftwarePayload {
+  titulo?: string;
   tipo?: string;
-  etapa?: string;
-  descripcion?: string;
-  fechaRegistro?: number;
+  idProyecto?: string;
+  resumen?: string;
+  doi?: string;
+  fechaPublicacion?: number;
+  idioma?: string;
+  accesoAbierto?: string;
+  palabrasClave?: string[];
 }
 
-export const crearProducto = async (request: CreateProductoPayload): Promise<Producto> => {
-  return await invoke("crear_producto", { request });
+export const crearSoftware = async (
+  request: CreateSoftwarePayload,
+): Promise<PublicacionCientifica> => {
+  return await invoke("crear_publicacion", { request });
 };
 
-export const getProductosProyecto = async (proyectoId: string): Promise<Producto[]> => {
-  return await invoke("get_productos_proyecto", { proyectoId });
+export const getSoftwareProyecto = async (
+  idProyecto: string,
+): Promise<PublicacionCientifica[]> => {
+  return await invoke("get_software_by_proyecto", { idProyecto });
 };
 
-export const actualizarProducto = async (
-  idProducto: string,
-  request: UpdateProductoPayload,
-): Promise<Producto> => {
-  return await invoke("actualizar_producto", { idProducto, request });
+export const actualizarSoftware = async (
+  idPublicacion: string,
+  request: UpdateSoftwarePayload,
+): Promise<PublicacionCientifica> => {
+  return await invoke("actualizar_publicacion", { idPublicacion, request });
 };
 
-export const eliminarProducto = async (idProducto: string): Promise<void> => {
-  await invoke("eliminar_producto", { idProducto });
+export const eliminarSoftware = async (idPublicacion: string): Promise<void> => {
+  await invoke("eliminar_publicacion", { idPublicacion });
 };
 
 // ── Equipamientos ────────────────────────────────────────────────────────────
