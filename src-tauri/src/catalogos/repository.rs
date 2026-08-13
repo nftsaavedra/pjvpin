@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use futures_util::TryStreamExt;
 use mongodb::bson::{doc, Document};
-use mongodb::Database;
+use mongodb::options::IndexOptions;
+use mongodb::{Database, IndexModel};
 
 use crate::catalogos::dto::{CatalogoItemDoc, CreateCatalogoRequest, EliminarCatalogoResultadoDto};
 use crate::catalogos::models::CatalogoItem;
@@ -191,6 +192,12 @@ pub async fn seed_catalogos(db: &Database) -> Result<(), AppError> {
                 nombre: nombre.to_string(),
                 descripcion: None,
                 orden: Some(orden),
+                esquema: None,
+                codigo_skos: None,
+                padre_codigo: None,
+                nivel: None,
+                etiquetas: None,
+                editable: true,
             },
         )
         .await?;
@@ -199,6 +206,58 @@ pub async fn seed_catalogos(db: &Database) -> Result<(), AppError> {
 }
 
 /// Carga catálogos activos en un `HashMap` indexado por `(tipo, codigo)`.
+/// Lista los vocabularios CONCYTEC disponibles (esquemas distintos). Solo
+/// devuelve esquemas que tengan al menos un item activo. Util para poblar el
+/// selector de esquemas en la UI de gestion de vocabularios.
+pub async fn list_vocabularios(db: &Database) -> Result<Vec<String>, AppError> {
+    use futures_util::TryStreamExt;
+    let cursor = db
+        .collection::<Document>("catalogos")
+        .find(doc! { "activo": 1i64, "esquema": { "$exists": true, "$ne": null } })
+        .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut esquemas: Vec<String> = docs
+        .into_iter()
+        .filter_map(|d| d.get_str("esquema").ok().map(|s| s.to_string()))
+        .collect::<std::collections::HashSet<_>>()
+        .into_iter()
+        .collect();
+    esquemas.sort();
+    Ok(esquemas)
+}
+
+/// Lista los items activos de un esquema CONCYTEC, opcionalmente filtrado
+/// por `padre_codigo` (SKOS broader) para construir el arbol jerarquico.
+pub async fn list_vocab_items_by_esquema(
+    db: &Database,
+    esquema: &str,
+    padre_codigo: Option<&str>,
+) -> Result<Vec<CatalogoItem>, AppError> {
+    use futures_util::TryStreamExt;
+    if esquema.trim().is_empty() {
+        return Err(AppError::InternalError(
+            "Debe indicar el esquema de vocabulario.".to_string(),
+        ));
+    }
+    let mut filter = doc! { "esquema": esquema, "activo": 1i64 };
+    if let Some(p) = padre_codigo {
+        filter.insert("padre_codigo", p);
+    }
+    let cursor = db.collection::<Document>("catalogos").find(filter).await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut items: Vec<CatalogoItem> = docs
+        .into_iter()
+        .map(doc_to_model)
+        .collect::<Result<Vec<_>, _>>()?;
+    items.sort_by(|a, b| {
+        a.nivel
+            .unwrap_or(999)
+            .cmp(&b.nivel.unwrap_or(999))
+            .then_with(|| a.nombre.to_lowercase().cmp(&b.nombre.to_lowercase()))
+    });
+    Ok(items)
+}
+
 pub async fn load_all_map(
     db: &Database,
 ) -> Result<HashMap<(String, String), CatalogoItem>, AppError> {
@@ -213,4 +272,65 @@ pub async fn load_all_map(
         map.insert((m.tipo.clone(), m.codigo.clone()), m);
     }
     Ok(map)
+}
+
+/// Carga el subconjunto de catalogos que son SKOS CONCYTEC (tienen `esquema`)
+/// indexados por `(esquema, codigo_skos)`.
+pub async fn load_vocab_map(
+    db: &Database,
+) -> Result<HashMap<(String, String), CatalogoItem>, AppError> {
+    let cursor = db
+        .collection::<Document>("catalogos")
+        .find(doc! { "activo": 1i64, "esquema": { "$exists": true } })
+        .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut map = HashMap::new();
+    for d in docs {
+        let m = doc_to_model(d)?;
+        if let (Some(esq), Some(cs)) = (m.esquema.as_ref(), m.codigo_skos.as_ref()) {
+            map.insert((esq.clone(), cs.clone()), m);
+        }
+    }
+    Ok(map)
+}
+
+/// Garantiza indices UNIQUE para evitar duplicados y acelerar lookups por
+/// esquema + codigo_skos (validacion de FK en `shared::refs::ensure_vocab_active`).
+pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
+    // UNIQUE legacy: (tipo, codigo). Por defecto active; tolera duplicados
+    // nulos porque el resto de features ya asume esa invariante.
+    let opts_legacy = IndexOptions::builder().unique(true).build();
+    let legacy_idx = IndexModel::builder()
+        .keys(doc! { "tipo": 1, "codigo": 1 })
+        .options(Some(opts_legacy))
+        .build();
+    db.collection::<Document>("catalogos")
+        .create_index(legacy_idx)
+        .await?;
+
+    // UNIQUE sparse (esquema, codigo_skos). Sparse tolera items sin esquema
+    // (los 12 catalogos legacy).
+    let opts_vocab = IndexOptions::builder().unique(true).sparse(true).build();
+    let vocab_idx = IndexModel::builder()
+        .keys(doc! { "esquema": 1, "codigo_skos": 1 })
+        .options(Some(opts_vocab))
+        .build();
+    db.collection::<Document>("catalogos")
+        .create_index(vocab_idx)
+        .await?;
+
+    // Jerarquia / jerarquia SKOS broader.
+    let pad_idx = IndexModel::builder()
+        .keys(doc! { "esquema": 1, "padre_codigo": 1 })
+        .build();
+    db.collection::<Document>("catalogos")
+        .create_index(pad_idx)
+        .await?;
+    Ok(())
+}
+
+/// Borra la coleccion `catalogos`. Solo invocar bajo el flag PJVPIN_RESET_DEV.
+pub async fn drop_dev_collection(db: &Database) -> Result<(), AppError> {
+    db.collection::<Document>("catalogos").drop().await?;
+    Ok(())
 }

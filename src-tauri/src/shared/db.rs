@@ -74,6 +74,19 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "renacyt_codigo_registro": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("investigadores")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "renacyt_orcid": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
                 .build(),
         )
         .await?;
@@ -82,6 +95,14 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "id_proyecto": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("proyectos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "codigo": 1 })
                 .options(Some(IndexOptions::builder().unique(true).build()))
                 .build(),
         )
@@ -98,6 +119,136 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "id_investigador": 1 })
+                .build(),
+        )
+        .await?;
+    // Fase N2-B: UNIQUE (id_proyecto, id_investigador) en `participaciones`
+    // (project_members). Evita duplicados del mismo investigador en un proyecto.
+    db.collection::<Document>("participaciones")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_proyecto": 1, "id_investigador": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+
+    // Fase N2-C: pivot `proyecto_organizaciones` (project_organizations).
+    // UNIQUE (id_proyecto, id_org_unit, rol): la misma org_unit puede aparecer
+    // varias veces en el mismo proyecto con roles distintos.
+    db.collection::<Document>("proyecto_organizaciones")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_proyecto": 1, "id_org_unit": 1, "rol": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("proyecto_organizaciones")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_org_unit": 1 })
+                .build(),
+        )
+        .await?;
+
+    // Fase N2-C: pivot `proyecto_financiamientos` (project_fundings).
+    // UNIQUE (id_proyecto, id_financiamiento): un mismo fondo no se asigna dos
+    // veces al mismo proyecto.
+    db.collection::<Document>("proyecto_financiamientos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_proyecto": 1, "id_financiamiento": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("proyecto_financiamientos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_financiamiento": 1 })
+                .build(),
+        )
+        .await?;
+
+    // Fase N2-D: pivot polimorfico `entity_ocde_fields` (feature `ocde`).
+    // UNIQUE (entity_type, entity_id, ocde_codigo): una entidad puede tener
+    // varios codigos FORD, pero no duplicados.
+    db.collection::<Document>("entity_ocde_fields")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "entity_type": 1, "entity_id": 1, "ocde_codigo": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("entity_ocde_fields")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "entity_type": 1, "entity_id": 1 })
+                .build(),
+        )
+        .await?;
+
+    // Fase N3-A: pivot `patente_inventores` (patent_inventors).
+    // UNIQUE (id_patente, id_persona): una persona no se repite como inventora
+    // en la misma patente.
+    db.collection::<Document>("patente_inventores")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_patente": 1, "id_persona": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("patente_inventores")
+        .create_index(IndexModel::builder().keys(doc! { "id_persona": 1 }).build())
+        .await?;
+
+    // Fase N3-A: pivot `patente_titulares` (patent_holders).
+    // UNIQUE por (id_patente, holder_type, id_(org_unit|persona)). MongoDB
+    // acepta UNIQUE parciales: el campo polimorfico es whichever este
+    // presente; los duplicados se controlan a nivel aplicacion via
+    // `validate_titular_uniqueness`.
+    db.collection::<Document>("patente_titulares")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_patente": 1, "holder_type": 1, "id_org_unit": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("patente_titulares")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_patente": 1, "holder_type": 1, "id_persona": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
+                .build(),
+        )
+        .await?;
+
+    // Fase N3-B: pivot `publicacion_autores` (publication_authors).
+    // UNIQUE (id_publicacion, id_persona): una persona no se repite como
+    // autora de la misma publicacion.
+    db.collection::<Document>("publicacion_autores")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_publicacion": 1, "id_persona": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("publicacion_autores")
+        .create_index(IndexModel::builder().keys(doc! { "id_persona": 1 }).build())
+        .await?;
+    db.collection::<Document>("publicacion_autores")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_org_unit_afiliacion": 1 })
                 .build(),
         )
         .await?;
@@ -158,26 +309,15 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .build(),
         )
         .await?;
+    // Fase N2-G: UNIQUE sparse sobre `numero_patente`. Sparse para tolerar
+    // patentes en tramite sin numero asignado.
     db.collection::<Document>("patentes")
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "numero_patente": 1 })
-                .build(),
-        )
-        .await?;
-
-    // --- Productos ---
-    db.collection::<Document>("productos")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "proyecto_id": 1 })
-                .build(),
-        )
-        .await?;
-    db.collection::<Document>("productos")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "investigador_id": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
                 .build(),
         )
         .await?;
@@ -190,6 +330,18 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .build(),
         )
         .await?;
+    // Fase N2-E: UNIQUE sparse sobre `codigo_institucional`. Solo equipamiento
+    // con codigo institucional provisto por el area de patrimonio es unico.
+    db.collection::<Document>("equipamientos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "codigo_institucional": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
+                .build(),
+        )
+        .await?;
 
     // --- Financiamientos ---
     db.collection::<Document>("financiamientos")
@@ -198,6 +350,53 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .keys(doc! { "proyecto_id": 1 })
                 .build(),
         )
+        .await?;
+
+    // --- Fase N0-B: Ubigeo INEI ---
+    db.collection::<Document>("ubigeos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "codigo": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("ubigeos")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "departamento": 1, "provincia": 1, "distrito": 1 })
+                .build(),
+        )
+        .await?;
+
+    // --- Fase N1-A: OrgUnits (jerarquica, CERIF/PeruCRIS) ---
+    db.collection::<Document>("org_units")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "id_org_unit": 1 })
+                .options(Some(IndexOptions::builder().unique(true).build()))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("org_units")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "ruc": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("org_units")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "parent_id": 1, "tipo_dependencia": 1 })
+                .build(),
+        )
+        .await?;
+    db.collection::<Document>("org_units")
+        .create_index(IndexModel::builder().keys(doc! { "nombre": 1 }).build())
         .await?;
 
     // --- Grupos de investigación ---
@@ -238,6 +437,29 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
     db.collection::<Document>("publicaciones_cientificas")
         .create_index(IndexModel::builder().keys(doc! { "doi": 1 }).build())
+        .await?;
+    // Fase N2-F: UNIQUE sparse sobre `doi` (un articulo con DOI valido no
+    // se duplica). Sparse para permitir publicaciones sin DOI.
+    db.collection::<Document>("publicaciones_cientificas")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "doi": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
+                .build(),
+        )
+        .await?;
+    // Fase N2-F: UNIQUE sparse sobre `pure_uuid` (sincronizacion con Pure).
+    db.collection::<Document>("publicaciones_cientificas")
+        .create_index(
+            IndexModel::builder()
+                .keys(doc! { "pure_uuid": 1 })
+                .options(Some(
+                    IndexOptions::builder().unique(true).sparse(true).build(),
+                ))
+                .build(),
+        )
         .await?;
 
     // --- Eventos Academicos ---

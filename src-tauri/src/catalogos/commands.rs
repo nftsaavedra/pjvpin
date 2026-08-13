@@ -64,3 +64,34 @@ pub async fn reactivar_catalogo(
     let item = handlers::reactivar_catalogo(&state, window.label(), &id).await?;
     Ok(item.into())
 }
+
+// =====================================================================
+// Vocabularios CONCYTEC (15 esquemas SKOS)
+// =====================================================================
+
+#[tauri::command]
+pub async fn listar_vocabularios_concytec(
+    window: Window,
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, AppError> {
+    handlers::listar_vocabularios_concytec(&state, window.label()).await
+}
+
+#[tauri::command]
+pub async fn listar_vocab_items(
+    window: Window,
+    state: State<'_, AppState>,
+    esquema: String,
+    padre_codigo: Option<String>,
+) -> Result<Vec<CatalogoItemDto>, AppError> {
+    handlers::listar_vocab_items(&state, window.label(), &esquema, padre_codigo).await
+}
+
+#[tauri::command]
+pub async fn reimportar_vocabulario(
+    window: Window,
+    state: State<'_, AppState>,
+    esquema: String,
+) -> Result<(), AppError> {
+    handlers::reimportar_vocabulario(&state, window.label(), &esquema).await
+}

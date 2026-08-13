@@ -1,11 +1,11 @@
 //! DTOs de la feature `catalogos`.
 //!
-//! Separación hexagonal (alineada con `usuarios/dto.rs`):
+//! Separacion hexagonal (alineada con `usuarios/dto.rs`):
 //!
 //! - **Persistencia (`CatalogoItemDoc`)**: usado por el repository para
 //!   serializar/deserializar a/desde BSON `Document`. snake_case, sin
 //!   `rename_all`, para mantener consistencia con las queries `doc! { ... }`
-//!   y con el resto de features (la colección `catalogos` persiste en
+//!   y con el resto de features (la coleccion `catalogos` persiste en
 //!   snake_case desde v0.1.0-alpha).
 //!
 //! - **IPC salida (`CatalogoItemDto`, `EliminarCatalogoResultadoDto`)**:
@@ -13,8 +13,8 @@
 //!   con las interfaces TS en `src/shared/tauri/types/catalogo.types.ts`.
 //!
 //! - **IPC entrada (`CreateCatalogoRequest`)**: acepta el formato camelCase
-//!   que envía el frontend. `#[serde(rename_all = "camelCase")]` previene
-//!   mismatches silenciosos si en el futuro se añaden campos multi-word.
+//!   que envia el frontend. `#[serde(rename_all = "camelCase")]` previene
+//!   mismatches silenciosos si en el futuro se anaden campos multi-word.
 
 use serde::{Deserialize, Serialize};
 
@@ -36,6 +36,24 @@ pub struct CatalogoItemDoc {
     pub created_at: i64,
     #[serde(default)]
     pub updated_at: Option<i64>,
+
+    // ---- Extension SKOS (D11/Fase N0-C) ----
+    #[serde(default)]
+    pub esquema: Option<String>,
+    #[serde(default)]
+    pub codigo_skos: Option<String>,
+    #[serde(default)]
+    pub padre_codigo: Option<String>,
+    #[serde(default)]
+    pub nivel: Option<i32>,
+    #[serde(default)]
+    pub etiquetas: Option<Vec<String>>,
+    #[serde(default = "default_editable")]
+    pub editable: i64,
+}
+
+fn default_editable() -> i64 {
+    1
 }
 
 // ============================================================================
@@ -53,6 +71,16 @@ pub struct CatalogoItemDto {
     pub activo: i64,
     #[serde(default)]
     pub updated_at: Option<i64>,
+    #[serde(default)]
+    pub esquema: Option<String>,
+    #[serde(default)]
+    pub codigo_skos: Option<String>,
+    #[serde(default)]
+    pub padre_codigo: Option<String>,
+    #[serde(default)]
+    pub nivel: Option<i32>,
+    #[serde(default)]
+    pub editable: i64,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -62,7 +90,7 @@ pub struct EliminarCatalogoResultadoDto {
 }
 
 // ============================================================================
-// IPC entrada: camelCase (TS idiomático).
+// IPC entrada: camelCase (TS idiomatico).
 // ============================================================================
 
 #[derive(Debug, Clone, Deserialize)]
@@ -75,4 +103,20 @@ pub struct CreateCatalogoRequest {
     pub descripcion: Option<String>,
     #[serde(default)]
     pub orden: Option<i32>,
+    #[serde(default)]
+    pub esquema: Option<String>,
+    #[serde(default)]
+    pub codigo_skos: Option<String>,
+    #[serde(default)]
+    pub padre_codigo: Option<String>,
+    #[serde(default)]
+    pub nivel: Option<i32>,
+    #[serde(default)]
+    pub etiquetas: Option<Vec<String>>,
+    #[serde(default = "default_editable_request")]
+    pub editable: bool,
+}
+
+fn default_editable_request() -> bool {
+    true
 }

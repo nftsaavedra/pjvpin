@@ -16,3 +16,8 @@ pub const DEFAULT_MONGODB_MIN_POOL_SIZE: u32 = 1;
 pub const RENIEC_TEST_DNI: &str = "00000000";
 pub const RENACYT_TEST_CTI_VITAE: &str = "80203";
 pub const RENACYT_TEST_ACTO_VERSION: &str = "2021";
+
+// Version del set de vocabularios CONCYTEC embebidos en
+// `catalogos::seed_vocabularios`. Bumpear este valor para forzar un re-seed
+// via `catalogos::seed_vocabularios::reseed_vocabularios_concytec`.
+pub const VOCAB_CONCYTEC_VERSION: &str = "2026-08-12-alpha";

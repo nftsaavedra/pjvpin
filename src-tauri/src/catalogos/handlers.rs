@@ -1,4 +1,4 @@
-use crate::catalogos::dto::{CreateCatalogoRequest, EliminarCatalogoResultadoDto};
+use crate::catalogos::dto::{CatalogoItemDto, CreateCatalogoRequest, EliminarCatalogoResultadoDto};
 use crate::catalogos::models::CatalogoItem;
 use crate::catalogos::repository;
 use crate::shared::error::AppError;
@@ -94,4 +94,65 @@ pub async fn reactivar_catalogo(
         item.codigo.clone(),
     );
     Ok(item)
+}
+
+// =====================================================================
+// Vocabularios CONCYTEC (15 esquemas SKOS)
+// =====================================================================
+
+/// Lista los esquemas CONCYTEC con al menos un item activo.
+pub async fn listar_vocabularios_concytec(
+    state: &AppState,
+    window_label: &str,
+) -> Result<Vec<String>, AppError> {
+    rbac::require_permission(state, window_label, rbac::AppPermission::VocabulariosRead).await?;
+    repository::list_vocabularios(state.mongo_db()?).await
+}
+
+/// Lista los items activos de un esquema CONCYTEC, opcionalmente filtrados
+/// por `padre_codigo` (SKOS broader).
+pub async fn listar_vocab_items(
+    state: &AppState,
+    window_label: &str,
+    esquema: &str,
+    padre_codigo: Option<String>,
+) -> Result<Vec<CatalogoItemDto>, AppError> {
+    rbac::require_permission(state, window_label, rbac::AppPermission::VocabulariosRead).await?;
+    let items = repository::list_vocab_items_by_esquema(
+        state.mongo_db()?,
+        esquema,
+        padre_codigo.as_deref(),
+    )
+    .await?;
+    Ok(items.into_iter().map(Into::into).collect())
+}
+
+/// Reimporta los vocabularios CONCYTEC. Solo disponible para
+/// superuser/admin (los items oficiales no son editables pero la version
+/// del set se bumpea desde `shared::defaults::VOCAB_CONCYTEC_VERSION`).
+pub async fn reimportar_vocabulario(
+    state: &AppState,
+    window_label: &str,
+    esquema: &str,
+) -> Result<(), AppError> {
+    let actor = rbac::require_permission(
+        state,
+        window_label,
+        rbac::AppPermission::VocabulariosManage,
+    )
+    .await?;
+    if esquema.trim().is_empty() {
+        return Err(AppError::InternalError(
+            "Debe indicar el esquema a reimportar.".to_string(),
+        ));
+    }
+    crate::catalogos::seed_vocabularios::reseed_vocabularios_concytec(state.mongo_db()?).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "vocabulario.reimport",
+        "catalogos",
+        esquema,
+        format!("version: {}", crate::shared::defaults::VOCAB_CONCYTEC_VERSION),
+    );
+    Ok(())
 }

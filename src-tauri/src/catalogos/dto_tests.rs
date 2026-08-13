@@ -43,6 +43,12 @@ fn catalogo_item_doc_roundtrip_bson() {
         activo: 1,
         created_at: 1_700_000_000_000,
         updated_at: Some(1_700_000_000_000),
+        esquema: None,
+        codigo_skos: None,
+        padre_codigo: None,
+        nivel: None,
+        etiquetas: None,
+        editable: 1,
     };
     let doc = mongodb::bson::to_document(&original).expect("serialize to bson");
     let restored: CatalogoItemDoc =
@@ -69,6 +75,11 @@ fn catalogo_item_dto_serializes_snake_case() {
         orden: None,
         activo: 1,
         updated_at: None,
+        esquema: None,
+        codigo_skos: None,
+        padre_codigo: None,
+        nivel: None,
+        editable: 1,
     };
     let json = serde_json::to_value(&dto).expect("serialize dto");
     assert!(json.get("id_catalogo").is_some());

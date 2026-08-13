@@ -20,6 +20,12 @@ pub enum AppPermission {
     CatalogosRead,
     CatalogosManage,
     UsuariosManage,
+    GeoRead,
+    OrgUnitsView,
+    OrgUnitsManage,
+    VocabulariosRead,
+    VocabulariosManage,
+    OcdeAssignManage,
 }
 
 pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
@@ -42,6 +48,12 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::CatalogosRead
                 | AppPermission::CatalogosManage
                 | AppPermission::UsuariosManage
+                | AppPermission::GeoRead
+                | AppPermission::OrgUnitsView
+                | AppPermission::OrgUnitsManage
+                | AppPermission::VocabulariosRead
+                | AppPermission::VocabulariosManage
+                | AppPermission::OcdeAssignManage
         ),
         "operador" => matches!(
             permission,
@@ -57,6 +69,11 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::GruposManage
                 | AppPermission::RecursosManage
                 | AppPermission::CatalogosRead
+                | AppPermission::GeoRead
+                | AppPermission::OrgUnitsView
+                | AppPermission::OrgUnitsManage
+                | AppPermission::VocabulariosRead
+                | AppPermission::OcdeAssignManage
         ),
         "consulta" => matches!(
             permission,
@@ -65,6 +82,9 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::ProyectosView
                 | AppPermission::ReportesView
                 | AppPermission::GruposView
+                | AppPermission::GeoRead
+                | AppPermission::OrgUnitsView
+                | AppPermission::VocabulariosRead
         ),
         "responsable_proyecto" => matches!(
             permission,
@@ -73,6 +93,9 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::ProyectosView
                 | AppPermission::ReportesView
                 | AppPermission::GruposView
+                | AppPermission::GeoRead
+                | AppPermission::OrgUnitsView
+                | AppPermission::VocabulariosRead
         ),
         _ => false,
     }

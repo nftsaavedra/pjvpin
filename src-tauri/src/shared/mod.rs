@@ -7,14 +7,19 @@ pub mod data_loader;
 pub mod db;
 pub mod defaults;
 pub mod dni;
+pub mod doi;
 pub mod error;
 pub mod external;
+pub mod hierarchy;
 pub mod logging;
+pub mod orcid;
 pub mod pagination;
 pub mod rbac;
+pub mod refs;
 pub mod state;
 pub mod time;
 pub mod tokens;
+pub mod vocab_mapper;
 
 #[cfg(test)]
 mod config_wizard_tests;

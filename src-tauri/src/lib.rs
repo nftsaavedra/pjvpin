@@ -2,9 +2,12 @@ use tauri::Manager;
 
 mod catalogos;
 mod eventos;
+mod geo;
 mod grados;
 mod grupos;
 mod investigadores;
+mod ocde;
+mod org_units;
 mod personas;
 mod proyectos;
 mod publicaciones;
@@ -16,9 +19,12 @@ mod usuarios;
 
 use catalogos::commands as catalogo_cmds;
 use eventos::commands as evento_cmds;
+use geo::commands as geo_cmds;
 use grados::commands as grado_cmds;
 use grupos::commands as grupo_cmds;
 use investigadores::commands as investigador_cmds;
+use ocde::commands as ocde_cmds;
+use org_units::commands as org_unit_cmds;
 use proyectos::commands as proyecto_cmds;
 use publicaciones::commands as publicacion_cmds;
 use recursos::commands as recurso_cmds;
@@ -98,6 +104,24 @@ pub fn run() {
                     std::io::Error::other(format!("Error sembrando catalogos: {}", e))
                 })?;
 
+                tauri::async_runtime::block_on(async {
+                    catalogos::seed_vocabularios::seed_vocabularios_concytec_if_empty(&database)
+                        .await
+                })
+                .map_err(|e| {
+                    std::io::Error::other(format!(
+                        "Error sembrando vocabularios CONCYTEC: {}",
+                        e
+                    ))
+                })?;
+
+                tauri::async_runtime::block_on(async {
+                    geo::seed_ubigeos_if_empty(&database).await
+                })
+                .map_err(|e| {
+                    std::io::Error::other(format!("Error sembrando ubigeos: {}", e))
+                })?;
+
                 Some(database)
             } else {
                 tracing::info!(
@@ -105,6 +129,45 @@ pub fn run() {
                 );
                 None
             };
+
+            // Reset dev: solo bajo `#[cfg(debug_assertions)]` y env var explicita.
+            // Borra colecciones reestructuradas y deja que los seeds repueblen.
+            // NUNCA se activa en builds de release.
+            #[cfg(debug_assertions)]
+            {
+                let reset_env = std::env::var("PJVPIN_RESET_DEV").ok();
+                if reset_env.as_deref() == Some("1") || reset_env.as_deref() == Some("true") {
+                    if let Some(database) = mongo_db.as_ref() {
+                        tracing::warn!(
+                            "PJVPIN_RESET_DEV activo: dropping colecciones dev (catalogos, ubigeos, org_units, entity_ocde_fields) y re-seeding."
+                        );
+                        let db_ref = database.clone();
+                        if let Err(e) = tauri::async_runtime::block_on(async move {
+                            catalogos::repository::drop_dev_collection(&db_ref).await?;
+                            geo::drop_dev_collection(&db_ref).await?;
+                            org_units::drop_dev_collection(&db_ref).await?;
+                            Ok::<_, crate::shared::error::AppError>(())
+                        }) {
+                            tracing::error!("Error durante PJVPIN_RESET_DEV: {e}");
+                            return Err(std::io::Error::other(format!(
+                                "Error durante PJVPIN_RESET_DEV: {e}"
+                            ))
+                            .into());
+                        }
+                        // Re-seed catalogos, vocabularios CONCYTEC y ubigeos.
+                        let db_ref = database.clone();
+                        if let Err(e) = tauri::async_runtime::block_on(async move {
+                            catalogos::repository::seed_catalogos(&db_ref).await?;
+                            catalogos::seed_vocabularios::reseed_vocabularios_concytec(&db_ref)
+                                .await?;
+                            geo::reseed_ubigeos(&db_ref).await?;
+                            Ok::<_, crate::shared::error::AppError>(())
+                        }) {
+                            tracing::error!("Error re-seeding tras reset: {e}");
+                        }
+                    }
+                }
+            }
 
             app.manage(AppState::new(
                 mongo_db,
@@ -169,6 +232,24 @@ pub fn run() {
             catalogo_cmds::actualizar_catalogo,
             catalogo_cmds::eliminar_catalogo,
             catalogo_cmds::reactivar_catalogo,
+            // Vocabularios CONCYTEC
+            catalogo_cmds::listar_vocabularios_concytec,
+            catalogo_cmds::listar_vocab_items,
+            catalogo_cmds::reimportar_vocabulario,
+            // Geo (Ubigeo)
+            geo_cmds::obtener_ubigeos,
+            geo_cmds::obtener_ubigeos_por_departamento,
+            geo_cmds::buscar_ubigeos,
+            // OrgUnits (CONCYTEC/PeruCRIS)
+            org_unit_cmds::crear_org_unit,
+            org_unit_cmds::actualizar_org_unit,
+            org_unit_cmds::obtener_org_unit,
+            org_unit_cmds::listar_org_units,
+            org_unit_cmds::eliminar_org_unit,
+            // OCDE (pivot polimorfico)
+            ocde_cmds::asignar_campo_ocde,
+            ocde_cmds::quitar_campo_ocde,
+            ocde_cmds::listar_campos_ocde,
             // Usuarios
             usuario_cmds::crear_usuario,
             usuario_cmds::get_auth_status,
@@ -211,11 +292,6 @@ pub fn run() {
             recurso_cmds::actualizar_patente,
             recurso_cmds::eliminar_patente,
             recurso_cmds::reactivar_patente,
-            recurso_cmds::crear_producto,
-            recurso_cmds::get_productos_proyecto,
-            recurso_cmds::actualizar_producto,
-            recurso_cmds::eliminar_producto,
-            recurso_cmds::reactivar_producto,
             recurso_cmds::crear_equipamiento,
             recurso_cmds::get_equipamientos_proyecto,
             recurso_cmds::actualizar_equipamiento,
@@ -232,6 +308,7 @@ pub fn run() {
             publicacion_cmds::get_publicacion_by_id,
             publicacion_cmds::get_publicaciones_by_investigador,
             publicacion_cmds::get_publicaciones_by_anio,
+            publicacion_cmds::get_software_by_proyecto,
             publicacion_cmds::actualizar_publicacion,
             publicacion_cmds::eliminar_publicacion,
             publicacion_cmds::reactivar_publicacion,
