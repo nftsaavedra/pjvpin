@@ -285,6 +285,22 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 
 ---
 
+## Modelo de datos CONCYTEC/PerúCRIS (capa de datos)
+
+La capa de datos está alineada a la especificación relacional 3NF (CERIF) de CONCYTEC/PerúCRIS. Decisiones operativas vigentes:
+
+- **`grupos_investigacion` se mantiene** como identidad de primer orden (trazabilidad). **`org_units`** coexiste para la estructura institucional (matriz + sub-unidades). NO se elimina `mod grupos` ni `Investigador.grupo_investigacion_id`.
+- **Pivots M:N** (proyecto_organizaciones, proyecto_financiamientos, patente_inventores, patente_titulares, publicacion_autores) persisten vía macro DRY `shared::macros::impl_pivot_repository!` (insert/list_by_*/delete/delete_for_*/ensure_indexes). Cascade cableado en el borrado del padre.
+- **Productos → Software**: `productos` se consolidó en `publicaciones` con `tipo="software"` + `id_proyecto` denormalizado (D5a).
+- **Integridad referencial** en capa Rust (`shared::{refs,hierarchy}`): `ensure_exists`/`ensure_active`/`ensure_vocab_active`/`assert_not_referenced`/`assert_no_cycle`/`assert_not_self_parent`.
+- **`PJVPIN_RESET_DEV`**: `shared::db::drop_dev_collections()` dropea 15 colecciones reestructuradas y re-seed (solo `#[cfg(debug_assertions)]` + env var).
+- **VOs**: `Orcid`, `Doi` (en `shared/`) con `new`/`new_opt`/`into_string` (sin `as_str`; usar `AsRef<str>`).
+- **Campos legacy eliminados** (D10 green-field): `equipamiento.proyecto_id`, `patente.investigador_id`, `financiamiento.proyecto_id`+`entidad_financiadora`, `publicacion.autores_ids`/`revista`/`url`/`pure_id`. `patente.proyecto_id` se conserva.
+
+**Deuda diferida** (fase siguiente, coherente con D4): UI/forms de org_units/vocabularios/geo; handler real de sync Pure (upsert por `pure_uuid`) + mapper `From<investigadores::Publicacion>`; exportador CERIF; conector HTTP PerúCRIS; `skos_importer` (XLSX oficiales); Ubigeo INEI completo.
+
+---
+
 ## Flujo de Trabajo con OpenCode
 
 ### Herramienta prioritaria de descubrimiento: plugin `opencode-codebase-index`
