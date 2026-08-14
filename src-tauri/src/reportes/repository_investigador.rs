@@ -123,9 +123,11 @@ pub async fn build_reporte_investigador_integral(
             .collection::<mongodb::bson::Document>("equipamientos")
             .count_documents(doc! { "proyecto_id": proyecto_id })
             .await? as usize;
+        // F2: financiamientos por proyecto via pivot `proyecto_financiamientos`
+        // (reemplaza query legacy por campo `proyecto_id` en financiamientos).
         let financiamientos_count = db
-            .collection::<mongodb::bson::Document>("financiamientos")
-            .count_documents(doc! { "proyecto_id": proyecto_id })
+            .collection::<mongodb::bson::Document>("proyecto_financiamientos")
+            .count_documents(doc! { "id_proyecto": proyecto_id })
             .await? as usize;
 
         proyectos_detalle.push(ProyectoInvestigadorDetalle {
@@ -150,19 +152,42 @@ pub async fn build_reporte_investigador_integral(
     use crate::recursos::dto::{EquipamientoDto, PatenteDto};
     use std::convert::TryFrom;
 
+    // F2: patentes por investigador via pivot `patente_inventores`
+    // (reemplaza query legacy por campo `investigador_id` en patentes).
     let patentes_raw: Vec<Patente> = {
-        let cursor = db
-            .collection::<mongodb::bson::Document>("patentes")
-            .find(doc! { "investigador_id": id_investigador })
-            .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
-        docs.into_iter()
-            .map(|d| {
-                let dto: PatenteDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->PatenteDto: {e}")))?;
-                Patente::try_from(dto)
-            })
-            .collect::<Result<Vec<_>, _>>()?
+        let id_persona = &investigador.persona_id;
+        let mut ids_patente: Vec<String> = Vec::new();
+        {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("patente_inventores")
+                .find(doc! { "id_persona": id_persona })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            for d in docs {
+                if let Ok(id) = mongodb::bson::from_document::<
+                    crate::recursos::patente_inventores::PatenteInventorDoc,
+                >(d)
+                {
+                    ids_patente.push(id.id_patente);
+                }
+            }
+        }
+        if ids_patente.is_empty() {
+            Vec::new()
+        } else {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("patentes")
+                .find(doc! { "id_patente": { "$in": &ids_patente }, "activo": 1 })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            docs.into_iter()
+                .map(|d| {
+                    let dto: PatenteDto = mongodb::bson::from_document(d)
+                        .map_err(|e| AppError::InternalError(format!("BSON->PatenteDto: {e}")))?;
+                    Patente::try_from(dto)
+                })
+                .collect::<Result<Vec<_>, _>>()?
+        }
     };
 
     let total_patentes = patentes_raw.len();
@@ -171,26 +196,47 @@ pub async fn build_reporte_investigador_integral(
         .map(|p| PatenteConEtiquetas::from_patente(p, &catalogo_map))
         .collect();
 
-    // D5: productos -> publicaciones Software. Filtramos por investigadores
-    // via `autores_ids` (es la lista canonica en PublicacionCientifica).
+    // F2 + D5: productos (Software) por investigador via pivot `publicacion_autores`
+    // (reemplaza query legacy por campo `autores_ids` en publicaciones_cientificas).
     let software_raw: Vec<crate::publicaciones::models::PublicacionCientifica> = {
-        let cursor = db
-            .collection::<mongodb::bson::Document>("publicaciones_cientificas")
-            .find(doc! {
-                "autores_ids": id_investigador,
-                "tipo": crate::shared::vocab_mapper::PUBLICACION_TIPO_SOFTWARE,
-            })
-            .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
-        docs.into_iter()
-            .map(|d| {
-                let dto: crate::publicaciones::dto::PublicacionCientificaDto =
-                    mongodb::bson::from_document(d).map_err(|e| {
-                        AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}"))
-                    })?;
-                crate::publicaciones::models::PublicacionCientifica::try_from(dto)
-            })
-            .collect::<Result<Vec<_>, _>>()?
+        let id_persona = &investigador.persona_id;
+        let mut ids_publicacion: Vec<String> = Vec::new();
+        {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("publicacion_autores")
+                .find(doc! { "id_persona": id_persona })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            for d in docs {
+                if let Ok(p) = mongodb::bson::from_document::<
+                    crate::publicaciones::autores::PublicacionAutorDoc,
+                >(d)
+                {
+                    ids_publicacion.push(p.id_publicacion);
+                }
+            }
+        }
+        if ids_publicacion.is_empty() {
+            Vec::new()
+        } else {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("publicaciones_cientificas")
+                .find(doc! {
+                    "id_publicacion": { "$in": &ids_publicacion },
+                    "tipo": crate::shared::vocab_mapper::PUBLICACION_TIPO_SOFTWARE,
+                })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            docs.into_iter()
+                .map(|d| {
+                    let dto: crate::publicaciones::dto::PublicacionCientificaDto =
+                        mongodb::bson::from_document(d).map_err(|e| {
+                            AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}"))
+                        })?;
+                    crate::publicaciones::models::PublicacionCientifica::try_from(dto)
+                })
+                .collect::<Result<Vec<_>, _>>()?
+        }
     };
 
     let total_software = software_raw.len();
@@ -199,21 +245,48 @@ pub async fn build_reporte_investigador_integral(
         .map(SoftwareConEtiquetas::from_publicacion)
         .collect();
 
+    // F2: equipamientos por proyecto via cadena de financiamiento 3NF/CERIF:
+    // proyecto_financiamientos -> financiamiento -> equipamiento.id_financiamiento.
+    // Reemplaza query legacy por campo `proyecto_id` en equipamientos.
     let equipamientos_raw: Vec<Equipamiento> = if proyecto_ids.is_empty() {
         Vec::new()
     } else {
-        let cursor = db
-            .collection::<mongodb::bson::Document>("equipamientos")
-            .find(doc! { "proyecto_id": { "$in": &proyecto_ids } })
-            .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
-        docs.into_iter()
-            .map(|d| {
-                let dto: EquipamientoDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
-                Equipamiento::try_from(dto)
-            })
-            .collect::<Result<Vec<_>, _>>()?
+        // Paso 1: ids de financiamiento vinculados a los proyectos del investigador.
+        let mut ids_financiamiento: Vec<String> = Vec::new();
+        {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("proyecto_financiamientos")
+                .find(doc! { "id_proyecto": { "$in": &proyecto_ids } })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            for d in docs {
+                if let Ok(p) = mongodb::bson::from_document::<
+                    crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc,
+                >(d)
+                {
+                    ids_financiamiento.push(p.id_financiamiento);
+                }
+            }
+        }
+        if ids_financiamiento.is_empty() {
+            Vec::new()
+        } else {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("equipamientos")
+                .find(doc! {
+                    "id_financiamiento": { "$in": &ids_financiamiento },
+                    "activo": 1,
+                })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            docs.into_iter()
+                .map(|d| {
+                    let dto: EquipamientoDto = mongodb::bson::from_document(d)
+                        .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
+                    Equipamiento::try_from(dto)
+                })
+                .collect::<Result<Vec<_>, _>>()?
+        }
     };
 
     let total_equipamientos = equipamientos_raw.len();

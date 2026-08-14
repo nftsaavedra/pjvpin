@@ -275,6 +275,80 @@ pub async fn get_data_exportacion_recursos(
             .collect::<Result<Vec<_>, _>>()?
     };
 
+    // F2: precomputar lookups para resolver campos legacy via pivots/org_units.
+    // - Para patentes: primer inventor (orden=1) por id_patente.
+    // - Para equipamientos: proyectos vinculados via cadena de financiamiento.
+    // - Para financiamientos: nombre de org_unit financiadora + proyectos vinculados.
+
+    // Patentes -> primer inventor (id_persona -> investigador -> persona).
+    let mut primer_inventor: HashMap<String, String> = HashMap::new();
+    {
+        let cursor = db
+            .collection::<mongodb::bson::Document>("patente_inventores")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
+        for d in docs {
+            if let Ok(p) = mongodb::bson::from_document::<
+                crate::recursos::patente_inventores::PatenteInventorDoc,
+            >(d)
+            {
+                primer_inventor
+                    .entry(p.id_patente)
+                    .or_insert(p.id_persona);
+            }
+        }
+    }
+
+    // Financiamientos -> nombre de org_unit financiadora.
+    let org_units_map: HashMap<String, String> = {
+        let cursor = db
+            .collection::<mongodb::bson::Document>("org_units")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
+        docs.into_iter()
+            .filter_map(|d| {
+                let id = d.get_str("id_org_unit").ok()?.to_string();
+                let nombre = d.get_str("nombre").ok()?.to_string();
+                Some((id, nombre))
+            })
+            .collect()
+    };
+
+    // Financiamientos -> proyectos vinculados (via pivot).
+    let mut fin_proyectos: HashMap<String, Vec<String>> = HashMap::new();
+    {
+        let cursor = db
+            .collection::<mongodb::bson::Document>("proyecto_financiamientos")
+            .find(doc! {})
+            .await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
+        for d in docs {
+            if let Ok(p) = mongodb::bson::from_document::<
+                crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc,
+            >(d)
+            {
+                fin_proyectos
+                    .entry(p.id_financiamiento)
+                    .or_default()
+                    .push(p.id_proyecto);
+            }
+        }
+    }
+
+    // Equipamientos -> proyectos vinculados (via financiamiento pivot).
+    // Para cada equipamiento, sus proyectos = union de proyectos de sus financiamientos.
+    let mut equip_proyectos: HashMap<String, Vec<String>> = HashMap::new();
+    for e in &equipamientos {
+        if let Some(id_fin) = e.id_financiamiento.as_ref() {
+            if let Some(proys) = fin_proyectos.get(id_fin) {
+                equip_proyectos
+                    .insert(e.id_equipamiento.clone(), proys.clone());
+            }
+        }
+    }
+
     fn resolve_label(
         catalogo_map: &HashMap<(String, String), CatalogoItem>,
         tipo_catalogo: &str,
@@ -313,11 +387,20 @@ pub async fn get_data_exportacion_recursos(
     let mut data = Vec::new();
 
     for p in patentes {
+        // F2: investigar viene del pivot `patente_inventores` (reemplaza legacy `p.investigador_id`).
+        let inv = primer_inventor
+            .get(&p.id_patente)
+            .and_then(|id_persona| {
+                investigadores
+                    .values()
+                    .find(|i| &i.persona_id == id_persona)
+            })
+            .and_then(|i| personas.get(&i.persona_id).map(|pe| pe.nombre_completo.clone()));
         data.push(ExportDataRecursoDto {
             tipo_recurso: "Patente".to_string(),
             titulo_o_nombre: p.titulo.clone(),
             proyecto: resolve_proyecto(&proyectos, &p.proyecto_id),
-            investigador: resolve_investigador(&investigadores, &personas, &p.investigador_id),
+            investigador: inv,
             tipo: resolve_label(&catalogo_map, "tipo_patente", &p.tipo),
             estado: resolve_label(&catalogo_map, "estado_patente", &p.estado),
             moneda: None,
@@ -339,10 +422,15 @@ pub async fn get_data_exportacion_recursos(
     }
 
     for e in equipamientos {
+        // F2: proyecto via cadena de financiamiento (reemplaza legacy `e.proyecto_id`).
+        let proyecto_nombre = equip_proyectos
+            .get(&e.id_equipamiento)
+            .and_then(|ids| ids.first())
+            .and_then(|pid| proyectos.get(pid).map(|p| p.titulo_proyecto.clone()));
         data.push(ExportDataRecursoDto {
             tipo_recurso: "Equipamiento".to_string(),
             titulo_o_nombre: e.nombre.clone(),
-            proyecto: resolve_proyecto(&proyectos, &e.proyecto_id),
+            proyecto: proyecto_nombre,
             investigador: None,
             tipo: None,
             estado: None,
@@ -352,10 +440,21 @@ pub async fn get_data_exportacion_recursos(
     }
 
     for f in financiamientos {
+        // F2: nombre del financiamiento via `id_org_unit_financiadora` (reemplaza legacy
+        // `f.entidad_financiadora` String). Proyecto via pivot `proyecto_financiamientos`.
+        let titulo = f
+            .id_org_unit_financiadora
+            .as_ref()
+            .and_then(|id| org_units_map.get(id).cloned())
+            .unwrap_or_else(|| f.nombre.clone().unwrap_or_default());
+        let proyecto_nombre = fin_proyectos
+            .get(&f.id_financiamiento)
+            .and_then(|ids| ids.first())
+            .and_then(|pid| proyectos.get(pid).map(|p| p.titulo_proyecto.clone()));
         data.push(ExportDataRecursoDto {
             tipo_recurso: "Financiamiento".to_string(),
-            titulo_o_nombre: f.entidad_financiadora.clone(),
-            proyecto: resolve_proyecto(&proyectos, &f.proyecto_id),
+            titulo_o_nombre: titulo,
+            proyecto: proyecto_nombre,
             investigador: None,
             tipo: resolve_label(&catalogo_map, "tipo_financiamiento", &f.tipo),
             estado: resolve_label(&catalogo_map, "estado_financiero", &f.estado_financiero),

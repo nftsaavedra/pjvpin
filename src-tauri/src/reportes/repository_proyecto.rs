@@ -165,21 +165,46 @@ pub async fn build_reporte_proyecto_integral(
         .map(SoftwareConEtiquetas::from_publicacion)
         .collect();
 
+    // F2: equipamientos por proyecto via cadena de financiamiento 3NF/CERIF:
+    // proyecto_financiamientos -> financiamiento -> equipamiento.id_financiamiento.
     let equipamientos_raw: Vec<Equipamiento> = {
         use crate::recursos::dto::EquipamientoDto;
         use std::convert::TryFrom;
-        let cursor = db
-            .collection::<mongodb::bson::Document>("equipamientos")
-            .find(doc! { "proyecto_id": id_proyecto })
-            .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
-        docs.into_iter()
-            .map(|d| {
-                let dto: EquipamientoDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
-                Equipamiento::try_from(dto)
-            })
-            .collect::<Result<Vec<_>, _>>()?
+        let mut ids_financiamiento: Vec<String> = Vec::new();
+        {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("proyecto_financiamientos")
+                .find(doc! { "id_proyecto": id_proyecto })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            for d in docs {
+                if let Ok(p) = mongodb::bson::from_document::<
+                    crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc,
+                >(d)
+                {
+                    ids_financiamiento.push(p.id_financiamiento);
+                }
+            }
+        }
+        if ids_financiamiento.is_empty() {
+            Vec::new()
+        } else {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("equipamientos")
+                .find(doc! {
+                    "id_financiamiento": { "$in": &ids_financiamiento },
+                    "activo": 1,
+                })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            docs.into_iter()
+                .map(|d| {
+                    let dto: EquipamientoDto = mongodb::bson::from_document(d)
+                        .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
+                    Equipamiento::try_from(dto)
+                })
+                .collect::<Result<Vec<_>, _>>()?
+        }
     };
 
     let total_equipamientos = equipamientos_raw.len();
@@ -188,22 +213,46 @@ pub async fn build_reporte_proyecto_integral(
         .map(|e| EquipamientoConEtiquetas::from_equipamiento(e, &catalogo_map))
         .collect();
 
+    // F2: financiamientos por proyecto via pivot `proyecto_financiamientos`.
     let financiamientos_raw: Vec<Financiamiento> = {
         use crate::recursos::dto::FinanciamientoDto;
         use std::convert::TryFrom;
-        let cursor = db
-            .collection::<mongodb::bson::Document>("financiamientos")
-            .find(doc! { "proyecto_id": id_proyecto })
-            .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
-        docs.into_iter()
-            .map(|d| {
-                let dto: FinanciamientoDto = mongodb::bson::from_document(d).map_err(|e| {
-                    AppError::InternalError(format!("BSON->FinanciamientoDto: {e}"))
-                })?;
-                Financiamiento::try_from(dto)
-            })
-            .collect::<Result<Vec<_>, _>>()?
+        let mut ids_financiamiento: Vec<String> = Vec::new();
+        {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("proyecto_financiamientos")
+                .find(doc! { "id_proyecto": id_proyecto })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            for d in docs {
+                if let Ok(p) = mongodb::bson::from_document::<
+                    crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc,
+                >(d)
+                {
+                    ids_financiamiento.push(p.id_financiamiento);
+                }
+            }
+        }
+        if ids_financiamiento.is_empty() {
+            Vec::new()
+        } else {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("financiamientos")
+                .find(doc! {
+                    "id_financiamiento": { "$in": &ids_financiamiento },
+                    "activo": 1,
+                })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            docs.into_iter()
+                .map(|d| {
+                    let dto: FinanciamientoDto = mongodb::bson::from_document(d).map_err(|e| {
+                        AppError::InternalError(format!("BSON->FinanciamientoDto: {e}"))
+                    })?;
+                    Financiamiento::try_from(dto)
+                })
+                .collect::<Result<Vec<_>, _>>()?
+        }
     };
 
     let total_financiamientos = financiamientos_raw.len();
