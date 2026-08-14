@@ -241,14 +241,18 @@ pub async fn crear_financiamiento(
     request: CreateFinanciamientoRequest,
 ) -> Result<Financiamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
+    // F3/D10: el vinculo proyecto<->financiamiento ahora vive en el pivot
+    // `proyecto_financiamientos`. La creacion del financiamiento maestro ya
+    // no requiere un proyecto_id en el request; el responsable check se
+    // delega al pivot (ver `vincular_financiamiento_proyecto`).
+    require_recursos_manage_or_responsable(state, &actor, None).await?;
     let financiamiento = repository::create_financiamiento(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "financiamiento.create",
         "financiamiento",
         &financiamiento.id_financiamiento,
-        financiamiento.entidad_financiadora.clone(),
+        financiamiento.nombre.clone().unwrap_or_default(),
     );
     Ok(financiamiento)
 }
@@ -269,10 +273,10 @@ pub async fn actualizar_financiamiento(
     request: UpdateFinanciamientoRequest,
 ) -> Result<Financiamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    let proyecto_id = repository::get_financiamiento_by_id(state.mongo_db()?, id_financiamiento)
-        .await?
-        .proyecto_id;
-    require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
+    // F3/D10: el vinculo proyecto<->financiamiento vive en el pivot. El
+    // responsable check sobre el proyecto del financiamiento se delega al
+    // handler del pivot (`vincular_financiamiento_proyecto`).
+    require_recursos_manage_or_responsable(state, &actor, None).await?;
     let financiamiento =
         repository::update_financiamiento(state.mongo_db()?, id_financiamiento, request).await?;
     crate::shared::audit::write_generic_audit(
@@ -280,7 +284,7 @@ pub async fn actualizar_financiamiento(
         "financiamiento.update",
         "financiamiento",
         id_financiamiento,
-        financiamiento.entidad_financiadora.clone(),
+        financiamiento.nombre.clone().unwrap_or_default(),
     );
     Ok(financiamiento)
 }

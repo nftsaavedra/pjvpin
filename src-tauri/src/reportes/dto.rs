@@ -346,7 +346,10 @@ impl FinanciamientoConEtiquetas {
         });
         Self {
             id_financiamiento: f.id_financiamiento.clone(),
-            entidad_financiadora: f.entidad_financiadora.clone(),
+            // Display name sourced from `f.nombre` (el campo legacy
+            // `entidad_financiadora` String fue eliminado en F3/D10; el
+            // nombre visible del fondo ahora vive en `Financiamiento.nombre`).
+            entidad_financiadora: f.nombre.clone().unwrap_or_default(),
             tipo_codigo: f.tipo.clone(),
             tipo_nombre: tipo_lbl,
             monto: f.monto,

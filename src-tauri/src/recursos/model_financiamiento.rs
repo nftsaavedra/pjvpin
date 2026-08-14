@@ -16,12 +16,6 @@ pub struct Financiamiento {
     pub id_org_unit_financiadora: Option<String>,
     /// FK self-ref -- jerarquia (programa marco -> subvencion hija).
     pub parent_id: Option<String>,
-    /// Fase N1-B (N1-B): vinculacion directa legacy con proyecto. El
-    /// pivot `proyecto_financiamientos` (N2-C) absorbe este vinculo
-    /// N:M; este campo se conserva durante la transicion (D10 modulo).
-    pub proyecto_id: Option<String>,
-    /// Legacy: nombre textual de la entidad financiadora (compat).
-    pub entidad_financiadora: String,
     pub tipo: Option<String>,
     pub monto: Option<f64>,
     pub moneda: Option<String>,
@@ -115,8 +109,6 @@ impl Financiamiento {
                 }
             }),
             parent_id,
-            proyecto_id: request.proyecto_id,
-            entidad_financiadora: request.entidad_financiadora,
             tipo: request.tipo,
             monto: request.monto,
             moneda: request.moneda,
@@ -141,8 +133,6 @@ impl From<Financiamiento> for FinanciamientoDto {
             modalidad: m.modalidad,
             id_org_unit_financiadora: m.id_org_unit_financiadora,
             parent_id: m.parent_id,
-            proyecto_id: m.proyecto_id,
-            entidad_financiadora: m.entidad_financiadora,
             tipo: m.tipo,
             monto: m.monto,
             moneda: m.moneda,
@@ -167,8 +157,6 @@ impl From<&Financiamiento> for FinanciamientoDto {
             modalidad: m.modalidad.clone(),
             id_org_unit_financiadora: m.id_org_unit_financiadora.clone(),
             parent_id: m.parent_id.clone(),
-            proyecto_id: m.proyecto_id.clone(),
-            entidad_financiadora: m.entidad_financiadora.clone(),
             tipo: m.tipo.clone(),
             monto: m.monto,
             moneda: m.moneda.clone(),
@@ -194,8 +182,6 @@ impl TryFrom<FinanciamientoDto> for Financiamiento {
             modalidad: d.modalidad,
             id_org_unit_financiadora: d.id_org_unit_financiadora,
             parent_id: d.parent_id,
-            proyecto_id: d.proyecto_id,
-            entidad_financiadora: d.entidad_financiadora,
             tipo: d.tipo,
             monto: d.monto,
             moneda: d.moneda,
@@ -225,8 +211,6 @@ mod tests {
             modalidad: Some("modalidad_i+d".to_string()),
             id_org_unit_financiadora: Some("org-funder".to_string()),
             parent_id: None,
-            proyecto_id: None,
-            entidad_financiadora: "CONCYTEC".to_string(),
             tipo: Some("concursable".to_string()),
             monto: Some(50_000.0),
             moneda: Some("PEN".to_string()),

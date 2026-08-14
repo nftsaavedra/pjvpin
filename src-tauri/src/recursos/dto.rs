@@ -196,11 +196,6 @@ pub struct FinanciamientoDto {
     #[serde(default)]
     pub parent_id: Option<String>,
     #[serde(default)]
-    pub proyecto_id: Option<String>,
-    /// Legacy: nombre textual de la entidad financiadora (no null).
-    /// Se conserva por compatibilidad con consumidores que escriben este campo.
-    pub entidad_financiadora: String,
-    #[serde(default)]
     pub tipo: Option<String>,
     #[serde(default)]
     pub monto: Option<f64>,
@@ -225,24 +220,21 @@ pub struct FinanciamientoDto {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateFinanciamientoRequest {
-    /// Fase N1-B (N1-B): codigo UNIQUE institucional.
+    /// Codigo UNIQUE institucional.
     #[serde(default)]
     pub codigo: Option<String>,
-    /// Fase N1-B: nombre/denominacion oficial del fondo.
+    /// Nombre/denominacion oficial del fondo.
     #[serde(default)]
     pub nombre: Option<String>,
-    /// Fase N1-B: modalidad (vocab concytec_terminos).
+    /// Modalidad (vocab concytec_terminos).
     #[serde(default)]
     pub modalidad: Option<String>,
-    /// Fase N1-B: FK org_units -> entidad financiadora.
+    /// FK org_units -> entidad financiadora.
     #[serde(default)]
     pub id_org_unit_financiadora: Option<String>,
-    /// Fase N1-B: FK self-ref -> programa marco.
+    /// FK self-ref -> programa marco.
     #[serde(default)]
     pub parent_id: Option<String>,
-    #[serde(default)]
-    pub proyecto_id: Option<String>,
-    pub entidad_financiadora: String,
     #[serde(default)]
     pub tipo: Option<String>,
     #[serde(default)]
@@ -272,7 +264,6 @@ pub struct UpdateFinanciamientoRequest {
     pub id_org_unit_financiadora: Option<String>,
     #[serde(default)]
     pub parent_id: Option<String>,
-    pub entidad_financiadora: Option<String>,
     pub tipo: Option<String>,
     pub monto: Option<f64>,
     pub moneda: Option<String>,

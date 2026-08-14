@@ -65,15 +65,16 @@ mod tests {
     #[test]
     fn create_financiamiento_request_acepta_camel_case() {
         let json = json!({
-            "proyectoId": "P001",
-            "entidadFinanciadora": "FONDECYT",
+            "codigo": "FIN-001",
+            "nombre": "FONDECYT",
             "tipo": "Concurso",
             "monto": 50000.0,
             "moneda": "PEN",
             "estadoFinanciero": "Aprobado",
         });
         let req: CreateFinanciamientoRequest = serde_json::from_value(json).expect("must parse");
-        assert_eq!(req.entidad_financiadora, "FONDECYT");
+        assert_eq!(req.nombre.as_deref(), Some("FONDECYT"));
+        assert_eq!(req.codigo.as_deref(), Some("FIN-001"));
         assert_eq!(req.tipo.as_deref(), Some("Concurso"));
         assert_eq!(req.monto, Some(50000.0));
         assert_eq!(req.moneda.as_deref(), Some("PEN"));
