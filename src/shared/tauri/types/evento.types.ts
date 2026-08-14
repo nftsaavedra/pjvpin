@@ -63,18 +63,32 @@ export interface PublicacionConEtiquetas {
 export interface PublicacionCientifica {
   id_publicacion: string;
   titulo: string;
-  autores_ids: string[];
-  revista?: string | null;
   doi?: string | null;
   issn?: string | null;
   anio?: number | null;
   cuartil?: string | null;
   tipo: string;
-  url?: string | null;
   resumen?: string | null;
   palabras_clave: string[];
-  pure_id?: string | null;
   activo: number;
+  handle_url?: string | null;
+  fecha_publicacion?: number | null;
+  editorial?: string | null;
+  id_org_unit_editora?: string | null;
+  revista_titulo?: string | null;
+  isbn?: string | null;
+  scimago_cuartil?: string | null;
+  wos_cuartil?: string | null;
+  es_revisado_por_pares?: boolean;
+  acceso_abierto?: string | null;
+  idioma?: string | null;
+  volumen?: string | null;
+  numero_issue?: string | null;
+  paginas?: string | null;
+  dominio_origen?: string;
+  pure_uuid?: string | null;
+  estado_publicacion?: string | null;
+  id_proyecto?: string | null;
 }
 
 export interface ParticipanteEvento {

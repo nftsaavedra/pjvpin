@@ -62,8 +62,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     getEquipamientosProyecto,
     crearEquipamiento,
     eliminarEquipamiento,
-    (raw, pid) => ({
-      proyectoId: pid,
+    (raw) => ({
       nombre: (raw.nombre_equipo as string) || (raw.nombre as string) || "",
       descripcion: raw.descripcion as string,
       especificaciones: raw.especificaciones as string,
@@ -78,8 +77,8 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     crearFinanciamiento,
     eliminarFinanciamiento,
     (raw, pid) => ({
-      proyectoId: pid,
-      entidadFinanciadora: (raw.fuente as string) || (raw.entidad_financiadora as string) || "",
+      codigo: (raw.codigo as string) || `FIN-${pid}`,
+      nombre: (raw.fuente as string) || (raw.entidad_financiadora as string) || "",
       tipo: raw.tipo as string,
       monto: raw.monto as number,
       estadoFinanciero: raw.estadoFinanciero as string,
@@ -130,7 +129,6 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     for (const item of equipamientosCrud.items as unknown as Array<Record<string, unknown>>) {
       promesas.push(
         crearEquipamiento({
-          proyectoId: pid,
           nombre: (item.nombre_equipo as string) || (item.nombre as string) || "",
           descripcion: item.descripcion as string,
           especificaciones: item.especificaciones as string,
@@ -141,9 +139,8 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     for (const item of financiamientosCrud.items as unknown as Array<Record<string, unknown>>) {
       promesas.push(
         crearFinanciamiento({
-          proyectoId: pid,
-          entidadFinanciadora:
-            (item.fuente as string) || (item.entidad_financiadora as string) || "",
+          codigo: (item.codigo as string) || `FIN-${pid}`,
+          nombre: (item.fuente as string) || (item.entidad_financiadora as string) || "",
           tipo: item.tipo as string,
           monto: item.monto as number,
           estadoFinanciero: item.estadoFinanciero as string,

@@ -3,17 +3,31 @@ import type { PublicacionCientifica } from "./types";
 
 export const crearPublicacion = async (request: {
   titulo: string;
-  autoresIds: string[];
-  revista?: string;
   doi?: string;
   issn?: string;
   anio?: number;
   cuartil?: string;
   tipo: string;
-  url?: string;
   resumen?: string;
   palabrasClave?: string[];
-  pureId?: string;
+  handleUrl?: string;
+  fechaPublicacion?: number;
+  editorial?: string;
+  idOrgUnitEditora?: string;
+  revistaTitulo?: string;
+  isbn?: string;
+  scimagoCuartil?: string;
+  wosCuartil?: string;
+  esRevisadoPorPares?: boolean;
+  accesoAbierto?: string;
+  idioma?: string;
+  volumen?: string;
+  numeroIssue?: string;
+  paginas?: string;
+  dominioOrigen?: string;
+  pureUuid?: string;
+  estadoPublicacion?: string;
+  idProyecto?: string;
 }): Promise<PublicacionCientifica> => {
   return await invoke("crear_publicacion", { request });
 };
@@ -40,16 +54,31 @@ export const actualizarPublicacion = async (
   id: string,
   request: {
     titulo?: string;
-    autoresIds?: string[];
-    revista?: string;
     doi?: string;
     issn?: string;
     anio?: number;
     cuartil?: string;
     tipo?: string;
-    url?: string;
     resumen?: string;
     palabrasClave?: string[];
+    handleUrl?: string;
+    fechaPublicacion?: number;
+    editorial?: string;
+    idOrgUnitEditora?: string;
+    revistaTitulo?: string;
+    isbn?: string;
+    scimagoCuartil?: string;
+    wosCuartil?: string;
+    esRevisadoPorPares?: boolean;
+    accesoAbierto?: string;
+    idioma?: string;
+    volumen?: string;
+    numeroIssue?: string;
+    paginas?: string;
+    dominioOrigen?: string;
+    pureUuid?: string;
+    estadoPublicacion?: string;
+    idProyecto?: string;
   },
 ): Promise<PublicacionCientifica> => {
   return await invoke("actualizar_publicacion", { id, request });

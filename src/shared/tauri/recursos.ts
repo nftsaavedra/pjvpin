@@ -10,7 +10,6 @@ import type {
 
 export interface CreatePatentePayload {
   proyectoId?: string;
-  investigadorId?: string;
   titulo: string;
   numeroPatente?: string;
   tipo?: string;
@@ -20,6 +19,8 @@ export interface CreatePatentePayload {
   pais?: string;
   entidadConcedente?: string;
   descripcion?: string;
+  clasificacionIpc?: string;
+  idOrgUnitConcedente?: string;
 }
 
 export interface UpdatePatentePayload {
@@ -32,6 +33,8 @@ export interface UpdatePatentePayload {
   pais?: string;
   entidadConcedente?: string;
   descripcion?: string;
+  clasificacionIpc?: string;
+  idOrgUnitConcedente?: string;
 }
 
 export const crearPatente = async (request: CreatePatentePayload): Promise<Patente> => {
@@ -105,7 +108,6 @@ export const eliminarSoftware = async (idPublicacion: string): Promise<void> => 
 // ── Equipamientos ────────────────────────────────────────────────────────────
 
 export interface CreateEquipamientoPayload {
-  proyectoId?: string;
   nombre: string;
   descripcion?: string;
   especificaciones?: string;
@@ -113,6 +115,11 @@ export interface CreateEquipamientoPayload {
   moneda?: string;
   proveedor?: string;
   fechaAdquisicion?: number;
+  codigoInstitucional?: string;
+  tipoEquipamiento?: string;
+  usoEquipamiento?: string;
+  idOrgUnitPropietaria?: string;
+  idFinanciamiento?: string;
 }
 
 export interface UpdateEquipamientoPayload {
@@ -123,6 +130,11 @@ export interface UpdateEquipamientoPayload {
   moneda?: string;
   proveedor?: string;
   fechaAdquisicion?: number;
+  codigoInstitucional?: string;
+  tipoEquipamiento?: string;
+  usoEquipamiento?: string;
+  idOrgUnitPropietaria?: string;
+  idFinanciamiento?: string;
 }
 
 export const crearEquipamiento = async (
@@ -149,8 +161,11 @@ export const eliminarEquipamiento = async (idEquipamiento: string): Promise<void
 // ── Financiamientos ──────────────────────────────────────────────────────────
 
 export interface CreateFinanciamientoPayload {
-  proyectoId?: string;
-  entidadFinanciadora: string;
+  codigo: string;
+  nombre?: string;
+  modalidad?: string;
+  idOrgUnitFinanciadora?: string;
+  parentId?: string;
   tipo?: string;
   monto?: number;
   moneda?: string;
@@ -161,7 +176,11 @@ export interface CreateFinanciamientoPayload {
 }
 
 export interface UpdateFinanciamientoPayload {
-  entidadFinanciadora?: string;
+  codigo?: string;
+  nombre?: string;
+  modalidad?: string;
+  idOrgUnitFinanciadora?: string;
+  parentId?: string;
   tipo?: string;
   monto?: number;
   moneda?: string;

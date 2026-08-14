@@ -1,15 +1,17 @@
 export interface Patente {
   id_patente: string;
   proyecto_id?: string | null;
-  investigador_id?: string | null;
   titulo: string;
   numero_patente?: string | null;
   tipo?: string | null;
+  estado?: string | null;
   fecha_solicitud?: number | null;
   fecha_concesion?: number | null;
   pais?: string | null;
   entidad_concedente?: string | null;
   descripcion?: string | null;
+  clasificacion_ipc?: string | null;
+  id_org_unit_concedente?: string | null;
   created_at?: number | null;
   updated_at?: number | null;
 }
@@ -21,21 +23,29 @@ export type Producto = import("./evento.types").PublicacionCientifica;
 
 export interface Equipamiento {
   id_equipamiento: string;
-  proyecto_id?: string | null;
   nombre: string;
   descripcion?: string | null;
+  especificaciones?: string | null;
   valor_estimado?: number | null;
   moneda?: string | null;
   proveedor?: string | null;
   fecha_adquisicion?: number | null;
+  codigo_institucional?: string | null;
+  tipo_equipamiento?: string | null;
+  uso_equipamiento?: string | null;
+  id_org_unit_propietaria?: string | null;
+  id_financiamiento?: string | null;
   created_at?: number | null;
   updated_at?: number | null;
 }
 
 export interface Financiamiento {
   id_financiamiento: string;
-  proyecto_id?: string | null;
-  entidad_financiadora: string;
+  codigo?: string | null;
+  nombre?: string | null;
+  modalidad?: string | null;
+  id_org_unit_financiadora?: string | null;
+  parent_id?: string | null;
   tipo?: string | null;
   monto?: number | null;
   moneda?: string | null;
