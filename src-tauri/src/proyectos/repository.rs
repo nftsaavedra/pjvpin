@@ -232,14 +232,14 @@ pub async fn create_proyecto_con_participantes(
             } else {
                 crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR
             };
-            let participacion = ParticipacionRecord {
-                id: format!("{}:{}", proyecto.id_proyecto, investigador_id),
-                id_proyecto: proyecto.id_proyecto.clone(),
-                es_responsable: es_resp,
-                id_investigador: investigador_id,
-                rol: rol.to_string(),
-                ..Default::default()
-            };
+            let participacion = ParticipacionRecord::new(
+                format!("{}:{}", proyecto.id_proyecto, investigador_id),
+                proyecto.id_proyecto.clone(),
+                investigador_id,
+                rol.to_string(),
+                None,
+                None,
+            )?;
             let participacion_dto: ParticipacionRecordDto =
                 ParticipacionRecordDto::from(&participacion);
             let participacion_doc = mongodb::bson::to_document(&participacion_dto)
@@ -311,14 +311,14 @@ pub async fn update_proyecto_con_participantes(
             } else {
                 crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR
             };
-            let participacion = ParticipacionRecord {
-                id: format!("{}:{}", id_proyecto, investigador_id),
-                id_proyecto: id_proyecto.to_string(),
-                es_responsable: es_resp,
-                id_investigador: investigador_id,
-                rol: rol.to_string(),
-                ..Default::default()
-            };
+            let participacion = ParticipacionRecord::new(
+                format!("{}:{}", id_proyecto, investigador_id),
+                id_proyecto.to_string(),
+                investigador_id,
+                rol.to_string(),
+                None,
+                None,
+            )?;
             let participacion_dto: ParticipacionRecordDto =
                 ParticipacionRecordDto::from(&participacion);
             let participacion_doc = mongodb::bson::to_document(&participacion_dto)

@@ -24,9 +24,6 @@ pub struct PublicacionCientifica {
     pub activo: i64,
 
     // ---- Extension N2-F (alineamiento CONCYTEC/PeruCRIS) ----
-    /// DOI validado por `shared::doi::Doi::new_opt`. Persistente como
-    /// `Option<String>`; el VO solo se usa en `new()`.
-    pub doi_val: Option<String>,
     /// URL persistente/handle (ej: https://hdl.handle.net/...).
     pub handle_url: Option<String>,
     /// Fecha de publicacion (epoch ms).
@@ -91,8 +88,8 @@ impl PublicacionCientifica {
                 tipo_trim
             )));
         }
-        // Validacion DOI via VO
-        let doi_val = if let Some(ref raw) = request.doi {
+        // Validacion DOI via VO (normaliza y valida formato 10.xxxx/...)
+        let doi = if let Some(ref raw) = request.doi {
             Some(crate::shared::doi::Doi::new(raw)?.into_string())
         } else {
             None
@@ -150,7 +147,7 @@ impl PublicacionCientifica {
             id: id_publicacion.clone(),
             id_publicacion,
             titulo: request.titulo,
-            doi: doi_val.clone(),
+            doi,
             issn: request.issn,
             anio: request.anio,
             cuartil: request.cuartil,
@@ -160,7 +157,6 @@ impl PublicacionCientifica {
             created_at: Some(now),
             updated_at: Some(now),
             activo: 1,
-            doi_val,
             handle_url: trim_some(request.handle_url),
             fecha_publicacion: request.fecha_publicacion,
             editorial: trim_some(request.editorial),
@@ -286,7 +282,6 @@ impl TryFrom<PublicacionCientificaDto> for PublicacionCientifica {
             created_at: d.created_at,
             updated_at: d.updated_at,
             activo: d.activo,
-            doi_val: d.doi,
             handle_url: d.handle_url,
             fecha_publicacion: d.fecha_publicacion,
             editorial: d.editorial,

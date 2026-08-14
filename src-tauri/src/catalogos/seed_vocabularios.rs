@@ -42,10 +42,6 @@ use crate::catalogos::dto::CreateCatalogoRequest;
 use crate::catalogos::repository;
 use crate::shared::error::AppError;
 
-/// Version de los vocabularios embebidos. Reimportar y bumpear al actualizar
-/// desde <https://conocimiento.concytec.gob.pe/vocabularios/>.
-pub use crate::shared::defaults::VOCAB_CONCYTEC_VERSION;
-
 /// Filas del seed. Cada tupla = (esquema, codigo_skos, codigo_interno, nombre,
 /// padre_codigo, nivel).
 fn seed_entries() -> Vec<SeedEntry> {
@@ -993,6 +989,6 @@ mod tests {
 
     #[test]
     fn version_constant_set() {
-        assert!(!VOCAB_CONCYTEC_VERSION.is_empty());
+        assert!(!crate::shared::defaults::VOCAB_CONCYTEC_VERSION.is_empty());
     }
 }

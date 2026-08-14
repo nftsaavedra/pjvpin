@@ -36,7 +36,6 @@ fn dto_to_model(dto: PublicacionCientificaDto) -> PublicacionCientifica {
         created_at: dto.created_at,
         updated_at: dto.updated_at,
         activo: dto.activo,
-        doi_val: dto.doi,
         handle_url: dto.handle_url,
         fecha_publicacion: dto.fecha_publicacion,
         editorial: dto.editorial,

@@ -370,20 +370,6 @@ pub async fn get_data_exportacion_recursos(
             .and_then(|pid| proyectos.get(pid).map(|p| p.titulo_proyecto.clone()))
     }
 
-    fn resolve_investigador(
-        investigadores: &HashMap<String, Investigador>,
-        personas: &HashMap<String, Persona>,
-        investigador_id: &Option<String>,
-    ) -> Option<String> {
-        investigador_id.as_ref().and_then(|did| {
-            investigadores.get(did).and_then(|d| {
-                personas
-                    .get(&d.persona_id)
-                    .map(|p| p.nombre_completo.clone())
-            })
-        })
-    }
-
     let mut data = Vec::new();
 
     for p in patentes {
