@@ -75,10 +75,6 @@ impl Doi {
     pub fn into_string(self) -> String {
         self.0
     }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
 }
 
 impl std::fmt::Display for Doi {
@@ -100,13 +96,13 @@ mod tests {
     #[test]
     fn accepts_valid_doi() {
         let d = Doi::new("10.1000/xyz123").unwrap();
-        assert_eq!(d.as_str(), "10.1000/xyz123");
+        assert_eq!(d.as_ref(), "10.1000/xyz123");
     }
 
     #[test]
     fn trims_whitespace() {
         let d = Doi::new("  10.1000/xyz123  ").unwrap();
-        assert_eq!(d.as_str(), "10.1000/xyz123");
+        assert_eq!(d.as_ref(), "10.1000/xyz123");
     }
 
     #[test]

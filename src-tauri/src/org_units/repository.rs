@@ -105,10 +105,10 @@ pub async fn create_org_unit(
             refs::ensure_vocab_active(db, "sunedu_tipo_institucion", tes).await?;
         }
     }
-    // OK + FK parent_id exists (si presente).
+    // FK parent_id: debe ser distinto de si mismo y apuntar a una unidad activa.
     if let Some(parent) = model.parent_id.as_ref() {
-        refs::ensure_exists(db, "org_units", parent).await?;
-        // ciclo
+        crate::shared::hierarchy::assert_not_self_parent(&model.id_org_unit, parent)?;
+        refs::ensure_active(db, "org_units", parent).await?;
         crate::shared::hierarchy::assert_no_cycle(db, "org_units", &model.id_org_unit, "parent_id")
             .await?;
     }
@@ -194,13 +194,9 @@ pub async fn update_org_unit(
         let v = p.trim().to_string();
         if v.is_empty() {
             updated.parent_id = None;
-        } else if v == id_org_unit {
-            return Err(AppError::ReferentialIntegrity(format!(
-                "Una unidad no puede ser su propio padre ('{}').",
-                id_org_unit
-            )));
         } else {
-            refs::ensure_exists(db, "org_units", &v).await?;
+            crate::shared::hierarchy::assert_not_self_parent(id_org_unit, &v)?;
+            refs::ensure_active(db, "org_units", &v).await?;
             updated.parent_id = Some(v.clone());
             crate::shared::hierarchy::assert_no_cycle(db, "org_units", id_org_unit, "parent_id")
                 .await?;

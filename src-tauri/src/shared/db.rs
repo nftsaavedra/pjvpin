@@ -483,5 +483,14 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     crate::recursos::patente_titulares::repository::ensure_indexes(db).await?;
     crate::publicaciones::autores::repository::ensure_indexes(db).await?;
 
+    // --- Features CONCYTEC/PeruCRIS: indices UNIQUE propios ---
+    // catalogos (tipo,codigo + esquema,codigo_skos), geo (codigo ubigeo),
+    // ocde (entity_type,entity_id,ocde_codigo), org_units (ruc sparse +
+    // parent_id compuesto).
+    crate::catalogos::repository::ensure_indexes(db).await?;
+    crate::geo::repository::ensure_indexes(db).await?;
+    crate::ocde::repository::ensure_indexes(db).await?;
+    crate::org_units::repository::ensure_indexes(db).await?;
+
     Ok(())
 }

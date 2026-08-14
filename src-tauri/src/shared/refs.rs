@@ -122,25 +122,6 @@ pub async fn assert_not_referenced(
     Ok(())
 }
 
-/// ON DELETE CASCADE helper: elimina filas en colecciones pivote que apunten
-/// al `parent_id`. Devuelve el total de filas borradas.
-pub async fn delete_referencing(
-    db: &Database,
-    parent_id: &str,
-    referencing_collections: &[(&str, &str)],
-) -> Result<u64, AppError> {
-    let mut total: u64 = 0;
-    for (coll, fk_field) in referencing_collections {
-        let fk_name: &str = fk_field;
-        let res = db
-            .collection::<Document>(coll)
-            .delete_many(doc! { fk_name: &parent_id })
-            .await?;
-        total += res.deleted_count;
-    }
-    Ok(total)
-}
-
 /// Lookup un documento por cualquiera de sus PK canonicas (`_id` o los
 /// campos `id_*`). MongoDB Atlas no requiere `_id` fijo; el sistema usa
 /// identificadores semanticos por entidad.

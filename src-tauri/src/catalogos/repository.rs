@@ -274,26 +274,6 @@ pub async fn load_all_map(
     Ok(map)
 }
 
-/// Carga el subconjunto de catalogos que son SKOS CONCYTEC (tienen `esquema`)
-/// indexados por `(esquema, codigo_skos)`.
-pub async fn load_vocab_map(
-    db: &Database,
-) -> Result<HashMap<(String, String), CatalogoItem>, AppError> {
-    let cursor = db
-        .collection::<Document>("catalogos")
-        .find(doc! { "activo": 1i64, "esquema": { "$exists": true } })
-        .await?;
-    let docs: Vec<Document> = cursor.try_collect().await?;
-    let mut map = HashMap::new();
-    for d in docs {
-        let m = doc_to_model(d)?;
-        if let (Some(esq), Some(cs)) = (m.esquema.as_ref(), m.codigo_skos.as_ref()) {
-            map.insert((esq.clone(), cs.clone()), m);
-        }
-    }
-    Ok(map)
-}
-
 /// Garantiza indices UNIQUE para evitar duplicados y acelerar lookups por
 /// esquema + codigo_skos (validacion de FK en `shared::refs::ensure_vocab_active`).
 pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {

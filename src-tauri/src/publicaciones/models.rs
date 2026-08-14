@@ -89,11 +89,8 @@ impl PublicacionCientifica {
             )));
         }
         // Validacion DOI via VO (normaliza y valida formato 10.xxxx/...)
-        let doi = if let Some(ref raw) = request.doi {
-            Some(crate::shared::doi::Doi::new(raw)?.into_string())
-        } else {
-            None
-        };
+        let doi = crate::shared::doi::Doi::new_opt(request.doi.as_deref())?
+            .map(|d| d.into_string());
         // Validacion idioma ISO 639-1
         if let Some(ref lang) = request.idioma {
             if !is_iso_639_1(lang) {

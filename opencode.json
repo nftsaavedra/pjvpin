@@ -16,14 +16,6 @@
     }
   },
   "mcp": {
-    "context7": {
-      "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
-      "enabled": true,
-      "headers": {
-        "CONTEXT7_API_KEY": "ctx7sk-6203b402-0c5b-474d-9cef-45b51f42848a"
-      }
-    },
     "gh_grep": {
       "type": "remote",
       "url": "https://mcp.grep.app",

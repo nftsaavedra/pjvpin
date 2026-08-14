@@ -48,10 +48,6 @@ impl Orcid {
         self.0
     }
 
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-
     /// Convierte un ORCID sin guiones a su forma canonica con guiones.
     /// - 16 digitos ASCII -> inserta guiones cada 4.
     /// - 19 chars ya formateados -> se devuelven tal cual.
@@ -160,19 +156,19 @@ mod tests {
     #[test]
     fn accepts_formatted_with_checksum() {
         let o = Orcid::new(VALID_ORCID).unwrap();
-        assert_eq!(o.as_str(), VALID_ORCID);
+        assert_eq!(o.as_ref(), VALID_ORCID);
     }
 
     #[test]
     fn normalizes_unformatted_input() {
         let o = Orcid::new(VALID_ORCID_COMPACT).unwrap();
-        assert_eq!(o.as_str(), VALID_ORCID);
+        assert_eq!(o.as_ref(), VALID_ORCID);
     }
 
     #[test]
     fn trims_whitespace() {
         let o = Orcid::new(&format!("  {VALID_ORCID}  ")).unwrap();
-        assert_eq!(o.as_str(), VALID_ORCID);
+        assert_eq!(o.as_ref(), VALID_ORCID);
     }
 
     #[test]

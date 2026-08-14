@@ -59,16 +59,9 @@ impl Investigador {
             .and_then(|value| value.orcid.clone())
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty());
-        let orcid_validado: Option<String> = match raw_orcid {
+        let orcid_validado: Option<String> = match Orcid::new_opt(raw_orcid.as_deref())? {
+            Some(orc) => Some(orc.into_string()),
             None => None,
-            Some(raw) => match Orcid::new(&raw) {
-                Ok(orc) => Some(orc.into_string()),
-                Err(_) => {
-                    return Err(AppError::InternalError(format!(
-                        "El ORCID '{raw}' no cumple el formato ni el checksum ISO 7064 11-2."
-                    )));
-                }
-            },
         };
 
         let tipo_documento_raw = request

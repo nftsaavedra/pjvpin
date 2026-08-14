@@ -151,38 +151,6 @@ pub fn is_acceso_abierto_valor(valor: Option<&str>) -> bool {
     }
 }
 
-/// Mapea el sexo interno (`Persona.sexo`) a un codigo SKOS del vocabulario
-/// `concytec_terminos`. Devuelve `None` cuando no hay valor o no se reconoce.
-pub fn genero_to_skos(sexo: Option<&str>) -> Option<&'static str> {
-    match sexo.map(|s| s.trim()).filter(|s| !s.is_empty()) {
-        Some(s)
-            if s.eq_ignore_ascii_case("M")
-                || s.eq_ignore_ascii_case("masculino")
-                || s.eq_ignore_ascii_case("male") =>
-        {
-            Some("masculino")
-        }
-        Some(s)
-            if s.eq_ignore_ascii_case("F")
-                || s.eq_ignore_ascii_case("femenino")
-                || s.eq_ignore_ascii_case("female") =>
-        {
-            Some("femenino")
-        }
-        _ => None,
-    }
-}
-
-/// Mapea el codigo CONCYTEC de naturaleza de institucion a un bool
-/// (`publica` -> true). Utilizado al persistir `org_units.es_publica`.
-pub fn naturaleza_to_bool(codigo: &str) -> Option<bool> {
-    match codigo.trim().to_ascii_lowercase().as_str() {
-        "publica" | "publico" => Some(true),
-        "privada" | "privado" => Some(false),
-        _ => None,
-    }
-}
-
 /// Valida que un cuartil este en el conjunto canonico. Util para `Model::new()`.
 pub fn is_cuartil_valor(valor: Option<&str>) -> bool {
     match valor {
@@ -205,24 +173,6 @@ pub fn is_iso_639_1(idioma: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn genero_maps_basic() {
-        assert_eq!(genero_to_skos(Some("M")), Some("masculino"));
-        assert_eq!(genero_to_skos(Some("F")), Some("femenino"));
-        assert_eq!(genero_to_skos(Some("masculino")), Some("masculino"));
-        assert_eq!(genero_to_skos(Some("female")), Some("femenino"));
-        assert_eq!(genero_to_skos(None), None);
-        assert_eq!(genero_to_skos(Some("   ")), None);
-        assert_eq!(genero_to_skos(Some("otro")), None);
-    }
-
-    #[test]
-    fn naturaleza_bool() {
-        assert_eq!(naturaleza_to_bool("publica"), Some(true));
-        assert_eq!(naturaleza_to_bool("privada"), Some(false));
-        assert_eq!(naturaleza_to_bool("otro"), None);
-    }
 
     #[test]
     fn cuartil_validator() {
