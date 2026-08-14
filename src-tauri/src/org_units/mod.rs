@@ -17,5 +17,3 @@ pub mod dto;
 pub mod handlers;
 pub mod models;
 pub mod repository;
-
-pub use repository::drop_dev_collection;

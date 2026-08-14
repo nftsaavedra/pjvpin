@@ -141,12 +141,6 @@ pub async fn upsert(db: &Database, u: &Ubigeo) -> Result<(), AppError> {
     Ok(())
 }
 
-/// Borra la coleccion `ubigeos`. Solo invocar bajo el flag PJVPIN_RESET_DEV.
-pub async fn drop_dev_collection(db: &Database) -> Result<(), AppError> {
-    db.collection::<Document>("ubigeos").drop().await?;
-    Ok(())
-}
-
 /// Helper FK usado por otras features (org_units principalmente).
 /// Valida formato del codigo + existencia activa. Devuelve
 /// `AppError::ReferentialIntegrity` si falta.

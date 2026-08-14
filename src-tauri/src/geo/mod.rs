@@ -23,5 +23,4 @@ pub mod models;
 pub mod repository;
 pub mod seed;
 
-pub use repository::drop_dev_collection;
 pub use seed::{reseed_ubigeos, seed_ubigeos_if_empty};

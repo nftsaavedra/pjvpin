@@ -139,13 +139,11 @@ pub fn run() {
                 if reset_env.as_deref() == Some("1") || reset_env.as_deref() == Some("true") {
                     if let Some(database) = mongo_db.as_ref() {
                         tracing::warn!(
-                            "PJVPIN_RESET_DEV activo: dropping colecciones dev (catalogos, ubigeos, org_units, entity_ocde_fields) y re-seeding."
+                            "PJVPIN_RESET_DEV activo: dropping colecciones dev (D10) y re-seeding."
                         );
                         let db_ref = database.clone();
                         if let Err(e) = tauri::async_runtime::block_on(async move {
-                            catalogos::repository::drop_dev_collection(&db_ref).await?;
-                            geo::drop_dev_collection(&db_ref).await?;
-                            org_units::drop_dev_collection(&db_ref).await?;
+                            shared::db::drop_dev_collections(&db_ref).await?;
                             Ok::<_, crate::shared::error::AppError>(())
                         }) {
                             tracing::error!("Error durante PJVPIN_RESET_DEV: {e}");

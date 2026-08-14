@@ -274,8 +274,3 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
     Ok(())
 }
-
-pub async fn drop_dev_collection(db: &Database) -> Result<(), AppError> {
-    db.collection::<Document>("org_units").drop().await?;
-    Ok(())
-}

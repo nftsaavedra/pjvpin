@@ -308,9 +308,3 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
     Ok(())
 }
-
-/// Borra la coleccion `catalogos`. Solo invocar bajo el flag PJVPIN_RESET_DEV.
-pub async fn drop_dev_collection(db: &Database) -> Result<(), AppError> {
-    db.collection::<Document>("catalogos").drop().await?;
-    Ok(())
-}

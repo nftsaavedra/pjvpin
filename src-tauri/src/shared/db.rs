@@ -7,6 +7,35 @@ use mongodb::{
 use crate::shared::config::DatabaseConfig;
 use crate::shared::error::AppError;
 
+/// Colecciones reestructuradas en el alineamiento CONCYTEC/PeruCRIS (D10).
+/// Usadas por el reset dev (`PJVPIN_RESET_DEV`): se dropean y re-seedan.
+pub const DEV_RESET_COLLECTIONS: &[&str] = &[
+    "catalogos",
+    "ubigeos",
+    "org_units",
+    "entity_ocde_fields",
+    "financiamientos",
+    "proyectos",
+    "participaciones",
+    "publicaciones_cientificas",
+    "patentes",
+    "equipamientos",
+    "proyecto_organizaciones",
+    "proyecto_financiamientos",
+    "patente_inventores",
+    "patente_titulares",
+    "publicacion_autores",
+];
+
+/// Drop best-effort de las colecciones dev reestructuradas (D10). Ignora
+/// colecciones inexistentes. Solo debe invocarse en entorno de desarrollo.
+pub async fn drop_dev_collections(db: &Database) -> Result<(), AppError> {
+    for coll in DEV_RESET_COLLECTIONS {
+        let _ = db.collection::<Document>(coll).drop().await;
+    }
+    Ok(())
+}
+
 pub async fn init_mongo(config: &DatabaseConfig) -> Result<Database, AppError> {
     let uri = config.mongodb_uri.as_deref().ok_or_else(|| {
         AppError::ConfigurationError(
