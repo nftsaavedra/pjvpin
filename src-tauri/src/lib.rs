@@ -203,6 +203,12 @@ pub fn run() {
             proyecto_cmds::eliminar_relaciones_proyecto,
             proyecto_cmds::eliminar_proyecto,
             proyecto_cmds::reactivar_proyecto,
+            proyecto_cmds::vincular_org_proyecto,
+            proyecto_cmds::desvincular_org_proyecto,
+            proyecto_cmds::listar_orgs_proyecto,
+            proyecto_cmds::vincular_financiamiento_proyecto,
+            proyecto_cmds::desvincular_financiamiento_proyecto,
+            proyecto_cmds::listar_financiamientos_proyecto,
             // Reportes
             reporte_cmds::get_estadisticas_proyectos_x_investigador,
             reporte_cmds::get_kpis_dashboard,
@@ -302,6 +308,13 @@ pub fn run() {
             recurso_cmds::actualizar_financiamiento,
             recurso_cmds::eliminar_financiamiento,
             recurso_cmds::reactivar_financiamiento,
+            // Pivots M:N CONCYTEC/PeruCRIS
+            recurso_cmds::vincular_inventor_patente,
+            recurso_cmds::desvincular_inventor_patente,
+            recurso_cmds::listar_inventores_patente,
+            recurso_cmds::vincular_titular_patente,
+            recurso_cmds::desvincular_titular_patente,
+            recurso_cmds::listar_titulares_patente,
             // Publicaciones Cientificas
             publicacion_cmds::crear_publicacion,
             publicacion_cmds::get_all_publicaciones,
@@ -312,6 +325,9 @@ pub fn run() {
             publicacion_cmds::actualizar_publicacion,
             publicacion_cmds::eliminar_publicacion,
             publicacion_cmds::reactivar_publicacion,
+            publicacion_cmds::vincular_autor_publicacion,
+            publicacion_cmds::desvincular_autor_publicacion,
+            publicacion_cmds::listar_autores_publicacion,
             // Eventos Academicos
             evento_cmds::crear_evento,
             evento_cmds::get_all_eventos,

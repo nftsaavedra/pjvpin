@@ -414,6 +414,28 @@ pub async fn eliminar_proyecto(
             .await?;
         recursos_desc.push("financiamientos");
 
+        // Cascade C: limpiar pivotes M:N y campos OCDE asociados al proyecto.
+        // Los pivots proyecto_organizaciones y proyecto_financiamientos son
+        // relaciones hard (no soft-delete) — se eliminan fisicamente.
+        // Los campos OCDE (entity_type="PROJECT") tambien se eliminan.
+        crate::proyectos::proyecto_organizaciones::repository::delete_for_proyecto(
+            db,
+            id_proyecto,
+        )
+        .await?;
+        crate::proyectos::proyecto_financiamientos::repository::delete_for_proyecto(
+            db,
+            id_proyecto,
+        )
+        .await?;
+        crate::ocde::repository::delete_for_entity(
+            db,
+            crate::shared::vocab_mapper::ENTITY_TYPE_PROJECT,
+            id_proyecto,
+        )
+        .await?;
+        recursos_desc.push("pivotes y campos OCDE");
+
         db.collection::<mongodb::bson::Document>(COLLECTION_PROYECTOS)
             .update_one(
                 doc! { "id_proyecto": id_proyecto },

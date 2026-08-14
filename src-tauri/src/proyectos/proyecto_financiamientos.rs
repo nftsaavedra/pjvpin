@@ -77,11 +77,6 @@ impl ProyectoFinanciamiento {
             moneda: moneda_trim,
         })
     }
-
-    /// Clave materializada de unicidad: (id_proyecto, id_financiamiento).
-    pub fn uniqueness_key(&self) -> (String, String) {
-        (self.id_proyecto.clone(), self.id_financiamiento.clone())
-    }
 }
 
 /// DTO canónico (BSON + IPC) del pivot.
@@ -118,6 +113,24 @@ impl From<ProyectoFinanciamientoDoc> for ProyectoFinanciamiento {
             moneda: d.moneda,
         }
     }
+}
+
+pub mod repository {
+    //! Persistencia del pivot `proyecto_financiamientos`.
+    //! Generada via macro `impl_pivot_repository!` (DRY, compartido en `shared::macros`).
+
+    use super::{ProyectoFinanciamiento, ProyectoFinanciamientoDoc};
+
+    crate::impl_pivot_repository!(
+        ProyectoFinanciamiento,
+        ProyectoFinanciamientoDoc,
+        "proyecto_financiamientos",
+        id_proyecto,
+        list_by_proyecto,
+        delete_for_proyecto,
+        &["id_proyecto", "id_financiamiento"],
+        "proyecto_financiamiento"
+    );
 }
 
 #[cfg(test)]

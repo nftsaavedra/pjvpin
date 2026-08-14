@@ -97,3 +97,55 @@ pub async fn reactivar_publicacion(
     let item = handlers::reactivar_publicacion(&state, window.label(), &id).await?;
     Ok(item.into())
 }
+
+// --- Pivot M:N CONCYTEC/PeruCRIS (N3-B) ---
+
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VincularAutorPublicacionRequest {
+    pub id_publicacion: String,
+    pub id_persona: String,
+    pub id_org_unit_afiliacion: Option<String>,
+    pub orden: i32,
+    pub es_autor_correspondiente: bool,
+}
+
+#[tauri::command]
+pub async fn vincular_autor_publicacion(
+    window: Window,
+    state: State<'_, AppState>,
+    request: VincularAutorPublicacionRequest,
+) -> Result<(), AppError> {
+    handlers::vincular_autor_publicacion(
+        &state,
+        window.label(),
+        request.id_publicacion,
+        request.id_persona,
+        request.id_org_unit_afiliacion,
+        request.orden,
+        request.es_autor_correspondiente,
+    )
+    .await
+}
+
+#[tauri::command]
+pub async fn desvincular_autor_publicacion(
+    window: Window,
+    state: State<'_, AppState>,
+    id_pivot: String,
+) -> Result<(), AppError> {
+    handlers::desvincular_autor_publicacion(&state, window.label(), id_pivot).await
+}
+
+#[tauri::command]
+pub async fn listar_autores_publicacion(
+    window: Window,
+    state: State<'_, AppState>,
+    id_publicacion: String,
+) -> Result<Vec<crate::publicaciones::autores::PublicacionAutorDoc>, AppError> {
+    Ok(handlers::listar_autores_publicacion(&state, window.label(), id_publicacion)
+        .await?
+        .into_iter()
+        .map(crate::publicaciones::autores::PublicacionAutorDoc::from)
+        .collect())
+}

@@ -479,5 +479,13 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
 
+    // --- Pivots M:N CONCYTEC/PeruCRIS (N2-C / N3-A / N3-B) ---
+    // Indices UNIQUE por (padre, FK) + indice simple por padre para cascades.
+    crate::proyectos::proyecto_organizaciones::repository::ensure_indexes(db).await?;
+    crate::proyectos::proyecto_financiamientos::repository::ensure_indexes(db).await?;
+    crate::recursos::patente_inventores::repository::ensure_indexes(db).await?;
+    crate::recursos::patente_titulares::repository::ensure_indexes(db).await?;
+    crate::publicaciones::autores::repository::ensure_indexes(db).await?;
+
     Ok(())
 }

@@ -151,3 +151,101 @@ pub async fn reactivar_financiamiento(
         handlers::reactivar_financiamiento(&state, window.label(), &id_financiamiento).await?;
     Ok(item.into())
 }
+
+// --- Pivots M:N CONCYTEC/PeruCRIS (N3-A) ---
+
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VincularInventorPatenteRequest {
+    pub id_patente: String,
+    pub id_persona: String,
+    pub orden: i32,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VincularTitularPatenteRequest {
+    pub id_patente: String,
+    pub holder_type: String,
+    pub id_org_unit: Option<String>,
+    pub id_persona: Option<String>,
+    pub orden: i32,
+}
+
+#[tauri::command]
+pub async fn vincular_inventor_patente(
+    window: Window,
+    state: State<'_, AppState>,
+    request: VincularInventorPatenteRequest,
+) -> Result<(), AppError> {
+    handlers::vincular_inventor_patente(
+        &state,
+        window.label(),
+        request.id_patente,
+        request.id_persona,
+        request.orden,
+    )
+    .await
+}
+
+#[tauri::command]
+pub async fn desvincular_inventor_patente(
+    window: Window,
+    state: State<'_, AppState>,
+    id_pivot: String,
+) -> Result<(), AppError> {
+    handlers::desvincular_inventor_patente(&state, window.label(), id_pivot).await
+}
+
+#[tauri::command]
+pub async fn listar_inventores_patente(
+    window: Window,
+    state: State<'_, AppState>,
+    id_patente: String,
+) -> Result<Vec<crate::recursos::patente_inventores::PatenteInventorDoc>, AppError> {
+    Ok(handlers::listar_inventores_patente(&state, window.label(), id_patente)
+        .await?
+        .into_iter()
+        .map(crate::recursos::patente_inventores::PatenteInventorDoc::from)
+        .collect())
+}
+
+#[tauri::command]
+pub async fn vincular_titular_patente(
+    window: Window,
+    state: State<'_, AppState>,
+    request: VincularTitularPatenteRequest,
+) -> Result<(), AppError> {
+    handlers::vincular_titular_patente(
+        &state,
+        window.label(),
+        request.id_patente,
+        request.holder_type,
+        request.id_org_unit,
+        request.id_persona,
+        request.orden,
+    )
+    .await
+}
+
+#[tauri::command]
+pub async fn desvincular_titular_patente(
+    window: Window,
+    state: State<'_, AppState>,
+    id_pivot: String,
+) -> Result<(), AppError> {
+    handlers::desvincular_titular_patente(&state, window.label(), id_pivot).await
+}
+
+#[tauri::command]
+pub async fn listar_titulares_patente(
+    window: Window,
+    state: State<'_, AppState>,
+    id_patente: String,
+) -> Result<Vec<crate::recursos::patente_titulares::PatenteTitularDoc>, AppError> {
+    Ok(handlers::listar_titulares_patente(&state, window.label(), id_patente)
+        .await?
+        .into_iter()
+        .map(crate::recursos::patente_titulares::PatenteTitularDoc::from)
+        .collect())
+}

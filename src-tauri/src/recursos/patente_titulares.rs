@@ -87,29 +87,6 @@ impl PatenteTitular {
             orden,
         })
     }
-
-    /// Identidad materializada del holder para indizar unicidad.
-    /// Devuelve (holder_type, id). Si el holder_type es ORG_UNIT retorna
-    /// id_org_unit; si PERSON retorna id_persona.
-    pub fn entity_id(&self) -> String {
-        match self.holder_type.as_str() {
-            crate::shared::vocab_mapper::HOLDER_TYPE_ORG_UNIT => {
-                self.id_org_unit.clone().unwrap_or_default()
-            }
-            crate::shared::vocab_mapper::HOLDER_TYPE_PERSON => {
-                self.id_persona.clone().unwrap_or_default()
-            }
-            _ => String::new(),
-        }
-    }
-
-    pub fn uniqueness_key(&self) -> (String, String, String) {
-        (
-            self.id_patente.clone(),
-            self.holder_type.clone(),
-            self.entity_id(),
-        )
-    }
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -149,6 +126,29 @@ impl From<PatenteTitularDoc> for PatenteTitular {
             orden: d.orden,
         }
     }
+}
+
+pub mod repository {
+    //! Persistencia del pivot `patente_titulares`.
+    //! Generada via macro `impl_pivot_repository!` (DRY, compartido en `shared::macros`).
+    //!
+    //! Nota: la unicidad `(id_patente, holder_type, id_org_unit, id_persona)`
+    //! compuesta es best-effort a nivel BD; la invariante de exactly-one
+    //! (un titular referencia exactamente una de org_unit/person) se enforces
+    //! en `PatenteTitular::new()` a nivel aplicacion.
+
+    use super::{PatenteTitular, PatenteTitularDoc};
+
+    crate::impl_pivot_repository!(
+        PatenteTitular,
+        PatenteTitularDoc,
+        "patente_titulares",
+        id_patente,
+        list_by_patente,
+        delete_for_patente,
+        &["id_patente", "holder_type", "id_org_unit", "id_persona"],
+        "patente_titular"
+    );
 }
 
 #[cfg(test)]

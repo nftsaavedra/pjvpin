@@ -189,3 +189,129 @@ pub async fn reactivar_proyecto(
     );
     Ok(ProyectoDto::from(proyecto))
 }
+
+// --- Pivots M:N CONCYTEC/PeruCRIS (N2-C) ---
+
+/// Vincula una organizacion a un proyecto con un rol (EJECUTORA/CO_EJECUTORA/PATROCINADORA/COLABORADORA).
+/// Valida FK de proyecto y org_unit, valida rol, e inserta el pivot.
+pub async fn vincular_org_proyecto(
+    state: &AppState,
+    window_label: &str,
+    id_proyecto: String,
+    id_org_unit: String,
+    rol: String,
+) -> Result<(), AppError> {
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    crate::shared::refs::ensure_exists(state.mongo_db()?, "proyectos", &id_proyecto).await?;
+    crate::shared::refs::ensure_exists(state.mongo_db()?, "org_units", &id_org_unit).await?;
+    let id = uuid::Uuid::new_v4().to_string();
+    let po = crate::proyectos::proyecto_organizaciones::ProyectoOrganizacion::new(
+        id, id_proyecto, id_org_unit, rol,
+    )?;
+    crate::proyectos::proyecto_organizaciones::repository::insert(state.mongo_db()?, &po).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor, "proyecto.vincular_org", "proyecto_organizacion", &po.id, "insert".to_string(),
+    );
+    Ok(())
+}
+
+/// Desvincula una organizacion de un proyecto (hard-delete del pivot por su _id).
+pub async fn desvincular_org_proyecto(
+    state: &AppState,
+    window_label: &str,
+    id_pivot: String,
+) -> Result<(), AppError> {
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    crate::proyectos::proyecto_organizaciones::repository::delete(state.mongo_db()?, &id_pivot)
+        .await?;
+    crate::shared::audit::write_generic_audit(
+        &actor, "proyecto.desvincular_org", "proyecto_organizacion", &id_pivot, "delete".to_string(),
+    );
+    Ok(())
+}
+
+/// Lista las organizaciones vinculadas a un proyecto.
+pub async fn listar_orgs_proyecto(
+    state: &AppState,
+    _window_label: &str,
+    id_proyecto: String,
+) -> Result<
+    Vec<crate::proyectos::proyecto_organizaciones::ProyectoOrganizacion>,
+    AppError,
+> {
+    rbac::require_permission(
+        state,
+        _window_label,
+        rbac::AppPermission::ProyectosView,
+    )
+    .await?;
+    crate::proyectos::proyecto_organizaciones::repository::list_by_proyecto(
+        state.mongo_db()?,
+        &id_proyecto,
+    )
+    .await
+}
+
+/// Vincula un financiamiento a un proyecto con monto y moneda.
+pub async fn vincular_financiamiento_proyecto(
+    state: &AppState,
+    window_label: &str,
+    id_proyecto: String,
+    id_financiamiento: String,
+    monto_asignado: Option<f64>,
+    moneda: Option<String>,
+) -> Result<(), AppError> {
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    crate::shared::refs::ensure_exists(state.mongo_db()?, "proyectos", &id_proyecto).await?;
+    crate::shared::refs::ensure_exists(state.mongo_db()?, "financiamientos", &id_financiamiento)
+        .await?;
+    let id = uuid::Uuid::new_v4().to_string();
+    let pf = crate::proyectos::proyecto_financiamientos::ProyectoFinanciamiento::new(
+        id,
+        id_proyecto,
+        id_financiamiento,
+        monto_asignado,
+        moneda,
+    )?;
+    crate::proyectos::proyecto_financiamientos::repository::insert(state.mongo_db()?, &pf).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor, "proyecto.vincular_fin", "proyecto_financiamiento", &pf.id, "insert".to_string(),
+    );
+    Ok(())
+}
+
+/// Desvincula un financiamiento de un proyecto.
+pub async fn desvincular_financiamiento_proyecto(
+    state: &AppState,
+    window_label: &str,
+    id_pivot: String,
+) -> Result<(), AppError> {
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::ProyectosManage).await?;
+    crate::proyectos::proyecto_financiamientos::repository::delete(state.mongo_db()?, &id_pivot)
+        .await?;
+    crate::shared::audit::write_generic_audit(
+        &actor, "proyecto.desvincular_fin", "proyecto_financiamiento", &id_pivot, "delete".to_string(),
+    );
+    Ok(())
+}
+
+/// Lista los financiamientos vinculados a un proyecto.
+pub async fn listar_financiamientos_proyecto(
+    state: &AppState,
+    _window_label: &str,
+    id_proyecto: String,
+) -> Result<
+    Vec<crate::proyectos::proyecto_financiamientos::ProyectoFinanciamiento>,
+    AppError,
+> {
+    rbac::require_permission(state, _window_label, rbac::AppPermission::ProyectosView).await?;
+    crate::proyectos::proyecto_financiamientos::repository::list_by_proyecto(
+        state.mongo_db()?,
+        &id_proyecto,
+    )
+    .await
+}

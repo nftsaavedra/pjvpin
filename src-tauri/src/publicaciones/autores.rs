@@ -63,10 +63,6 @@ impl PublicacionAutor {
             es_autor_correspondiente,
         })
     }
-
-    pub fn uniqueness_key(&self) -> (String, String) {
-        (self.id_publicacion.clone(), self.id_persona.clone())
-    }
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -106,6 +102,24 @@ impl From<PublicacionAutorDoc> for PublicacionAutor {
             es_autor_correspondiente: d.es_autor_correspondiente,
         }
     }
+}
+
+pub mod repository {
+    //! Persistencia del pivot `publicacion_autores`.
+    //! Generada via macro `impl_pivot_repository!` (DRY, compartido en `shared::macros`).
+
+    use super::{PublicacionAutor, PublicacionAutorDoc};
+
+    crate::impl_pivot_repository!(
+        PublicacionAutor,
+        PublicacionAutorDoc,
+        "publicacion_autores",
+        id_publicacion,
+        list_by_publicacion,
+        delete_for_publicacion,
+        &["id_publicacion", "id_persona"],
+        "publicacion_autor"
+    );
 }
 
 #[cfg(test)]

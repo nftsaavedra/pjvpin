@@ -54,10 +54,6 @@ impl PatenteInventor {
             orden,
         })
     }
-
-    pub fn uniqueness_key(&self) -> (String, String) {
-        (self.id_patente.clone(), self.id_persona.clone())
-    }
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -91,6 +87,24 @@ impl From<PatenteInventorDoc> for PatenteInventor {
     }
 }
 
+pub mod repository {
+    //! Persistencia del pivot `patente_inventores`.
+    //! Generada via macro `impl_pivot_repository!` (DRY, compartido en `shared::macros`).
+
+    use super::{PatenteInventor, PatenteInventorDoc};
+
+    crate::impl_pivot_repository!(
+        PatenteInventor,
+        PatenteInventorDoc,
+        "patente_inventores",
+        id_patente,
+        list_by_patente,
+        delete_for_patente,
+        &["id_patente", "id_persona"],
+        "patente_inventor"
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -116,25 +130,6 @@ mod tests {
             0,
         );
         assert!(r.is_err());
-    }
-
-    #[test]
-    fn uniqueness_key_incluye_persona() {
-        let pi1 = PatenteInventor::new(
-            "pi-1".to_string(),
-            "pat-1".to_string(),
-            "persona-1".to_string(),
-            1,
-        )
-        .unwrap();
-        let pi2 = PatenteInventor::new(
-            "pi-2".to_string(),
-            "pat-1".to_string(),
-            "persona-2".to_string(),
-            1,
-        )
-        .unwrap();
-        assert_ne!(pi1.uniqueness_key(), pi2.uniqueness_key());
     }
 
     #[test]

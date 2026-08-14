@@ -12,6 +12,7 @@ pub mod error;
 pub mod external;
 pub mod hierarchy;
 pub mod logging;
+pub mod macros;
 pub mod orcid;
 pub mod pagination;
 pub mod rbac;

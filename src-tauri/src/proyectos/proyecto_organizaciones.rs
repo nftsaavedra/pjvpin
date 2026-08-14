@@ -67,17 +67,6 @@ impl ProyectoOrganizacion {
             rol: rol_trim,
         })
     }
-
-    /// Helper de unicidad: clave materializada (id_proyecto, id_org_unit, rol).
-    /// Permite multiples roles por la misma organizacion en el mismo proyecto
-    /// (ej: una universidad puede ser EJECUTORA y PATROCINADORA).
-    pub fn uniqueness_key(&self) -> (String, String, String) {
-        (
-            self.id_proyecto.clone(),
-            self.id_org_unit.clone(),
-            self.rol.clone(),
-        )
-    }
 }
 
 #[cfg(test)]
@@ -173,22 +162,31 @@ mod tests {
     }
 
     #[test]
-    fn uniqueness_key_incluye_rol() {
-        let po1 = ProyectoOrganizacion::new(
+    fn uniqueness_index_incluye_rol_en_macro() {
+        // La unicidad (id_proyecto, id_org_unit, rol) se enforces via indice
+        // UNIQUE generado por la macro `impl_pivot_repository!` en
+        // `repository::ensure_indexes`. No se necesita un metodo explicito
+        // en el modelo (el DB rechaza duplicados con UniqueConstraintViolation).
+    }
+
+    #[test]
+    fn doc_round_trip_incluye_rol() {
+        // La unicidad (id_proyecto, id_org_unit, rol) se enforces via indice
+        // UNIQUE generado por la macro `impl_pivot_repository!` en
+        // `repository::ensure_indexes`. No se necesita un metodo explicito
+        // en el modelo: el DB rechaza duplicados con UniqueConstraintViolation.
+        let po = ProyectoOrganizacion::new(
             "po-1".to_string(),
             "p-1".to_string(),
             "org-1".to_string(),
             crate::shared::vocab_mapper::ORG_ROL_EJECUTORA.to_string(),
         )
         .unwrap();
-        let po2 = ProyectoOrganizacion::new(
-            "po-2".to_string(),
-            "p-1".to_string(),
-            "org-1".to_string(),
-            crate::shared::vocab_mapper::ORG_ROL_PATROCINADORA.to_string(),
-        )
-        .unwrap();
-        assert_ne!(po1.uniqueness_key(), po2.uniqueness_key());
+        let doc: ProyectoOrganizacionDoc = po.clone().into();
+        let back: ProyectoOrganizacion = doc.into();
+        assert_eq!(back.rol, po.rol);
+        assert_eq!(back.id_proyecto, po.id_proyecto);
+        assert_eq!(back.id_org_unit, po.id_org_unit);
     }
 }
 
@@ -223,4 +221,22 @@ impl From<ProyectoOrganizacionDoc> for ProyectoOrganizacion {
             rol: d.rol,
         }
     }
+}
+
+pub mod repository {
+    //! Persistencia del pivot `proyecto_organizaciones`.
+    //! Generada via macro `impl_pivot_repository!` (DRY, compartido en `shared::macros`).
+
+    use super::{ProyectoOrganizacion, ProyectoOrganizacionDoc};
+
+    crate::impl_pivot_repository!(
+        ProyectoOrganizacion,
+        ProyectoOrganizacionDoc,
+        "proyecto_organizaciones",
+        id_proyecto,
+        list_by_proyecto,
+        delete_for_proyecto,
+        &["id_proyecto", "id_org_unit", "rol"],
+        "proyecto_organizacion"
+    );
 }
