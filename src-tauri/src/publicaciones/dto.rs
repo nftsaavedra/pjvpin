@@ -19,21 +19,14 @@ pub struct PublicacionCientificaDto {
     pub id_publicacion: String,
     pub titulo: String,
     #[serde(default)]
-    pub autores_ids: Vec<String>,
-    #[serde(default)]
-    pub revista: Option<String>,
-    #[serde(default)]
     pub doi: Option<String>,
     #[serde(default)]
     pub issn: Option<String>,
     pub anio: Option<i32>,
     pub cuartil: Option<String>,
     pub tipo: String,
-    pub url: Option<String>,
     pub resumen: Option<String>,
     pub palabras_clave: Vec<String>,
-    #[serde(default)]
-    pub pure_id: Option<String>,
     #[serde(default)]
     pub created_at: Option<i64>,
     #[serde(default)]
@@ -88,18 +81,14 @@ pub struct PublicacionCientificaDto {
 #[serde(rename_all = "camelCase")]
 pub struct CreatePublicacionRequest {
     pub titulo: String,
-    pub autores_ids: Vec<String>,
-    pub revista: Option<String>,
     pub doi: Option<String>,
     pub issn: Option<String>,
     pub anio: Option<i32>,
     pub cuartil: Option<String>,
     pub tipo: String,
-    pub url: Option<String>,
     pub resumen: Option<String>,
     #[serde(default)]
     pub palabras_clave: Vec<String>,
-    pub pure_id: Option<String>,
     // ---- Campos N2-F ----
     #[serde(default)]
     pub handle_url: Option<String>,
@@ -143,14 +132,11 @@ pub struct CreatePublicacionRequest {
 #[serde(rename_all = "camelCase")]
 pub struct UpdatePublicacionRequest {
     pub titulo: Option<String>,
-    pub autores_ids: Option<Vec<String>>,
-    pub revista: Option<String>,
     pub doi: Option<String>,
     pub issn: Option<String>,
     pub anio: Option<i32>,
     pub cuartil: Option<String>,
     pub tipo: Option<String>,
-    pub url: Option<String>,
     pub resumen: Option<String>,
     pub palabras_clave: Option<Vec<String>>,
     // ---- Campos N2-F ----

@@ -26,17 +26,13 @@ fn dto_to_model(dto: PublicacionCientificaDto) -> PublicacionCientifica {
         id: dto.id,
         id_publicacion: dto.id_publicacion,
         titulo: dto.titulo,
-        autores_ids: dto.autores_ids,
-        revista: dto.revista,
         doi: dto.doi.clone(),
         issn: dto.issn,
         anio: dto.anio,
         cuartil: dto.cuartil,
         tipo: dto.tipo,
-        url: dto.url,
         resumen: dto.resumen,
         palabras_clave: dto.palabras_clave,
-        pure_id: dto.pure_id,
         created_at: dto.created_at,
         updated_at: dto.updated_at,
         activo: dto.activo,
@@ -67,17 +63,13 @@ fn model_to_dto(m: &PublicacionCientifica) -> PublicacionCientificaDto {
         id: m.id.clone(),
         id_publicacion: m.id_publicacion.clone(),
         titulo: m.titulo.clone(),
-        autores_ids: m.autores_ids.clone(),
-        revista: m.revista.clone(),
         doi: m.doi.clone(),
         issn: m.issn.clone(),
         anio: m.anio,
         cuartil: m.cuartil.clone(),
         tipo: m.tipo.clone(),
-        url: m.url.clone(),
         resumen: m.resumen.clone(),
         palabras_clave: m.palabras_clave.clone(),
-        pure_id: m.pure_id.clone(),
         created_at: m.created_at,
         updated_at: m.updated_at,
         activo: m.activo,
@@ -142,9 +134,39 @@ pub async fn get_by_investigador(
     db: &Database,
     investigador_id: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
+    // F3/D10: `autores_ids` fue removido; los autores viven en el pivot
+    // `publicacion_autores`. Resolvemos la persona_id del investigador y
+    // consultamos el pivot para obtener los ids de publicacion.
+    use crate::shared::data_loader;
+    let persona_id = data_loader::load_investigadores_map(db)
+        .await?
+        .get(investigador_id)
+        .map(|i| i.persona_id.clone());
+    let Some(persona_id) = persona_id else {
+        return Ok(Vec::new());
+    };
+    let mut ids_publicacion: Vec<String> = Vec::new();
+    {
+        let cursor = db
+            .collection::<Document>("publicacion_autores")
+            .find(doc! { "id_persona": persona_id })
+            .await?;
+        let docs: Vec<Document> = cursor.try_collect().await?;
+        for d in docs {
+            if let Ok(p) = mongodb::bson::from_document::<
+                crate::publicaciones::autores::PublicacionAutorDoc,
+            >(d)
+            {
+                ids_publicacion.push(p.id_publicacion);
+            }
+        }
+    }
+    if ids_publicacion.is_empty() {
+        return Ok(Vec::new());
+    }
     let cursor = db
         .collection::<Document>("publicaciones_cientificas")
-        .find(doc! { "autores_ids": investigador_id, "activo": 1 })
+        .find(doc! { "id_publicacion": { "$in": &ids_publicacion }, "activo": 1 })
         .await?;
     let docs: Vec<Document> = cursor.try_collect().await?;
     docs.into_iter()
@@ -195,12 +217,6 @@ pub async fn update(
     if let Some(v) = request.titulo {
         set.insert("titulo", v);
     }
-    if let Some(v) = request.autores_ids {
-        set.insert("autores_ids", v);
-    }
-    if let Some(v) = request.revista {
-        set.insert("revista", v);
-    }
     if let Some(v) = request.doi {
         set.insert("doi", v);
     }
@@ -215,9 +231,6 @@ pub async fn update(
     }
     if let Some(v) = request.tipo {
         set.insert("tipo", v);
-    }
-    if let Some(v) = request.url {
-        set.insert("url", v);
     }
     if let Some(v) = request.resumen {
         set.insert("resumen", v);
