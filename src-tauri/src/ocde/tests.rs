@@ -87,22 +87,3 @@ fn new_trim() {
     assert_eq!(m.entity_id, "p-1");
     assert_eq!(m.ocde_codigo, "1.1");
 }
-
-#[test]
-fn uniqueness_key() {
-    let m1 = EntidadCampoOcde::new(
-        "1".to_string(),
-        crate::shared::vocab_mapper::ENTITY_TYPE_PROJECT.to_string(),
-        "p-1".to_string(),
-        "1.1".to_string(),
-    )
-    .unwrap();
-    let m2 = EntidadCampoOcde::new(
-        "2".to_string(),
-        crate::shared::vocab_mapper::ENTITY_TYPE_EQUIPMENT.to_string(),
-        "p-1".to_string(),
-        "1.1".to_string(),
-    )
-    .unwrap();
-    assert_ne!(m1.uniqueness_key(), m2.uniqueness_key());
-}

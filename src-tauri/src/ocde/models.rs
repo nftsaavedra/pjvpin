@@ -65,15 +65,6 @@ impl EntidadCampoOcde {
             ocde_codigo: ocde_trim,
         })
     }
-
-    /// Clave materializada de unicidad: (entity_type, entity_id, ocde_codigo).
-    pub fn uniqueness_key(&self) -> (String, String, String) {
-        (
-            self.entity_type.clone(),
-            self.entity_id.clone(),
-            self.ocde_codigo.clone(),
-        )
-    }
 }
 
 /// DTO canónico (BSON + IPC) del pivot.

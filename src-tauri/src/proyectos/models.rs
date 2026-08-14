@@ -267,25 +267,6 @@ impl ParticipacionRecord {
             es_responsable,
         })
     }
-
-    /// Helper de conveniencia: construye una participacion a partir de un
-    /// `id_proyecto`, `id_investigador` y un `rol` canonico. Pensado para
-    /// tests y para rutas que no requieren todos los campos opcionales.
-    pub fn new_basic(
-        id: String,
-        id_proyecto: String,
-        id_investigador: String,
-        rol: &str,
-    ) -> Result<Self, AppError> {
-        Self::new(
-            id,
-            id_proyecto,
-            id_investigador,
-            rol.to_string(),
-            None,
-            None,
-        )
-    }
 }
 
 impl From<ParticipacionRecord> for ParticipacionRecordDto {
@@ -350,12 +331,28 @@ impl TryFrom<ParticipacionRecordDto> for ParticipacionRecord {
 mod tests_n2b {
     use super::*;
 
+    fn new_basic(
+        id: &str,
+        id_proyecto: &str,
+        id_investigador: &str,
+        rol: &str,
+    ) -> Result<ParticipacionRecord, AppError> {
+        ParticipacionRecord::new(
+            id.to_string(),
+            id_proyecto.to_string(),
+            id_investigador.to_string(),
+            rol.to_string(),
+            None,
+            None,
+        )
+    }
+
     #[test]
     fn participacion_new_acepta_rol_valido() {
-        let p = ParticipacionRecord::new_basic(
-            "p-1:inv-1".to_string(),
-            "p-1".to_string(),
-            "inv-1".to_string(),
+        let p = new_basic(
+            "p-1:inv-1",
+            "p-1",
+            "inv-1",
             crate::shared::vocab_mapper::ROLE_INVESTIGADOR_PRINCIPAL,
         )
         .unwrap();
@@ -368,46 +365,36 @@ mod tests_n2b {
 
     #[test]
     fn participacion_rechaza_rol_invalido() {
-        let r = ParticipacionRecord::new_basic(
-            "x".to_string(),
-            "p".to_string(),
-            "i".to_string(),
-            "ROL_INVENTADO",
-        );
+        let r = new_basic("x", "p", "i", "ROL_INVENTADO");
         assert!(r.is_err());
     }
 
     #[test]
     fn participacion_rechaza_rol_vacio() {
-        let r = ParticipacionRecord::new_basic(
-            "x".to_string(),
-            "p".to_string(),
-            "i".to_string(),
-            "   ",
-        );
+        let r = new_basic("x", "p", "i", "   ");
         assert!(r.is_err());
     }
 
     #[test]
     fn participacion_rechaza_id_vacio() {
-        let r = ParticipacionRecord::new_basic(
-            "  ".to_string(),
-            "p".to_string(),
-            "i".to_string(),
+        let r = new_basic(
+            "  ",
+            "p",
+            "i",
             crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR,
         );
         assert!(r.is_err());
-        let r = ParticipacionRecord::new_basic(
-            "x".to_string(),
-            "  ".to_string(),
-            "i".to_string(),
+        let r = new_basic(
+            "x",
+            "  ",
+            "i",
             crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR,
         );
         assert!(r.is_err());
-        let r = ParticipacionRecord::new_basic(
-            "x".to_string(),
-            "p".to_string(),
-            "  ".to_string(),
+        let r = new_basic(
+            "x",
+            "p",
+            "  ",
             crate::shared::vocab_mapper::ROLE_CO_INVESTIGADOR,
         );
         assert!(r.is_err());

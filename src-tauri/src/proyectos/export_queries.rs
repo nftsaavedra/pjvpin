@@ -8,7 +8,6 @@ use crate::catalogos::models::CatalogoItem;
 use crate::investigadores::dto::PublicacionDto;
 use crate::investigadores::models::{Investigador, Publicacion};
 use crate::investigadores::repository as investigadores_repo;
-use crate::personas::models::Persona;
 use crate::proyectos::dto::{
     ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
     ExportDataProyectoAreaDto, ExportDataRecursoDto,

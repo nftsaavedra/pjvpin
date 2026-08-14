@@ -1,9 +1,6 @@
 use crate::catalogos::dto::{CatalogoItemDoc, CatalogoItemDto, CreateCatalogoRequest};
 use crate::shared::error::AppError;
 
-/// Estados marcados como vocabularios oficiales CONCYTEC (no editables).
-pub const ESQUEMA_CONCYTEC_TERMINOS: &str = "concytec_terminos";
-
 #[derive(Debug, Clone)]
 pub struct CatalogoItem {
     pub id_catalogo: String,
