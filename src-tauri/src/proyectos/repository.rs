@@ -402,17 +402,12 @@ pub async fn eliminar_proyecto(
             .await?;
         recursos_desc.push("patentes");
 
-        db.collection::<mongodb::bson::Document>("equipamientos")
-            .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())
-            .session(&mut session)
-            .await?;
-        recursos_desc.push("equipamientos");
-
-        db.collection::<mongodb::bson::Document>("financiamientos")
-            .update_many(doc! { "proyecto_id": id_proyecto }, set_doc.clone())
-            .session(&mut session)
-            .await?;
-        recursos_desc.push("financiamientos");
+        // F3/D10: los vinculos legacy equipamiento.proyecto_id y
+        // financiamiento.proyecto_id fueron eliminados. Las relaciones
+        // proyecto<->equipamiento y proyecto<->financiamiento viven ahora en
+        // los pivotes M:N (proyecto_financiamientos) y se limpian abajo en la
+        // seccion "Cascade C". Los equipamientos sin proyecto_id explicito
+        // quedan intactos al desactivar el proyecto (no hay vinculo directo).
 
         // Cascade C: limpiar pivotes M:N y campos OCDE asociados al proyecto.
         // Los pivots proyecto_organizaciones y proyecto_financiamientos son

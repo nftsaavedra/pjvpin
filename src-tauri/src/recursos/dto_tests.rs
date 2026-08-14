@@ -49,7 +49,6 @@ mod tests {
     #[test]
     fn create_equipamiento_request_acepta_camel_case() {
         let json = json!({
-            "proyectoId": "P001",
             "nombre": "Equipo X",
             "valorEstimado": 12500.50,
             "moneda": "PEN",

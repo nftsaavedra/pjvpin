@@ -5,11 +5,6 @@ use crate::shared::error::AppError;
 pub struct Equipamiento {
     pub id: String,
     pub id_equipamiento: String,
-    /// Legacy (v0.1.0-alpha): FK opcional a proyecto. Conservado para
-    /// compatibilidad con consumers existentes. La fase N2 no migra este
-    /// campo a un pivot `proyecto_equipamientos` (se mantiene como
-    /// `Option<String>` simple).
-    pub proyecto_id: Option<String>,
     pub nombre: String,
     pub descripcion: Option<String>,
     pub especificaciones: Option<String>,
@@ -59,7 +54,6 @@ impl Equipamiento {
         Ok(Self {
             id: id_equipamiento.clone(),
             id_equipamiento,
-            proyecto_id: request.proyecto_id,
             nombre: request.nombre,
             descripcion: request.descripcion,
             especificaciones: request.especificaciones,
@@ -88,7 +82,6 @@ impl From<Equipamiento> for EquipamientoDto {
         Self {
             id: m.id,
             id_equipamiento: m.id_equipamiento,
-            proyecto_id: m.proyecto_id,
             nombre: m.nombre,
             descripcion: m.descripcion,
             especificaciones: m.especificaciones,
@@ -113,7 +106,6 @@ impl From<&Equipamiento> for EquipamientoDto {
         Self {
             id: m.id.clone(),
             id_equipamiento: m.id_equipamiento.clone(),
-            proyecto_id: m.proyecto_id.clone(),
             nombre: m.nombre.clone(),
             descripcion: m.descripcion.clone(),
             especificaciones: m.especificaciones.clone(),
@@ -139,7 +131,6 @@ impl TryFrom<EquipamientoDto> for Equipamiento {
         Ok(Self {
             id: d.id,
             id_equipamiento: d.id_equipamiento,
-            proyecto_id: d.proyecto_id,
             nombre: d.nombre,
             descripcion: d.descripcion,
             especificaciones: d.especificaciones,
@@ -166,7 +157,6 @@ mod tests_n2e {
 
     fn req_base() -> CreateEquipamientoRequest {
         CreateEquipamientoRequest {
-            proyecto_id: Some("p-1".to_string()),
             nombre: "Microscopio".to_string(),
             descripcion: Some("Optico".to_string()),
             especificaciones: None,
@@ -205,7 +195,6 @@ mod tests_n2e {
     #[test]
     fn new_acepta_legacy_sin_campos_nuevos() {
         let r = CreateEquipamientoRequest {
-            proyecto_id: None,
             nombre: "Cosa".to_string(),
             descripcion: None,
             especificaciones: None,

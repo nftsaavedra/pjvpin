@@ -95,8 +95,6 @@ pub struct EquipamientoDto {
     #[serde(rename = "_id")]
     pub id: String,
     pub id_equipamiento: String,
-    #[serde(default)]
-    pub proyecto_id: Option<String>,
     pub nombre: String,
     #[serde(default)]
     pub descripcion: Option<String>,
@@ -131,8 +129,6 @@ pub struct EquipamientoDto {
 #[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateEquipamientoRequest {
-    #[serde(default)]
-    pub proyecto_id: Option<String>,
     pub nombre: String,
     #[serde(default)]
     pub descripcion: Option<String>,

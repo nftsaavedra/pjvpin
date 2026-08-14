@@ -152,7 +152,11 @@ pub async fn crear_equipamiento(
     request: CreateEquipamientoRequest,
 ) -> Result<Equipamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    require_recursos_manage_or_responsable(state, &actor, request.proyecto_id.as_deref()).await?;
+    // F3/D10: el vinculo equipamiento<->proyecto vive en la cadena de
+    // financiamiento (proyecto_financiamientos -> financiamiento ->
+    // equipamiento.id_financiamiento). El responsable check se delega al
+    // pivot. La creacion del equipamiento maestro no requiere proyecto_id.
+    require_recursos_manage_or_responsable(state, &actor, None).await?;
     let equipamiento = repository::create_equipamiento(state.mongo_db()?, request).await?;
     crate::shared::audit::write_generic_audit(
         &actor,
@@ -180,10 +184,8 @@ pub async fn actualizar_equipamiento(
     request: UpdateEquipamientoRequest,
 ) -> Result<Equipamiento, AppError> {
     let actor = rbac::get_session_actor_user(state, window_label).await?;
-    let proyecto_id = repository::get_equipamiento_by_id(state.mongo_db()?, id_equipamiento)
-        .await?
-        .proyecto_id;
-    require_recursos_manage_or_responsable(state, &actor, proyecto_id.as_deref()).await?;
+    // F3/D10: sin proyecto_id en equipamiento; responsable check via pivot.
+    require_recursos_manage_or_responsable(state, &actor, None).await?;
     let equipamiento =
         repository::update_equipamiento(state.mongo_db()?, id_equipamiento, request).await?;
     crate::shared::audit::write_generic_audit(
