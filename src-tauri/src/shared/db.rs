@@ -302,13 +302,9 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .build(),
         )
         .await?;
-    db.collection::<Document>("patentes")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "investigador_id": 1 })
-                .build(),
-        )
-        .await?;
+    // F3/D10: el campo `investigador_id` fue removido de Patente; los
+    // inventores viven en el pivot `patente_inventores` (indices en su propio
+    // ensure_indexes via macro).
     // Fase N2-G: UNIQUE sparse sobre `numero_patente`. Sparse para tolerar
     // patentes en tramite sin numero asignado.
     db.collection::<Document>("patentes")

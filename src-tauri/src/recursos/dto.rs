@@ -11,8 +11,6 @@ pub struct PatenteDto {
     pub id_patente: String,
     #[serde(default)]
     pub proyecto_id: Option<String>,
-    #[serde(default)]
-    pub investigador_id: Option<String>,
     pub titulo: String,
     #[serde(default)]
     pub numero_patente: Option<String>,
@@ -47,8 +45,6 @@ pub struct PatenteDto {
 pub struct CreatePatenteRequest {
     #[serde(default)]
     pub proyecto_id: Option<String>,
-    #[serde(default)]
-    pub investigador_id: Option<String>,
     pub titulo: String,
     #[serde(default)]
     pub numero_patente: Option<String>,

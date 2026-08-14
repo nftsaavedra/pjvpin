@@ -21,7 +21,6 @@ mod tests {
         });
         let req: CreatePatenteRequest = serde_json::from_value(json).expect("must parse");
         assert_eq!(req.proyecto_id.as_deref(), Some("P001"));
-        assert_eq!(req.investigador_id.as_deref(), Some("I001"));
         assert_eq!(req.titulo, "Sistema X");
         assert_eq!(req.numero_patente.as_deref(), Some("P2025-001"));
         assert_eq!(req.estado.as_deref(), Some("En trámite"));
