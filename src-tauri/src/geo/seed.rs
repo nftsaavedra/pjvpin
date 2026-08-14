@@ -10,7 +10,6 @@
 //! El seed corre una sola vez si la coleccion esta vacia, salvo que el
 //! flag de dev force-reset este activo (PJVPIN_RESET_DEV).
 
-use futures_util::TryStreamExt;
 use mongodb::bson::{doc, Document};
 use mongodb::Database;
 
@@ -87,14 +86,4 @@ pub async fn reseed_ubigeos(db: &Database) -> Result<(), AppError> {
         repository::upsert(db, &u).await?;
     }
     Ok(())
-}
-
-/// Cuenta de ubigeos activos (util para tests y diagnostico).
-pub async fn count(db: &Database) -> Result<u64, AppError> {
-    let cursor = db
-        .collection::<Document>("ubigeos")
-        .find(doc! { "activo": 1i64 })
-        .await?;
-    let docs: Vec<Document> = cursor.try_collect().await?;
-    Ok(docs.len() as u64)
 }

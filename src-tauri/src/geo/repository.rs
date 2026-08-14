@@ -48,13 +48,7 @@ fn model_to_dto(m: &Ubigeo) -> UbigeoDto {
 
 /// Stub explicito: la creacion manual de ubigeos esta deshabilitada porque el
 /// codigo INEI debe provenir del seed embebido o de un importador CSV/INEI
-/// futuro. Mantenido para reservar el hueco de la API.
-pub async fn create_ubigeo(_db: &Database) -> Result<Ubigeo, AppError> {
-    Err(AppError::InternalError(
-        "La creacion manual de ubigeos no esta habilitada: el codigo INEI debe provenir del seed (use 'reseed_ubigeos' o el importer)." .to_string(),
-    ))
-}
-
+/// futuro (fase posterior a v0.1.0).
 pub async fn get_ubigeo(db: &Database, codigo: &str) -> Result<Ubigeo, AppError> {
     if codigo.trim().is_empty() {
         return Err(AppError::InternalError(
