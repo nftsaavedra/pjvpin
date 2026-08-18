@@ -15,6 +15,7 @@ import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
 import { ExportPreviewPanel } from "./components/ExportPreviewPanel";
 import { ReporteProyectoPanel } from "./components/ReporteProyectoPanel";
 import { ReporteInvestigadorPanel } from "./components/ReporteInvestigadorPanel";
+import { PureMasterListPanel } from "./components/PureMasterListPanel";
 
 interface ReportesTabProps {
   canExport?: boolean;
@@ -129,6 +130,8 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
         onExport={(fmt) => void exportar(fmt)}
         onRetry={() => void cargarPreview()}
       />
+
+      <PureMasterListPanel canExport={canExport} refreshTrigger={refreshTrigger} />
 
       <ReporteProyectoPanel proyectos={proyectos} proyectosLoading={proyectosLoading} />
 

@@ -299,10 +299,10 @@ export const InvestigadorIntegralPdf = ({ report }: { report: ReporteInvestigado
             widths={["30%", "16%", "18%", "6%", "18%", "12%"]}
             rows={publicaciones.map((p) => [
               p.titulo,
-              p.tipo_publicacion ?? "-",
+              p.tipo,
               p.doi ?? "-",
-              p.anio_publicacion != null ? String(p.anio_publicacion) : "-",
-              p.journal_titulo ?? "-",
+              p.anio != null ? String(p.anio) : "-",
+              p.revista_titulo ?? "-",
               p.issn ?? "-",
             ])}
           />

@@ -2,6 +2,7 @@ import { invoke } from "./client";
 import type {
   DatosExportInvestigadorAgrupado,
   ExportData,
+  PureMasterlistData,
   ReporteInvestigadorIntegral,
   ReporteProyectoIntegral,
 } from "./types";
@@ -26,3 +27,8 @@ export const getReporteInvestigadorIntegral = async (
 
 export const getReportesInvestigadoresIntegral = async (): Promise<ReporteInvestigadorIntegral[]> =>
   await invoke("get_reportes_investigadores_integral");
+
+export const getDataPureMasterlist = async (
+  pureRemoteTotal?: number,
+): Promise<PureMasterlistData> =>
+  await invoke("get_data_pure_masterlist", { pureRemoteTotal: pureRemoteTotal ?? null });

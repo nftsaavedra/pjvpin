@@ -285,10 +285,10 @@ const SingleDocenteReport: React.FC<SingleInvestigadorReportProps> = ({
               {publicaciones.map((p) => (
                 <tr key={p.id_publicacion}>
                   <td>{p.titulo}</td>
-                  <td>{p.tipo_publicacion ?? "-"}</td>
+                  <td>{p.tipo}</td>
                   <td>{p.doi ?? "-"}</td>
-                  <td>{p.anio_publicacion ?? "-"}</td>
-                  <td>{p.journal_titulo ?? "-"}</td>
+                  <td>{p.anio ?? "-"}</td>
+                  <td>{p.revista_titulo ?? "-"}</td>
                   <td>{p.issn ?? "-"}</td>
                 </tr>
               ))}

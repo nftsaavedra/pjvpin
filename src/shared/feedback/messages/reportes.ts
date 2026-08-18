@@ -20,6 +20,33 @@ export const reportes = {
   exportarTodosExcel: "Exportar todos a Excel",
   investigadoresListosParaExportar: (count: number) =>
     `${count} investigadores listos para exportar`,
+  pureMasterList: {
+    titulo: "Pure Master List (Elsevier)",
+    subtitulo: "Exporta los investigadores PJVPIN al master list de pure.unf.edu.pe",
+    helpLabel: "Sobre Pure Master List",
+    helpContent:
+      "Genera un workbook Excel (hojas Persons y Stafforganisationrelations) en el formato del master list V8 de Elsevier Pure. La primera vez asigna un PersonID determinista desde la API; las sincronizaciones posteriores preservan los PersonIDs existentes para no duplicar personas.",
+    totalChip: (n: number) => `${n} total`,
+    actualizacionesChip: (n: number) => `${n} en Pure`,
+    altasChip: (n: number) => `${n} altas nuevas`,
+    sinCorreoChip: (n: number) => `${n} sin correo`,
+    sinOrcidChip: (n: number) => `${n} sin ORCID`,
+    pureRemotoChip: (n: number) => `Pure remoto: ${n}`,
+    pureRemotoSinDato: "Pure remoto: —",
+    exportar: "Exportar Master List (XLSX)",
+    exportarDescripcion: "Genera el workbook para importar en pure.unf.edu.pe",
+    exportando: "Generando XLSX...",
+    sincronizarBoton: "Sincronizar mapeo con Pure",
+    sincronizando: "Sincronizando...",
+    sincronizarDescripcion:
+      "Lee el listado de personas de Pure y guarda el PersonID en cada investigador (por DNI).",
+    sincronizarOk: (matched: number, assigned: number, total: number) =>
+      `Pure: ${total} personas leídas, ${matched} matched, ${assigned} nuevos asignados.`,
+    sincronizarError: (msg: string) => `Error sincronizando mapeo Pure: ${msg}`,
+    exportarExito: "Master List exportado correctamente",
+    exportarError: (msg: string) => `Error generando Master List: ${msg}`,
+    errorCargandoDatos: "Error cargando datos del Master List",
+  } as const,
   vistaPrevia: "Vista previa: Investigadores y trazabilidad de proyectos",
   vistaPreviaAriaLabel: "Tabla de vista previa de reportes",
   aside: {
