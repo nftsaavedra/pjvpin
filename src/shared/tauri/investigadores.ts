@@ -7,6 +7,7 @@ import type {
   RefreshInvestigadorRenacytFormacionResultado,
   RenacytLookupResult,
   ReniecDniLookupResult,
+  SyncPurePersonIdsResult,
 } from "./types";
 
 export interface CrearInvestigadorArgs {
@@ -100,3 +101,6 @@ export const descargarConstanciaRenacytInvestigador = async (
   });
   return new Uint8Array(bytes);
 };
+
+export const sincronizarPurePersonIds = async (): Promise<SyncPurePersonIdsResult> =>
+  await invoke("sincronizar_pure_person_ids");

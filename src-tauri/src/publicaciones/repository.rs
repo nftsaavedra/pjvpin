@@ -57,7 +57,7 @@ fn dto_to_model(dto: PublicacionCientificaDto) -> PublicacionCientifica {
     }
 }
 
-fn model_to_dto(m: &PublicacionCientifica) -> PublicacionCientificaDto {
+pub(crate) fn model_to_dto(m: &PublicacionCientifica) -> PublicacionCientificaDto {
     PublicacionCientificaDto {
         id: m.id.clone(),
         id_publicacion: m.id_publicacion.clone(),

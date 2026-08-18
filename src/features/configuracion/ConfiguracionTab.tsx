@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useMemo, useState } from "react";
-import { GraduationCap, LibraryBig, Users } from "lucide-react";
+import { Building2, GraduationCap, LibraryBig, Users } from "lucide-react";
 import type { Usuario } from "../auth/api";
 import { hasPermission } from "@/shared/auth/permissions";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -17,12 +17,17 @@ const CatalogosPanel = lazy(async () => {
   return { default: module.CatalogosPanel };
 });
 
+const OrgUnitsPanel = lazy(async () => {
+  const module = await import("./org-units/OrgUnitsPanel");
+  return { default: module.OrgUnitsPanel };
+});
+
 const UsuariosTab = lazy(async () => {
   const module = await import("./usuarios/UsuariosTab");
   return { default: module.UsuariosTab };
 });
 
-type ConfigSection = "grados" | "catalogos" | "usuarios";
+type ConfigSection = "grados" | "catalogos" | "org_units" | "usuarios";
 
 interface ConfiguracionTabProps {
   currentUser: Usuario | null;
@@ -48,6 +53,8 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
 }) => {
   const canManageCatalogos = hasPermission(currentUser?.rol, "catalogos.manage");
   const canViewCatalogos = canManageCatalogos;
+  const canViewOrgUnits = hasPermission(currentUser?.rol, "org_units.view");
+  const canManageOrgUnits = hasPermission(currentUser?.rol, "org_units.manage");
 
   const [activeSection, setActiveSection] = useState<ConfigSection>(
     isAdmin ? "usuarios" : "grados",
@@ -56,8 +63,9 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
   const effectiveSection = useMemo<ConfigSection>(() => {
     if (!isAdmin && activeSection === "usuarios") return "grados";
     if (!canViewCatalogos && activeSection === "catalogos") return "grados";
+    if (!canViewOrgUnits && activeSection === "org_units") return "grados";
     return activeSection;
-  }, [activeSection, canViewCatalogos, isAdmin]);
+  }, [activeSection, canViewCatalogos, canViewOrgUnits, isAdmin]);
 
   const sections: Tab[] = [
     {
@@ -74,6 +82,15 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
           },
         ]
       : []),
+    ...(canViewOrgUnits
+      ? [
+          {
+            id: "org_units",
+            label: messages.configuracion.tab.orgUnits,
+            icon: Building2,
+          },
+        ]
+      : []),
     ...(isAdmin
       ? [
           {
@@ -86,11 +103,22 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
   ];
 
   const visibleSections = sections.filter((section) =>
-    section.id === "usuarios" ? isAdmin : section.id === "catalogos" ? canViewCatalogos : true,
+    section.id === "usuarios"
+      ? isAdmin
+      : section.id === "catalogos"
+        ? canViewCatalogos
+        : section.id === "org_units"
+          ? canViewOrgUnits
+          : true,
   );
 
   const handleSectionChange = (sectionId: string) => {
-    if (sectionId === "grados" || sectionId === "catalogos" || sectionId === "usuarios") {
+    if (
+      sectionId === "grados" ||
+      sectionId === "catalogos" ||
+      sectionId === "org_units" ||
+      sectionId === "usuarios"
+    ) {
       setActiveSection(sectionId);
     }
   };
@@ -129,6 +157,14 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
               {effectiveSection === "catalogos" && canViewCatalogos && currentUser && (
                 <CatalogosPanel
                   canManage={canManageCatalogos}
+                  onDataModified={onDataModified}
+                  refreshTrigger={refreshTrigger}
+                />
+              )}
+
+              {effectiveSection === "org_units" && canViewOrgUnits && currentUser && (
+                <OrgUnitsPanel
+                  canManage={canManageOrgUnits}
                   onDataModified={onDataModified}
                   refreshTrigger={refreshTrigger}
                 />

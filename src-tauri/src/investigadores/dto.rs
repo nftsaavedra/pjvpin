@@ -82,6 +82,10 @@ pub struct InvestigadorDto {
     pub grupo_investigacion_id: Option<String>,
     #[serde(default)]
     pub tipo_documento: Option<String>,
+    /// PersonID del Master List de Pure (PER000X). Asignado por
+    /// `sincronizar_pure_person_ids`; permite upsert sin duplicar.
+    #[serde(default)]
+    pub pure_person_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -178,39 +182,6 @@ pub struct RefreshInvestigadorRenacytFormacionResultadoDto {
     pub investigador: InvestigadorDetalleDto,
     pub actualizada: bool,
     pub mensaje: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PublicacionDto {
-    pub id_publicacion: String,
-    pub pure_uuid: String,
-    pub persona_id: String,
-    #[serde(default)]
-    pub proyecto_id: Option<String>,
-    pub titulo: String,
-    #[serde(default)]
-    pub tipo_publicacion: Option<String>,
-    #[serde(default)]
-    pub doi: Option<String>,
-    #[serde(default)]
-    pub scopus_eid: Option<String>,
-    #[serde(default)]
-    pub anio_publicacion: Option<i32>,
-    #[serde(default)]
-    pub autores_json: Option<String>,
-    #[serde(default)]
-    pub estado_publicacion: Option<String>,
-    #[serde(default)]
-    pub journal_titulo: Option<String>,
-    #[serde(default)]
-    pub issn: Option<String>,
-    #[serde(default)]
-    pub pure_sincronizado_at: Option<i64>,
-    #[serde(default)]
-    pub created_at: Option<i64>,
-    #[serde(default)]
-    pub updated_at: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

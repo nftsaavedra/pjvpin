@@ -1,5 +1,5 @@
 import { invoke } from "./client";
-import type { Publicacion, SyncPublicacionesResult } from "./types";
+import type { PublicacionCientifica, SyncPublicacionesResult } from "./types";
 
 export const sincronizarPublicacionesPure = async (
   investigador_id: string,
@@ -9,6 +9,6 @@ export const sincronizarPublicacionesPure = async (
 
 export const getPublicacionesInvestigador = async (
   investigador_id: string,
-): Promise<Publicacion[]> => {
+): Promise<PublicacionCientifica[]> => {
   return await invoke("get_publicaciones_investigador", { investigadorId: investigador_id });
 };

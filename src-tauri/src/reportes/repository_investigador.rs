@@ -281,8 +281,9 @@ pub async fn build_reporte_investigador_integral(
             let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
             docs.into_iter()
                 .map(|d| {
-                    let dto: EquipamientoDto = mongodb::bson::from_document(d)
-                        .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
+                    let dto: EquipamientoDto = mongodb::bson::from_document(d).map_err(|e| {
+                        AppError::InternalError(format!("BSON->EquipamientoDto: {e}"))
+                    })?;
                     Equipamiento::try_from(dto)
                 })
                 .collect::<Result<Vec<_>, _>>()?
@@ -295,40 +296,51 @@ pub async fn build_reporte_investigador_integral(
         .map(|e| EquipamientoConEtiquetas::from_equipamiento(e, &catalogo_map))
         .collect();
 
-    let publicaciones_raw: Vec<crate::investigadores::models::Publicacion> = {
-        use crate::investigadores::dto::PublicacionDto;
-        use std::convert::TryFrom;
-        let cursor = db
-            .collection::<mongodb::bson::Document>("publicaciones")
-            .find(doc! { "investigador_id": id_investigador })
-            .await?;
-        let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
-        docs.into_iter()
-            .map(|d| {
-                let dto: PublicacionDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->PublicacionDto: {e}")))?;
-                crate::investigadores::models::Publicacion::try_from(dto)
-            })
-            .collect::<Result<Vec<_>, _>>()?
+    // B1: publicaciones por investigador via pivot `publicacion_autores`
+    // (reemplaza la coleccion legacy `publicaciones`). Una publicacion cuenta
+    // una vez por persona que figure como autora.
+    let publicaciones_raw: Vec<crate::publicaciones::models::PublicacionCientifica> = {
+        let id_persona = &investigador.persona_id;
+        let mut ids_publicacion: Vec<String> = Vec::new();
+        {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("publicacion_autores")
+                .find(doc! { "id_persona": id_persona })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            for d in docs {
+                if let Ok(p) = mongodb::bson::from_document::<
+                    crate::publicaciones::autores::PublicacionAutorDoc,
+                >(d)
+                {
+                    ids_publicacion.push(p.id_publicacion);
+                }
+            }
+        }
+        if ids_publicacion.is_empty() {
+            Vec::new()
+        } else {
+            let cursor = db
+                .collection::<mongodb::bson::Document>("publicaciones_cientificas")
+                .find(doc! { "id_publicacion": { "$in": &ids_publicacion }, "activo": 1 })
+                .await?;
+            let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
+            docs.into_iter()
+                .map(|d| {
+                    let dto: crate::publicaciones::dto::PublicacionCientificaDto =
+                        mongodb::bson::from_document(d).map_err(|e| {
+                            AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}"))
+                        })?;
+                    crate::publicaciones::models::PublicacionCientifica::try_from(dto)
+                })
+                .collect::<Result<Vec<_>, _>>()?
+        }
     };
 
     let total_publicaciones = publicaciones_raw.len();
     let publicaciones: Vec<PublicacionConEtiquetas> = publicaciones_raw
         .iter()
-        .map(|p| PublicacionConEtiquetas {
-            id_publicacion: p.id_publicacion.clone(),
-            pure_uuid: p.pure_uuid.clone(),
-            titulo: p.titulo.clone(),
-            tipo_publicacion: p.tipo_publicacion.clone(),
-            doi: p.doi.clone(),
-            scopus_eid: p.scopus_eid.clone(),
-            anio_publicacion: p.anio_publicacion,
-            autores_json: p.autores_json.clone(),
-            estado_publicacion: p.estado_publicacion.clone(),
-            journal_titulo: p.journal_titulo.clone(),
-            issn: p.issn.clone(),
-            pure_sincronizado_at: p.pure_sincronizado_at,
-        })
+        .map(PublicacionConEtiquetas::from_publicacion)
         .collect();
 
     let trazabilidad = TrazabilidadInvestigador {

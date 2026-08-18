@@ -413,11 +413,8 @@ pub async fn eliminar_proyecto(
         // Los pivots proyecto_organizaciones y proyecto_financiamientos son
         // relaciones hard (no soft-delete) — se eliminan fisicamente.
         // Los campos OCDE (entity_type="PROJECT") tambien se eliminan.
-        crate::proyectos::proyecto_organizaciones::repository::delete_for_proyecto(
-            db,
-            id_proyecto,
-        )
-        .await?;
+        crate::proyectos::proyecto_organizaciones::repository::delete_for_proyecto(db, id_proyecto)
+            .await?;
         crate::proyectos::proyecto_financiamientos::repository::delete_for_proyecto(
             db,
             id_proyecto,

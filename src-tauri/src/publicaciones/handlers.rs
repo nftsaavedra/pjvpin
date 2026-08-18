@@ -94,11 +94,8 @@ pub async fn eliminar_publicacion(
     .await?;
     repository::delete(state.mongo_db()?, id).await?;
     // Cascade: limpiar pivote M:N de autores de la publicacion.
-    crate::publicaciones::autores::repository::delete_for_publicacion(
-        state.mongo_db()?,
-        id,
-    )
-    .await?;
+    crate::publicaciones::autores::repository::delete_for_publicacion(state.mongo_db()?, id)
+        .await?;
     Ok(())
 }
 
@@ -135,7 +132,12 @@ pub async fn vincular_autor_publicacion(
         rbac::AppPermission::InvestigadoresManage,
     )
     .await?;
-    crate::shared::refs::ensure_exists(state.mongo_db()?, "publicaciones_cientificas", &id_publicacion).await?;
+    crate::shared::refs::ensure_exists(
+        state.mongo_db()?,
+        "publicaciones_cientificas",
+        &id_publicacion,
+    )
+    .await?;
     crate::shared::refs::ensure_exists(state.mongo_db()?, "personas", &id_persona).await?;
     if let Some(ref org) = id_org_unit_afiliacion {
         crate::shared::refs::ensure_exists(state.mongo_db()?, "org_units", org).await?;
@@ -151,7 +153,11 @@ pub async fn vincular_autor_publicacion(
     )?;
     crate::publicaciones::autores::repository::insert(state.mongo_db()?, &pa).await?;
     crate::shared::audit::write_generic_audit(
-        &actor, "publicacion.vincular_autor", "publicacion_autor", &pa.id, "insert".to_string(),
+        &actor,
+        "publicacion.vincular_autor",
+        "publicacion_autor",
+        &pa.id,
+        "insert".to_string(),
     );
     Ok(())
 }
@@ -169,7 +175,11 @@ pub async fn desvincular_autor_publicacion(
     .await?;
     crate::publicaciones::autores::repository::delete(state.mongo_db()?, &id_pivot).await?;
     crate::shared::audit::write_generic_audit(
-        &actor, "publicacion.desvincular_autor", "publicacion_autor", &id_pivot, "delete".to_string(),
+        &actor,
+        "publicacion.desvincular_autor",
+        "publicacion_autor",
+        &id_pivot,
+        "delete".to_string(),
     );
     Ok(())
 }

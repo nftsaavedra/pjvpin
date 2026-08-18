@@ -3,10 +3,33 @@ use crate::proyectos::dto::{
     ExportDataProyectoAreaDto, ExportDataRecursoDto, InvestigadorProyectosCountDto,
     KpisDashboardDto, ProyectosTrendItemDto, RenacytDistribucionItemDto,
 };
-use crate::reportes::dto::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
+use crate::reportes::cerif::{self, CerifExportResult};
+use crate::reportes::dto::{
+    PureMasterlistData, ReporteInvestigadorIntegral, ReporteProyectoIntegral,
+};
 use crate::shared::error::AppError;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
+
+/// Exporta el modelo consolidado a un documento CERIF (JSON) y lo escribe en
+/// disco reusando `write_export_file` (RBAC `ReportesExport` + audit).
+pub async fn exportar_cerif(
+    state: &AppState,
+    window_label: &str,
+    file_path: &str,
+    entidad: Option<String>,
+) -> Result<CerifExportResult, AppError> {
+    let scope = cerif::parse_scope(entidad.as_deref())?;
+    let db = state.mongo_db()?;
+    let doc = cerif::build_cerif_document(db, scope).await?;
+    let bytes = cerif::cerif_to_json_bytes(&doc)?;
+    write_export_file(state, window_label, file_path, bytes.clone()).await?;
+    Ok(CerifExportResult::from_document(
+        &entidad.unwrap_or_else(|| "todo".to_string()),
+        &doc,
+        bytes.len(),
+    ))
+}
 
 pub async fn get_estadisticas_proyectos_x_investigador(
     state: &AppState,
@@ -197,4 +220,20 @@ pub async fn get_renacyt_distribucion(
 ) -> Result<Vec<RenacytDistribucionItemDto>, AppError> {
     rbac::require_permission(state, window_label, rbac::AppPermission::DashboardView).await?;
     crate::proyectos::repository_stats::get_renacyt_distribucion(state.mongo_db()?).await
+}
+
+/// Devuelve el payload completo del reporte "Pure Master List" para los
+/// investigadores activos. RBAC `ReportesView` (cualquier rol con acceso a
+/// reportes puede previsualizar la distribucion antes del export).
+pub async fn get_data_pure_masterlist(
+    state: &AppState,
+    window_label: &str,
+    pure_remote_total: Option<usize>,
+) -> Result<PureMasterlistData, AppError> {
+    rbac::require_permission(state, window_label, rbac::AppPermission::ReportesView).await?;
+    crate::reportes::repository_pure_masterlist::build_pure_masterlist_data(
+        state.mongo_db()?,
+        pure_remote_total,
+    )
+    .await
 }

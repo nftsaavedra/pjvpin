@@ -29,6 +29,7 @@ export const configuracion = {
     grados: "Grados",
     catalogos: "Catálogos",
     usuarios: "Usuarios",
+    orgUnits: "Unidades Org.",
     sinPermisos: "No tiene permisos para acceder a ninguna sección de configuración.",
     ariaLabel: "Secciones de configuración",
   } as const,

@@ -170,6 +170,29 @@ pub fn is_iso_639_1(idioma: &str) -> bool {
     idioma.len() == 2 && idioma.chars().all(|c| c.is_ascii_lowercase())
 }
 
+/// Mapea `Persona.sexo` (valores libres tipicos: "M"/"F", "Masculino"/
+/// "Femenino", "hombre"/"mujer", "1"/"2") al termino SKOS del vocabulario
+/// `concytec_terminos`. Devuelve `None` si el valor no se reconoce; el
+/// consumidor (exportador CERIF / conector PeruCRIS) omite el campo genero.
+pub fn genero_to_skos(sexo: Option<&str>) -> Option<String> {
+    match sexo.map(|v| v.trim().to_lowercase()).as_deref() {
+        Some("m") | Some("1") | Some("masculino") | Some("hombre") => Some("masculino".to_string()),
+        Some("f") | Some("2") | Some("femenino") | Some("mujer") => Some("femenino".to_string()),
+        _ => None,
+    }
+}
+
+/// Mapea `OrgUnit.es_publica` (bool) al codigo SKOS del vocabulario
+/// `ocde_naturaleza_institucion` ("publica" | "privada"). Usado por el
+/// exportador CERIF al emitir la naturaleza institucional.
+pub fn naturaleza_to_skos(es_publica: bool) -> &'static str {
+    if es_publica {
+        "publica"
+    } else {
+        "privada"
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -196,5 +219,30 @@ mod tests {
         assert!(is_iso_639_1("en"));
         assert!(!is_iso_639_1("ES"));
         assert!(!is_iso_639_1("eng"));
+    }
+
+    #[test]
+    fn genero_to_skos_mapea_valores_comunes() {
+        assert_eq!(genero_to_skos(Some("M")), Some("masculino".to_string()));
+        assert_eq!(
+            genero_to_skos(Some("Masculino")),
+            Some("masculino".to_string())
+        );
+        assert_eq!(genero_to_skos(Some("f")), Some("femenino".to_string()));
+        assert_eq!(
+            genero_to_skos(Some("Femenino")),
+            Some("femenino".to_string())
+        );
+        assert_eq!(genero_to_skos(Some("1")), Some("masculino".to_string()));
+        assert_eq!(genero_to_skos(Some("2")), Some("femenino".to_string()));
+        assert_eq!(genero_to_skos(None), None);
+        assert_eq!(genero_to_skos(Some("otro")), None);
+        assert_eq!(genero_to_skos(Some("  ")), None);
+    }
+
+    #[test]
+    fn naturaleza_to_skos_mapea_bool() {
+        assert_eq!(naturaleza_to_skos(true), "publica");
+        assert_eq!(naturaleza_to_skos(false), "privada");
     }
 }

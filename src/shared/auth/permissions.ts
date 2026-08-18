@@ -14,7 +14,12 @@ export type AppPermission =
   | "grados.manage"
   | "catalogos.view"
   | "catalogos.manage"
-  | "usuarios.manage";
+  | "geo.view"
+  | "usuarios.manage"
+  | "vocabularios.view"
+  | "vocabularios.manage"
+  | "org_units.view"
+  | "org_units.manage";
 
 interface RoleDefinition {
   label: string;
@@ -41,7 +46,12 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "grados.manage",
       "catalogos.view",
       "catalogos.manage",
+      "geo.view",
       "usuarios.manage",
+      "vocabularios.view",
+      "vocabularios.manage",
+      "org_units.view",
+      "org_units.manage",
     ],
     modules: [
       "Dashboard",
@@ -52,6 +62,7 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "Reportes",
       "Grados",
       "Catálogos",
+      "Unidades Org.",
       "Usuarios",
       "Configuración",
     ],
@@ -73,7 +84,12 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "grados.manage",
       "catalogos.view",
       "catalogos.manage",
+      "geo.view",
       "usuarios.manage",
+      "vocabularios.view",
+      "vocabularios.manage",
+      "org_units.view",
+      "org_units.manage",
     ],
     modules: [
       "Dashboard",
@@ -84,6 +100,7 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "Reportes",
       "Grados",
       "Catálogos",
+      "Unidades Org.",
       "Usuarios",
     ],
   },
@@ -101,8 +118,20 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "reportes.view",
       "reportes.export",
       "catalogos.view",
+      "geo.view",
+      "org_units.view",
+      "org_units.manage",
+      "vocabularios.view",
     ],
-    modules: ["Dashboard", "Investigadores", "Proyectos", "Grupos", "Recursos", "Reportes"],
+    modules: [
+      "Dashboard",
+      "Investigadores",
+      "Proyectos",
+      "Grupos",
+      "Recursos",
+      "Reportes",
+      "Unidades Org.",
+    ],
   },
   consulta: {
     label: "Consulta",
@@ -113,8 +142,11 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "proyectos.view",
       "grupos.view",
       "reportes.view",
+      "geo.view",
+      "org_units.view",
+      "vocabularios.view",
     ],
-    modules: ["Dashboard", "Investigadores", "Proyectos", "Grupos", "Reportes"],
+    modules: ["Dashboard", "Investigadores", "Proyectos", "Grupos", "Reportes", "Unidades Org."],
   },
   responsable_proyecto: {
     label: "Resp. Proyecto",
@@ -126,8 +158,16 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
       "proyectos.manage",
       "reportes.view",
       "reportes.export",
+      "org_units.view",
+      "vocabularios.view",
     ],
-    modules: ["Dashboard", "Investigadores", "Proyectos", "Reportes"],
+    modules: [
+      "Dashboard",
+      "Investigadores",
+      "Proyectos",
+      "Reportes",
+      "Unidades Org.",
+    ],
   },
 };
 

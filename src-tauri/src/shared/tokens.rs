@@ -22,6 +22,9 @@ const PURE_API_KEY_MISSING: &str =
     "No se encontro la API key de Pure. \
      Configure PJVPIN_PURE_API_KEY (o PURE_API_KEY) en .env (desarrollo) o en pjvpin.env (produccion).";
 
+const PERUCRIS_API_KEY_MISSING: &str = "No se encontro la API key de PeruCRIS. \
+     Configure PJVPIN_PERUCRIS_API_KEY en .env (desarrollo) o en pjvpin.env (produccion).";
+
 /// Servicio de resolucion de credenciales externas.
 ///
 /// Se construye una vez en el bootstrap desde [`RuntimeConfig`] y se guarda
@@ -35,6 +38,7 @@ const PURE_API_KEY_MISSING: &str =
 pub struct TokenResolver {
     reniec_token: Option<String>,
     pure_api_key: Option<String>,
+    perucris_api_key: Option<String>,
 }
 
 impl TokenResolver {
@@ -42,6 +46,7 @@ impl TokenResolver {
         Self {
             reniec_token: config.reniec.token.clone(),
             pure_api_key: config.pure.api_key.clone(),
+            perucris_api_key: config.perucris.api_key.clone(),
         }
     }
 
@@ -53,6 +58,11 @@ impl TokenResolver {
     /// `true` si la API key de Pure esta configurada.
     pub fn has_pure(&self) -> bool {
         self.pure_api_key.is_some()
+    }
+
+    /// `true` si la API key de PeruCRIS esta configurada.
+    pub fn has_perucris(&self) -> bool {
+        self.perucris_api_key.is_some()
     }
 
     /// Resuelve el bearer token de RENIEC o devuelve un `ConfigurationError`
@@ -70,13 +80,21 @@ impl TokenResolver {
             .as_deref()
             .ok_or_else(|| AppError::ConfigurationError(PURE_API_KEY_MISSING.to_string()))
     }
+
+    /// Resuelve la API key de PeruCRIS o devuelve un `ConfigurationError`
+    /// canonico apuntando a `PJVPIN_PERUCRIS_API_KEY`.
+    pub fn resolve_perucris_api_key(&self) -> Result<&str, AppError> {
+        self.perucris_api_key
+            .as_deref()
+            .ok_or_else(|| AppError::ConfigurationError(PERUCRIS_API_KEY_MISSING.to_string()))
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::shared::config::{
-        DatabaseConfig, PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig,
+        DatabaseConfig, PeruCrisConfig, PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig,
     };
 
     fn cfg(reniec_token: Option<&str>, pure_key: Option<&str>) -> RuntimeConfig {
@@ -99,6 +117,10 @@ mod tests {
             pure: PureConfig {
                 api_base_url: "https://x".into(),
                 api_key: pure_key.map(str::to_string),
+            },
+            perucris: PeruCrisConfig {
+                api_base_url: "https://x".into(),
+                api_key: None,
             },
         }
     }
@@ -141,6 +163,28 @@ mod tests {
         match err {
             AppError::ConfigurationError(msg) => {
                 assert!(msg.contains("PJVPIN_PURE_API_KEY"));
+            }
+            _ => panic!("expected ConfigurationError"),
+        }
+    }
+
+    #[test]
+    fn resolve_perucris_returns_value() {
+        let mut c = cfg(None, None);
+        c.perucris.api_key = Some("pk".to_string());
+        let r = TokenResolver::from_config(&c);
+        assert!(r.has_perucris());
+        assert_eq!(r.resolve_perucris_api_key().unwrap(), "pk");
+    }
+
+    #[test]
+    fn resolve_perucris_missing_returns_canonical_error() {
+        let r = TokenResolver::from_config(&cfg(None, None));
+        assert!(!r.has_perucris());
+        let err = r.resolve_perucris_api_key().unwrap_err();
+        match err {
+            AppError::ConfigurationError(msg) => {
+                assert!(msg.contains("PJVPIN_PERUCRIS_API_KEY"));
             }
             _ => panic!("expected ConfigurationError"),
         }

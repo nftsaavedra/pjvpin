@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BookOpen, ChevronDown, ChevronUp, ExternalLink, RefreshCw } from "lucide-react";
-import type { Publicacion, SyncPublicacionesResult } from "../api";
+import type { PublicacionCientifica, SyncPublicacionesResult } from "../api";
 import {
   getPublicacionesInvestigador,
   sincronizarPublicacionesPure,
@@ -13,7 +13,6 @@ import { InlineIconButton } from "@/shared/ui/InlineIconButton";
 import { SkeletonBlock } from "@/shared/ui/Skeleton";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { parseAutores } from "@/shared/utils/investigadorUtils";
 import { openExternalUrl } from "@/shared/utils/linkUtils";
 
 interface InvestigadorPublicacionesSectionProps {
@@ -32,7 +31,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
   canSyncPure,
 }) => {
   const [expanded, setExpanded] = useState(false);
-  const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
+  const [publicaciones, setPublicaciones] = useState<PublicacionCientifica[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -167,28 +166,28 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
           {publicaciones.length > 0 && (
             <div className="renacyt-formaciones-list">
               {publicaciones.map((pub) => (
-                <article key={pub.idPublicacion} className="renacyt-formacion-card">
+                <article key={pub.id_publicacion} className="renacyt-formacion-card">
                   <div className="renacyt-formacion-head">
                     <strong>{pub.titulo}</strong>
-                    {pub.anioPublicacion && <Badge variant="info">{pub.anioPublicacion}</Badge>}
+                    {pub.anio && <Badge variant="info">{pub.anio}</Badge>}
                   </div>
                   <div className="renacyt-formacion-grid">
-                    {pub.tipoPublicacion && (
+                    {pub.tipo && (
                       <span>
                         <strong>{messages.investigadores.publicaciones.fields.tipo}</strong>{" "}
-                        {pub.tipoPublicacion}
+                        {pub.tipo}
                       </span>
                     )}
-                    {pub.journalTitulo && (
+                    {pub.revista_titulo && (
                       <span>
                         <strong>{messages.investigadores.publicaciones.fields.journal}</strong>{" "}
-                        {pub.journalTitulo}
+                        {pub.revista_titulo}
                       </span>
                     )}
-                    {pub.estadoPublicacion && (
+                    {pub.estado_publicacion && (
                       <span>
                         <strong>{messages.investigadores.publicaciones.fields.estado}</strong>{" "}
-                        {pub.estadoPublicacion}
+                        {pub.estado_publicacion}
                       </span>
                     )}
                     {pub.doi && (
@@ -205,12 +204,6 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
                           }}
                         />
                         {pub.doi}
-                      </span>
-                    )}
-                    {pub.autoresJson && parseAutores(pub.autoresJson).length > 0 && (
-                      <span className="renacyt-formacion-full-col">
-                        <strong>{messages.investigadores.publicaciones.fields.autores}</strong>{" "}
-                        {parseAutores(pub.autoresJson).join("; ")}
                       </span>
                     )}
                   </div>

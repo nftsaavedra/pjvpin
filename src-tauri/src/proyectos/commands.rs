@@ -145,15 +145,14 @@ pub async fn listar_orgs_proyecto(
     window: Window,
     state: State<'_, AppState>,
     id_proyecto: String,
-) -> Result<
-    Vec<crate::proyectos::proyecto_organizaciones::ProyectoOrganizacionDoc>,
-    AppError,
-> {
-    Ok(handlers::listar_orgs_proyecto(&state, window.label(), id_proyecto)
-        .await?
-        .into_iter()
-        .map(crate::proyectos::proyecto_organizaciones::ProyectoOrganizacionDoc::from)
-        .collect())
+) -> Result<Vec<crate::proyectos::proyecto_organizaciones::ProyectoOrganizacionDoc>, AppError> {
+    Ok(
+        handlers::listar_orgs_proyecto(&state, window.label(), id_proyecto)
+            .await?
+            .into_iter()
+            .map(crate::proyectos::proyecto_organizaciones::ProyectoOrganizacionDoc::from)
+            .collect(),
+    )
 }
 
 #[tauri::command]
@@ -187,13 +186,12 @@ pub async fn listar_financiamientos_proyecto(
     window: Window,
     state: State<'_, AppState>,
     id_proyecto: String,
-) -> Result<
-    Vec<crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc>,
-    AppError,
-> {
-    Ok(handlers::listar_financiamientos_proyecto(&state, window.label(), id_proyecto)
-        .await?
-        .into_iter()
-        .map(crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc::from)
-        .collect())
+) -> Result<Vec<crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc>, AppError> {
+    Ok(
+        handlers::listar_financiamientos_proyecto(&state, window.label(), id_proyecto)
+            .await?
+            .into_iter()
+            .map(crate::proyectos::proyecto_financiamientos::ProyectoFinanciamientoDoc::from)
+            .collect(),
+    )
 }

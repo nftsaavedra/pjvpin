@@ -8,7 +8,6 @@ use mongodb::{
 };
 
 use crate::catalogos::models::CatalogoItem;
-use crate::investigadores::models::Publicacion;
 use crate::proyectos::dto::{ParticipacionRecordDto, ProyectoDto};
 use crate::proyectos::models::{ParticipacionRecord, Proyecto};
 use crate::recursos::models::{Equipamiento, Financiamiento, Patente};
@@ -81,9 +80,12 @@ pub async fn build_reporte_proyecto_integral(
             .map(|g| (Some(g.nombre.clone()), Some(g.id_grupo.clone())))
             .unwrap_or((None, None));
 
+        // B1: conteo por pivot `publicacion_autores` (la coleccion legacy
+        // `publicaciones` dejo de existir; el sync Pure escribe en
+        // `publicaciones_cientificas` y la persona se vincula como autora).
         let publicaciones_count = db
-            .collection::<Publicacion>("publicaciones")
-            .count_documents(doc! { "persona_id": &investigador.persona_id })
+            .collection::<mongodb::bson::Document>("publicacion_autores")
+            .count_documents(doc! { "id_persona": &investigador.persona_id })
             .await? as i64;
 
         let persona_doc = personas.get(&investigador.persona_id);
@@ -151,9 +153,10 @@ pub async fn build_reporte_proyecto_integral(
         let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
         docs.into_iter()
             .map(|d| {
-                let dto: PublicacionCientificaDto = mongodb::bson::from_document(d).map_err(
-                    |e| AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}")),
-                )?;
+                let dto: PublicacionCientificaDto =
+                    mongodb::bson::from_document(d).map_err(|e| {
+                        AppError::InternalError(format!("BSON->PublicacionCientificaDto: {e}"))
+                    })?;
                 crate::publicaciones::models::PublicacionCientifica::try_from(dto)
             })
             .collect::<Result<Vec<_>, _>>()?
@@ -199,8 +202,9 @@ pub async fn build_reporte_proyecto_integral(
             let docs: Vec<mongodb::bson::Document> = cursor.try_collect().await?;
             docs.into_iter()
                 .map(|d| {
-                    let dto: EquipamientoDto = mongodb::bson::from_document(d)
-                        .map_err(|e| AppError::InternalError(format!("BSON->EquipamientoDto: {e}")))?;
+                    let dto: EquipamientoDto = mongodb::bson::from_document(d).map_err(|e| {
+                        AppError::InternalError(format!("BSON->EquipamientoDto: {e}"))
+                    })?;
                     Equipamiento::try_from(dto)
                 })
                 .collect::<Result<Vec<_>, _>>()?

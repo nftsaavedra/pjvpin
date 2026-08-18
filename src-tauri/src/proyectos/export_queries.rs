@@ -5,8 +5,7 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, bson::Document, Database};
 
 use crate::catalogos::models::CatalogoItem;
-use crate::investigadores::dto::PublicacionDto;
-use crate::investigadores::models::{Investigador, Publicacion};
+use crate::investigadores::models::Investigador;
 use crate::investigadores::repository as investigadores_repo;
 use crate::proyectos::dto::{
     ExportDataConProjectosDto, ExportDataDto, ExportDataGrupoDto, ExportDataInvestigadorPerfilDto,
@@ -292,9 +291,7 @@ pub async fn get_data_exportacion_recursos(
                 crate::recursos::patente_inventores::PatenteInventorDoc,
             >(d)
             {
-                primer_inventor
-                    .entry(p.id_patente)
-                    .or_insert(p.id_persona);
+                primer_inventor.entry(p.id_patente).or_insert(p.id_persona);
             }
         }
     }
@@ -342,8 +339,7 @@ pub async fn get_data_exportacion_recursos(
     for e in &equipamientos {
         if let Some(id_fin) = e.id_financiamiento.as_ref() {
             if let Some(proys) = fin_proyectos.get(id_fin) {
-                equip_proyectos
-                    .insert(e.id_equipamiento.clone(), proys.clone());
+                equip_proyectos.insert(e.id_equipamiento.clone(), proys.clone());
             }
         }
     }
@@ -380,7 +376,11 @@ pub async fn get_data_exportacion_recursos(
                     .values()
                     .find(|i| &i.persona_id == id_persona)
             })
-            .and_then(|i| personas.get(&i.persona_id).map(|pe| pe.nombre_completo.clone()));
+            .and_then(|i| {
+                personas
+                    .get(&i.persona_id)
+                    .map(|pe| pe.nombre_completo.clone())
+            });
         data.push(ExportDataRecursoDto {
             tipo_recurso: "Patente".to_string(),
             titulo_o_nombre: p.titulo.clone(),
@@ -483,11 +483,6 @@ pub async fn get_data_exportacion_investigadores_perfil(
         na.cmp(&nb)
     });
 
-    let persona_a_investigador: HashMap<String, String> = investigadores
-        .iter()
-        .map(|d| (d.persona_id.clone(), d.id_investigador.clone()))
-        .collect();
-
     let mut proyectos_por_investigador: HashMap<String, Vec<String>> = HashMap::new();
     for p in &participaciones {
         proyectos_por_investigador
@@ -496,26 +491,23 @@ pub async fn get_data_exportacion_investigadores_perfil(
             .push(p.id_proyecto.clone());
     }
 
-    let publicaciones: Vec<Publicacion> = {
+    // B1: conteo de publicaciones por persona via pivot `publicacion_autores`
+    // (la coleccion legacy `publicaciones` fue retirada; el sync Pure escribe
+    // en `publicaciones_cientificas` y vincula personas como autoras).
+    let mut publicaciones_por_persona: HashMap<String, i64> = HashMap::new();
+    {
         let cursor = db
-            .collection::<mongodb::bson::Document>("publicaciones")
+            .collection::<mongodb::bson::Document>("publicacion_autores")
             .find(doc! {})
             .await?;
         let docs: Vec<Document> = cursor.try_collect().await?;
-        docs.into_iter()
-            .map(|d| {
-                let dto: PublicacionDto = mongodb::bson::from_document(d)
-                    .map_err(|e| AppError::InternalError(format!("BSON->PublicacionDto: {e}")))?;
-                Publicacion::try_from(dto)
-            })
-            .collect::<Result<Vec<_>, _>>()?
-    };
-    let mut publicaciones_por_investigador: HashMap<String, i64> = HashMap::new();
-    for pub_item in &publicaciones {
-        if let Some(doc_id) = persona_a_investigador.get(&pub_item.persona_id) {
-            *publicaciones_por_investigador
-                .entry(doc_id.clone())
-                .or_default() += 1;
+        for d in docs {
+            if let Ok(pa) = mongodb::bson::from_document::<
+                crate::publicaciones::autores::PublicacionAutorDoc,
+            >(d)
+            {
+                *publicaciones_por_persona.entry(pa.id_persona).or_default() += 1;
+            }
         }
     }
 
@@ -542,8 +534,8 @@ pub async fn get_data_exportacion_investigadores_perfil(
         proyecto_titles.sort();
         let cantidad_proyectos = proyecto_titles.len() as i64;
 
-        let cantidad_publicaciones = publicaciones_por_investigador
-            .get(&investigador.id_investigador)
+        let cantidad_publicaciones = publicaciones_por_persona
+            .get(&investigador.persona_id)
             .copied()
             .unwrap_or(0);
 

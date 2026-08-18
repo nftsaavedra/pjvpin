@@ -17,15 +17,11 @@ pub async fn asignar_campo_ocde(
     entity_id: &str,
     ocde_codigo: &str,
 ) -> Result<EntityOcdeFieldDoc, AppError> {
-    let actor = rbac::require_permission(
-        state,
-        window_label,
-        rbac::AppPermission::OcdeAssignManage,
-    )
-    .await?;
-    let m =
-        repository::assign_campo_ocde(state.mongo_db()?, entity_type, entity_id, ocde_codigo)
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::OcdeAssignManage)
             .await?;
+    let m = repository::assign_campo_ocde(state.mongo_db()?, entity_type, entity_id, ocde_codigo)
+        .await?;
     crate::shared::audit::write_generic_audit(
         &actor,
         "ocde.assign",
@@ -43,12 +39,9 @@ pub async fn quitar_campo_ocde(
     entity_id: &str,
     ocde_codigo: &str,
 ) -> Result<bool, AppError> {
-    let actor = rbac::require_permission(
-        state,
-        window_label,
-        rbac::AppPermission::OcdeAssignManage,
-    )
-    .await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::OcdeAssignManage)
+            .await?;
     let removed =
         repository::quitar_campo_ocde(state.mongo_db()?, entity_type, entity_id, ocde_codigo)
             .await?;

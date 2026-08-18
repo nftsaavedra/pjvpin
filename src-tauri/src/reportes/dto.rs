@@ -222,18 +222,103 @@ pub struct TrazabilidadInvestigador {
 #[derive(Debug, Serialize)]
 pub struct PublicacionConEtiquetas {
     pub id_publicacion: String,
-    pub pure_uuid: String,
     pub titulo: String,
-    pub tipo_publicacion: Option<String>,
+    pub tipo: String,
     pub doi: Option<String>,
-    pub scopus_eid: Option<String>,
-    pub anio_publicacion: Option<i32>,
-    pub autores_json: Option<String>,
-    pub estado_publicacion: Option<String>,
-    pub journal_titulo: Option<String>,
+    pub anio: Option<i32>,
+    pub revista_titulo: Option<String>,
     pub issn: Option<String>,
-    pub pure_sincronizado_at: Option<i64>,
+    pub estado_publicacion: Option<String>,
+    pub pure_uuid: Option<String>,
+    pub dominio_origen: String,
+    pub es_revisado_por_pares: bool,
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Pure Master List (Elsevier Pure) — export para `pure.unf.edu.pe`
+//
+// Genera las filas de las hojas `Persons` y `Stafforganisationrelations`
+// del master list template V8 a partir de los investigadores activos de
+// PJVPIN. Los nombres de campos coinciden EXACTAMENTE con las columnas de
+// la plantilla para que Pure reconozca el workbook.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Una fila de la hoja `Persons` (26 columnas en plantilla V8; solo se
+/// emiten los campos que PJVPIN puede poblar — el resto va vacio).
+#[derive(Debug, Serialize)]
+pub struct PureMasterlistPersonRow {
+    pub person_id: String,
+    pub profiled: String,
+    pub username: Option<String>,
+    pub email: Option<String>,
+    pub title: Option<String>,
+    pub title_translated: Option<String>,
+    pub post_nominals: Option<String>,
+    pub firstname: Option<String>,
+    pub lastname: Option<String>,
+    pub firstname_translated: Option<String>,
+    pub lastname_translated: Option<String>,
+    pub first_name_known_as: Option<String>,
+    pub last_name_known_as: Option<String>,
+    pub first_name_sorting: Option<String>,
+    pub last_name_sorting: Option<String>,
+    pub former_last_name: Option<String>,
+    pub prior_affiliations: Option<String>,
+    pub nationality: Option<String>,
+    pub gender: String,
+    pub visibility: String,
+    pub orcid: Option<String>,
+    pub profile_photo: Option<String>,
+    pub client_id_1: Option<String>,
+    pub client_id_2: Option<String>,
+    pub client_id_3: Option<String>,
+    pub externally_authenticated: String,
+}
+
+/// Una fila de la hoja `Stafforganisationrelations` (18 columnas).
+#[derive(Debug, Serialize)]
+pub struct PureMasterlistStaffRow {
+    pub person_id: String,
+    pub organisation_id: String,
+    pub contract_type: Option<String>,
+    pub job_title: Option<String>,
+    pub job_description: Option<String>,
+    pub job_description_translated: Option<String>,
+    pub employed_as: String,
+    pub fte: Option<String>,
+    pub start_date: String,
+    pub end_date: Option<String>,
+    pub direct_phone_nr: Option<String>,
+    pub mobile_phone_nr: Option<String>,
+    pub fax_nr: Option<String>,
+    pub email: Option<String>,
+    pub website_url_en: Option<String>,
+    pub website_url_translated: Option<String>,
+    pub primary: String,
+    pub staff_type: String,
+}
+
+/// Resumen no-bloqueante para mostrar en el panel antes del export.
+#[derive(Debug, Serialize)]
+pub struct PureMasterlistSummary {
+    pub total: usize,
+    pub actualizaciones_pure: usize,
+    pub altas_nuevas: usize,
+    pub sin_correo: usize,
+    pub sin_orcid: usize,
+    pub pure_remoto_total: usize,
+}
+
+/// Payload que devuelve `get_data_pure_masterlist`.
+#[derive(Debug, Serialize)]
+pub struct PureMasterlistData {
+    pub persons: Vec<PureMasterlistPersonRow>,
+    pub staff_relations: Vec<PureMasterlistStaffRow>,
+    pub summary: PureMasterlistSummary,
+}
+
+/// Resultado de `sincronizar_pure_person_ids` — el contrato IPC vive en
+/// `crate::shared::external::pure_cmd::SyncPurePersonIdsResultDto`.
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Helpers
@@ -277,9 +362,7 @@ impl PatenteConEtiquetas {
 impl SoftwareConEtiquetas {
     /// Construye un `SoftwareConEtiquetas` a partir de una `PublicacionCientifica`
     /// de tipo Software (D5: productos -> publicaciones Software).
-    pub fn from_publicacion(
-        p: &crate::publicaciones::models::PublicacionCientifica,
-    ) -> Self {
+    pub fn from_publicacion(p: &crate::publicaciones::models::PublicacionCientifica) -> Self {
         Self {
             id_publicacion: p.id_publicacion.clone(),
             titulo: p.titulo.clone(),
@@ -290,6 +373,27 @@ impl SoftwareConEtiquetas {
             idioma: p.idioma.clone(),
             acceso_abierto: p.acceso_abierto.clone(),
             pure_uuid: p.pure_uuid.clone(),
+        }
+    }
+}
+
+impl PublicacionConEtiquetas {
+    /// Construye el etiquetado de reporte a partir del modelo consolidado
+    /// `PublicacionCientifica` (B1: el sync Pure y los reportes comparten la
+    /// coleccion `publicaciones_cientificas`).
+    pub fn from_publicacion(p: &crate::publicaciones::models::PublicacionCientifica) -> Self {
+        Self {
+            id_publicacion: p.id_publicacion.clone(),
+            titulo: p.titulo.clone(),
+            tipo: p.tipo.clone(),
+            doi: p.doi.clone(),
+            anio: p.anio,
+            revista_titulo: p.revista_titulo.clone(),
+            issn: p.issn.clone(),
+            estado_publicacion: p.estado_publicacion.clone(),
+            pure_uuid: p.pure_uuid.clone(),
+            dominio_origen: p.dominio_origen.clone(),
+            es_revisado_por_pares: p.es_revisado_por_pares,
         }
     }
 }

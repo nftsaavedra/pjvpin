@@ -16,9 +16,9 @@ export interface Patente {
   updated_at?: number | null;
 }
 
-/// D5: los productos tecnologicos ahora viven como `Publicacion { tipo:
-/// "software", id_proyecto }`. Mantenemos este alias para no romper imports
-/// legacy en componentes que ya referencian `Producto` directamente.
+/// D5: los productos tecnologicos ahora viven como `PublicacionCientifica`
+/// con `tipo: "software"` e `id_proyecto`. Mantenemos este alias para no
+/// romper imports legacy en componentes que ya referencian `Producto`.
 export type Producto = import("./evento.types").PublicacionCientifica;
 
 export interface Equipamiento {

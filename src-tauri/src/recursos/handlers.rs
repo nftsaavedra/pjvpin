@@ -348,7 +348,11 @@ pub async fn vincular_inventor_patente(
     )?;
     crate::recursos::patente_inventores::repository::insert(state.mongo_db()?, &pi).await?;
     crate::shared::audit::write_generic_audit(
-        &actor, "patente.vincular_inventor", "patente_inventor", &pi.id, "insert".to_string(),
+        &actor,
+        "patente.vincular_inventor",
+        "patente_inventor",
+        &pi.id,
+        "insert".to_string(),
     );
     Ok(())
 }
@@ -362,7 +366,11 @@ pub async fn desvincular_inventor_patente(
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
     crate::recursos::patente_inventores::repository::delete(state.mongo_db()?, &id_pivot).await?;
     crate::shared::audit::write_generic_audit(
-        &actor, "patente.desvincular_inventor", "patente_inventor", &id_pivot, "delete".to_string(),
+        &actor,
+        "patente.desvincular_inventor",
+        "patente_inventor",
+        &id_pivot,
+        "delete".to_string(),
     );
     Ok(())
 }
@@ -373,11 +381,8 @@ pub async fn listar_inventores_patente(
     id_patente: String,
 ) -> Result<Vec<crate::recursos::patente_inventores::PatenteInventor>, AppError> {
     rbac::require_permission(state, _window_label, rbac::AppPermission::RecursosManage).await?;
-    crate::recursos::patente_inventores::repository::list_by_patente(
-        state.mongo_db()?,
-        &id_patente,
-    )
-    .await
+    crate::recursos::patente_inventores::repository::list_by_patente(state.mongo_db()?, &id_patente)
+        .await
 }
 
 /// Vincula un titular (ORG_UNIT o PERSON) a una patente con orden.
@@ -411,7 +416,11 @@ pub async fn vincular_titular_patente(
     )?;
     crate::recursos::patente_titulares::repository::insert(state.mongo_db()?, &pt).await?;
     crate::shared::audit::write_generic_audit(
-        &actor, "patente.vincular_titular", "patente_titular", &pt.id, "insert".to_string(),
+        &actor,
+        "patente.vincular_titular",
+        "patente_titular",
+        &pt.id,
+        "insert".to_string(),
     );
     Ok(())
 }
@@ -425,7 +434,11 @@ pub async fn desvincular_titular_patente(
         rbac::require_permission(state, window_label, rbac::AppPermission::RecursosManage).await?;
     crate::recursos::patente_titulares::repository::delete(state.mongo_db()?, &id_pivot).await?;
     crate::shared::audit::write_generic_audit(
-        &actor, "patente.desvincular_titular", "patente_titular", &id_pivot, "delete".to_string(),
+        &actor,
+        "patente.desvincular_titular",
+        "patente_titular",
+        &id_pivot,
+        "delete".to_string(),
     );
     Ok(())
 }
@@ -436,9 +449,6 @@ pub async fn listar_titulares_patente(
     id_patente: String,
 ) -> Result<Vec<crate::recursos::patente_titulares::PatenteTitular>, AppError> {
     rbac::require_permission(state, _window_label, rbac::AppPermission::RecursosManage).await?;
-    crate::recursos::patente_titulares::repository::list_by_patente(
-        state.mongo_db()?,
-        &id_patente,
-    )
-    .await
+    crate::recursos::patente_titulares::repository::list_by_patente(state.mongo_db()?, &id_patente)
+        .await
 }

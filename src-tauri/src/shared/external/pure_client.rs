@@ -32,8 +32,6 @@ pub struct PureResearchOutput {
     pub electronic_versions: Vec<PureElectronicVersion>,
     #[serde(rename = "publicationStatuses", default)]
     pub publication_statuses: Vec<PurePublicationStatus>,
-    #[serde(default)]
-    pub identifiers: Vec<PureIdentifier>,
     #[serde(rename = "journalAssociation", default)]
     pub journal_association: Option<PureJournalAssociation>,
 }
@@ -86,14 +84,6 @@ pub struct PurePublicationDate {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct PureIdentifier {
-    #[serde(rename = "type", default)]
-    pub id_type: Option<PureClassifiedValue>,
-    #[serde(default)]
-    pub value: String,
-}
-
-#[derive(Debug, Deserialize)]
 pub struct PureJournalAssociation {
     #[serde(default)]
     pub title: Option<PureLocalizedValue>,
@@ -112,6 +102,68 @@ pub struct PureIssnValue {
 pub struct PurePerson {
     #[serde(default)]
     pub uuid: String,
+}
+
+/// Identifier de Pure expuesto por `/persons` (`identifiers`).
+///
+/// Pure distingue entre:
+/// - `PrimaryId` con `value: "PER000X"` (PersonID del master list).
+/// - `ClassifiedId` con `type.uri` que termina en `/personsources/<fuente>`
+///   (DNI, Scopus Author ID, Employee ID).
+#[derive(Debug, Deserialize, Default)]
+pub struct PureIdentifier {
+    #[serde(rename = "typeDiscriminator", default)]
+    pub type_discriminator: String,
+    #[serde(default)]
+    pub value: String,
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub r#type: Option<PureIdentifierType>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+pub struct PureIdentifierType {
+    #[serde(default)]
+    pub uri: String,
+}
+
+/// Persona completa de `/persons` con sus `identifiers`. Usada para
+/// sincronizar el mapeo `PER000X <-> DNI` con la BD local.
+#[derive(Debug, Deserialize, Default)]
+pub struct PurePersonDetail {
+    #[serde(default)]
+    pub identifiers: Vec<PureIdentifier>,
+}
+
+/// Par normalizado (person_id, dni) extraido de `PurePersonDetail.identifiers`.
+#[derive(Debug, Clone, Default)]
+pub struct PurePersonMapping {
+    pub pure_person_id: String,
+    pub dni: Option<String>,
+}
+
+impl PurePersonDetail {
+    /// Extrae `(PrimaryId.value, ClassifiedId.uri ending /dni)`.
+    pub fn mapping(&self) -> PurePersonMapping {
+        let mut out = PurePersonMapping::default();
+        for ident in &self.identifiers {
+            match ident.type_discriminator.as_str() {
+                "PrimaryId" if out.pure_person_id.is_empty() => {
+                    out.pure_person_id = ident.value.clone();
+                }
+                "ClassifiedId" => {
+                    if let Some(t) = &ident.r#type {
+                        if t.uri.ends_with("/dni") && out.dni.is_none() {
+                            out.dni = Some(ident.id.clone());
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        out
+    }
 }
 
 // ─── Request bodies ──────────────────────────────────────────────────────────
@@ -139,7 +191,6 @@ pub struct FetchedPublication {
     pub titulo: String,
     pub tipo_publicacion: Option<String>,
     pub doi: Option<String>,
-    pub scopus_eid: Option<String>,
     pub anio_publicacion: Option<i32>,
     pub autores_json: String,
     pub estado_publicacion: Option<String>,
@@ -292,6 +343,78 @@ pub async fn fetch_research_outputs_by_scopus_id(
     Ok(all)
 }
 
+/// Descarga todas las personas de Pure (pagina `GET /persons?size=N&offset=M`)
+/// y devuelve un mapeo `(PersonID del Master List, DNI)` por persona.
+///
+/// Usado por `sincronizar_pure_person_ids` para reconciliar el campo
+/// `investigador.pure_person_id` con la fuente canónica (Pure).
+pub async fn fetch_all_persons_mapping(
+    tokens: &crate::shared::tokens::TokenResolver,
+    api_base_url: &str,
+) -> Result<Vec<PurePersonMapping>, AppError> {
+    let api_key = tokens.resolve_pure_api_key()?;
+
+    let base = format!("{}/persons", api_base_url.trim_end_matches('/'));
+    let client = reqwest::Client::new();
+    let page_size = 100usize;
+    let mut offset = 0usize;
+    let mut all: Vec<PurePersonMapping> = Vec::new();
+
+    loop {
+        let url = format!("{base}?size={page_size}&offset={offset}");
+        let response = client
+            .get(&url)
+            .header("api-key", api_key)
+            .header("Accept", "application/json")
+            .send()
+            .await
+            .map_err(|e| {
+                AppError::InternalError(format!(
+                    "Pure /persons falló: {}",
+                    sanitize_external_detail(&e.to_string())
+                ))
+            })?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let text: String = response.text().await.unwrap_or_default();
+            let safe_text = sanitize_external_detail(&text);
+            if status.as_u16() == 403 {
+                return Err(AppError::ConfigurationError(
+                    "La API key de Pure no tiene permiso para acceder a /persons. \
+                    El administrador del servidor Pure debe habilitar el rol 'Persons' \
+                    para la API key configurada en PJVPIN_PURE_API_KEY."
+                        .to_string(),
+                ));
+            }
+            return Err(AppError::InternalError(format!(
+                "Pure /persons respondió con error {status}: {safe_text}"
+            )));
+        }
+
+        let page: PurePagedResult<PurePersonDetail> = response.json().await.map_err(|e| {
+            AppError::InternalError(format!("Pure /persons: respuesta JSON inválida: {e}"))
+        })?;
+
+        let total = page.count;
+        let items_len = page.items.len();
+        for item in page.items {
+            let m = item.mapping();
+            if m.pure_person_id.is_empty() {
+                continue;
+            }
+            all.push(m);
+        }
+
+        offset += items_len;
+        if items_len == 0 || offset >= total {
+            break;
+        }
+    }
+
+    Ok(all)
+}
+
 fn map_research_output(item: PureResearchOutput) -> FetchedPublication {
     let titulo = item
         .title
@@ -310,20 +433,6 @@ fn map_research_output(item: PureResearchOutput) -> FetchedPublication {
         .electronic_versions
         .iter()
         .find_map(|ev| ev.doi.clone());
-
-    // Scopus EID: en identifiers donde el type term == "scopus"
-    let scopus_eid = item.identifiers.iter().find_map(|id| {
-        let type_term = id
-            .id_type
-            .as_ref()
-            .and_then(|t| t.term.as_ref())
-            .map(|t| t.value.to_lowercase());
-        if type_term.as_deref() == Some("scopus") {
-            Some(id.value.clone())
-        } else {
-            None
-        }
-    });
 
     // Año: de la publicationStatus current
     let anio_publicacion = item
@@ -374,11 +483,74 @@ fn map_research_output(item: PureResearchOutput) -> FetchedPublication {
         titulo,
         tipo_publicacion,
         doi,
-        scopus_eid,
         anio_publicacion,
         autores_json,
         estado_publicacion,
         journal_titulo,
         issn,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn person_with_primary_dni_scopus() -> PurePersonDetail {
+        PurePersonDetail {
+            identifiers: vec![
+                PureIdentifier {
+                    type_discriminator: "PrimaryId".to_string(),
+                    value: "PER0028".to_string(),
+                    id: "".to_string(),
+                    r#type: None,
+                },
+                PureIdentifier {
+                    type_discriminator: "ClassifiedId".to_string(),
+                    value: "".to_string(),
+                    id: "57220186512".to_string(),
+                    r#type: Some(PureIdentifierType {
+                        uri: "/dk/atira/pure/person/personsources/scopusauthor".to_string(),
+                    }),
+                },
+                PureIdentifier {
+                    type_discriminator: "ClassifiedId".to_string(),
+                    value: "".to_string(),
+                    id: "02857417".to_string(),
+                    r#type: Some(PureIdentifierType {
+                        uri: "/dk/atira/pure/person/personsources/dni".to_string(),
+                    }),
+                },
+            ],
+        }
+    }
+
+    #[test]
+    fn mapping_extrae_primary_y_dni() {
+        let m = person_with_primary_dni_scopus().mapping();
+        assert_eq!(m.pure_person_id, "PER0028");
+        assert_eq!(m.dni.as_deref(), Some("02857417"));
+    }
+
+    #[test]
+    fn mapping_sin_dni_es_valido_con_dni_none() {
+        let p = PurePersonDetail {
+            identifiers: vec![PureIdentifier {
+                type_discriminator: "PrimaryId".to_string(),
+                value: "PER0099".to_string(),
+                id: "".to_string(),
+                r#type: None,
+            }],
+        };
+        let m = p.mapping();
+        assert_eq!(m.pure_person_id, "PER0099");
+        assert!(m.dni.is_none());
+    }
+
+    #[test]
+    fn mapping_vacio_devuelve_pure_person_id_vacio() {
+        let p = PurePersonDetail::default();
+        let m = p.mapping();
+        assert!(m.pure_person_id.is_empty());
+        assert!(m.dni.is_none());
     }
 }

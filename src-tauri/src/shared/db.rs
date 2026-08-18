@@ -55,6 +55,10 @@ pub async fn init_mongo(config: &DatabaseConfig) -> Result<Database, AppError> {
 }
 
 pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
+    // Cada bloque por coleccion dropea primero TODOS los indices non-_id
+    // (best-effort) y luego los recrea. Asi el setup hook es idempotente
+    // frente a cualquier combinacion de upgrades donde un spec cambio.
+    let _ = db.collection::<Document>("grados").drop_indexes().await;
     db.collection::<Document>("grados")
         .create_index(
             IndexModel::builder()
@@ -72,6 +76,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
 
+    let _ = db
+        .collection::<Document>("investigadores")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("investigadores")
         .create_index(
             IndexModel::builder()
@@ -120,6 +128,7 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
 
+    let _ = db.collection::<Document>("proyectos").drop_indexes().await;
     db.collection::<Document>("proyectos")
         .create_index(
             IndexModel::builder()
@@ -137,6 +146,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
 
+    let _ = db
+        .collection::<Document>("participaciones")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("participaciones")
         .create_index(
             IndexModel::builder()
@@ -165,6 +178,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     // Fase N2-C: pivot `proyecto_organizaciones` (project_organizations).
     // UNIQUE (id_proyecto, id_org_unit, rol): la misma org_unit puede aparecer
     // varias veces en el mismo proyecto con roles distintos.
+    let _ = db
+        .collection::<Document>("proyecto_organizaciones")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("proyecto_organizaciones")
         .create_index(
             IndexModel::builder()
@@ -184,6 +201,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     // Fase N2-C: pivot `proyecto_financiamientos` (project_fundings).
     // UNIQUE (id_proyecto, id_financiamiento): un mismo fondo no se asigna dos
     // veces al mismo proyecto.
+    let _ = db
+        .collection::<Document>("proyecto_financiamientos")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("proyecto_financiamientos")
         .create_index(
             IndexModel::builder()
@@ -203,6 +224,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     // Fase N2-D: pivot polimorfico `entity_ocde_fields` (feature `ocde`).
     // UNIQUE (entity_type, entity_id, ocde_codigo): una entidad puede tener
     // varios codigos FORD, pero no duplicados.
+    let _ = db
+        .collection::<Document>("entity_ocde_fields")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("entity_ocde_fields")
         .create_index(
             IndexModel::builder()
@@ -222,6 +247,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     // Fase N3-A: pivot `patente_inventores` (patent_inventors).
     // UNIQUE (id_patente, id_persona): una persona no se repite como inventora
     // en la misma patente.
+    let _ = db
+        .collection::<Document>("patente_inventores")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("patente_inventores")
         .create_index(
             IndexModel::builder()
@@ -239,6 +268,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     // acepta UNIQUE parciales: el campo polimorfico es whichever este
     // presente; los duplicados se controlan a nivel aplicacion via
     // `validate_titular_uniqueness`.
+    let _ = db
+        .collection::<Document>("patente_titulares")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("patente_titulares")
         .create_index(
             IndexModel::builder()
@@ -263,6 +296,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     // Fase N3-B: pivot `publicacion_autores` (publication_authors).
     // UNIQUE (id_publicacion, id_persona): una persona no se repite como
     // autora de la misma publicacion.
+    let _ = db
+        .collection::<Document>("publicacion_autores")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("publicacion_autores")
         .create_index(
             IndexModel::builder()
@@ -282,6 +319,7 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
 
+    let _ = db.collection::<Document>("usuarios").drop_indexes().await;
     db.collection::<Document>("usuarios")
         .create_index(
             IndexModel::builder()
@@ -299,31 +337,8 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
 
-    // --- Publicaciones (Pure sync) ---
-    db.collection::<Document>("publicaciones")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "pure_uuid": 1 })
-                .options(Some(IndexOptions::builder().unique(true).build()))
-                .build(),
-        )
-        .await?;
-    db.collection::<Document>("publicaciones")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "investigador_id": 1 })
-                .build(),
-        )
-        .await?;
-    db.collection::<Document>("publicaciones")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "proyecto_id": 1 })
-                .build(),
-        )
-        .await?;
-
     // --- Patentes ---
+    let _ = db.collection::<Document>("patentes").drop_indexes().await;
     db.collection::<Document>("patentes")
         .create_index(
             IndexModel::builder()
@@ -348,6 +363,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
 
     // --- Equipamientos ---
+    let _ = db
+        .collection::<Document>("equipamientos")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("equipamientos")
         .create_index(
             IndexModel::builder()
@@ -369,6 +388,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
 
     // --- Financiamientos ---
+    let _ = db
+        .collection::<Document>("financiamientos")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("financiamientos")
         .create_index(
             IndexModel::builder()
@@ -378,6 +401,7 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
 
     // --- Fase N0-B: Ubigeo INEI ---
+    let _ = db.collection::<Document>("ubigeos").drop_indexes().await;
     db.collection::<Document>("ubigeos")
         .create_index(
             IndexModel::builder()
@@ -395,6 +419,7 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
 
     // --- Fase N1-A: OrgUnits (jerarquica, CERIF/PeruCRIS) ---
+    let _ = db.collection::<Document>("org_units").drop_indexes().await;
     db.collection::<Document>("org_units")
         .create_index(
             IndexModel::builder()
@@ -425,6 +450,10 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
 
     // --- Grupos de investigación ---
+    let _ = db
+        .collection::<Document>("grupos_investigacion")
+        .drop_indexes()
+        .await;
     db.collection::<Document>("grupos_investigacion")
         .create_index(
             IndexModel::builder()
@@ -442,7 +471,11 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .await?;
 
     // --- Publicaciones Científicas ---
-    db.collection::<Document>("publicaciones_cientificas")
+    let pub_coll = db.collection::<Document>("publicaciones_cientificas");
+    // Idempotente: drop todos los indices non-_id y recrear (evita
+    // IndexOptionsConflict en upgrades donde el spec cambio).
+    let _ = pub_coll.drop_indexes().await;
+    pub_coll
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "id_publicacion": 1 })
@@ -450,22 +483,19 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .build(),
         )
         .await?;
-    db.collection::<Document>("publicaciones_cientificas")
+    pub_coll
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "autores_ids": 1 })
                 .build(),
         )
         .await?;
-    db.collection::<Document>("publicaciones_cientificas")
+    pub_coll
         .create_index(IndexModel::builder().keys(doc! { "anio": 1 }).build())
-        .await?;
-    db.collection::<Document>("publicaciones_cientificas")
-        .create_index(IndexModel::builder().keys(doc! { "doi": 1 }).build())
         .await?;
     // Fase N2-F: UNIQUE sparse sobre `doi` (un articulo con DOI valido no
     // se duplica). Sparse para permitir publicaciones sin DOI.
-    db.collection::<Document>("publicaciones_cientificas")
+    pub_coll
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "doi": 1 })
@@ -476,7 +506,7 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     // Fase N2-F: UNIQUE sparse sobre `pure_uuid` (sincronizacion con Pure).
-    db.collection::<Document>("publicaciones_cientificas")
+    pub_coll
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "pure_uuid": 1 })

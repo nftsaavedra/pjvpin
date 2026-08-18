@@ -1,9 +1,11 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import {
   Banknote,
+  BookOpenCheck,
   CheckCircle,
   Coins,
   FileText,
+  Landmark,
   LibraryBig,
   TrendingUp,
   type LucideIcon,
@@ -12,11 +14,17 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
 import { messages } from "@/shared/feedback/messages";
 import { getAllCatalogosAdmin } from "../api";
+import { listarVocabulariosConcytec } from "@/shared/tauri/vocabularios";
 import type { CatalogoItem } from "@/shared/tauri/types";
 
 const CatalogosTab = lazy(async () => {
   const module = await import("./CatalogosTab");
   return { default: module.CatalogosTab };
+});
+
+const VocabulariosPanel = lazy(async () => {
+  const module = await import("../vocabularios/VocabulariosPanel");
+  return { default: module.VocabulariosPanel };
 });
 
 interface CatalogoTipoEntry {
@@ -81,9 +89,24 @@ const CATALOGO_GRUPOS: CatalogoGrupo[] = [
       },
     ],
   },
+  {
+    categoria: "CONCYTEC",
+    icon: Landmark,
+    tipos: [
+      {
+        tipo: "vocabularios_concytec",
+        titulo: "Vocabularios CONCYTEC",
+        icon: BookOpenCheck,
+        descripcion: "Catálogos oficiales de la especificación PerúCRIS",
+      },
+    ],
+  },
 ];
 
+const VOCABULARIO_TIPO = "vocabularios_concytec";
+
 const ALL_TIPOS = CATALOGO_GRUPOS.flatMap((g) => g.tipos);
+const STATS_TIPOS = ALL_TIPOS.filter((entry) => entry.tipo !== VOCABULARIO_TIPO);
 
 const CatalogosSkeleton = () => (
   <div className="catalogos-grid catalogos-grid-loading">
@@ -117,7 +140,7 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
     let cancelled = false;
     const fetchAll = async () => {
       const results = await Promise.allSettled(
-        ALL_TIPOS.map(async (entry) => {
+        STATS_TIPOS.map(async (entry) => {
           const items: CatalogoItem[] = await getAllCatalogosAdmin(entry.tipo);
           return {
             tipo: entry.tipo,
@@ -136,8 +159,14 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
           next[r.value.tipo] = r.value.stats;
         }
       }
-      for (const entry of ALL_TIPOS) {
+      for (const entry of STATS_TIPOS) {
         if (!(entry.tipo in next)) next[entry.tipo] = { activos: 0, inactivos: 0 };
+      }
+      try {
+        const esquemas = await listarVocabulariosConcytec();
+        next[VOCABULARIO_TIPO] = { activos: esquemas.length, inactivos: 0 };
+      } catch {
+        next[VOCABULARIO_TIPO] = { activos: 0, inactivos: 0 };
       }
       setStats(next);
       setStatsLoaded(true);
@@ -154,6 +183,30 @@ export const CatalogosPanel: React.FC<CatalogosPanelProps> = ({
   }, [categoriaActiva]);
 
   if (activeTipo) {
+    if (activeTipo === VOCABULARIO_TIPO) {
+      return (
+        <div className="catalogos-detail-view">
+          <button
+            type="button"
+            className="catalogos-back-btn"
+            onClick={() => {
+              setActiveTipo(null);
+            }}
+            aria-label={messages.catalogos.panel.volverA}
+          >
+            <AppIcon icon={LibraryBig} size={16} />
+            <span>{messages.catalogos.panel.breadcrumb}</span>
+          </button>
+          <Suspense fallback={<SkeletonTable columns={4} rows={5} />}>
+            <VocabulariosPanel
+              canManage={canManage}
+              onDataModified={onDataModified}
+              refreshTrigger={refreshTrigger}
+            />
+          </Suspense>
+        </div>
+      );
+    }
     const entry = ALL_TIPOS.find((e) => e.tipo === activeTipo);
     if (!entry) return null;
     return (

@@ -12,8 +12,8 @@
 //!   para IPC (snake_case en salida, camelCase en entrada via
 //!   `#[serde(rename_all = "camelCase")]`).
 //! - `repository.rs`: conversions Document ↔ Dto ↔ Model, queries driver.
-//! - `seed.rs`: inserta los 24 departamentos INEI canonicos si la coleccion
-//!   esta vacia.
+//! - `seed.rs`: inserta el dataset INEI completo (25 deptos + 196 provincias +
+//!   ~1890 distritos) embebido como JSON si la coleccion esta vacia.
 //! - `tests.rs`: tests de modelo.
 
 pub mod commands;

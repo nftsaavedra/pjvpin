@@ -1,6 +1,5 @@
 use crate::investigadores::dto::{
-    CreateInvestigadorRequest, InvestigadorDetalleDto, InvestigadorDto, PublicacionDto,
-    RenacytLookupResult,
+    CreateInvestigadorRequest, InvestigadorDetalleDto, InvestigadorDto, RenacytLookupResult,
 };
 use crate::personas::models::Persona;
 use crate::shared::error::AppError;
@@ -34,6 +33,11 @@ pub struct Investigador {
     /// `Persona` no debe amplificarse (D7). `None` se trata como "DNI"
     /// por defecto en la capa IPC.
     pub tipo_documento: Option<String>,
+    /// PersonID del Master List de Pure (ej. "PER0001" para personas ya
+    /// importadas en `pure.unf.edu.pe`). Sincronizado via el comando
+    /// `sincronizar_pure_person_ids` que pagina `GET /persons` y matchea
+    /// por DNI. Permite upsert en Pure sin duplicar personas.
+    pub pure_person_id: Option<String>,
 }
 
 impl Investigador {
@@ -128,6 +132,7 @@ impl Investigador {
                 .filter(|value| !value.trim().is_empty()),
             grupo_investigacion_id: None,
             tipo_documento: tipo_documento_raw,
+            pure_person_id: None,
         })
     }
 
@@ -194,6 +199,7 @@ impl From<Investigador> for InvestigadorDto {
             renacyt_formaciones_academicas_json: m.renacyt_formaciones_academicas_json,
             grupo_investigacion_id: m.grupo_investigacion_id,
             tipo_documento: m.tipo_documento,
+            pure_person_id: m.pure_person_id,
         }
     }
 }
@@ -223,6 +229,7 @@ impl TryFrom<InvestigadorDto> for Investigador {
             renacyt_formaciones_academicas_json: d.renacyt_formaciones_academicas_json,
             grupo_investigacion_id: d.grupo_investigacion_id,
             tipo_documento: d.tipo_documento,
+            pure_person_id: d.pure_person_id,
         })
     }
 }
@@ -269,72 +276,5 @@ impl InvestigadorDetalleDto {
             renacyt_ficha_url: investigador.renacyt_ficha_url,
             renacyt_formaciones_academicas_json: investigador.renacyt_formaciones_academicas_json,
         }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Publicacion {
-    pub id_publicacion: String,
-    pub pure_uuid: String,
-    pub persona_id: String,
-    pub proyecto_id: Option<String>,
-    pub titulo: String,
-    pub tipo_publicacion: Option<String>,
-    pub doi: Option<String>,
-    pub scopus_eid: Option<String>,
-    pub anio_publicacion: Option<i32>,
-    pub autores_json: Option<String>,
-    pub estado_publicacion: Option<String>,
-    pub journal_titulo: Option<String>,
-    pub issn: Option<String>,
-    pub pure_sincronizado_at: Option<i64>,
-    pub created_at: Option<i64>,
-    pub updated_at: Option<i64>,
-}
-
-impl From<Publicacion> for PublicacionDto {
-    fn from(m: Publicacion) -> Self {
-        Self {
-            id_publicacion: m.id_publicacion,
-            pure_uuid: m.pure_uuid,
-            persona_id: m.persona_id,
-            proyecto_id: m.proyecto_id,
-            titulo: m.titulo,
-            tipo_publicacion: m.tipo_publicacion,
-            doi: m.doi,
-            scopus_eid: m.scopus_eid,
-            anio_publicacion: m.anio_publicacion,
-            autores_json: m.autores_json,
-            estado_publicacion: m.estado_publicacion,
-            journal_titulo: m.journal_titulo,
-            issn: m.issn,
-            pure_sincronizado_at: m.pure_sincronizado_at,
-            created_at: m.created_at,
-            updated_at: m.updated_at,
-        }
-    }
-}
-
-impl TryFrom<PublicacionDto> for Publicacion {
-    type Error = AppError;
-    fn try_from(d: PublicacionDto) -> Result<Self, Self::Error> {
-        Ok(Self {
-            id_publicacion: d.id_publicacion,
-            pure_uuid: d.pure_uuid,
-            persona_id: d.persona_id,
-            proyecto_id: d.proyecto_id,
-            titulo: d.titulo,
-            tipo_publicacion: d.tipo_publicacion,
-            doi: d.doi,
-            scopus_eid: d.scopus_eid,
-            anio_publicacion: d.anio_publicacion,
-            autores_json: d.autores_json,
-            estado_publicacion: d.estado_publicacion,
-            journal_titulo: d.journal_titulo,
-            issn: d.issn,
-            pure_sincronizado_at: d.pure_sincronizado_at,
-            created_at: d.created_at,
-            updated_at: d.updated_at,
-        })
     }
 }

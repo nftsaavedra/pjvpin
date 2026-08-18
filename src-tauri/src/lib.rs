@@ -172,6 +172,7 @@ pub fn run() {
                 runtime_config.reniec,
                 runtime_config.renacyt,
                 runtime_config.pure,
+                runtime_config.perucris,
             ));
 
             Ok(())
@@ -222,6 +223,8 @@ pub fn run() {
             reporte_cmds::get_data_exportacion_proyectos_area,
             reporte_cmds::get_proyectos_trend,
             reporte_cmds::get_renacyt_distribucion,
+            reporte_cmds::exportar_cerif,
+            reporte_cmds::get_data_pure_masterlist,
             // Grados
             grado_cmds::get_all_grados,
             grado_cmds::get_all_grados_paginated,
@@ -278,12 +281,16 @@ pub fn run() {
             security_cmds::wizard_test_reniec,
             security_cmds::wizard_test_renacyt,
             security_cmds::wizard_test_pure,
+            security_cmds::wizard_test_perucris,
             security_cmds::wizard_save_config,
             security_cmds::wizard_validate_master_password,
             security_cmds::wizard_consultar_dni,
             // Pure (moved to shared/external)
             crate::shared::external::pure_cmd::sincronizar_publicaciones_pure,
             crate::shared::external::pure_cmd::get_publicaciones_investigador,
+            crate::shared::external::pure_cmd::sincronizar_pure_person_ids,
+            // PeruCRIS (conector CERIF)
+            crate::shared::external::perucris_cmd::enviar_a_perucris,
             // Grupos
             grupo_cmds::get_all_grupos,
             grupo_cmds::create_grupo,

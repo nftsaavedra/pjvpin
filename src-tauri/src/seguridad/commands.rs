@@ -12,6 +12,7 @@ pub async fn get_security_status(
     let mongodb_configured = state.mongo.is_some();
     let reniec_configured = state.tokens.has_reniec();
     let pure_configured = state.tokens.has_pure();
+    let perucris_configured = state.tokens.has_perucris();
 
     let mut recommendations = Vec::new();
 
@@ -29,6 +30,11 @@ pub async fn get_security_status(
     if !pure_configured {
         recommendations.push(
             "ℹ️ Pure no está configurado. Defina PJVPIN_PURE_API_KEY para sincronizar publicaciones científicas.".to_string(),
+        );
+    }
+    if !perucris_configured {
+        recommendations.push(
+            "ℹ️ PerúCRIS no está configurado. Defina PJVPIN_PERUCRIS_API_KEY para exportar el modelo CERIF al conector.".to_string(),
         );
     }
 
@@ -158,6 +164,14 @@ pub async fn wizard_test_pure(
 }
 
 #[tauri::command]
+pub async fn wizard_test_perucris(
+    base_url: String,
+    api_key: String,
+) -> Result<crate::shared::config_wizard::ConnectivityResult, AppError> {
+    Ok(crate::shared::config_wizard::test_perucris_connectivity(&base_url, &api_key).await)
+}
+
+#[tauri::command]
 pub async fn wizard_save_config(
     request: crate::shared::config_wizard::WizardConfigRequest,
 ) -> Result<(), AppError> {
@@ -176,13 +190,15 @@ pub async fn wizard_consultar_dni(
     token: String,
     numero: String,
 ) -> Result<crate::investigadores::dto::ReniecDniLookupResult, AppError> {
-    use crate::shared::config::{PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig};
+    use crate::shared::config::{
+        DatabaseConfig, PeruCrisConfig, PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig,
+    };
     use crate::shared::defaults;
     use crate::shared::external::reniec_client;
     use crate::shared::tokens::TokenResolver;
 
     let runtime = RuntimeConfig {
-        database: crate::shared::config::DatabaseConfig {
+        database: DatabaseConfig {
             mongodb_uri: None,
             mongodb_db_name: String::new(),
             mongodb_max_pool_size: 0,
@@ -198,6 +214,10 @@ pub async fn wizard_consultar_dni(
             ficha_base_url: String::new(),
         },
         pure: PureConfig {
+            api_base_url: String::new(),
+            api_key: None,
+        },
+        perucris: PeruCrisConfig {
             api_base_url: String::new(),
             api_key: None,
         },

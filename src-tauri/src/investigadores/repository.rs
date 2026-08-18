@@ -78,6 +78,7 @@ fn model_to_dto(m: &Investigador) -> InvestigadorDto {
         renacyt_formaciones_academicas_json: m.renacyt_formaciones_academicas_json.clone(),
         grupo_investigacion_id: m.grupo_investigacion_id.clone(),
         tipo_documento: m.tipo_documento.clone(),
+        pure_person_id: m.pure_person_id.clone(),
     }
 }
 

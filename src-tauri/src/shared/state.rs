@@ -4,7 +4,9 @@ use mongodb::Database;
 use tokio::sync::RwLock;
 
 use crate::investigadores::dto::ReniecDniLookupResult;
-use crate::shared::config::{PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig};
+use crate::shared::config::{
+    PeruCrisConfig, PureConfig, RenacytConfig, ReniecConfig, RuntimeConfig,
+};
 use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
 use crate::shared::time;
@@ -173,6 +175,7 @@ pub struct AppState {
     pub reniec: ReniecConfig,
     pub renacyt: RenacytConfig,
     pub pure_config: PureConfig,
+    pub perucris_config: PeruCrisConfig,
     pub tokens: TokenResolver,
     sessions: SessionStore,
     pub rate_limiter: LoginRateLimiter,
@@ -185,6 +188,7 @@ impl AppState {
         reniec: ReniecConfig,
         renacyt: RenacytConfig,
         pure_config: PureConfig,
+        perucris_config: PeruCrisConfig,
     ) -> Self {
         let runtime = RuntimeConfig {
             database: crate::shared::config::DatabaseConfig {
@@ -196,12 +200,14 @@ impl AppState {
             reniec: reniec.clone(),
             renacyt: renacyt.clone(),
             pure: pure_config.clone(),
+            perucris: perucris_config.clone(),
         };
         Self {
             mongo,
             reniec,
             renacyt,
             pure_config,
+            perucris_config,
             tokens: TokenResolver::from_config(&runtime),
             sessions: SessionStore::new(),
             rate_limiter: LoginRateLimiter::new(),

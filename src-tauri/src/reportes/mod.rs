@@ -1,3 +1,4 @@
+pub mod cerif;
 pub mod commands;
 pub mod dto;
 pub mod entity_service;
@@ -5,3 +6,4 @@ pub mod handlers;
 pub mod repository_export;
 pub mod repository_investigador;
 pub mod repository_proyecto;
+pub mod repository_pure_masterlist;

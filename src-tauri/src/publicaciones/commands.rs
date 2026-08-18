@@ -143,9 +143,11 @@ pub async fn listar_autores_publicacion(
     state: State<'_, AppState>,
     id_publicacion: String,
 ) -> Result<Vec<crate::publicaciones::autores::PublicacionAutorDoc>, AppError> {
-    Ok(handlers::listar_autores_publicacion(&state, window.label(), id_publicacion)
-        .await?
-        .into_iter()
-        .map(crate::publicaciones::autores::PublicacionAutorDoc::from)
-        .collect())
+    Ok(
+        handlers::listar_autores_publicacion(&state, window.label(), id_publicacion)
+            .await?
+            .into_iter()
+            .map(crate::publicaciones::autores::PublicacionAutorDoc::from)
+            .collect(),
+    )
 }

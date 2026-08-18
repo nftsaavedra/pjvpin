@@ -20,6 +20,11 @@ export interface CatalogoItem {
   orden?: number | null;
   activo: number;
   updated_at?: number | null;
+  esquema?: string | null;
+  codigo_skos?: string | null;
+  padre_codigo?: string | null;
+  nivel?: number | null;
+  editable?: number;
 }
 
 export interface EliminarCatalogoResultado {

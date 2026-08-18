@@ -135,12 +135,9 @@ pub async fn reimportar_vocabulario(
     window_label: &str,
     esquema: &str,
 ) -> Result<(), AppError> {
-    let actor = rbac::require_permission(
-        state,
-        window_label,
-        rbac::AppPermission::VocabulariosManage,
-    )
-    .await?;
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::VocabulariosManage)
+            .await?;
     if esquema.trim().is_empty() {
         return Err(AppError::InternalError(
             "Debe indicar el esquema a reimportar.".to_string(),
@@ -152,7 +149,10 @@ pub async fn reimportar_vocabulario(
         "vocabulario.reimport",
         "catalogos",
         esquema,
-        format!("version: {}", crate::shared::defaults::VOCAB_CONCYTEC_VERSION),
+        format!(
+            "version: {}",
+            crate::shared::defaults::VOCAB_CONCYTEC_VERSION
+        ),
     );
     Ok(())
 }

@@ -126,6 +126,12 @@ macro_rules! impl_pivot_repository {
         /// Crea los indices del pivot:
         /// - UNIQUE compuesto por los campos de `$uniqueness_fields`.
         /// - Simple por el campo padre para acelerar list/cascade.
+        ///
+        /// Idempotente: dropea indices preexistentes con nombre auto-generado
+        /// (de installs previos sin nombre explicito) antes de crear el nuevo
+        /// con nombre estable. Asi evita `IndexOptionsConflict` cuando se
+        /// intenta crear un indice cuyo spec ya esta cubierto por otro con
+        /// distinto nombre.
         pub async fn ensure_indexes(
             db: &mongodb::Database,
         ) -> Result<(), $crate::shared::error::AppError> {
@@ -141,26 +147,43 @@ macro_rules! impl_pivot_repository {
                     acc.insert(k, v);
                     acc
                 });
-            db.collection::<mongodb::bson::Document>($collection)
-                .create_index(
-                    IndexModel::builder()
-                        .keys(uniqueness_keys)
-                        .options(
-                            mongodb::options::IndexOptions::builder()
-                                .unique(true)
-                                .name(Some(format!("uniq_{}", $error_label).replace(' ', "_")))
-                                .build(),
-                        )
-                        .build(),
-                )
-                .await?;
-            db.collection::<mongodb::bson::Document>($collection)
-                .create_index(
-                    IndexModel::builder()
-                        .keys(doc! { stringify!($parent_field): 1i32 })
-                        .build(),
-                )
-                .await?;
+            let coll = db.collection::<mongodb::bson::Document>($collection);
+            // Setup idempotente: dropea TODOS los indices non-_id y los
+            // recrea con el spec actual. Asi evita IndexOptionsConflict en
+            // cualquier combinacion de upgrades (el spec antiguo en DB con
+            // nombre auto/explicito v1 ya no interfiere).
+            if let Err(e) = coll.drop_indexes().await {
+                ::tracing::warn!(
+                    collection = $collection,
+                    error = %e,
+                    "drop_indexes fallo (puede ser esperado en primera instalacion); continuando con create_index"
+                );
+            }
+            let unique_name = format!("uniq_{}", $error_label).replace(' ', "_");
+            coll.create_index(
+                IndexModel::builder()
+                    .keys(uniqueness_keys)
+                    .options(
+                        mongodb::options::IndexOptions::builder()
+                            .unique(true)
+                            .name(Some(unique_name))
+                            .build(),
+                    )
+                    .build(),
+            )
+            .await?;
+            let parent_name = format!("idx_{}_{}", $collection, stringify!($parent_field));
+            coll.create_index(
+                IndexModel::builder()
+                    .keys(doc! { stringify!($parent_field): 1i32 })
+                    .options(
+                        mongodb::options::IndexOptions::builder()
+                            .name(Some(parent_name))
+                            .build(),
+                    )
+                    .build(),
+            )
+            .await?;
             Ok(())
         }
     };

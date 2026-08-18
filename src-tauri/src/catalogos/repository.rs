@@ -85,6 +85,16 @@ pub async fn update_catalogo(
     id: &str,
     request: CreateCatalogoRequest,
 ) -> Result<CatalogoItem, AppError> {
+    let existing = get_catalogo_by_id(db, id).await?;
+    // Guard de integridad: los items oficiales CONCYTEC (editable=0) solo
+    // se actualizan via reimport de vocabularios, nunca por edicion directa.
+    if existing.editable == 0 {
+        return Err(AppError::InternalError(
+            "Los vocablos oficiales CONCYTEC no se pueden editar directamente. \
+             Use 'Reimportar vocabulario' para actualizarlos."
+                .to_string(),
+        ));
+    }
     let now = crate::shared::time::now_ms();
     db.collection::<Document>("catalogos")
         .update_one(
@@ -184,7 +194,7 @@ pub async fn seed_catalogos(db: &Database) -> Result<(), AppError> {
     ];
 
     for (tipo, codigo, nombre, orden) in seed {
-        create_catalogo(
+        if let Err(e) = create_catalogo(
             db,
             CreateCatalogoRequest {
                 tipo: tipo.to_string(),
@@ -200,7 +210,14 @@ pub async fn seed_catalogos(db: &Database) -> Result<(), AppError> {
                 editable: true,
             },
         )
-        .await?;
+        .await
+        {
+            if matches!(e, AppError::UniqueConstraintViolation(_)) {
+                tracing::debug!(tipo, codigo, "catalogo ya existe, skip (seed defensivo)");
+                continue;
+            }
+            return Err(e);
+        }
     }
     Ok(())
 }
@@ -276,35 +293,35 @@ pub async fn load_all_map(
 
 /// Garantiza indices UNIQUE para evitar duplicados y acelerar lookups por
 /// esquema + codigo_skos (validacion de FK en `shared::refs::ensure_vocab_active`).
+///
+/// Idempotente: dropea TODOS los indices non-_id y los recrea con el spec
+/// actual. Asi evita `IndexOptionsConflict` en cualquier combinacion de
+/// upgrades (el spec antiguo en DB con nombre auto/explicito v1 ya no
+/// interfiere).
 pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
-    // UNIQUE legacy: (tipo, codigo). Por defecto active; tolera duplicados
-    // nulos porque el resto de features ya asume esa invariante.
-    let opts_legacy = IndexOptions::builder().unique(true).build();
-    let legacy_idx = IndexModel::builder()
-        .keys(doc! { "tipo": 1, "codigo": 1 })
-        .options(Some(opts_legacy))
-        .build();
-    db.collection::<Document>("catalogos")
-        .create_index(legacy_idx)
-        .await?;
-
-    // UNIQUE sparse (esquema, codigo_skos). Sparse tolera items sin esquema
-    // (los 12 catalogos legacy).
-    let opts_vocab = IndexOptions::builder().unique(true).sparse(true).build();
-    let vocab_idx = IndexModel::builder()
-        .keys(doc! { "esquema": 1, "codigo_skos": 1 })
-        .options(Some(opts_vocab))
-        .build();
-    db.collection::<Document>("catalogos")
-        .create_index(vocab_idx)
-        .await?;
-
-    // Jerarquia / jerarquia SKOS broader.
-    let pad_idx = IndexModel::builder()
-        .keys(doc! { "esquema": 1, "padre_codigo": 1 })
-        .build();
-    db.collection::<Document>("catalogos")
-        .create_index(pad_idx)
-        .await?;
+    let coll = db.collection::<Document>("catalogos");
+    let _ = coll.drop_indexes().await;
+    coll.create_index(
+        IndexModel::builder()
+            .keys(doc! { "tipo": 1, "codigo": 1 })
+            .options(Some(IndexOptions::builder().unique(true).build()))
+            .build(),
+    )
+    .await?;
+    coll.create_index(
+        IndexModel::builder()
+            .keys(doc! { "esquema": 1, "codigo_skos": 1 })
+            .options(Some(
+                IndexOptions::builder().unique(true).sparse(true).build(),
+            ))
+            .build(),
+    )
+    .await?;
+    coll.create_index(
+        IndexModel::builder()
+            .keys(doc! { "esquema": 1, "padre_codigo": 1 })
+            .build(),
+    )
+    .await?;
     Ok(())
 }

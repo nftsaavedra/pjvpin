@@ -11,6 +11,9 @@ import { catalogos } from "./catalogos";
 import { grados } from "./grados";
 import { usuarios } from "./usuarios";
 import { dashboard } from "./dashboard";
+import { geo } from "./geo";
+import { vocabularios } from "./vocabularios";
+import { orgUnits } from "./org-units";
 
 export { ui, type UiMessageKey } from "./ui";
 export { auth, type AuthMessageKey } from "./auth";
@@ -25,6 +28,9 @@ export { catalogos, type CatalogosMessageKey } from "./catalogos";
 export { grados, type GradosMessageKey } from "./grados";
 export { usuarios, type UsuariosMessageKey } from "./usuarios";
 export { dashboard, type DashboardMessageKey } from "./dashboard";
+export { geo, type GeoMessageKey } from "./geo";
+export { vocabularios, type VocabulariosMessageKey } from "./vocabularios";
+export { orgUnits, type OrgUnitsMessageKey } from "./org-units";
 
 export const messages = {
   ui,
@@ -40,5 +46,8 @@ export const messages = {
   grados,
   usuarios,
   dashboard,
+  geo,
+  vocabularios,
+  orgUnits,
 } as const;
 export type Messages = typeof messages;

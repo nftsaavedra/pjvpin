@@ -62,7 +62,6 @@ export type {
 } from "./reporte.types";
 
 export type {
-  Publicacion,
   SyncPublicacionesResult,
   GrupoInvestigacion,
   PublicacionConEtiquetas,
@@ -72,3 +71,15 @@ export type {
 } from "./evento.types";
 
 export type { PaginatedResult } from "./pagination.types";
+
+export type { Ubigeo } from "./geo.types";
+
+export type { OrgUnit, CreateOrgUnitRequest, UpdateOrgUnitRequest } from "./orgUnit.types";
+
+export type {
+  PureMasterlistPersonRow,
+  PureMasterlistStaffRow,
+  PureMasterlistSummary,
+  PureMasterlistData,
+  SyncPurePersonIdsResult,
+} from "./pureMasterList.types";

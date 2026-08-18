@@ -24,6 +24,9 @@ export interface Investigador {
   grupoInvestigacionId?: string | null;
   updatedAt?: number | null;
   personaId?: string;
+  /// PersonID del Master List de Pure (PER000X). Sincronizado por
+  /// `sincronizar_pure_person_ids` desde la API de pure.unf.edu.pe.
+  purePersonId?: string | null;
 }
 
 export interface InvestigadorDetalle {

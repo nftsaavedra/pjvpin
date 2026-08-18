@@ -4,10 +4,26 @@ use crate::proyectos::dto::{
     ExportDataProyectoAreaDto, ExportDataRecursoDto, InvestigadorProyectosCountDto,
     KpisDashboardDto, ProyectosTrendItemDto, RenacytDistribucionItemDto,
 };
-use crate::reportes::dto::{ReporteInvestigadorIntegral, ReporteProyectoIntegral};
+use crate::reportes::cerif::CerifExportResult;
+use crate::reportes::dto::{
+    PureMasterlistData, ReporteInvestigadorIntegral, ReporteProyectoIntegral,
+};
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 use tauri::{State, Window};
+
+/// Exporta el modelo a un documento CERIF (JSON) y lo escribe en disco.
+/// `entidad` opcional filtra el alcance: todo, organizaciones, personas,
+/// proyectos, publicaciones, patentes.
+#[tauri::command]
+pub async fn exportar_cerif(
+    window: Window,
+    state: State<'_, AppState>,
+    file_path: String,
+    entidad: Option<String>,
+) -> Result<CerifExportResult, AppError> {
+    handlers::exportar_cerif(&state, window.label(), &file_path, entidad).await
+}
 
 #[tauri::command]
 pub async fn get_estadisticas_proyectos_x_investigador(
@@ -126,4 +142,17 @@ pub async fn get_renacyt_distribucion(
     state: State<'_, AppState>,
 ) -> Result<Vec<RenacytDistribucionItemDto>, AppError> {
     handlers::get_renacyt_distribucion(&state, window.label()).await
+}
+
+/// Devuelve el payload del reporte "Pure Master List" para los
+/// investigadores activos. `pure_remote_total` es opcional: si el panel ya
+/// conoce el total de personas en Pure (cache de la ultima sincronizacion)
+/// lo pasa para enriquecer el resumen pre-export.
+#[tauri::command]
+pub async fn get_data_pure_masterlist(
+    window: Window,
+    state: State<'_, AppState>,
+    pure_remote_total: Option<usize>,
+) -> Result<PureMasterlistData, AppError> {
+    handlers::get_data_pure_masterlist(&state, window.label(), pure_remote_total).await
 }

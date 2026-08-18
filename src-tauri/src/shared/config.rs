@@ -32,12 +32,21 @@ pub struct PureConfig {
     pub api_key: Option<String>,
 }
 
+/// Configuracion del conector PeruCRIS (CONCYTEC). La api key se resuelve
+/// via `TokenResolver`; aqui solo se mantiene la configuracion fuente.
+#[derive(Debug, Clone)]
+pub struct PeruCrisConfig {
+    pub api_base_url: String,
+    pub api_key: Option<String>,
+}
+
 #[derive(Debug, Clone)]
 pub struct RuntimeConfig {
     pub database: DatabaseConfig,
     pub reniec: ReniecConfig,
     pub renacyt: RenacytConfig,
     pub pure: PureConfig,
+    pub perucris: PeruCrisConfig,
 }
 
 impl DatabaseConfig {
@@ -150,6 +159,27 @@ impl PureConfig {
     }
 }
 
+impl PeruCrisConfig {
+    pub fn from_values(values: &HashMap<String, String>) -> Self {
+        let api_base_url = values
+            .get("PJVPIN_PERUCRIS_API_BASE_URL")
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty())
+            .unwrap_or_else(|| defaults::PERUCRIS_API_BASE_URL.to_string());
+        let api_key = values
+            .get("PJVPIN_PERUCRIS_API_KEY")
+            .cloned()
+            .or_else(|| env::var("PJVPIN_PERUCRIS_API_KEY").ok())
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
+
+        Self {
+            api_base_url,
+            api_key,
+        }
+    }
+}
+
 pub fn load_runtime_config(
     user_config_path: &Path,
     project_env_path: Option<&Path>,
@@ -187,6 +217,7 @@ pub fn load_runtime_config(
         reniec: ReniecConfig::from_values(&values),
         renacyt: RenacytConfig::from_values(&values),
         pure: PureConfig::from_values(&values),
+        perucris: PeruCrisConfig::from_values(&values),
     })
 }
 
@@ -203,6 +234,8 @@ fn merge_process_env(values: &mut HashMap<String, String>) {
         "PJVPIN_PURE_API_BASE_URL",
         "PJVPIN_PURE_API_KEY",
         "PURE_API_KEY",
+        "PJVPIN_PERUCRIS_API_BASE_URL",
+        "PJVPIN_PERUCRIS_API_KEY",
     ] {
         if let Ok(value) = env::var(key) {
             let trimmed = value.trim();
@@ -220,6 +253,7 @@ struct JsonConfigFile {
     reniec: Option<JsonReniecConfig>,
     renacyt: Option<JsonRenacytConfig>,
     pure: Option<JsonPureConfig>,
+    perucris: Option<JsonPeruCrisConfig>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -247,6 +281,13 @@ struct JsonRenacytConfig {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct JsonPureConfig {
+    api_base_url: Option<String>,
+    api_key: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct JsonPeruCrisConfig {
     api_base_url: Option<String>,
     api_key: Option<String>,
 }
@@ -290,6 +331,15 @@ fn merge_json_file(values: &mut HashMap<String, String>, path: &Path) -> Result<
     if let Some(pure) = parsed.pure {
         insert_if_non_empty(values, "PJVPIN_PURE_API_BASE_URL", pure.api_base_url);
         insert_if_non_empty(values, "PJVPIN_PURE_API_KEY", pure.api_key);
+    }
+
+    if let Some(perucris) = parsed.perucris {
+        insert_if_non_empty(
+            values,
+            "PJVPIN_PERUCRIS_API_BASE_URL",
+            perucris.api_base_url,
+        );
+        insert_if_non_empty(values, "PJVPIN_PERUCRIS_API_KEY", perucris.api_key);
     }
 
     Ok(())

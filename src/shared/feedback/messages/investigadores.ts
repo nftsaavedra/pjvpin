@@ -124,7 +124,6 @@ export const investigadores = {
       journal: "Journal:",
       estado: "Estado:",
       doi: "DOI:",
-      autores: "Autores:",
     } as const,
     abrirDoi: "Abrir DOI",
     doiEnlaceError: "No se pudo abrir el enlace DOI.",

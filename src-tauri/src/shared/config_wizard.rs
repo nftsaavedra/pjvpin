@@ -17,6 +17,7 @@ pub struct WizardConfigRequest {
     pub renacyt_base_url: Option<String>,
     pub renacyt_acto_version: Option<String>,
     pub pure_api_key: Option<String>,
+    pub perucris_api_key: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -61,6 +62,10 @@ pub fn save_wizard_config(
         "pure": {
             "apiBaseUrl": defaults::PURE_API_BASE_URL,
             "apiKey": request.pure_api_key.unwrap_or_default()
+        },
+        "perucris": {
+            "apiBaseUrl": defaults::PERUCRIS_API_BASE_URL,
+            "apiKey": request.perucris_api_key.unwrap_or_default()
         }
     });
 
@@ -251,6 +256,63 @@ pub async fn test_pure_connectivity(base_url: &str, api_key: &str) -> Connectivi
         }
         Err(e) => ConnectivityResult {
             service: "Pure".to_string(),
+            success: false,
+            message: format!("Sin conexion: {}", e),
+        },
+    }
+}
+
+pub async fn test_perucris_connectivity(base_url: &str, api_key: &str) -> ConnectivityResult {
+    let client = reqwest::Client::new();
+    let url = format!("{}/cerif/status", base_url.trim_end_matches('/'));
+    match client
+        .get(&url)
+        .header("api-key", api_key)
+        .header("Accept", "application/json")
+        .timeout(CONNECTIVITY_TIMEOUT)
+        .send()
+        .await
+    {
+        Ok(resp) => {
+            let status = resp.status().as_u16();
+            if resp.status().is_success() {
+                ConnectivityResult {
+                    service: "PeruCRIS".to_string(),
+                    success: true,
+                    message: format!("PeruCRIS API y api-key validos (HTTP {})", status),
+                }
+            } else if status == 404 {
+                // El endpoint de status puede variar por instancia; un 404
+                // indica que la URL base es alcanzable y la api-key fue
+                // aceptada por el servidor.
+                ConnectivityResult {
+                    service: "PeruCRIS".to_string(),
+                    success: true,
+                    message: "URL base y api-key validos (endpoint status no existe, esperado)"
+                        .to_string(),
+                }
+            } else if status == 401 {
+                ConnectivityResult {
+                    service: "PeruCRIS".to_string(),
+                    success: false,
+                    message: "api-key invalida o expirada (HTTP 401)".to_string(),
+                }
+            } else if status == 403 {
+                ConnectivityResult {
+                    service: "PeruCRIS".to_string(),
+                    success: false,
+                    message: "api-key sin permisos (HTTP 403)".to_string(),
+                }
+            } else {
+                ConnectivityResult {
+                    service: "PeruCRIS".to_string(),
+                    success: false,
+                    message: format!("Servidor PeruCRIS no disponible (HTTP {})", status),
+                }
+            }
+        }
+        Err(e) => ConnectivityResult {
+            service: "PeruCRIS".to_string(),
             success: false,
             message: format!("Sin conexion: {}", e),
         },

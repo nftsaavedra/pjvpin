@@ -203,11 +203,13 @@ pub async fn listar_inventores_patente(
     state: State<'_, AppState>,
     id_patente: String,
 ) -> Result<Vec<crate::recursos::patente_inventores::PatenteInventorDoc>, AppError> {
-    Ok(handlers::listar_inventores_patente(&state, window.label(), id_patente)
-        .await?
-        .into_iter()
-        .map(crate::recursos::patente_inventores::PatenteInventorDoc::from)
-        .collect())
+    Ok(
+        handlers::listar_inventores_patente(&state, window.label(), id_patente)
+            .await?
+            .into_iter()
+            .map(crate::recursos::patente_inventores::PatenteInventorDoc::from)
+            .collect(),
+    )
 }
 
 #[tauri::command]
@@ -243,9 +245,11 @@ pub async fn listar_titulares_patente(
     state: State<'_, AppState>,
     id_patente: String,
 ) -> Result<Vec<crate::recursos::patente_titulares::PatenteTitularDoc>, AppError> {
-    Ok(handlers::listar_titulares_patente(&state, window.label(), id_patente)
-        .await?
-        .into_iter()
-        .map(crate::recursos::patente_titulares::PatenteTitularDoc::from)
-        .collect())
+    Ok(
+        handlers::listar_titulares_patente(&state, window.label(), id_patente)
+            .await?
+            .into_iter()
+            .map(crate::recursos::patente_titulares::PatenteTitularDoc::from)
+            .collect(),
+    )
 }

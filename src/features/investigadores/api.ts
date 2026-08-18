@@ -30,7 +30,7 @@ export type {
   EliminarInvestigadorResultado,
   EventoAcademico,
   ParticipanteEvento,
-  Publicacion,
+  PublicacionCientifica,
   RefreshInvestigadorRenacytFormacionResultado,
   RenacytFormacionAcademicaResumen,
   RenacytLookupResult,
