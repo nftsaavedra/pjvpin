@@ -1,59 +1,100 @@
 export const wizard = {
-  asistente: "Asistente de configuracion inicial",
-  passwordRequisitosTitle: "Requisitos:",
+  asistente: "Asistente de configuración inicial",
+  bienvenida: {
+    titulo: "Configura tu instalación de PJVPI",
+    subtitulo:
+      "En cinco pasos conectarás la base de datos y crearás el primer usuario del sistema.",
+    comenzar: "Comenzar",
+    tiempoEstimado: "Tiempo estimado: 3 minutos",
+  },
+  passwordRequisitosTitle: "Requisitos",
   passwordRequisitos: {
     longitud: "Al menos 8 caracteres",
-    mayuscula: "Al menos una mayuscula",
-    minuscula: "Al menos una minuscula",
-    digito: "Al menos un digito",
-    especial: "Al menos un caracter especial",
+    mayuscula: "Una mayúscula",
+    minuscula: "Una minúscula",
+    digito: "Un dígito",
+    especial: "Un carácter especial",
   } as const,
   passwordNoCoinciden: "Las contraseñas no coinciden",
   uriMongoInvalida: "La URI debe comenzar con mongodb:// o mongodb+srv://",
-  noConfigurado: "(no configurado)",
-  noRegistrado: "(no registrado)",
+  noConfigurado: "No configurado",
+  noRegistrado: "No registrado",
   porDefecto: "Por defecto",
   stepMeta: {
     seguridad: "Seguridad",
     servicios: "Servicios",
-    conexion: "Conexion",
+    conexion: "Conexión",
     usuario: "Usuario",
     resumen: "Resumen",
   } as const,
-  probando: "Probando...",
-  sinTokenConfigurado: "Sin token configurado (opcional)",
-  sinUrlConfigurada: "Sin URL configurada (opcional)",
-  sinApiKeyConfigurada: "Sin API key configurada (opcional)",
-  atras: "Atras",
+  stepTitle: {
+    password: "Define la contraseña maestra",
+    credentials: "Conecta los servicios",
+    connectivity: "Verifica la conectividad",
+    admin: "Crea el primer usuario",
+    summary: "Revisa y guarda",
+  } as const,
+  stepDesc: {
+    password:
+      "Esta clave protege las credenciales del sistema. Se pedirá cada vez que cambies la configuración.",
+    credentials:
+      "MongoDB es obligatorio. RENIEC, RENACYT y Pure son opcionales: puedes configurarlos después.",
+    connectivity:
+      "Probamos cada servicio configurado. Los opcionales omitidos no bloquean el avance.",
+    admin:
+      "El superuser es el único administrador inicial del sistema. Su identidad queda registrada por DNI.",
+    summary:
+      "Última vista antes de guardar la configuración. Los datos sensibles se muestran enmascarados.",
+  } as const,
+  labelPasswordMaestra: "Contraseña maestra",
+  placeholderPasswordMaestra: "Mínimo 8 caracteres",
+  labelConfirmarPasswordMaestra: "Confirmar contraseña maestra",
+  placeholderConfirmarPasswordMaestra: "Repite la contraseña",
+  probando: "Probando…",
+  reintentando: "Reintentando…",
+  sinTokenConfigurado: "Sin token. Puedes configurarlo después.",
+  sinUrlConfigurada: "Sin URL. Puedes configurarla después.",
+  sinApiKeyConfigurada: "Sin API key. Puedes configurarla después.",
+  atras: "Atrás",
   continuar: "Continuar",
   reniecNoConfiguradoInfo:
-    "RENIEC no esta configurado. El DNI queda registrado para trazabilidad. Configure el token RENIEC despues desde Configuracion si requiere verificar identidades automaticamente.",
-  validarDniInfo: "Valide el DNI con RENIEC para autocompletar los datos y poder continuar.",
+    "RENIEC no está configurado. El DNI queda registrado para trazabilidad. Configura el token después desde Configuración si necesitas verificar identidades automáticamente.",
+  validarDniInfo: "Valida el DNI con RENIEC para autocompletar los datos.",
   rolSuperuserInfo:
-    "Rol superuser — unico en el sistema, no eliminable. Identidad registrada por DNI.",
-  creando: "Creando...",
+    "Rol superuser — único en el sistema, no eliminable. La identidad queda registrada por DNI.",
+  creando: "Creando…",
   crearSuperuser: "Crear superuser",
-  guardando: "Guardando...",
-  guardarConfiguracion: "Guardar configuracion e iniciar",
-  configGuardadaExito: "Configuracion guardada correctamente",
+  guardando: "Guardando…",
+  guardarConfiguracion: "Guardar configuración e iniciar",
+  configGuardadaExito: "Configuración guardada correctamente",
   helpIdentidad: {
-    reniec: "Datos autocompletados desde RENIEC. Para modificar, reingrese el DNI.",
+    reniec: "Datos autocompletados desde RENIEC. Para modificar, reingresa el DNI.",
     sinReniec:
-      "RENIEC no esta disponible. Ingrese los nombres manualmente; el DNI garantiza trazabilidad.",
+      "RENIEC no está disponible. Ingresa los nombres manualmente. El DNI garantiza trazabilidad.",
   } as const,
   helpDniField: {
     reniecDisponible:
-      "Ingrese el DNI del superuser. Se validara contra RENIEC para autocompletar nombres y apellidos.",
+      "Ingresa el DNI del superuser. Se validará contra RENIEC para autocompletar nombres y apellidos.",
     sinReniec:
-      "Ingrese el DNI del superuser. RENIEC no esta configurado: el nombre se ingresara manualmente.",
+      "Ingresa el DNI del superuser. RENIEC no está configurado: el nombre se ingresa manualmente.",
   } as const,
   formHelp: {
-    mongoUri: "URI de conexion a su cluster MongoDB. Debe comenzar con mongodb:// o mongodb+srv://",
+    mongoUri: "URI de conexión a tu cluster MongoDB. Debe comenzar con mongodb:// o mongodb+srv://",
     reniecToken:
-      "Token para consulta de DNI via RENIEC. Si no lo tiene, deje vacio. Las consultas DNI se realizaran manualmente.",
+      "Token para consulta de DNI vía RENIEC. Si no lo tienes, déjalo vacío. Las consultas se harán manualmente.",
     renacytUrl: "API de RENACYT para consulta de investigadores.",
-    pureKey: "API key de Pure (Elsevier) para sincronizacion de publicaciones.",
+    pureKey: "API key de Pure (Elsevier) para sincronización de publicaciones.",
+    pureUrl: "URL base de la API de Pure (Elsevier).",
   } as const,
+  optionalSection: {
+    title: "Servicios opcionales",
+    descripcion:
+      "Puedes dejarlos vacíos y configurarlos después desde Configuración. No bloquean el asistente.",
+  },
+  requiredSection: {
+    title: "Obligatorio",
+    descripcion: "Necesario para iniciar la aplicación.",
+  },
   summaryLabels: {
     mongoUri: "MongoDB URI",
     baseDatos: "Base de datos",
@@ -70,33 +111,33 @@ export const wizard = {
   } as const,
   help: {
     password: {
-      label: "Informacion sobre contraseña maestra",
+      label: "Información sobre contraseña maestra",
       content:
-        "Clave de proteccion de credenciales. Se valida como requisito de seguridad y se usara para cifrar la configuracion en disco en una version futura.",
+        "Clave de protección de credenciales. Se validará como requisito de seguridad y se usará para cifrar la configuración en disco en una versión futura.",
     },
     credenciales: {
-      label: "Informacion sobre credenciales",
+      label: "Información sobre credenciales",
       content:
-        "Configure los servicios que PJVPI necesita para funcionar. Los servicios marcados con * son obligatorios.",
+        "Configura los servicios que PJVPI necesita para funcionar. Los servicios marcados como obligatorios no pueden quedar vacíos.",
     },
     serviciosOpcionales: {
-      label: "Informacion sobre servicios opcionales",
+      label: "Información sobre servicios opcionales",
       content:
-        "Solo MongoDB es obligatorio. RENIEC, RENACYT y Pure son opcionales: puede continuar aunque fallen y configurarlos despues desde Configuracion.",
+        "Solo MongoDB es obligatorio. RENIEC, RENACYT y Pure son opcionales: puedes continuar aunque fallen y configurarlos después.",
     },
     superuser: {
-      label: "Informacion sobre superuser",
+      label: "Información sobre superuser",
       content:
-        "Primer usuario del sistema con maximo nivel de acceso. Podra gestionar usuarios, configurar servicios externos y administrar el sistema completo. Unico en el sistema: no se puede eliminar desde la interfaz.",
+        "Primer usuario del sistema con máximo nivel de acceso. Podrá gestionar usuarios, configurar servicios externos y administrar el sistema completo. Único en el sistema: no se puede eliminar desde la interfaz.",
     },
     guardado: {
-      label: "Informacion sobre guardado",
+      label: "Información sobre guardado",
       content:
-        "Revise los datos antes de guardar. La configuracion se guardara en disco. Proteja el archivo con permisos de usuario.",
+        "Revisa los datos antes de guardar. La configuración se guardará en disco. Protege el archivo con permisos de usuario.",
     },
     acceso: {
-      label: "Informacion de acceso",
-      content: "Ingrese sus credenciales para utilizar el sistema.",
+      label: "Información de acceso",
+      content: "Ingresa tus credenciales para utilizar el sistema.",
     },
   } as const,
 } as const;

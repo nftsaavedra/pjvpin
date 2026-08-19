@@ -42,16 +42,26 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-[520px] bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden text-gray-800">
-        <div className="p-6 pb-4 bg-gradient-to-b from-blue-50 to-white border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-1.5">
-            <h2 className="text-blue-900 m-0">Acceso al sistema</h2>
+      <div className="w-full max-w-[520px] bg-card rounded-xl shadow-xl border border-border overflow-hidden">
+        <header className="flex items-start gap-4 px-6 pt-6 pb-5 border-b border-border">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-light text-primary shrink-0">
+            <AppIcon icon={LogIn} size={20} strokeWidth={2} />
+          </div>
+          <div className="flex flex-col gap-1 min-w-0 flex-1">
+            <h1 className="text-xl font-bold text-text-primary leading-tight m-0">
+              Acceso al sistema
+            </h1>
+            <p className="text-sm text-text-secondary leading-snug m-0 mt-0.5">
+              Ingresa tus credenciales para utilizar el sistema.
+            </p>
+          </div>
+          <div className="shrink-0 self-start pt-1">
             <FieldHelpTooltip
               label={messages.wizard.help.acceso.label}
               content={messages.wizard.help.acceso.content}
             />
           </div>
-        </div>
+        </header>
 
         <div className="p-6">
           <form
@@ -93,7 +103,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
 
             <button type="submit" className="btn-primary w-full" disabled={isLoading}>
               {isLoading ? (
-                "Procesando..."
+                "Procesando…"
               ) : (
                 <span className="button-with-icon">
                   <AppIcon icon={LogIn} size={18} />

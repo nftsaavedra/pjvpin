@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { CheckCircle, Loader2, Minus, Wifi, XCircle } from "lucide-react";
-import { AppIcon } from "@/shared/ui/AppIcon";
-import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
+import { Wifi } from "lucide-react";
 import {
   wizardTestMongo,
   wizardTestReniec,
@@ -11,6 +9,9 @@ import {
 } from "@/shared/tauri/wizard";
 import { DEFAULT_PURE_API_BASE_URL } from "@/shared/config/defaults";
 import { messages } from "@/shared/feedback/messages";
+import { StepHeader } from "../components/StepHeader";
+import { StepFooter } from "../components/StepFooter";
+import { ConnectivityRow, type ConnectivityStatus } from "../components/ConnectivityRow";
 import type { WizardState } from "../useWizardState";
 
 interface Props {
@@ -20,33 +21,24 @@ interface Props {
   onBack: () => void;
 }
 
-type TestStatus = "idle" | "running" | "ok" | "fail" | "skipped";
-
 interface TestEntry {
   label: string;
-  status: TestStatus;
+  status: ConnectivityStatus;
   message: string;
+  optional: boolean;
 }
-
-const TEST_ROW: Record<TestStatus, string> = {
-  idle: "border-border bg-bg",
-  running: "border-blue-300 bg-blue-50",
-  ok: "border-green-300 bg-green-50",
-  fail: "border-red-300 bg-red-50",
-  skipped: "border-border bg-bg opacity-70",
-};
 
 export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, onBack }) => {
   const [tests, setTests] = useState<TestEntry[]>(() => [
-    { label: "MongoDB", status: "idle", message: "" },
-    { label: "RENIEC", status: "idle", message: "" },
-    { label: "RENACYT", status: "idle", message: "" },
-    { label: "Pure", status: "idle", message: "" },
+    { label: "MongoDB", status: "idle", message: "", optional: false },
+    { label: "RENIEC", status: "idle", message: "", optional: true },
+    { label: "RENACYT", status: "idle", message: "", optional: true },
+    { label: "Pure", status: "idle", message: "", optional: true },
   ]);
   const [allDone, setAllDone] = useState(false);
   const startedRef = useRef(false);
 
-  const setEntry = useCallback((label: string, status: TestStatus, message: string) => {
+  const setEntry = useCallback((label: string, status: ConnectivityStatus, message: string) => {
     setTests((prev) => prev.map((t) => (t.label === label ? { ...t, status, message } : t)));
   }, []);
 
@@ -125,73 +117,56 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
     void runTests();
   };
 
-  const mongoOk = tests.find((t) => t.label === "MongoDB")?.status === "ok";
   const hasAnyFailure = tests.some((t) => t.status === "fail");
+  const requiredFailure = tests.find((t) => !t.optional && t.status === "fail") !== undefined;
 
-  const statusIcon = (status: TestStatus) => {
-    switch (status) {
-      case "running":
-        return <AppIcon icon={Loader2} size={18} className="animate-spin text-primary" />;
-      case "ok":
-        return <AppIcon icon={CheckCircle} size={18} className="text-green-600" />;
-      case "fail":
-        return <AppIcon icon={XCircle} size={18} className="text-red-600" />;
-      case "skipped":
-        return <AppIcon icon={Minus} size={18} className="text-text-secondary" />;
-      default:
-        return <AppIcon icon={Wifi} size={18} />;
-    }
-  };
+  const canContinue = allDone && !requiredFailure;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-6 pb-4 border-b border-border bg-gradient-to-b from-primary-light to-card">
-        <div className="text-center">
-          <AppIcon icon={Wifi} size={32} className="text-primary mb-2" />
-          <div className="flex items-center justify-center gap-2 mb-1.5">
-            <h2 className="text-xl font-bold m-0 text-text-primary">Prueba de conectividad</h2>
-            <FieldHelpTooltip
-              label={messages.wizard.help.serviciosOpcionales.label}
-              content={messages.wizard.help.serviciosOpcionales.content}
-            />
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-col">
+      <StepHeader
+        icon={Wifi}
+        title={messages.wizard.stepTitle.connectivity}
+        description={messages.wizard.stepDesc.connectivity}
+      />
 
-      <div className="p-6">
-        <div className="flex flex-col gap-2.5">
+      <div className="p-6 flex flex-col gap-4">
+        <div className="flex flex-col gap-2.5" role="list">
           {tests.map((t) => (
-            <div
+            <ConnectivityRow
               key={t.label}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${TEST_ROW[t.status]}`}
-            >
-              <span className="shrink-0 flex">{statusIcon(t.status)}</span>
-              <div className="flex flex-col gap-0.5 min-w-0">
-                <strong className="text-sm text-text-primary">{t.label}</strong>
-                <span className="text-xs break-words text-text-secondary">{t.message}</span>
-              </div>
-            </div>
+              label={t.label}
+              status={t.status}
+              message={t.message}
+              optional={t.optional}
+            />
           ))}
         </div>
 
-        <div className="flex items-center justify-between gap-3 pt-3 mt-4">
-          <button type="button" className="btn-secondary shrink-0" onClick={onBack}>
-            {messages.wizard.atras}
-          </button>
-          {allDone && hasAnyFailure && (
-            <button type="button" className="btn-secondary" onClick={handleRetry}>
-              {messages.ui.reintentar}
-            </button>
-          )}
-          <button
-            type="button"
-            className="btn-primary ml-auto"
-            disabled={!allDone || !mongoOk}
-            onClick={onNext}
-          >
-            {allDone ? messages.wizard.continuar : messages.wizard.probando}
-          </button>
-        </div>
+        {allDone && requiredFailure && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <strong className="font-bold">MongoDB no responde.</strong> Corrige la URI antes de
+            continuar.
+          </div>
+        )}
+        {allDone && hasAnyFailure && !requiredFailure && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Algún servicio opcional falló. Puedes continuar y configurarlo después.
+          </div>
+        )}
+
+        <StepFooter
+          onBack={onBack}
+          backLabel={messages.wizard.atras}
+          primaryLabel={allDone ? messages.wizard.continuar : messages.wizard.probando}
+          primaryDisabled={!canContinue}
+          onPrimary={onNext}
+          secondaryAction={
+            allDone && hasAnyFailure
+              ? { label: messages.ui.reintentar, onClick: handleRetry }
+              : undefined
+          }
+        />
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ académicos, grupos de investigación, reportes). Construido con Tauri v2 + Reac
 |------|-----------|---------|
 | Shell | Tauri v2 | 2.10.x |
 | Frontend | React + TypeScript | 19.1 / 6.0 |
-| Bundler | Vite (Rolldown) | 8.0 |
+| Bundler | Vite (Rolldown) | 8.2 |
 | Backend | Rust (edition 2021) | 1.85+ |
 | Base de datos | MongoDB Atlas | Driver 3.5 |
 | Diseño | DESIGN.md (Google format) | alpha |

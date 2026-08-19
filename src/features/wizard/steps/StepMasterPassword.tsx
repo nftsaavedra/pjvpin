@@ -1,9 +1,10 @@
 import React, { useId } from "react";
 import { Shield } from "lucide-react";
-import { AppIcon } from "@/shared/ui/AppIcon";
-import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { messages } from "@/shared/feedback/messages";
 import { inputClassName } from "@/shared/forms/inputClassName";
+import { StepHeader } from "../components/StepHeader";
+import { StepFooter } from "../components/StepFooter";
+import { PasswordStrengthMeter } from "../components/PasswordStrengthMeter";
 import type { WizardState } from "../useWizardState";
 
 interface Props {
@@ -38,26 +39,17 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
   const canContinue = valid && match && confirmPassword.length > 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="p-6 pb-4 border-b border-border bg-gradient-to-b from-primary-light to-card">
-        <div className="text-center">
-          <AppIcon icon={Shield} size={32} className="text-primary mb-2" />
-          <div className="flex items-center justify-center gap-2 mb-1.5">
-            <h2 className="text-xl font-bold m-0 text-text-primary">
-              Contraseña maestra de configuracion
-            </h2>
-            <FieldHelpTooltip
-              label={messages.wizard.help.password.label}
-              content={messages.wizard.help.password.content}
-            />
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-col">
+      <StepHeader
+        icon={Shield}
+        title={messages.wizard.stepTitle.password}
+        description={messages.wizard.stepDesc.password}
+      />
 
-      <div className="p-6">
+      <div className="p-6 flex flex-col gap-5">
         <div className="form">
           <div className="form-group">
-            <label htmlFor={passId}>Contraseña maestra *</label>
+            <label htmlFor={passId}>{messages.wizard.labelPasswordMaestra}</label>
             <input
               id={passId}
               type="password"
@@ -66,14 +58,14 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
               onChange={(e) => {
                 update("masterPassword", e.target.value);
               }}
-              placeholder="Defina su contraseña maestra"
+              placeholder={messages.wizard.placeholderPasswordMaestra}
               autoComplete="new-password"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor={confirmId}>Confirmar contraseña *</label>
+            <label htmlFor={confirmId}>{messages.wizard.labelConfirmarPasswordMaestra}</label>
             <input
               id={confirmId}
               type="password"
@@ -82,7 +74,7 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
               onChange={(e) => {
                 update("confirmPassword", e.target.value);
               }}
-              placeholder="Repita la contraseña"
+              placeholder={messages.wizard.placeholderConfirmarPasswordMaestra}
               autoComplete="new-password"
               required
             />
@@ -93,33 +85,14 @@ export const StepMasterPassword: React.FC<Props> = ({ state, update, onNext }) =
             )}
           </div>
 
-          <div className="rounded-xl px-4 py-3.5 bg-bg border border-border">
-            <p className="text-xs font-bold m-0 mb-2 text-text-secondary">
-              {messages.wizard.passwordRequisitosTitle}
-            </p>
-            <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
-              {requirements.map((r) => (
-                <li
-                  key={r.label}
-                  className={`text-sm ${
-                    r.test(password) ? "text-secondary font-semibold" : "text-text-secondary"
-                  }`}
-                >
-                  {r.test(password) ? "✓" : "○"} {r.label}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <button
-            type="button"
-            className="btn-primary mt-3 w-full"
-            disabled={!canContinue}
-            onClick={onNext}
-          >
-            {messages.wizard.continuar}
-          </button>
+          <PasswordStrengthMeter value={password} requirements={requirements} />
         </div>
+
+        <StepFooter
+          primaryLabel={messages.wizard.continuar}
+          primaryDisabled={!canContinue}
+          onPrimary={onNext}
+        />
       </div>
     </div>
   );

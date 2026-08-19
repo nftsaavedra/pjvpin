@@ -56,7 +56,7 @@ PJVPI centraliza el registro y seguimiento de **investigadores** (docentes, tesi
 
 ## Requisitos
 
-- **Node.js 20+** y npm.
+- **Node.js 22+ (LTS)** y npm.
 - **Rust 1.85+** con toolchain estable.
 - **MongoDB Atlas** (tier gratuito M0 suficiente para desarrollo).
 - **Windows 10/11** (target actual del build).

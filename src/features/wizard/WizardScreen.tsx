@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { BookOpen, Check, ChevronRight } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { useWizardState } from "./useWizardState";
+import { StepperHeader, type StepMeta } from "./components/StepperHeader";
 import { StepMasterPassword } from "./steps/StepMasterPassword";
 import { StepCredentials } from "./steps/StepCredentials";
 import { StepTestConnectivity } from "./steps/StepTestConnectivity";
@@ -14,12 +15,12 @@ interface Props {
   onDone: (usuario: Usuario) => void;
 }
 
-const STEP_META = [
-  { label: messages.wizard.stepMeta.seguridad, short: "1" },
-  { label: messages.wizard.stepMeta.servicios, short: "2" },
-  { label: messages.wizard.stepMeta.conexion, short: "3" },
-  { label: messages.wizard.stepMeta.usuario, short: "4" },
-  { label: messages.wizard.stepMeta.resumen, short: "5" },
+const STEP_META: StepMeta[] = [
+  { label: messages.wizard.stepMeta.seguridad },
+  { label: messages.wizard.stepMeta.servicios },
+  { label: messages.wizard.stepMeta.conexion },
+  { label: messages.wizard.stepMeta.usuario },
+  { label: messages.wizard.stepMeta.resumen },
 ];
 
 export const WizardScreen: React.FC<Props> = ({ onDone }) => {
@@ -32,56 +33,21 @@ export const WizardScreen: React.FC<Props> = ({ onDone }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg flex flex-col">
       <header className="app-header">
         <div className="header-content">
           <div>
             <h1 className="app-title title-with-icon">
               <AppIcon icon={BookOpen} size={24} />
-              <span>UPI Research</span>
+              <span>{messages.wizard.asistente}</span>
             </h1>
-            <p className="app-subtitle">{messages.wizard.asistente}</p>
           </div>
         </div>
       </header>
 
-      <main className="main-content flex items-center justify-center p-8">
-        <div className="mx-auto flex w-full max-w-[640px] flex-col items-center px-4 py-8 pb-12">
-          <div className="flex items-center justify-center mb-8 w-full">
-            {STEP_META.map((meta, i) => {
-              const stepNum = i + 1;
-              const isActive = stepNum === state.step;
-              const isDone = stepNum < state.step;
-              return (
-                <div
-                  key={meta.label}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs ${
-                    isActive
-                      ? "text-primary font-semibold"
-                      : isDone
-                        ? "text-secondary"
-                        : "text-text-secondary"
-                  }`}
-                >
-                  <span
-                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold shrink-0 ${
-                      isActive
-                        ? "bg-primary text-white"
-                        : isDone
-                          ? "bg-secondary text-white"
-                          : "bg-border text-text-secondary"
-                    }`}
-                  >
-                    {isDone ? <AppIcon icon={Check} size={10} /> : meta.short}
-                  </span>
-                  <span className="hidden sm:inline">{meta.label}</span>
-                  {i < STEP_META.length - 1 && (
-                    <AppIcon icon={ChevronRight} size={12} className="shrink-0" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+      <main className="main-content flex items-start justify-center p-8 flex-1">
+        <div className="w-full max-w-[640px] flex flex-col">
+          <StepperHeader steps={STEP_META} currentStep={state.step} />
 
           <div className="rounded-xl overflow-hidden w-full bg-card border border-border shadow-xl">
             {state.step === 1 && (

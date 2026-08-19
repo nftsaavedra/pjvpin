@@ -1098,3 +1098,146 @@ npm run build      # OK (Tailwind compila todos los utilities)
 
 Estado CSS: 32 archivos tracked (reducido desde 35; -3 eliminados).
 Estado TSX: 18 archivos migrados a `Badge`/`StatusChip`. Cero referencias huérfanas a clases eliminadas.
+
+---
+
+# Wizard / Asistente de configuración (v0.1.0-alpha — rediseño Impeccable)
+
+> Esta sección documenta el rediseño del wizard y la AuthScreen siguiendo
+> el skill **Impeccable** (`pbakaus/impeccable`, instalado en
+> `.agents/skills/impeccable/`, comandos `audit`/`polish`/`onboard`).
+> Modo aplicado: **Operate** (el visitante completa una tarea, no está siendo
+> persuadido). El usuario no está descubriendo el producto: está configurándolo.
+
+## Principios aplicados
+
+- **Operate, no Persuade**: scanability, consistencia, expectativas nativas. Brand en detalles precisos.
+- **No ceremony**: el header de cada step ya no es una "eyebrow" decorativa (kicker/eyebrow está prohibido por `craft-floor.md` §Refuse). El stepper horizontal arriba es el único indicador de navegación.
+- **Time to value**: el primer paso muestra el resultado (no instrucciones). Cada paso siguiente muestra solo lo necesario para avanzar.
+- **Show, don't tell**: ayuda inline (`help` en `FormInput`) cerca del campo, no flotando en un header redundante.
+- **Estado explícito**: cada estado de un test de conectividad tiene un label escrito ("Conectado", "Omitido", "Falló", "Probando") — no solo color.
+
+## Arquitectura de primitivas
+
+| Primitiva | Ubicación | Propósito |
+|-----------|-----------|-----------|
+| `StepHeader` | `features/wizard/components/StepHeader.tsx` | Cabecera de step con ícono + título + descripción. Sin eyebrow. |
+| `StepperHeader` | `features/wizard/components/StepperHeader.tsx` | Stepper horizontal con segmentos + etiquetas. `role="progressbar"` accesible. |
+| `StepFooter` | `features/wizard/components/StepFooter.tsx` | Pie con `Atrás` / primario / secundario opcional. |
+| `ConnectivityRow` | `features/wizard/components/ConnectivityRow.tsx` | Fila de prueba con strip lateral + ícono + label + estado escrito. |
+| `PasswordStrengthMeter` | `features/wizard/components/PasswordStrengthMeter.tsx` | Barra segmentada + lista interactiva de requisitos. |
+| `SummaryCard` | `features/wizard/components/SummaryCard.tsx` | `<dl>/<dt>/<dd>` semántico para el resumen. |
+
+## Estructura del step
+
+```
++--------------------------------------------------+
+| [icon-bg] Título del step                        |  StepHeader (px-6 pt-6 pb-5 border-b)
+|          Descripción breve (text-secondary)      |
++--------------------------------------------------+
+|                                                  |
+|  Contenido del step (form, status, summary)      |  p-6 flex flex-col gap-N
+|                                                  |
++--------------------------------------------------+
+| [Atrás]              [Secundario?] [Continuar →] |  StepFooter (border-t)
++--------------------------------------------------+
+```
+
+Antes (legacy): `<header className="p-6 pb-4 border-b bg-gradient-to-b from-primary-light to-card">` repetido 5 veces con `<AppIcon size={32} className="text-primary mb-2" />` + `<h2>` + `<FieldHelpTooltip>`. Eliminado por violar `craft-floor.md` §Refuse ("a kicker or eyebrow above a heading. This one is a ban, not a default").
+
+## StepperHeader
+
+- 5 segmentos finos (`h-1.5 rounded-full`) que se llenan en verde (`bg-secondary`) a medida que el usuario avanza.
+- Etiquetas debajo: actual en azul (`text-primary`), completadas en verde (`text-secondary`), futuras en gris (`text-text-secondary`).
+- Línea superior: "Paso X de 5" + "Y% completado" en `tabular-nums`.
+- Accesible: `role="progressbar"` con `aria-valuenow/min/max/label`.
+
+## Step Master Password
+
+- `PasswordStrengthMeter`: 5 segmentos que se llenan progresivamente, label dinámico ("Define una contraseña" / "Casi lista" / "Contraseña segura"), 5 requisitos con check verde animado.
+- Sin `border-dashed` decorativo: caja con `bg-bg border border-border`.
+- `StepFooter` con primario "Continuar" deshabilitado hasta cumplir todos los requisitos + confirmación coincidente.
+
+## Step Credentials
+
+- **Bloque obligatorio** (`bg-card border-border`, etiqueta `Requerido` en `text-primary-dark`):
+  - MongoDB URI (con help inline explicando formato)
+  - Nombre de base de datos
+- **Bloque opcional** (`bg-bg/40 border-dashed border-border`, etiqueta `Opcional` en `text-text-secondary`):
+  - Token RENIEC
+  - URL RENACYT
+  - Pure API Key
+- La diferencia visual (solid vs dashed, color del label) comunica sin ambigüedad qué bloque es bloqueante.
+
+## Step Test Connectivity
+
+- `ConnectivityRow` por servicio con strip lateral 1px (`absolute left-0 top-2 bottom-2 w-1`):
+  - `running`: azul + `animate-spin` en ícono `Loader2`
+  - `ok`: emerald + `CheckCircle`
+  - `fail`: rojo + `XCircle`
+  - `skipped`: slate-300 + `Minus` (claramente diferente de `idle`)
+  - `idle`: gris neutral
+- Estado escrito en pill a la derecha: "Conectado" / "Omitido" / "Falló" / "Probando" / "En espera". **Nunca solo color.**
+- Tag "Opcional" arriba del label para servicios no bloqueantes.
+- Banner contextual bajo la lista:
+  - Si MongoDB falla: bloqueante (rojo, "Corrige la URI antes de continuar").
+  - Si solo opcionales fallan: warning (amber, "Puedes continuar y configurarlo después").
+
+## Step Create Admin
+
+- Dos secciones con `<section aria-labelledby>` semánticas:
+  1. **Identidad del administrador**: DNI + 3 campos (nombres, apellido paterno, apellido materno) en grid `1 → sm:3` columnas. DNI es el ancla visual.
+  2. **Credenciales de acceso**: username + contraseña + confirmar contraseña + banner de rol superuser.
+- FormInput con `readOnly`/`disabled` cuando DNI validado contra RENIEC (autocompletado bloqueante, no editable).
+- `StepFooter` con `primaryType="submit"` para integración con `<form onSubmit>` del hook.
+
+## Step Summary
+
+- **Banner de celebración** (`bg-emerald-50 border-emerald-200`) con `CheckCircle2` ícono: "Usuario superuser creado · @username · nombre completo". Primer momento de reconocimiento del logro.
+- 3 `SummaryCard` con `<dl>/<dt>/<dd>` semánticos, label/value separados por `divide-y divide-border`.
+- Datos sensibles enmascarados: primeros 4 chars + "…".
+- Botón "Guardar configuración e iniciar" full-width + "Cancelar" secundario.
+
+## Auth Screen (alineada al wizard)
+
+Antes: usaba utility classes directos (`bg-white`, `border-gray-200`, `text-blue-900`) — inconsistente con tokens del proyecto.
+Ahora: misma estructura que `StepHeader` (icon-box + título + descripción + help). `bg-card border-border text-text-primary`. Consistencia visual entre login y wizard.
+
+## Tokens y componentes reutilizados
+
+- `StepHeader` reemplaza 5 bloques repetidos: **-30 líneas netas** en steps.
+- `StepFooter` unifica el patrón Atrás/Continuar: **-15 líneas** repetidas.
+- `ConnectivityRow`, `PasswordStrengthMeter`, `SummaryCard` extraídos: cada cambio de estilo se hace en un solo archivo, no en 5.
+- Sin nuevos tokens introducidos: solo se usan `--primary-color`, `--primary-dark`, `--primary-light`, `--text-primary`, `--text-secondary`, `--border-color`, `--bg-color`, `--card-bg`. Cero hex hardcodeados fuera de tokens semánticos (success/warning/danger) que ya estaban en DESIGN.md.
+
+## Verificación
+
+```bash
+npm run typecheck  # 0 errores (root + node)
+npm run lint       # 0 errors / 0 warnings
+npm run test       # 27/27 vitest en 5.39s
+npm run build      # OK
+```
+
+Archivos tocados:
+
+- `src/features/wizard/components/StepHeader.tsx` (nuevo)
+- `src/features/wizard/components/StepperHeader.tsx` (nuevo)
+- `src/features/wizard/components/StepFooter.tsx` (nuevo)
+- `src/features/wizard/components/ConnectivityRow.tsx` (nuevo)
+- `src/features/wizard/components/PasswordStrengthMeter.tsx` (nuevo)
+- `src/features/wizard/components/SummaryCard.tsx` (nuevo)
+- `src/features/wizard/WizardScreen.tsx` (refactor con primitivas)
+- `src/features/wizard/steps/StepMasterPassword.tsx` (refactor)
+- `src/features/wizard/steps/StepCredentials.tsx` (refactor + secciones)
+- `src/features/wizard/steps/StepTestConnectivity.tsx` (refactor + ConnectivityRow)
+- `src/features/wizard/steps/StepCreateAdmin.tsx` (refactor + 2 secciones)
+- `src/features/wizard/steps/StepSummary.tsx` (refactor + SummaryCard + banner)
+- `src/features/auth/AuthScreen.tsx` (alineado al lenguaje del wizard)
+- `src/shared/feedback/messages/wizard.ts` (tildes + nuevas claves: `stepTitle`, `stepDesc`, secciones, etc.)
+
+Archivos del skill (instalación):
+
+- `.agents/skills/impeccable/SKILL.md` (instalado vía `git sparse-checkout` desde `pbakaus/impeccable`)
+- `.agents/skills/impeccable/reference/*.md` (23 referencias)
+- `.agents/skills/impeccable/scripts/*.mjs` (CLI tooling + detector)
