@@ -5,9 +5,10 @@ import {
   wizardTestReniec,
   wizardTestRenacyt,
   wizardTestPure,
+  wizardTestPerucris,
   type ConnectivityResult,
 } from "@/shared/tauri/wizard";
-import { DEFAULT_PURE_API_BASE_URL } from "@/shared/config/defaults";
+import { DEFAULT_PERUCRIS_API_BASE_URL, DEFAULT_PURE_API_BASE_URL } from "@/shared/config/defaults";
 import { messages } from "@/shared/feedback/messages";
 import { StepHeader } from "../components/StepHeader";
 import { StepFooter } from "../components/StepFooter";
@@ -34,6 +35,7 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
     { label: "RENIEC", status: "idle", message: "", optional: true },
     { label: "RENACYT", status: "idle", message: "", optional: true },
     { label: "Pure", status: "idle", message: "", optional: true },
+    { label: "PeruCRIS", status: "idle", message: "", optional: true },
   ]);
   const [allDone, setAllDone] = useState(false);
   const startedRef = useRef(false);
@@ -86,18 +88,36 @@ export const StepTestConnectivity: React.FC<Props> = ({ state, update, onNext, o
       setEntry("Pure", "skipped", messages.wizard.sinApiKeyConfigurada);
     }
 
+    let perucrisResult: ConnectivityResult | null = null;
+    const hasPerucrisCreds = state.perucrisApiKey.trim() || state.perucrisRuc.trim();
+    if (hasPerucrisCreds) {
+      perucrisResult = applyResult(
+        "PeruCRIS",
+        await wizardTestPerucris(
+          DEFAULT_PERUCRIS_API_BASE_URL,
+          state.perucrisApiKey.trim() || undefined,
+          state.perucrisRuc.trim() || undefined,
+        ),
+      );
+    } else {
+      setEntry("PeruCRIS", "skipped", messages.wizard.sinRucNiApiKey);
+    }
+
     setAllDone(true);
     update("results", {
       mongo: mongoResult.success,
       reniec: reniecResult?.success ?? false,
       renacyt: renacytResult?.success ?? false,
       pure: pureResult?.success ?? false,
+      perucris: perucrisResult?.success ?? false,
     });
   }, [
     state.mongodbUri,
     state.reniecToken,
     state.renacytBaseUrl,
     state.pureApiKey,
+    state.perucrisApiKey,
+    state.perucrisRuc,
     applyResult,
     setEntry,
     update,

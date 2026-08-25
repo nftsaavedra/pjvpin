@@ -20,6 +20,11 @@ export const InvestigadoresTab = lazy(async () => {
   return { default: module.InvestigadoresTab };
 });
 
+export const PublicacionesTab = lazy(async () => {
+  const module = await import("@/features/publicaciones/PublicacionesTab");
+  return { default: module.PublicacionesTab };
+});
+
 export const ReportesTab = lazy(async () => {
   const module = await import("@/features/reportes/ReportesTab");
   return { default: module.ReportesTab };

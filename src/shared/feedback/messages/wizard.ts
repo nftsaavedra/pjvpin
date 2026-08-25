@@ -55,6 +55,7 @@ export const wizard = {
   sinTokenConfigurado: "Sin token. Puedes configurarlo después.",
   sinUrlConfigurada: "Sin URL. Puedes configurarla después.",
   sinApiKeyConfigurada: "Sin API key. Puedes configurarla después.",
+  sinRucNiApiKey: "Sin RUC ni API key. Puedes configurarlo después.",
   atras: "Atrás",
   continuar: "Continuar",
   reniecNoConfiguradoInfo:
@@ -85,6 +86,10 @@ export const wizard = {
     renacytUrl: "API de RENACYT para consulta de investigadores.",
     pureKey: "API key de Pure (Elsevier) para sincronización de publicaciones.",
     pureUrl: "URL base de la API de Pure (Elsevier).",
+    perucrisRuc:
+      "RUC de la institución matriz (11 dígitos). Es la llave de búsqueda del importador inicial desde PeruCRIS. Si la orgunit local ya tiene RUC, este campo sirve como fallback.",
+    perucrisApiKey:
+      "API key de PeruCRIS (CONCYTEC). Solo requerida para push/ingest. El importador inicial funciona en modo lectura con el endpoint público.",
   } as const,
   optionalSection: {
     title: "Servicios opcionales",

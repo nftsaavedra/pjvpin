@@ -1,4 +1,5 @@
 import {
+  BookText,
   FileSpreadsheet,
   FolderOpen,
   GraduationCap,
@@ -8,21 +9,25 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+export type TabGroup = "operativa" | "sistema";
+
 export interface TabDef {
   id: string;
   label: string;
   icon: LucideIcon;
   description: string;
   permission: string;
+  group?: TabGroup;
 }
 
 export const TAB_DEFINITIONS: TabDef[] = [
   {
     id: "dashboard",
-    label: "Dashboard",
+    label: "Panel",
     icon: LayoutDashboard,
     description: "Indicadores clave",
     permission: "dashboard.view",
+    group: "operativa",
   },
   {
     id: "proyectos",
@@ -30,6 +35,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     icon: FolderOpen,
     description: "Alta y seguimiento",
     permission: "proyectos.view",
+    group: "operativa",
   },
   {
     id: "investigadores",
@@ -37,6 +43,15 @@ export const TAB_DEFINITIONS: TabDef[] = [
     icon: GraduationCap,
     description: "Registro y estado",
     permission: "investigadores.view",
+    group: "operativa",
+  },
+  {
+    id: "publicaciones",
+    label: "Publicaciones",
+    icon: BookText,
+    description: "Publicaciones científicas (Pure)",
+    permission: "publicaciones.view",
+    group: "operativa",
   },
   {
     id: "grupos",
@@ -44,6 +59,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     icon: Users,
     description: "Investigación coordinada",
     permission: "grupos.view",
+    group: "operativa",
   },
   {
     id: "reportes",
@@ -51,6 +67,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     icon: FileSpreadsheet,
     description: "Vista previa y exportación",
     permission: "reportes.view",
+    group: "operativa",
   },
   {
     id: "configuracion",
@@ -58,39 +75,37 @@ export const TAB_DEFINITIONS: TabDef[] = [
     icon: Settings2,
     description: "Accesos y catálogos",
     permission: "configuracion.view",
+    group: "sistema",
   },
 ];
 
-export const TAB_HEADER_META: Record<string, { kicker: string; title: string; subtitle: string }> =
-  {
-    dashboard: {
-      kicker: "Indicadores clave",
-      title: "Dashboard",
-      subtitle: "Carga de investigadores y proyectos en una sola vista.",
-    },
-    proyectos: {
-      kicker: "Gestión operativa",
-      title: "Proyectos",
-      subtitle: "Alta, asignación y seguimiento de proyectos.",
-    },
-    investigadores: {
-      kicker: "Gestión operativa",
-      title: "Investigadores",
-      subtitle: "Registro, estado y trazabilidad del investigador.",
-    },
-    grupos: {
-      kicker: "Investigación",
-      title: "Grupos de Investigación",
-      subtitle: "Coordinación y líneas de investigación.",
-    },
-    reportes: {
-      kicker: "Análisis y salida",
-      title: "Reportes",
-      subtitle: "Vista previa, filtros y exportación.",
-    },
-    configuracion: {
-      kicker: "Administración base",
-      title: "Configuración",
-      subtitle: "Accesos y catálogos del sistema.",
-    },
-  };
+export const TAB_HEADER_META: Record<string, { title: string; subtitle: string }> = {
+  dashboard: {
+    title: "Panel",
+    subtitle: "Carga de investigadores y proyectos en una sola vista.",
+  },
+  proyectos: {
+    title: "Proyectos",
+    subtitle: "Alta, asignación y seguimiento de proyectos.",
+  },
+  investigadores: {
+    title: "Investigadores",
+    subtitle: "Registro, estado y trazabilidad del investigador.",
+  },
+  publicaciones: {
+    title: "Publicaciones",
+    subtitle: "Publicaciones científicas consolidadas (Pure / CONCYTEC).",
+  },
+  grupos: {
+    title: "Grupos de Investigación",
+    subtitle: "Coordinación y líneas de investigación.",
+  },
+  reportes: {
+    title: "Reportes",
+    subtitle: "Vista previa, filtros y exportación.",
+  },
+  configuracion: {
+    title: "Configuración",
+    subtitle: "Accesos y catálogos del sistema.",
+  },
+};

@@ -16,6 +16,8 @@ export interface WizardState {
   renacytBaseUrl: string;
   renacytActoVersion: string;
   pureApiKey: string;
+  perucrisApiKey: string;
+  perucrisRuc: string;
   results: Record<string, boolean>;
 }
 
@@ -29,6 +31,8 @@ const initialState: WizardState = {
   renacytBaseUrl: DEFAULT_RENACYT_BASE_URL,
   renacytActoVersion: DEFAULT_RENACYT_ACTO_VERSION,
   pureApiKey: "",
+  perucrisApiKey: "",
+  perucrisRuc: "",
   results: {},
 };
 
@@ -58,6 +62,8 @@ export function useWizardState() {
     renacytBaseUrl: state.renacytBaseUrl || undefined,
     renacytActoVersion: state.renacytActoVersion || undefined,
     pureApiKey: state.pureApiKey || undefined,
+    perucrisApiKey: state.perucrisApiKey || undefined,
+    perucrisRuc: state.perucrisRuc || undefined,
   });
 
   return { state, update, nextStep, prevStep, buildRequest };

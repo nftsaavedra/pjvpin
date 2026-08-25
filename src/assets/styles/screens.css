@@ -11,12 +11,11 @@
 
   .screen-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1.5rem 1rem;
     border-bottom: 1px solid var(--border-color);
-    background: linear-gradient(180deg, var(--card-bg) 0%, #f8fafc 100%);
+    background: var(--card-bg);
     flex-shrink: 0;
   }
 
@@ -92,6 +91,49 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+  }
+
+  .screen-footer {
+    border-top: 1px solid var(--border-color);
+    background: var(--card-bg);
+    flex-shrink: 0;
+  }
+
+  .screen-header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .screen-header-description {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .screen-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+  }
+
+  .screen-title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    flex-shrink: 0;
   }
 
   .screen-section {

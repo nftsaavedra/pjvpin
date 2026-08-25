@@ -10,6 +10,7 @@ import { type Usuario } from "@/features/auth/api";
 import {
   DashboardTab,
   ProyectosTab,
+  PublicacionesTab,
   GruposTab,
   InvestigadoresTab,
   ReportesTab,
@@ -38,7 +39,7 @@ export function TabRenderers({
   switch (validActiveTab) {
     case "dashboard":
       return (
-        <ErrorBoundary fallbackTitle="Error en Dashboard">
+        <ErrorBoundary fallbackTitle="Error en Panel">
           <Suspense fallback={<DashboardFallback />}>
             <DashboardTab refreshTrigger={refreshTrigger} />
           </Suspense>
@@ -74,6 +75,14 @@ export function TabRenderers({
         <ErrorBoundary fallbackTitle="Error en Grupos">
           <Suspense fallback={<FormAndTableFallback columns={4} />}>
             <GruposTab canManage={hasPermission(currentRole, "grupos.manage")} />
+          </Suspense>
+        </ErrorBoundary>
+      );
+    case "publicaciones":
+      return (
+        <ErrorBoundary fallbackTitle="Error en Publicaciones">
+          <Suspense fallback={<TableOnlyFallback columns={5} />}>
+            <PublicacionesTab refreshTrigger={refreshTrigger} />
           </Suspense>
         </ErrorBoundary>
       );

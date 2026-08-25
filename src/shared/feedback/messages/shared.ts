@@ -21,6 +21,7 @@ export const shared = {
     menu: "Menú",
     expandirNavegacion: "Expandir navegación",
     colapsarNavegacion: "Colapsar navegación",
+    volverA: (parentLabel: string) => `Volver a ${parentLabel}`,
   } as const,
 } as const;
 

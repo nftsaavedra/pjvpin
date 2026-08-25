@@ -1,7 +1,7 @@
 import { ui } from "./ui";
 import { auth } from "./auth";
 import { wizard } from "./wizard";
-import { investigadores } from "./investigadores";
+import { investigadores, importacion } from "./investigadores";
 import { proyectos } from "./proyectos";
 import { grupos } from "./grupos";
 import { reportes } from "./reportes";
@@ -14,11 +14,13 @@ import { dashboard } from "./dashboard";
 import { geo } from "./geo";
 import { vocabularios } from "./vocabularios";
 import { orgUnits } from "./org-units";
+import { perucris } from "./perucris";
+import { publicaciones } from "./publicaciones";
 
 export { ui, type UiMessageKey } from "./ui";
 export { auth, type AuthMessageKey } from "./auth";
 export { wizard, type WizardMessageKey } from "./wizard";
-export { investigadores, type InvestigadoresMessageKey } from "./investigadores";
+export { investigadores, importacion, type InvestigadoresMessageKey } from "./investigadores";
 export { proyectos, type ProyectosMessageKey } from "./proyectos";
 export { grupos, type GruposMessageKey } from "./grupos";
 export { reportes, type ReportesMessageKey } from "./reportes";
@@ -31,12 +33,15 @@ export { dashboard, type DashboardMessageKey } from "./dashboard";
 export { geo, type GeoMessageKey } from "./geo";
 export { vocabularios, type VocabulariosMessageKey } from "./vocabularios";
 export { orgUnits, type OrgUnitsMessageKey } from "./org-units";
+export { perucris, type PeruCrisMessageKey } from "./perucris";
+export { publicaciones, type PublicacionesMessageKey } from "./publicaciones";
 
 export const messages = {
   ui,
   auth,
   wizard,
   investigadores,
+  importacion,
   proyectos,
   grupos,
   reportes,
@@ -49,5 +54,7 @@ export const messages = {
   geo,
   vocabularios,
   orgUnits,
+  perucris,
+  publicaciones,
 } as const;
 export type Messages = typeof messages;

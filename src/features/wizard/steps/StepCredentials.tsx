@@ -124,6 +124,26 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
               type="password"
               help={messages.wizard.formHelp.pureKey}
             />
+            <FormInput
+              label="RUC institucional (PeruCRIS)"
+              value={state.perucrisRuc}
+              onChange={(v) => {
+                update("perucrisRuc", v.replace(/\D/g, "").slice(0, 11));
+              }}
+              placeholder="20526270364"
+              maxLength={11}
+              help={messages.wizard.formHelp.perucrisRuc}
+            />
+            <FormInput
+              label="PeruCRIS API Key"
+              value={state.perucrisApiKey}
+              onChange={(v) => {
+                update("perucrisApiKey", v);
+              }}
+              placeholder="opcional — solo si dispone de una api-key de CONCYTEC"
+              type="password"
+              help={messages.wizard.formHelp.perucrisApiKey}
+            />
           </div>
         </section>
 

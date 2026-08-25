@@ -6,55 +6,46 @@ import { messages } from "@/shared/feedback/messages";
 interface ScreenHeaderProps {
   parentLabel: string;
   currentLabel: string;
+  description?: string;
+  titleIcon?: LucideIcon;
   onBack: () => void;
-  isLoading?: boolean;
-  submitLabel: string;
-  submitIcon: LucideIcon;
-  onSubmit: () => void;
-  submitDisabled?: boolean;
 }
 
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   parentLabel,
   currentLabel,
+  description,
+  titleIcon: TitleIcon,
   onBack,
-  isLoading = false,
-  submitLabel,
-  submitIcon: SubmitIcon,
-  onSubmit,
-  submitDisabled = false,
 }) => (
-  <div className="screen-header">
-    <div className="screen-header-left">
-      <div className="screen-breadcrumb">
-        <button
-          type="button"
-          className="screen-breadcrumb-back"
-          onClick={onBack}
-          aria-label={`Volver a ${parentLabel}`}
-        >
-          <AppIcon icon={ArrowLeft} size={14} />
-        </button>
-        <span>{parentLabel}</span>
-        <span className="screen-breadcrumb-sep">/</span>
-        <span className="screen-breadcrumb-current">{currentLabel}</span>
-      </div>
-    </div>
-    <div className="screen-header-right">
-      <button type="button" className="btn-secondary" onClick={onBack} disabled={isLoading}>
-        {messages.ui.cancelar}
-      </button>
+  <header className="screen-header">
+    <nav className="screen-breadcrumb" aria-label={messages.shared.navigation.volverA(parentLabel)}>
       <button
         type="button"
-        className="btn-primary"
-        onClick={onSubmit}
-        disabled={submitDisabled || isLoading}
+        className="screen-breadcrumb-back"
+        onClick={onBack}
+        aria-label={messages.shared.navigation.volverA(parentLabel)}
       >
-        <span className="button-with-icon">
-          <AppIcon icon={SubmitIcon} size={18} />
-          <span>{submitLabel}</span>
-        </span>
+        <AppIcon icon={ArrowLeft} size={14} />
       </button>
+      <span>{parentLabel}</span>
+      <span className="screen-breadcrumb-sep" aria-hidden="true">
+        /
+      </span>
+      <span className="screen-breadcrumb-current" aria-current="page">
+        {currentLabel}
+      </span>
+    </nav>
+    <div className="screen-header-title">
+      <h1 className="screen-title">
+        {TitleIcon && (
+          <span className="screen-title-icon" aria-hidden="true">
+            <AppIcon icon={TitleIcon} size={20} />
+          </span>
+        )}
+        <span>{currentLabel}</span>
+      </h1>
+      {description && <p className="screen-header-description">{description}</p>}
     </div>
-  </div>
+  </header>
 );
