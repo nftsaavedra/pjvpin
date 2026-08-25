@@ -8,6 +8,8 @@ export {
   eliminarInvestigador,
   getAllInvestigadores,
   getAllInvestigadoresConProyectos,
+  getPlantillaInvestigadoresDefault,
+  importarInvestigadores,
   refrescarFormacionAcademicaRenacytInvestigador,
   reactivarInvestigador,
 } from "@/shared/tauri/investigadores";
@@ -25,6 +27,7 @@ export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/sh
 export { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export type {
+  ImportInvestigadoresResult,
   Investigador,
   InvestigadorDetalle,
   EliminarInvestigadorResultado,

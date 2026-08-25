@@ -149,6 +149,11 @@ pub struct ProyectoDto {
     pub tematica_ambiental: Option<String>,
     #[serde(default)]
     pub tematica_salud: Option<String>,
+    // ---- Fase N2-G: UUID canónico PeruCRIS. Permite dedupe en el importador
+    // y validación de outputs. Solo se rellena por el importador; el flujo
+    // de creación manual no lo expone. ----
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
 }
 
 #[derive(Debug, Default, Deserialize)]

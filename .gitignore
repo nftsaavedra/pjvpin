@@ -70,3 +70,10 @@ lerna-debug.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+# === Windows shell quirks ===
+# Archivo 'nul' creado por redireccion CMD ejecutada en bash (MSYS).
+# Si un agente redirige a '> nul' pensando en CMD, bash crea un archivo
+# literal llamado 'nul' en el CWD. Lo ignoramos para que no entre al repo.
+nul
+NUL

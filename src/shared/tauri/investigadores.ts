@@ -2,6 +2,7 @@ import { invoke } from "./client";
 import type {
   CreateInvestigadorRenacytPayload,
   EliminarInvestigadorResultado,
+  ImportInvestigadoresResult,
   Investigador,
   InvestigadorDetalle,
   RefreshInvestigadorRenacytFormacionResultado,
@@ -104,3 +105,13 @@ export const descargarConstanciaRenacytInvestigador = async (
 
 export const sincronizarPurePersonIds = async (): Promise<SyncPurePersonIdsResult> =>
   await invoke("sincronizar_pure_person_ids");
+
+export const importarInvestigadores = async (
+  dnis: string[],
+): Promise<ImportInvestigadoresResult> => {
+  return await invoke("importar_investigadores", { request: { dnis } });
+};
+
+export const getPlantillaInvestigadoresDefault = async (): Promise<string[]> => {
+  return await invoke("get_plantilla_investigadores_default");
+};

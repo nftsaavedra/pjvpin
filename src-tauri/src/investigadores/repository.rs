@@ -79,6 +79,7 @@ fn model_to_dto(m: &Investigador) -> InvestigadorDto {
         grupo_investigacion_id: m.grupo_investigacion_id.clone(),
         tipo_documento: m.tipo_documento.clone(),
         pure_person_id: m.pure_person_id.clone(),
+        perucris_uuid: m.perucris_uuid.clone(),
     }
 }
 
@@ -455,10 +456,14 @@ pub async fn update_investigador(
     if let Some(ref v) = request.perfil {
         set.insert("perfil", v);
     }
+    if let Some(ref v) = request.perucris_uuid {
+        set.insert("perucris_uuid", v);
+    }
 
     let has_changes = request.id_grado.is_some()
         || request.grupo_investigacion_id.is_some()
-        || request.perfil.is_some();
+        || request.perfil.is_some()
+        || request.perucris_uuid.is_some();
     if has_changes {
         db.collection::<Document>(COLLECTION_INVESTIGADORES)
             .update_one(

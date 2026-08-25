@@ -1,6 +1,6 @@
-import React from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { AppIcon } from '@/shared/ui/AppIcon';
+import React from "react";
+import type { LucideIcon } from "lucide-react";
+import { AppIcon } from "@/shared/ui/AppIcon";
 
 interface KPICardProps {
   icon: LucideIcon;
@@ -14,7 +14,7 @@ export const KPICard: React.FC<KPICardProps> = ({ icon, value, label }) => (
       <AppIcon icon={icon} size={26} strokeWidth={2.1} />
     </div>
     <div className="kpi-content">
-      <div className="kpi-value">{value}</div>
+      <div className="kpi-value tabular-nums">{value}</div>
       <div className="kpi-label">{label}</div>
     </div>
   </div>

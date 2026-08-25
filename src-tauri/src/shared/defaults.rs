@@ -4,6 +4,11 @@ pub const RENACYT_FICHA_BASE_URL: &str = "https://servicio-renacyt.concytec.gob.
 pub const RENACYT_ACTO_VERSION: &str = "2021";
 pub const PURE_API_BASE_URL: &str = "https://pure.unf.edu.pe/ws/api";
 pub const PERUCRIS_API_BASE_URL: &str = "https://perucris.example.org/api";
+/// HAL root PUBLICO de PeruCRIS (no requiere api-key).
+/// Usado por el validador de sincronizacion (`perucris_validator`).
+/// Se diferencia del `PERUCRIS_API_BASE_URL` (placeholder del endpoint
+/// de ingesta) en que este SI existe y es accesible sin credenciales.
+pub const PERUCRIS_PUBLIC_API_BASE_URL: &str = "https://rest.perucris.pe/server/api";
 pub const DEFAULT_MONGODB_DB: &str = "pjvpin";
 
 // Pool de conexiones MongoDB. Para una app de escritorio single-user
@@ -14,6 +19,13 @@ pub const DEFAULT_MONGODB_MIN_POOL_SIZE: u32 = 1;
 
 // Valores de prueba para tests de conectividad del wizard.
 // Todos son publicos (RENIEC/DNI y RENACYT/CTI Vitae son registros publicos).
+//
+// Semantica del test RENIEC: el DNI "00000000" NO existe en RENIEC, por lo que
+// la API responde HTTP 404. El handler del wizard (`config_wizard.rs::test_reniec_connectivity`)
+// trata 404 como EXITO ("API y token validos (DNI de prueba no existe, esperado)"):
+// el objetivo es validar endpoint + token, no la existencia del registro.
+// Si se reporta "Sin conexion", el problema es de transporte (DNS/TLS/proxy),
+// no del DNI de prueba.
 pub const RENIEC_TEST_DNI: &str = "00000000";
 pub const RENACYT_TEST_CTI_VITAE: &str = "80203";
 pub const RENACYT_TEST_ACTO_VERSION: &str = "2021";

@@ -9,8 +9,11 @@ use crate::shared::external::perucris_client;
 use crate::shared::state::AppState;
 use crate::shared::time;
 
-/// Resultado del push hacia PeruCRIS (campos snake_case, mirror TS).
+/// Resultado del push hacia PeruCRIS.
+/// `#[serde(rename_all = "camelCase")]` alinea los campos snake_case del
+/// modelo Rust con la representacion camelCase del frontend TS.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PeruCrisPushResult {
     pub success: bool,
     /// Status HTTP 2xx devuelto por el servidor.
@@ -81,6 +84,8 @@ mod tests {
                 ciiu_codigo: None,
                 parent_id: None,
                 campos_ocde: Vec::new(),
+                perucris_uuid: None,
+                perucris_handle: None,
             });
         let result = PeruCrisPushResult::from_document(&doc, 201);
         assert_eq!(result.total_organizaciones, 1);

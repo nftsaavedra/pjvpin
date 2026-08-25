@@ -16,6 +16,7 @@ import { ExportPreviewPanel } from "./components/ExportPreviewPanel";
 import { ReporteProyectoPanel } from "./components/ReporteProyectoPanel";
 import { ReporteInvestigadorPanel } from "./components/ReporteInvestigadorPanel";
 import { PureMasterListPanel } from "./components/PureMasterListPanel";
+import { PeruCrisPanel } from "./components/PeruCrisPanel";
 
 interface ReportesTabProps {
   canExport?: boolean;
@@ -121,6 +122,8 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
 
   return (
     <div className="tab-panel module-shell reportes-module">
+      <PeruCrisPanel canExport={canExport} />
+
       <ExportPreviewPanel
         preview={preview}
         loading={loading}

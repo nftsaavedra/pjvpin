@@ -89,6 +89,7 @@ fn build_request(fp: pure_client::FetchedPublication) -> CreatePublicacionReques
         pure_uuid: Some(fp.pure_uuid),
         estado_publicacion: fp.estado_publicacion,
         id_proyecto: None,
+        perucris_uuid: None,
     }
 }
 

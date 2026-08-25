@@ -29,6 +29,32 @@ pub struct OrgUnit {
     pub activo: i64,
     pub created_at: Option<i64>,
     pub updated_at: Option<i64>,
+
+    // ---- Extension N2-G: alineamiento con PeruCRIS (UNF live entity + recon §3) ----
+    /// Nombre legal (en mayusculas; ej: UNIVERSIDAD NACIONAL DE FRONTERA).
+    pub legal_name: Option<String>,
+    /// Acronimo institucional (ej: UNF).
+    pub acronimo: Option<String>,
+    /// Sitio web institucional (ej: https://www.unf.edu.pe/).
+    pub web_site: Option<String>,
+    /// Direccion institucional (linea completa; PeruCRIS organization.address.addressLocality).
+    pub direccion: Option<String>,
+    /// Pais ISO-3166 alpha-2 (ej: PE).
+    pub pais: Option<String>,
+    /// Descripcion institucional (PeruCRIS dc.description.abstract).
+    pub descripcion: Option<String>,
+    /// Ringgold Identifier (PeruCRIS organization.identifier.rin).
+    pub rin_id: Option<String>,
+    /// Clasificacion SUNEDU (PeruCRIS perucris.orgunit.suneduNumber).
+    pub sunedu_clasificacion: Option<String>,
+    /// Estado de licenciamiento SUNEDU (PeruCRIS perucris.orgunit.sunedu).
+    pub sunedu_estado: Option<String>,
+    /// Resolucion de licenciamiento SUNEDU.
+    pub sunedu_resolucion: Option<String>,
+    /// UUID canonico PeruCRIS (organizacion validada).
+    pub perucris_uuid: Option<String>,
+    /// Handle persistente PeruCRIS (ej: 123456789/53485).
+    pub perucris_handle: Option<String>,
 }
 
 impl OrgUnit {
@@ -137,7 +163,28 @@ impl OrgUnit {
             activo: 1,
             created_at: Some(now),
             updated_at: Some(now),
+            legal_name: trim_or_none(request.legal_name),
+            acronimo: trim_or_none(request.acronimo),
+            web_site: trim_or_none(request.web_site),
+            direccion: trim_or_none(request.direccion),
+            pais: trim_or_none(request.pais).map(|p| p.to_uppercase()),
+            descripcion: trim_or_none(request.descripcion).map(|d| truncate_chars(d, 4_000)),
+            rin_id: trim_or_none(request.rin_id),
+            sunedu_clasificacion: trim_or_none(request.sunedu_clasificacion),
+            sunedu_estado: trim_or_none(request.sunedu_estado),
+            sunedu_resolucion: trim_or_none(request.sunedu_resolucion),
+            perucris_uuid: trim_or_none(request.perucris_uuid),
+            perucris_handle: trim_or_none(request.perucris_handle),
         })
+    }
+}
+
+/// Trunca una cadena a `max_chars` caracteres (UTF-8 safe).
+fn truncate_chars(s: String, max_chars: usize) -> String {
+    if s.chars().count() <= max_chars {
+        s
+    } else {
+        s.chars().take(max_chars).collect()
     }
 }
 
@@ -164,6 +211,18 @@ mod tests {
             ciiu_codigo: None,
             es_publica: true,
             parent_id: None,
+            legal_name: None,
+            acronimo: None,
+            web_site: None,
+            direccion: None,
+            pais: None,
+            descripcion: None,
+            rin_id: None,
+            sunedu_clasificacion: None,
+            sunedu_estado: None,
+            sunedu_resolucion: None,
+            perucris_uuid: None,
+            perucris_handle: None,
         }
     }
 
@@ -182,6 +241,18 @@ mod tests {
             ciiu_codigo: None,
             es_publica: true,
             parent_id: Some("org-matriz".to_string()),
+            legal_name: None,
+            acronimo: None,
+            web_site: None,
+            direccion: None,
+            pais: None,
+            descripcion: None,
+            rin_id: None,
+            sunedu_clasificacion: None,
+            sunedu_estado: None,
+            sunedu_resolucion: None,
+            perucris_uuid: None,
+            perucris_handle: None,
         }
     }
 
@@ -258,5 +329,54 @@ mod tests {
         fn id_parent_too_self(&mut self) {
             self.parent_id = Some("SELF".to_string());
         }
+    }
+
+    #[test]
+    fn perucris_fields_poblados_correctamente() {
+        let mut r = req_matriz();
+        r.legal_name = Some("UNIVERSIDAD NACIONAL X".to_string());
+        r.acronimo = Some("UNX".to_string());
+        r.web_site = Some("https://unx.edu.pe/".to_string());
+        r.direccion = Some("Av. Principal 123, Lima".to_string());
+        r.pais = Some("pe".to_string()); // lowercase -> se normaliza a PE
+        r.descripcion = Some("Descripcion institucional".to_string());
+        r.rin_id = Some("123456".to_string());
+        r.sunedu_clasificacion = Some("Universidad".to_string());
+        r.sunedu_estado = Some("Licenciada".to_string());
+        r.sunedu_resolucion = Some("Resolucion CD N° 001-2020-SUNEDU/CD".to_string());
+        r.perucris_uuid = Some("97674e53-90f5-4e9c-b9a9-1c2efa766bd5".to_string());
+        r.perucris_handle = Some("123456789/53485".to_string());
+        let m = OrgUnit::new("org-unf".to_string(), r).unwrap();
+        assert_eq!(m.legal_name.as_deref(), Some("UNIVERSIDAD NACIONAL X"));
+        assert_eq!(m.acronimo.as_deref(), Some("UNX"));
+        assert_eq!(m.pais.as_deref(), Some("PE"));
+        assert_eq!(
+            m.perucris_uuid.as_deref(),
+            Some("97674e53-90f5-4e9c-b9a9-1c2efa766bd5")
+        );
+        assert_eq!(m.perucris_handle.as_deref(), Some("123456789/53485"));
+    }
+
+    #[test]
+    fn perucris_fields_vacios_se_normalizan_a_none() {
+        let mut r = req_matriz();
+        r.legal_name = Some("   ".to_string());
+        r.acronimo = Some("".to_string());
+        r.perucris_uuid = Some(" ".to_string());
+        let m = OrgUnit::new("org-x".to_string(), r).unwrap();
+        assert!(m.legal_name.is_none());
+        assert!(m.acronimo.is_none());
+        assert!(m.perucris_uuid.is_none());
+    }
+
+    #[test]
+    fn descripcion_se_trunca_a_4000_caracteres() {
+        let mut r = req_matriz();
+        r.descripcion = Some("x".repeat(5_000));
+        let m = OrgUnit::new("org-x".to_string(), r).unwrap();
+        assert_eq!(
+            m.descripcion.as_ref().map(|s| s.chars().count()),
+            Some(4_000)
+        );
     }
 }

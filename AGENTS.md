@@ -188,9 +188,9 @@ cargo clippy             # Linter Rust
 |-----|----------|
 | **superuser** | Todo (incluye gestión de usuarios, grados y catálogos). Rol único creado por el asistente de configuración. No se puede crear vía `crear_usuario`, no se puede degradar, no se puede desactivar/eliminar. |
 | **admin** | Todo (incluye gestión de usuarios y grados) |
-| **operador** | CRUD investigadores, proyectos, grupos, recursos + reportes export |
-| **consulta** | Solo lectura: dashboard, investigadores, proyectos, reportes, grupos |
-| **responsable_proyecto** | Solo lectura: dashboard, investigadores, proyectos, reportes, grupos |
+| **operador** | CRUD investigadores, proyectos, grupos, recursos, publicaciones + reportes export |
+| **consulta** | Solo lectura: dashboard, investigadores, proyectos, publicaciones, reportes, grupos |
+| **responsable_proyecto** | Solo lectura: dashboard, investigadores, proyectos, publicaciones, reportes, grupos |
 
 ### Invariantes del rol `superuser`
 
@@ -285,6 +285,24 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 
 ---
 
+## Decisión de arquitectura diferida: backend centralizado (NestJS)
+
+Visión de producto a 1-2 años: plataforma web institucional multi-usuario.
+Arquitectura actual (Tauri v2 + React + Rust embebido + MongoDB Atlas) es
+**correcta para la etapa desktop single-user de v0.1.0**. La migración a un
+backend NestJS independiente (misma BD MongoDB) se iniciara SOLO cuando se
+cumplan los tres gatillos:
+
+1. **Requisito formal de acceso web multi-usuario** (>5 usuarios concurrentes desde navegador).
+2. **Infraestructura de servidor disponible** (hosting, TLS, backups, operación nominal — no PoC casera).
+3. **v0.1.0 estable**: features core completas (investigadores, proyectos, grupos, reportes, conectores) con quality gates verdes.
+
+Mientras tanto, mantener la disciplina hexagonal actual (separación `*Doc` DTO de persistencia / `*Model` dominio, `repository.rs` por feature, BD como única fuente de verdad) para que la migración futura solo reescriba la capa de API (handlers + commands Tauri → controllers/services NestJS), **sin tocar el modelo de datos ni el dominio**.
+
+Lección consolidada: los errores de índices MongoDB (E11000 null, IndexKeySpecsConflict) que han aparecido en este periodo son bugs de **modelado de datos**, independientes del stack Rust. Una migración a NestJS los reproduciría idénticos (Mongoose replica las mismas opciones de índice). Por eso la decisión de estabilizar el backend actual precede a cualquier decisión de reescritura.
+
+---
+
 ## Modelo de datos CONCYTEC/PerúCRIS (capa de datos)
 
 La capa de datos está alineada a la especificación relacional 3NF (CERIF) de CONCYTEC/PerúCRIS. Decisiones operativas vigentes:
@@ -301,6 +319,7 @@ La capa de datos está alineada a la especificación relacional 3NF (CERIF) de C
 - **Conector PerúCRIS** (B3): `shared/external/perucris_client.rs` (POST `{base}/cerif/ingest` con header `api-key`) + `perucris_service.rs` (orquesta `cerif.rs` → push → `PeruCrisPushResult`) + command `enviar_a_perucris`. Registrado en `defaults.rs`/`config.rs`/`tokens.rs`/`state.rs`/`defaults.ts` (env: `PJVPIN_PERUCRIS_API_BASE_URL`, `PJVPIN_PERUCRIS_API_KEY`) + wizard test `test_perucris_connectivity` (GET `{base}/cerif/status`, tolera 200/404). Endpoints asumidos (placeholder) — ajustar cuando CONCYTEC exponga el oficial.
 - **Ubigeo INEI completo** (A0): `geo/seed.rs` carga el dataset oficial (~2113 registros: 25 deptos + 196 provincias + 1892 distritos) embebido como JSON (`geo/data/ubigeo_inei.json`, `include_str!`, fuente INEI vía datosabiertos.gob.pe, ODbL). Reemplaza los 24 departamentos sintéticos. `validate_codigo` se conserva.
 - **UI CONCYTEC** (A1-A3): frontend `UbigeoSelect` (`src/shared/forms/`), services `geo.ts`/`vocabularios.ts`/`orgUnits.ts`, UI de vocabularios (`configuracion/vocabularios/VocabulariosPanel.tsx`, árbol SKOS lazy + Reimportar gated `vocabularios.manage`) y org_units (`configuracion/org-units/`, árbol por `parent_id` + form con UbigeoSelect y vocabs). Permisos frontend `geo.view`/`vocabularios.*`/`org_units.*` en `permissions.ts`. Fix integridad: `update_catalogo` rechaza editar items `editable=0`.
+- **Importación de investigadores por DNI (en lugar de seed auto-run)**: `investigadores/import.rs` reemplaza al antiguo `seed_investigadores_pending` (que corría 55 DNIs en cada arranque contra RENIEC+RENACYT). El admin ahora dispara el flujo manualmente desde el tab Investigadores → botón **Importar por DNI** (modal `ImportInvestigadoresModal`). El JSON embebido con los 55 DNIs UNF sigue siendo la fuente de la plantilla precargada (botón "Cargar plantilla UNF"), pero el seed automático desapareció del setup hook de `lib.rs`. **Pipeline de enriquecimiento por DNI (orden de prioridad)**: 1) RENIEC (identidad legal, obligatorio), 2) PeruCRIS (`search_by_query(dni)` filtro `entity_type=Person`, captura `perucris_uuid`), 3) Pure (mapping maestro `DNI→pure_person_id` descargado una vez por lote), 4) RENACYT (nivel/código/grupo). Concurrencia 5, circuit breaker RENIEC, idempotencia per-DNI (`load_existing_persona_dnis`), grado fallback `default_grado_id`. Commands Tauri: `importar_investigadores` (RBAC `InvestigadoresManage` + audit `investigador.import`) y `get_plantilla_investigadores_default` (RBAC `InvestigadoresView`).
 
 **Deuda diferida** (fase siguiente): `skos_importer` (XLSX oficiales CONCYTEC — el seed embebido cubre v0.1.0; requiere `calamine`); CERIF XML real (hoy JSON); validación del payload contra el esquema oficial PerúCRIS cuando CONCYTEC exponga el endpoint; UI del wizard para la key de PerúCRIS (hoy `Option` tolerada por serde); `org_units.ubigeo_codigo` no admite distritos (los 24 sintéticos `X0100` migran a códigos reales al re-seed); N+1 en loaders CERIF (optimizable con agregaciones).
 
@@ -476,4 +495,11 @@ rg -n 'pub mod service' src-tauri/src/  # debe estar vacio (eliminado en I.8 + J
 
 Si typecheck/lint/build falla o la auditoria detecta literales no migrados al
 catálogo, **detener y reportar antes de commitear**.
+
+### Entorno Windows (shell bash/MSYS)
+
+- Null device = `/dev/null`. **Nunca** redirigir a `> nul` en bash: crea un archivo literal `nul` en el CWD (MSYS lo permite; CMD/Explorer no pueden borrarlo).
+- Variables de entorno = `$USERPROFILE`. **Nunca** `%USERPROFILE%` (no se expande en bash).
+- Listar = `ls`. **Nunca** `dir /b` (en bash, `dir` es alias de `ls` y `/b` se interpreta como ruta).
+- Mezclar sintaxis CMD dentro de un shell POSIX es la causa raíz del archivo basura `nul` ya limpiado del repo (ignorado en `.gitignore` como red de seguridad).
 

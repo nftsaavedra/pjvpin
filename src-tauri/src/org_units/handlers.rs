@@ -29,6 +29,18 @@ fn model_to_dto(m: OrgUnit) -> OrgUnitDto {
         es_publica: m.es_publica,
         parent_id: m.parent_id,
         updated_at: m.updated_at,
+        legal_name: m.legal_name,
+        acronimo: m.acronimo,
+        web_site: m.web_site,
+        direccion: m.direccion,
+        pais: m.pais,
+        descripcion: m.descripcion,
+        rin_id: m.rin_id,
+        sunedu_clasificacion: m.sunedu_clasificacion,
+        sunedu_estado: m.sunedu_estado,
+        sunedu_resolucion: m.sunedu_resolucion,
+        perucris_uuid: m.perucris_uuid,
+        perucris_handle: m.perucris_handle,
     }
 }
 

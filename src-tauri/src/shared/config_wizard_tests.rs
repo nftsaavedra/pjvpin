@@ -68,3 +68,105 @@ mod wizard_config_request_serde_tests {
         );
     }
 }
+
+#[cfg(test)]
+mod format_error_chain_tests {
+    use crate::shared::error::format_error_chain;
+    use std::error::Error;
+
+    #[derive(Debug)]
+    struct LeafErr(&'static str);
+
+    impl std::fmt::Display for LeafErr {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.0)
+        }
+    }
+
+    impl Error for LeafErr {}
+
+    #[derive(Debug)]
+    struct MidErr {
+        msg: &'static str,
+        leaf: LeafErr,
+    }
+
+    impl std::fmt::Display for MidErr {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.msg)
+        }
+    }
+
+    impl Error for MidErr {
+        fn source(&self) -> Option<&(dyn Error + 'static)> {
+            Some(&self.leaf)
+        }
+    }
+
+    #[derive(Debug)]
+    struct RootErr {
+        msg: &'static str,
+        mid: MidErr,
+    }
+
+    impl std::fmt::Display for RootErr {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "{}", self.msg)
+        }
+    }
+
+    impl Error for RootErr {
+        fn source(&self) -> Option<&(dyn Error + 'static)> {
+            Some(&self.mid)
+        }
+    }
+
+    #[test]
+    fn format_error_chain_includes_all_levels() {
+        let err = RootErr {
+            msg: "outer",
+            mid: MidErr {
+                msg: "middle",
+                leaf: LeafErr("leaf"),
+            },
+        };
+        let chain = format_error_chain(&err);
+        assert!(
+            chain.contains("outer"),
+            "chain debe incluir nivel raíz: {chain}"
+        );
+        assert!(
+            chain.contains("middle"),
+            "chain debe incluir nivel medio: {chain}"
+        );
+        assert!(
+            chain.contains("leaf"),
+            "chain debe incluir nivel hoja: {chain}"
+        );
+        assert!(
+            chain.starts_with("outer"),
+            "nivel raíz debe ir primero: {chain}"
+        );
+        let p_outer = chain.find("outer").unwrap();
+        let p_middle = chain.find("middle").unwrap();
+        let p_leaf = chain.find("leaf").unwrap();
+        assert!(p_outer < p_middle, "orden esperado: outer < middle");
+        assert!(p_middle < p_leaf, "orden esperado: middle < leaf");
+    }
+
+    #[test]
+    fn format_error_chain_handles_single_level() {
+        let err = LeafErr("solo");
+        assert_eq!(format_error_chain(&err), "solo");
+    }
+
+    #[test]
+    fn format_error_chain_handles_empty_chain() {
+        let err = LeafErr("unico");
+        let chain = format_error_chain(&err);
+        assert!(
+            !chain.contains('—'),
+            "sin source no debe haber separador: {chain}"
+        );
+    }
+}

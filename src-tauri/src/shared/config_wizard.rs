@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use crate::shared::defaults;
-use crate::shared::error::AppError;
+use crate::shared::error::{format_error_chain, AppError};
 
 const CONNECTIVITY_TIMEOUT: Duration = Duration::from_secs(10);
 
@@ -18,6 +18,13 @@ pub struct WizardConfigRequest {
     pub renacyt_acto_version: Option<String>,
     pub pure_api_key: Option<String>,
     pub perucris_api_key: Option<String>,
+    /// RUC de la institucion matriz. Es la llave de busqueda para el
+    /// importador inicial de PeruCRIS (recon §1.4: la asociacion
+    /// orgunit->publications no esta formalizada, la consulta se hace
+    /// por RUC en metadata indexada). Si la institucion ya existe en
+    /// `org_units`, ese RUC es la fuente de verdad y este campo se
+    /// puede dejar vacio.
+    pub perucris_ruc: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -65,7 +72,8 @@ pub fn save_wizard_config(
         },
         "perucris": {
             "apiBaseUrl": defaults::PERUCRIS_API_BASE_URL,
-            "apiKey": request.perucris_api_key.unwrap_or_default()
+            "apiKey": request.perucris_api_key.unwrap_or_default(),
+            "ruc": request.perucris_ruc.unwrap_or_default()
         }
     });
 
@@ -165,7 +173,7 @@ pub async fn test_reniec_connectivity(token: &str) -> ConnectivityResult {
         Err(e) => ConnectivityResult {
             service: "RENIEC".to_string(),
             success: false,
-            message: format!("Sin conexion: {}", e),
+            message: format!("Sin conexion: {}", format_error_chain(&e)),
         },
     }
 }
@@ -210,7 +218,7 @@ pub async fn test_renacyt_connectivity(base_url: &str) -> ConnectivityResult {
         Err(e) => ConnectivityResult {
             service: "RENACYT".to_string(),
             success: false,
-            message: format!("Sin conexion: {}", e),
+            message: format!("Sin conexion: {}", format_error_chain(&e)),
         },
     }
 }
@@ -257,13 +265,84 @@ pub async fn test_pure_connectivity(base_url: &str, api_key: &str) -> Connectivi
         Err(e) => ConnectivityResult {
             service: "Pure".to_string(),
             success: false,
-            message: format!("Sin conexion: {}", e),
+            message: format!("Sin conexion: {}", format_error_chain(&e)),
         },
     }
 }
 
-pub async fn test_perucris_connectivity(base_url: &str, api_key: &str) -> ConnectivityResult {
+pub async fn test_perucris_connectivity(
+    base_url: &str,
+    api_key: Option<&str>,
+    ruc: Option<&str>,
+) -> ConnectivityResult {
     let client = reqwest::Client::new();
+    let base = match api_key {
+        Some(key) => test_perucris_authenticated(&client, base_url, key).await,
+        None => test_perucris_public(&client, base_url).await,
+    };
+    // Si ademas se proporciono un RUC, hacer una busqueda publica de
+    // sanity-check: si la entidad existe en PeruCRIS, devuelve >= 1 hit.
+    if let Some(ruc_clean) = ruc.map(str::trim).filter(|s| !s.is_empty()) {
+        return enhance_with_ruc_check(&client, base, base_url, ruc_clean).await;
+    }
+    base
+}
+
+async fn enhance_with_ruc_check(
+    client: &reqwest::Client,
+    base: ConnectivityResult,
+    base_url: &str,
+    ruc: &str,
+) -> ConnectivityResult {
+    if !base.success {
+        return base;
+    }
+    let url = format!(
+        "{}/discover/search/objects?query={ruc}&dsoType=ITEM&size=5",
+        base_url.trim_end_matches('/')
+    );
+    match client
+        .get(&url)
+        .header("Accept", "application/json")
+        .timeout(CONNECTIVITY_TIMEOUT)
+        .send()
+        .await
+    {
+        Ok(resp) if resp.status().is_success() => {
+            let body = resp.text().await.unwrap_or_default();
+            let hits = count_items_in_search_response(&body);
+            ConnectivityResult {
+                service: base.service,
+                success: true,
+                message: format!(
+                    "{} — RUC {} encontrado en PeruCRIS ({} hit(s))",
+                    base.message, ruc, hits
+                ),
+            }
+        }
+        _ => base,
+    }
+}
+
+fn count_items_in_search_response(body: &str) -> usize {
+    let Ok(value) = serde_json::from_str::<serde_json::Value>(body) else {
+        return 0;
+    };
+    // HAL/DSpace discover: { "_embedded": { "searchResult": { "_embedded": { "objects": [...] } } } }
+    value
+        .pointer("/_embedded/searchResult/_embedded/objects")
+        .and_then(|v| v.as_array())
+        .map(|a| a.len())
+        .unwrap_or(0)
+}
+
+/// Endpoint autenticado (`/cerif/status`). Solo aplica cuando el operador
+/// disponde de una api-key para push/ingest.
+async fn test_perucris_authenticated(
+    client: &reqwest::Client,
+    base_url: &str,
+    api_key: &str,
+) -> ConnectivityResult {
     let url = format!("{}/cerif/status", base_url.trim_end_matches('/'));
     match client
         .get(&url)
@@ -282,9 +361,6 @@ pub async fn test_perucris_connectivity(base_url: &str, api_key: &str) -> Connec
                     message: format!("PeruCRIS API y api-key validos (HTTP {})", status),
                 }
             } else if status == 404 {
-                // El endpoint de status puede variar por instancia; un 404
-                // indica que la URL base es alcanzable y la api-key fue
-                // aceptada por el servidor.
                 ConnectivityResult {
                     service: "PeruCRIS".to_string(),
                     success: true,
@@ -314,7 +390,49 @@ pub async fn test_perucris_connectivity(base_url: &str, api_key: &str) -> Connec
         Err(e) => ConnectivityResult {
             service: "PeruCRIS".to_string(),
             success: false,
-            message: format!("Sin conexion: {}", e),
+            message: format!("Sin conexion: {}", format_error_chain(&e)),
+        },
+    }
+}
+
+/// Endpoint publico (`/discover/search/objects`). No requiere api-key.
+/// Verifica que la URL base del REST publico de PeruCRIS es alcanzable.
+/// Cualquier 2xx (incluso 200 con zero resultados) cuenta como OK.
+async fn test_perucris_public(client: &reqwest::Client, base_url: &str) -> ConnectivityResult {
+    let url = format!(
+        "{}/discover/search/objects?query=perucris&dsoType=ITEM&size=1",
+        base_url.trim_end_matches('/')
+    );
+    match client
+        .get(&url)
+        .header("Accept", "application/json")
+        .timeout(CONNECTIVITY_TIMEOUT)
+        .send()
+        .await
+    {
+        Ok(resp) => {
+            let status = resp.status().as_u16();
+            if resp.status().is_success() {
+                ConnectivityResult {
+                    service: "PeruCRIS".to_string(),
+                    success: true,
+                    message: format!(
+                        "PeruCRIS endpoint publico alcanzable (HTTP {}) — sin api-key; el importador por RUC/DNI funciona en modo lectura",
+                        status
+                    ),
+                }
+            } else {
+                ConnectivityResult {
+                    service: "PeruCRIS".to_string(),
+                    success: false,
+                    message: format!("Servidor PeruCRIS no disponible (HTTP {})", status),
+                }
+            }
+        }
+        Err(e) => ConnectivityResult {
+            service: "PeruCRIS".to_string(),
+            success: false,
+            message: format!("Sin conexion: {}", format_error_chain(&e)),
         },
     }
 }

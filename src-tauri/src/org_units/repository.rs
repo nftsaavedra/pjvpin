@@ -33,6 +33,18 @@ fn doc_to_model(d: Document) -> Result<OrgUnit, AppError> {
         activo: parsed.activo,
         created_at: parsed.created_at,
         updated_at: parsed.updated_at,
+        legal_name: parsed.legal_name,
+        acronimo: parsed.acronimo,
+        web_site: parsed.web_site,
+        direccion: parsed.direccion,
+        pais: parsed.pais,
+        descripcion: parsed.descripcion,
+        rin_id: parsed.rin_id,
+        sunedu_clasificacion: parsed.sunedu_clasificacion,
+        sunedu_estado: parsed.sunedu_estado,
+        sunedu_resolucion: parsed.sunedu_resolucion,
+        perucris_uuid: parsed.perucris_uuid,
+        perucris_handle: parsed.perucris_handle,
     })
 }
 
@@ -55,6 +67,18 @@ fn model_to_doc(m: &OrgUnit) -> Result<OrgUnitDoc, AppError> {
         activo: m.activo,
         created_at: m.created_at,
         updated_at: m.updated_at,
+        legal_name: m.legal_name.clone(),
+        acronimo: m.acronimo.clone(),
+        web_site: m.web_site.clone(),
+        direccion: m.direccion.clone(),
+        pais: m.pais.clone(),
+        descripcion: m.descripcion.clone(),
+        rin_id: m.rin_id.clone(),
+        sunedu_clasificacion: m.sunedu_clasificacion.clone(),
+        sunedu_estado: m.sunedu_estado.clone(),
+        sunedu_resolucion: m.sunedu_resolucion.clone(),
+        perucris_uuid: m.perucris_uuid.clone(),
+        perucris_handle: m.perucris_handle.clone(),
     })
 }
 
@@ -75,6 +99,18 @@ fn model_to_dto(m: &OrgUnit) -> OrgUnitDto {
         es_publica: m.es_publica,
         parent_id: m.parent_id.clone(),
         updated_at: m.updated_at,
+        legal_name: m.legal_name.clone(),
+        acronimo: m.acronimo.clone(),
+        web_site: m.web_site.clone(),
+        direccion: m.direccion.clone(),
+        pais: m.pais.clone(),
+        descripcion: m.descripcion.clone(),
+        rin_id: m.rin_id.clone(),
+        sunedu_clasificacion: m.sunedu_clasificacion.clone(),
+        sunedu_estado: m.sunedu_estado.clone(),
+        sunedu_resolucion: m.sunedu_resolucion.clone(),
+        perucris_uuid: m.perucris_uuid.clone(),
+        perucris_handle: m.perucris_handle.clone(),
     }
 }
 
@@ -202,9 +238,58 @@ pub async fn update_org_unit(
                 .await?;
         }
     }
+    // ---- N2-G: PeruCRIS alignment fields ----
+    if let Some(v) = request.legal_name {
+        updated.legal_name = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.acronimo {
+        updated.acronimo = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.web_site {
+        updated.web_site = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.direccion {
+        updated.direccion = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.pais {
+        updated.pais = trim_or_none(Some(v)).map(|p| p.to_uppercase());
+    }
+    if let Some(v) = request.descripcion {
+        updated.descripcion = trim_or_none(Some(v)).map(|d| truncate_chars(d, 4_000));
+    }
+    if let Some(v) = request.rin_id {
+        updated.rin_id = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.sunedu_clasificacion {
+        updated.sunedu_clasificacion = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.sunedu_estado {
+        updated.sunedu_estado = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.sunedu_resolucion {
+        updated.sunedu_resolucion = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.perucris_uuid {
+        updated.perucris_uuid = trim_or_none(Some(v));
+    }
+    if let Some(v) = request.perucris_handle {
+        updated.perucris_handle = trim_or_none(Some(v));
+    }
     updated.updated_at = Some(now_ms());
     upsert_org_unit(db, &updated).await?;
     Ok(updated)
+}
+
+fn trim_or_none(opt: Option<String>) -> Option<String> {
+    opt.map(|s| s.trim().to_string()).filter(|s| !s.is_empty())
+}
+
+fn truncate_chars(s: String, max_chars: usize) -> String {
+    if s.chars().count() <= max_chars {
+        s
+    } else {
+        s.chars().take(max_chars).collect()
+    }
 }
 
 pub async fn get_org_unit(db: &Database, id: &str) -> Result<OrgUnit, AppError> {
@@ -241,9 +326,10 @@ pub async fn listar_org_units_por_padre(
     Ok(items)
 }
 
-/// Garantiza indices UNIQUE sobre `id_org_unit` y `ruc` (sparse),
+/// Garantiza indices UNIQUE sobre `id_org_unit` y `ruc` (partial filter),
 /// ademas del jerarquico (parent_id) y busqueda por nombre.
 pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
+    let _ = db.collection::<Document>("org_units").drop_indexes().await;
     let id_opts = IndexOptions::builder().unique(true).build();
     db.collection::<Document>("org_units")
         .create_index(
@@ -253,7 +339,12 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .build(),
         )
         .await?;
-    let ruc_opts = IndexOptions::builder().unique(true).sparse(true).build();
+    let ruc_opts = IndexOptions::builder()
+        .unique(true)
+        .partial_filter_expression(doc! {
+            "ruc": { "$type": "string" }
+        })
+        .build();
     db.collection::<Document>("org_units")
         .create_index(
             IndexModel::builder()

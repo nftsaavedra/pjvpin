@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -9,6 +9,7 @@ import {
   LineChart,
   Pie,
   PieChart,
+  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -21,6 +22,7 @@ import type {
 import { useMeasuredChart } from "../hooks/useMeasuredChart";
 import { SkeletonChart } from "@/shared/ui/Skeleton";
 import { EmptyState } from "@/shared/ui/EmptyState";
+import { chartPalette } from "../chartPalette";
 import { messages } from "@/shared/feedback/messages";
 
 interface DashboardChartsProps {
@@ -29,14 +31,17 @@ interface DashboardChartsProps {
   totalProyectos: number;
   trend: ProyectosTrendItem[];
   renacyt: RenacytDistribucionItem[];
+  mayorCarga: number;
+  investigadoresConProyectos: number;
 }
 
 export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   estadisticas,
   totalInvestigadores,
-  totalProyectos,
   trend,
   renacyt,
+  mayorCarga,
+  investigadoresConProyectos,
 }) => {
   const trendData = useMemo(
     () =>
@@ -46,32 +51,13 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
       })),
     [trend],
   );
-  const [viewportWidth, setViewportWidth] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth : 1280,
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setViewportWidth(window.innerWidth);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
 
   const totalAsignaciones = useMemo(
     () => estadisticas.reduce((acc, investigador) => acc + investigador.cantidad, 0),
     [estadisticas],
   );
   const hasProjectAssignments = totalAsignaciones > 0;
-  const investigadoresConProyectos = useMemo(
-    () => estadisticas.filter((investigador) => investigador.cantidad > 0).length,
-    [estadisticas],
-  );
   const investigadoresSinProyectos = Math.max(totalInvestigadores - investigadoresConProyectos, 0);
-  const promedioProyectos =
-    totalInvestigadores > 0 ? (totalProyectos / totalInvestigadores).toFixed(2) : "0.00";
   const topInvestigadores = useMemo(
     () =>
       [...estadisticas]
@@ -97,63 +83,217 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     ],
     [investigadoresConProyectos, investigadoresSinProyectos],
   );
-  const pieColors = ["#10b981", "#f59e0b"];
-  const isCompact = viewportWidth <= 768;
-  const allInvestigadoresTickInterval = isCompact
-    ? Math.max(Math.ceil(estadisticas.length / 6) - 1, 0)
-    : 0;
+  const showTopRanking = topInvestigadores.length > 0 && hasProjectAssignments;
+  const showAllInvestigadores = estadisticas.length > 0 && hasProjectAssignments;
+  const porcentajeConProyectos =
+    totalInvestigadores > 0
+      ? Math.round((investigadoresConProyectos / totalInvestigadores) * 100)
+      : 0;
+
   const [topChartRef, topChart] = useMeasuredChart(320);
   const [distributionChartRef, distributionChart] = useMeasuredChart(280);
   const [pieChartRef, pieChart] = useMeasuredChart(280);
   const [allInvestigadoresChartRef, allInvestigadoresChart] = useMeasuredChart(300);
   const pieHasVisibleData = pieData.some((item) => item.value > 0);
-  const showTopRanking = topInvestigadores.length > 0 && hasProjectAssignments;
-  const showAllInvestigadores = estadisticas.length > 0 && hasProjectAssignments;
-  const chartMargin = useMemo(
-    () => ({
-      top: 8,
-      right: isCompact ? 8 : 20,
-      left: isCompact ? -18 : 0,
-      bottom: isCompact ? 24 : 8,
-    }),
-    [isCompact],
-  );
-  const pieOuterRadius = Math.max(
-    Math.min((pieChart.width - (isCompact ? 40 : 72)) / 2, isCompact ? 78 : 98),
-    42,
-  );
   const chartLoadingState = <SkeletonChart titleWidth="md" height="md" />;
 
   return (
     <div className="dashboard-charts flex flex-col gap-6">
-      <div className="dashboard-main-grid">
-        <div className="chart-container mb-0">
-          <h2>Top investigadores por cantidad de proyectos</h2>
-          <div ref={topChartRef} className="dashboard-chart-stage dashboard-chart-stage-lg">
-            {showTopRanking ? (
-              topChart.ready ? (
+      <section aria-labelledby="panel-section-carga" className="flex flex-col gap-4">
+        <h2 id="panel-section-carga" className="sr-only">
+          Carga de trabajo
+        </h2>
+
+        <div className="dashboard-main-grid">
+          <figure
+            className="chart-container mb-0"
+            role="img"
+            aria-labelledby="chart-top-ranking-title"
+          >
+            <h3 id="chart-top-ranking-title">Top investigadores por proyectos</h3>
+            <div ref={topChartRef} className="dashboard-chart-stage dashboard-chart-stage-lg">
+              {showTopRanking ? (
+                topChart.ready ? (
+                  <BarChart
+                    width={topChart.width}
+                    height={topChart.height}
+                    data={topInvestigadores}
+                    margin={{ top: 8, right: 12, left: 0, bottom: 8 }}
+                  >
+                    <CartesianGrid
+                      stroke={chartPalette.grid}
+                      strokeDasharray="3 3"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="nombre"
+                      interval={0}
+                      tick={{ fontSize: 12, fill: chartPalette.textMuted }}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 12, fill: chartPalette.textMuted }}
+                    />
+                    <Tooltip cursor={{ fill: "rgba(148, 163, 184, 0.12)" }} />
+                    <Bar
+                      dataKey="cantidad"
+                      fill={chartPalette.primary}
+                      name="Proyectos"
+                      radius={[8, 8, 0, 0]}
+                    />
+                  </BarChart>
+                ) : (
+                  chartLoadingState
+                )
+              ) : (
+                <EmptyState
+                  variant="empty"
+                  message={messages.dashboard.chartEmptyMessages.rankingAsignaciones}
+                />
+              )}
+            </div>
+          </figure>
+
+          <div className="flex flex-col gap-4 min-w-0">
+            <div className="dashboard-insight-card">
+              <span className="dashboard-insight-label">
+                {messages.dashboard.insightLabels.porcentajeConProyectos}
+              </span>
+              <strong>{porcentajeConProyectos}%</strong>
+            </div>
+            <div className="dashboard-insight-card">
+              <span className="dashboard-insight-label">Mayor carga</span>
+              <strong>{messages.dashboard.insightLabels.mayorCarga(mayorCarga)}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <figure
+            className="chart-container mb-0"
+            role="img"
+            aria-labelledby="chart-distribucion-title"
+          >
+            <h3 id="chart-distribucion-title">Distribución de carga por investigador</h3>
+            <div
+              ref={distributionChartRef}
+              className="dashboard-chart-stage dashboard-chart-stage-md"
+            >
+              {distribucionConDatos.length > 0 ? (
+                distributionChart.ready ? (
+                  <BarChart
+                    width={distributionChart.width}
+                    height={distributionChart.height}
+                    data={distribucionConDatos}
+                    margin={{ top: 8, right: 12, left: 0, bottom: 8 }}
+                  >
+                    <CartesianGrid
+                      stroke={chartPalette.grid}
+                      strokeDasharray="3 3"
+                      vertical={false}
+                    />
+                    <XAxis dataKey="rango" tick={{ fontSize: 12, fill: chartPalette.textMuted }} />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 12, fill: chartPalette.textMuted }}
+                    />
+                    <Tooltip cursor={{ fill: "rgba(148, 163, 184, 0.12)" }} />
+                    <Bar
+                      dataKey="cantidad"
+                      fill={chartPalette.seriesInfo}
+                      name="Investigadores"
+                      radius={[8, 8, 0, 0]}
+                    />
+                  </BarChart>
+                ) : (
+                  chartLoadingState
+                )
+              ) : (
+                <EmptyState
+                  variant="empty"
+                  message={messages.dashboard.chartEmptyMessages.distribucion}
+                />
+              )}
+            </div>
+          </figure>
+
+          <figure className="chart-container" role="img" aria-labelledby="chart-pie-title">
+            <h3 id="chart-pie-title">Investigadores con y sin proyectos</h3>
+            <div ref={pieChartRef} className="dashboard-chart-stage dashboard-chart-stage-md">
+              {pieHasVisibleData ? (
+                pieChart.ready ? (
+                  <PieChart width={pieChart.width} height={pieChart.height}>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={Math.max(pieChart.width / 2 - 60, 24)}
+                      outerRadius={Math.max(pieChart.width / 2 - 24, 42)}
+                      paddingAngle={pieData.filter((item) => item.value > 0).length > 1 ? 2 : 0}
+                      minAngle={pieData.filter((item) => item.value > 0).length > 1 ? 4 : 0}
+                      labelLine={false}
+                      label={({ name, value }) => (value ? `${name}: ${value}` : "")}
+                    >
+                      {pieData.map((entry, idx) => (
+                        // eslint-disable-next-line @typescript-eslint/no-deprecated
+                        <Cell
+                          key={`${entry.name}-${idx}`}
+                          fill={[chartPalette.secondary, chartPalette.warning][idx % 2]}
+                          stroke={chartPalette.surface}
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [value ?? 0, "Investigadores"]} />
+                  </PieChart>
+                ) : (
+                  chartLoadingState
+                )
+              ) : (
+                <EmptyState
+                  variant="empty"
+                  message={messages.dashboard.chartEmptyMessages.comparacion}
+                />
+              )}
+            </div>
+          </figure>
+        </div>
+
+        <figure className="chart-container mb-0" role="img" aria-labelledby="chart-todos-title">
+          <h3 id="chart-todos-title">Todos los investigadores: proyectos asignados</h3>
+          <div
+            ref={allInvestigadoresChartRef}
+            className="dashboard-chart-stage dashboard-chart-stage-lg"
+          >
+            {showAllInvestigadores ? (
+              allInvestigadoresChart.ready ? (
                 <BarChart
-                  width={topChart.width}
-                  height={topChart.height}
-                  data={topInvestigadores}
-                  margin={chartMargin}
+                  width={allInvestigadoresChart.width}
+                  height={allInvestigadoresChart.height}
+                  data={estadisticas}
+                  margin={{ top: 8, right: 12, left: 0, bottom: 8 }}
                 >
-                  <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
+                  <CartesianGrid
+                    stroke={chartPalette.grid}
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey="nombre"
-                    angle={isCompact ? -18 : 0}
-                    textAnchor={isCompact ? "end" : "middle"}
-                    height={isCompact ? 58 : 40}
-                    tick={{ fontSize: isCompact ? 11 : 12, fill: "#64748b" }}
-                    interval={0}
+                    interval={Math.max(Math.ceil(estadisticas.length / 6) - 1, 0)}
+                    tick={{ fontSize: 11, fill: chartPalette.textMuted }}
                   />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 12, fill: chartPalette.textMuted }}
+                  />
                   <Tooltip cursor={{ fill: "rgba(148, 163, 184, 0.12)" }} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar
                     dataKey="cantidad"
-                    fill="#2196F3"
-                    name="Cantidad de Proyectos"
+                    fill={chartPalette.seriesAccent}
+                    name="Cantidad"
                     radius={[8, 8, 0, 0]}
                   />
                 </BarChart>
@@ -163,212 +303,109 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             ) : (
               <EmptyState
                 variant="empty"
-                message={messages.dashboard.chartEmptyMessages.rankingAsignaciones}
+                message={messages.dashboard.chartEmptyMessages.proyectosActivos}
               />
             )}
           </div>
-        </div>
+        </figure>
+      </section>
 
-        <div className="flex flex-col gap-4 min-w-0">
-          <div className="dashboard-insight-card">
-            <span className="dashboard-insight-label">Investigadores con proyectos</span>
-            <strong>{investigadoresConProyectos}</strong>
-          </div>
-          <div className="dashboard-insight-card">
-            <span className="dashboard-insight-label">Carga media</span>
-            <strong>{promedioProyectos}</strong>
-          </div>
-        </div>
-      </div>
+      <section aria-labelledby="panel-section-evolucion" className="flex flex-col gap-4">
+        <h2 id="panel-section-evolucion" className="sr-only">
+          Evolución
+        </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="chart-container mb-0">
-          <h2>Distribución de carga por investigador</h2>
-          <div
-            ref={distributionChartRef}
-            className="dashboard-chart-stage dashboard-chart-stage-md"
-          >
-            {distribucionConDatos.length > 0 ? (
-              distributionChart.ready ? (
-                <BarChart
-                  width={distributionChart.width}
-                  height={distributionChart.height}
-                  data={distribucionConDatos}
-                  margin={chartMargin}
-                >
-                  <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="rango" tick={{ fontSize: 12, fill: "#64748b" }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                  <Tooltip cursor={{ fill: "rgba(148, 163, 184, 0.12)" }} />
+        <figure className="chart-container" role="img" aria-labelledby="chart-trend-title">
+          <h3 id="chart-trend-title">Proyectos registrados por año y mes</h3>
+          {trend.length > 0 ? (
+            <div className="dashboard-chart-stage dashboard-chart-stage-md">
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={trendData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
+                  <CartesianGrid
+                    stroke={chartPalette.grid}
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: chartPalette.textMuted }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 12, fill: chartPalette.textMuted }}
+                  />
+                  <Tooltip
+                    labelFormatter={(label) => {
+                      const safeLabel =
+                        typeof label === "string" || typeof label === "number" ? String(label) : "";
+                      return `Periodo: ${safeLabel}`;
+                    }}
+                    formatter={(value) => [`${String(value)} proyectos`, "Cantidad"]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="cantidad"
+                    stroke={chartPalette.primary}
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: chartPalette.primary }}
+                    name="Proyectos"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyState variant="empty" message={messages.dashboard.chartEmptyMessages.tendencia} />
+          )}
+        </figure>
+      </section>
+
+      <section aria-labelledby="panel-section-composicion" className="flex flex-col gap-4">
+        <h2 id="panel-section-composicion" className="sr-only">
+          Composición
+        </h2>
+
+        <figure className="chart-container" role="img" aria-labelledby="chart-renacyt-title">
+          <h3 id="chart-renacyt-title">Distribución de investigadores por nivel RENACYT</h3>
+          {renacyt.length > 0 ? (
+            <div className="dashboard-chart-stage dashboard-chart-stage-md">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={renacyt} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
+                  <CartesianGrid
+                    stroke={chartPalette.grid}
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
+                  <XAxis dataKey="nivel" tick={{ fontSize: 12, fill: chartPalette.textMuted }} />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 12, fill: chartPalette.textMuted }}
+                  />
+                  <Tooltip />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar
-                    dataKey="cantidad"
-                    fill="#0ea5e9"
-                    name="Investigadores"
+                    dataKey="con_proyectos"
+                    fill={chartPalette.secondary}
+                    name="Con proyectos"
+                    radius={[8, 8, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="sin_proyectos"
+                    fill={chartPalette.warning}
+                    name="Sin proyectos"
                     radius={[8, 8, 0, 0]}
                   />
                 </BarChart>
-              ) : (
-                chartLoadingState
-              )
-            ) : (
-              <EmptyState
-                variant="empty"
-                message={messages.dashboard.chartEmptyMessages.distribucion}
-              />
-            )}
-          </div>
-        </div>
-
-        <div className="chart-container">
-          <h2>Investigadores con y sin proyectos</h2>
-          <div ref={pieChartRef} className="dashboard-chart-stage dashboard-chart-stage-md">
-            {pieHasVisibleData ? (
-              pieChart.ready ? (
-                <PieChart width={pieChart.width} height={pieChart.height}>
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={Math.max(pieOuterRadius - 28, 24)}
-                    outerRadius={pieOuterRadius}
-                    paddingAngle={pieData.filter((item) => item.value > 0).length > 1 ? 2 : 0}
-                    minAngle={pieData.filter((item) => item.value > 0).length > 1 ? 4 : 0}
-                    labelLine={false}
-                    label={({ name, value }) => (value ? `${name}: ${value}` : "")}
-                  >
-                    {pieData.map((entry, idx) => (
-                      // eslint-disable-next-line @typescript-eslint/no-deprecated
-                      <Cell
-                        key={`${entry.name}-${idx}`}
-                        fill={pieColors[idx % pieColors.length]}
-                        stroke="#ffffff"
-                        strokeWidth={2}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [value ?? 0, "Investigadores"]} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                </PieChart>
-              ) : (
-                chartLoadingState
-              )
-            ) : (
-              <EmptyState
-                variant="empty"
-                message={messages.dashboard.chartEmptyMessages.comparacion}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="chart-container mb-0">
-        <h2>Todos los investigadores: proyectos asignados</h2>
-        <div
-          ref={allInvestigadoresChartRef}
-          className="dashboard-chart-stage dashboard-chart-stage-lg"
-        >
-          {showAllInvestigadores ? (
-            allInvestigadoresChart.ready ? (
-              <BarChart
-                width={allInvestigadoresChart.width}
-                height={allInvestigadoresChart.height}
-                data={estadisticas}
-                margin={chartMargin}
-              >
-                <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  dataKey="nombre"
-                  interval={allInvestigadoresTickInterval}
-                  angle={isCompact ? -20 : 0}
-                  textAnchor={isCompact ? "end" : "middle"}
-                  height={isCompact ? 62 : 40}
-                  tick={{ fontSize: isCompact ? 11 : 12, fill: "#64748b" }}
-                />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-                <Tooltip cursor={{ fill: "rgba(148, 163, 184, 0.12)" }} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="cantidad" fill="#6366f1" name="Cantidad" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            ) : (
-              chartLoadingState
-            )
+              </ResponsiveContainer>
+            </div>
           ) : (
             <EmptyState
               variant="empty"
-              message={messages.dashboard.chartEmptyMessages.proyectosActivos}
+              message={messages.dashboard.chartEmptyMessages.distribucionRenacyt}
             />
           )}
-        </div>
-      </div>
-
-      {/* ── Proyectos por Año (Trend) ── */}
-      <div className="chart-container">
-        <h2>Proyectos Registrados por Año y Mes</h2>
-        {trend.length > 0 ? (
-          <LineChart data={trendData} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
-            <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11, fill: "#64748b" }}
-              interval="preserveStartEnd"
-            />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-            <Tooltip
-              labelFormatter={(label) => {
-                const safeLabel =
-                  typeof label === "string" || typeof label === "number" ? String(label) : "";
-                return `Periodo: ${safeLabel}`;
-              }}
-              formatter={(value) => [`${String(value)} proyectos`, "Cantidad"]}
-            />
-            <Line
-              type="monotone"
-              dataKey="cantidad"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              dot={{ r: 3, fill: "#3b82f6" }}
-              name="Proyectos"
-            />
-          </LineChart>
-        ) : (
-          <EmptyState variant="empty" message={messages.dashboard.chartEmptyMessages.tendencia} />
-        )}
-      </div>
-
-      {/* ── Distribución RENACYT ── */}
-      <div className="chart-container">
-        <h2>Distribución de Investigadores por Nivel RENACYT</h2>
-        {renacyt.length > 0 ? (
-          <BarChart data={renacyt} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
-            <CartesianGrid stroke="#dbe7f5" strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="nivel" tick={{ fontSize: 12, fill: "#64748b" }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
-            <Tooltip />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar
-              dataKey="con_proyectos"
-              fill="#10b981"
-              name="Con proyectos"
-              radius={[8, 8, 0, 0]}
-            />
-            <Bar
-              dataKey="sin_proyectos"
-              fill="#f59e0b"
-              name="Sin proyectos"
-              radius={[8, 8, 0, 0]}
-            />
-          </BarChart>
-        ) : (
-          <EmptyState
-            variant="empty"
-            message={messages.dashboard.chartEmptyMessages.distribucionRenacyt}
-          />
-        )}
-      </div>
+        </figure>
+      </section>
     </div>
   );
 };

@@ -75,6 +75,11 @@ pub struct PublicacionCientificaDto {
     /// recursos del proyecto sin un join adicional.
     #[serde(default)]
     pub id_proyecto: Option<String>,
+    /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe
+    /// durante el importador inicial desde PeruCRIS y ancla el match
+    /// publicacion↔PeruCRIS.
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -126,6 +131,8 @@ pub struct CreatePublicacionRequest {
     pub estado_publicacion: Option<String>,
     #[serde(default)]
     pub id_proyecto: Option<String>,
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -176,4 +183,6 @@ pub struct UpdatePublicacionRequest {
     pub estado_publicacion: Option<String>,
     #[serde(default)]
     pub id_proyecto: Option<String>,
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
 }

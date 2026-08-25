@@ -6,6 +6,9 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Longitud maxima razonable para descripcion institucional.
+const MAX_DESCRIPCION_LEN: usize = 4_000;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrgUnitDoc {
     pub id_org_unit: String,
@@ -37,6 +40,48 @@ pub struct OrgUnitDoc {
     pub created_at: Option<i64>,
     #[serde(default)]
     pub updated_at: Option<i64>,
+    // ---- N2-G: alineamiento PeruCRIS ----
+    #[serde(default)]
+    pub legal_name: Option<String>,
+    #[serde(default)]
+    pub acronimo: Option<String>,
+    #[serde(default)]
+    pub web_site: Option<String>,
+    #[serde(default)]
+    pub direccion: Option<String>,
+    #[serde(default)]
+    pub pais: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_descripcion_truncada")]
+    pub descripcion: Option<String>,
+    #[serde(default)]
+    pub rin_id: Option<String>,
+    #[serde(default)]
+    pub sunedu_clasificacion: Option<String>,
+    #[serde(default)]
+    pub sunedu_estado: Option<String>,
+    #[serde(default)]
+    pub sunedu_resolucion: Option<String>,
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
+    #[serde(default)]
+    pub perucris_handle: Option<String>,
+}
+
+/// Limita la deserializacion de `descripcion` para evitar payloads
+/// patologicos en BSON.
+fn deserialize_descripcion_truncada<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let opt = Option::<String>::deserialize(deserializer)?;
+    Ok(opt.map(|s| {
+        let trimmed = s.trim();
+        if trimmed.chars().count() > MAX_DESCRIPCION_LEN {
+            trimmed.chars().take(MAX_DESCRIPCION_LEN).collect()
+        } else {
+            trimmed.to_string()
+        }
+    }))
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -57,6 +102,31 @@ pub struct OrgUnitDto {
     pub parent_id: Option<String>,
     #[serde(default)]
     pub updated_at: Option<i64>,
+    // ---- N2-G: alineamiento PeruCRIS ----
+    #[serde(default)]
+    pub legal_name: Option<String>,
+    #[serde(default)]
+    pub acronimo: Option<String>,
+    #[serde(default)]
+    pub web_site: Option<String>,
+    #[serde(default)]
+    pub direccion: Option<String>,
+    #[serde(default)]
+    pub pais: Option<String>,
+    #[serde(default)]
+    pub descripcion: Option<String>,
+    #[serde(default)]
+    pub rin_id: Option<String>,
+    #[serde(default)]
+    pub sunedu_clasificacion: Option<String>,
+    #[serde(default)]
+    pub sunedu_estado: Option<String>,
+    #[serde(default)]
+    pub sunedu_resolucion: Option<String>,
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
+    #[serde(default)]
+    pub perucris_handle: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -86,6 +156,31 @@ pub struct CreateOrgUnitRequest {
     pub es_publica: bool,
     #[serde(default)]
     pub parent_id: Option<String>,
+    // ---- N2-G: alineamiento PeruCRIS ----
+    #[serde(default)]
+    pub legal_name: Option<String>,
+    #[serde(default)]
+    pub acronimo: Option<String>,
+    #[serde(default)]
+    pub web_site: Option<String>,
+    #[serde(default)]
+    pub direccion: Option<String>,
+    #[serde(default)]
+    pub pais: Option<String>,
+    #[serde(default)]
+    pub descripcion: Option<String>,
+    #[serde(default)]
+    pub rin_id: Option<String>,
+    #[serde(default)]
+    pub sunedu_clasificacion: Option<String>,
+    #[serde(default)]
+    pub sunedu_estado: Option<String>,
+    #[serde(default)]
+    pub sunedu_resolucion: Option<String>,
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
+    #[serde(default)]
+    pub perucris_handle: Option<String>,
 }
 
 fn default_true() -> bool {
@@ -117,4 +212,29 @@ pub struct UpdateOrgUnitRequest {
     pub es_publica: Option<bool>,
     #[serde(default)]
     pub parent_id: Option<String>,
+    // ---- N2-G: alineamiento PeruCRIS ----
+    #[serde(default)]
+    pub legal_name: Option<String>,
+    #[serde(default)]
+    pub acronimo: Option<String>,
+    #[serde(default)]
+    pub web_site: Option<String>,
+    #[serde(default)]
+    pub direccion: Option<String>,
+    #[serde(default)]
+    pub pais: Option<String>,
+    #[serde(default)]
+    pub descripcion: Option<String>,
+    #[serde(default)]
+    pub rin_id: Option<String>,
+    #[serde(default)]
+    pub sunedu_clasificacion: Option<String>,
+    #[serde(default)]
+    pub sunedu_estado: Option<String>,
+    #[serde(default)]
+    pub sunedu_resolucion: Option<String>,
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
+    #[serde(default)]
+    pub perucris_handle: Option<String>,
 }

@@ -163,6 +163,12 @@ pub struct CerifOrgUnit {
     pub ciiu_codigo: Option<String>,
     pub parent_id: Option<String>,
     pub campos_ocde: Vec<String>,
+    /// Alineamiento N2-G: UUID canonico PeruCRIS (se usa para sync/validacion).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub perucris_uuid: Option<String>,
+    /// Alineamiento N2-G: handle persistente PeruCRIS (ej: 123456789/53485).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub perucris_handle: Option<String>,
 }
 
 /// Person con identidad de investigacion (Investigador + Persona).
@@ -206,6 +212,10 @@ pub struct CerifProyecto {
     pub participantes: Vec<CerifParticipante>,
     pub financiamientos: Vec<CerifProyectoFinanciamiento>,
     pub organizaciones: Vec<CerifProyectoOrganizacion>,
+    /// UUID canónico PeruCRIS. Permite re-vincular la entidad en una
+    /// importación posterior o un push incremental.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub perucris_uuid: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -403,6 +413,18 @@ async fn load_org_units_map(db: &Database) -> Result<HashMap<String, OrgUnit>, A
                 activo: od.activo,
                 created_at: od.created_at,
                 updated_at: od.updated_at,
+                legal_name: od.legal_name,
+                acronimo: od.acronimo,
+                web_site: od.web_site,
+                direccion: od.direccion,
+                pais: od.pais,
+                descripcion: od.descripcion,
+                rin_id: od.rin_id,
+                sunedu_clasificacion: od.sunedu_clasificacion,
+                sunedu_estado: od.sunedu_estado,
+                sunedu_resolucion: od.sunedu_resolucion,
+                perucris_uuid: od.perucris_uuid,
+                perucris_handle: od.perucris_handle,
             },
         );
     }
@@ -594,7 +616,7 @@ async fn load_patentes(db: &Database) -> Result<Vec<CerifPatente>, AppError> {
 
 // ─── Mappers modelo -> entidad CERIF (puros, testeables sin Mongo) ───────────
 
-fn cerif_org_unit_from(org: &OrgUnit, ocde: &[String]) -> CerifOrgUnit {
+pub(crate) fn cerif_org_unit_from(org: &OrgUnit, ocde: &[String]) -> CerifOrgUnit {
     CerifOrgUnit {
         id_org_unit: org.id_org_unit.clone(),
         nombre: org.nombre.clone(),
@@ -612,6 +634,8 @@ fn cerif_org_unit_from(org: &OrgUnit, ocde: &[String]) -> CerifOrgUnit {
         ciiu_codigo: org.ciiu_codigo.clone(),
         parent_id: org.parent_id.clone(),
         campos_ocde: ocde.to_vec(),
+        perucris_uuid: org.perucris_uuid.clone(),
+        perucris_handle: org.perucris_handle.clone(),
     }
 }
 
@@ -702,10 +726,11 @@ fn cerif_proyecto_from(
         participantes,
         financiamientos: financiamientos_cerif,
         organizaciones: organizaciones.to_vec(),
+        perucris_uuid: proyecto.perucris_uuid.clone(),
     }
 }
 
-fn cerif_publicacion_from(
+pub(crate) fn cerif_publicacion_from(
     pub_model: &crate::publicaciones::models::PublicacionCientifica,
     autores: &[crate::publicaciones::autores::PublicacionAutor],
     personas: &HashMap<String, crate::personas::models::Persona>,
@@ -893,6 +918,18 @@ mod tests {
                 ciiu_codigo: None,
                 es_publica: true,
                 parent_id: None,
+                legal_name: None,
+                acronimo: None,
+                web_site: None,
+                direccion: None,
+                pais: None,
+                descripcion: None,
+                rin_id: None,
+                sunedu_clasificacion: None,
+                sunedu_estado: None,
+                sunedu_resolucion: None,
+                perucris_uuid: None,
+                perucris_handle: None,
             },
         )
         .unwrap();
@@ -922,6 +959,8 @@ mod tests {
                 perfil: "docente".to_string(),
                 renacyt: None,
                 tipo_documento: Some("DNI".to_string()),
+                pure_person_id: None,
+                perucris_uuid: None,
             },
         )
         .unwrap();
@@ -966,6 +1005,7 @@ mod tests {
                 pure_uuid: None,
                 estado_publicacion: None,
                 id_proyecto: None,
+                perucris_uuid: None,
             },
         )
         .unwrap();
@@ -1060,6 +1100,18 @@ mod tests {
                 activo: 1,
                 created_at: None,
                 updated_at: None,
+                legal_name: None,
+                acronimo: None,
+                web_site: None,
+                direccion: None,
+                pais: None,
+                descripcion: None,
+                rin_id: None,
+                sunedu_clasificacion: None,
+                sunedu_estado: None,
+                sunedu_resolucion: None,
+                perucris_uuid: None,
+                perucris_handle: None,
             },
         );
         let c = cerif_patente_from(

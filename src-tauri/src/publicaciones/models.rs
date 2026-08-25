@@ -59,6 +59,9 @@ pub struct PublicacionCientifica {
     /// que son productos de un proyecto (ej: tipo=Software). Permite
     /// `get_publicaciones_by_proyecto` sin pivot.
     pub id_proyecto: Option<String>,
+    /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe
+    /// durante el importador inicial desde PeruCRIS.
+    pub perucris_uuid: Option<String>,
 }
 
 impl PublicacionCientifica {
@@ -172,6 +175,7 @@ impl PublicacionCientifica {
             pure_uuid: trim_some(request.pure_uuid),
             estado_publicacion: trim_some(request.estado_publicacion),
             id_proyecto: trim_some(request.id_proyecto),
+            perucris_uuid: trim_some(request.perucris_uuid),
         })
     }
 }
@@ -214,6 +218,7 @@ impl From<PublicacionCientifica> for PublicacionCientificaDto {
             pure_uuid: m.pure_uuid,
             estado_publicacion: m.estado_publicacion,
             id_proyecto: m.id_proyecto,
+            perucris_uuid: m.perucris_uuid.clone(),
         }
     }
 }
@@ -252,6 +257,7 @@ impl From<&PublicacionCientifica> for PublicacionCientificaDto {
             pure_uuid: m.pure_uuid.clone(),
             estado_publicacion: m.estado_publicacion.clone(),
             id_proyecto: m.id_proyecto.clone(),
+            perucris_uuid: m.perucris_uuid.clone(),
         }
     }
 }
@@ -297,6 +303,7 @@ impl TryFrom<PublicacionCientificaDto> for PublicacionCientifica {
             pure_uuid: d.pure_uuid,
             estado_publicacion: d.estado_publicacion,
             id_proyecto: d.id_proyecto,
+            perucris_uuid: d.perucris_uuid,
         })
     }
 }
@@ -335,6 +342,7 @@ mod tests_n2f {
             pure_uuid: Some("pure-uuid-001".to_string()),
             estado_publicacion: Some("publicada".to_string()),
             id_proyecto: Some("proy-1".to_string()),
+            perucris_uuid: None,
         }
     }
 

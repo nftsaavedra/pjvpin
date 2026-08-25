@@ -1,0 +1,52 @@
+{
+  "unf_matrix": {
+    "id_org_unit": "org-unf",
+    "nombre": "Universidad Nacional de Frontera",
+    "legal_name": "UNIVERSIDAD NACIONAL DE FRONTERA",
+    "acronimo": "UNF",
+    "web_site": "https://www.unf.edu.pe/",
+    "direccion": "SAN HILARION, URB. POP. VILLA PERU CANA, 101, PIURA, SULLANA, SULLANA",
+    "pais": "PE",
+    "descripcion": "La Universidad Nacional de Frontera (UNF) es el fruto de anos de persistente lucha y gestion de muchos ciudadanos de la provincia de Sullana que anhelaban contar con su propia universidad publica al servicio de la juventud de la subregion Luciano Castillo Colonna, en el departamento de Piura. El 26 de julio de 2010, la Junta de Portavoces del Congreso de la Republica aprueba el proyecto de ley presentado por el congresista sullanero Jose Carrasco Tavara. La UNF fue creada mediante Ley N° 29568, el 6 de agosto del 2010. A la fecha, tiene 14 anos de creacion y 10 anos de funcionamiento academico.",
+    "ruc": "20526270364",
+    "ror_id": "017bd4h68",
+    "isni_id": "0000000460222967",
+    "rin_id": "486478",
+    "scopus_id": "60189585",
+    "sector_institucional": "educacion_superior",
+    "sunedu_clasificacion": "Institucion universitaria e institucion con rango universitario",
+    "sunedu_estado": "Licenciada",
+    "sunedu_resolucion": "Resolucion del Consejo Directivo N° 045-2019-SUNEDU/CD",
+    "tipo_organizacion": "tipo_org_universidad",
+    "tipo_educacion_superior": "universidad",
+    "ciiu_codigo": "80309",
+    "es_publica": true,
+    "ubigeo_codigo": "200601",
+    "perucris_uuid": "97674e53-90f5-4e9c-b9a9-1c2efa766bd5",
+    "perucris_handle": "123456789/53485"
+  },
+  "sub_units": [
+    {
+      "id_org_unit": "org-unf-vrac",
+      "nombre": "Vicepresidencia Academica de la UNF",
+      "parent_id": "org-unf",
+      "tipo_dependencia": "vicerrectorado",
+      "tipo_organizacion": "tipo_org_universidad",
+      "es_publica": true,
+      "ubigeo_codigo": "200601",
+      "sector_institucional": "educacion_superior",
+      "perucris_uuid": "6f2406de-6f0a-4a0d-9467-415dbfe0fa07"
+    },
+    {
+      "id_org_unit": "org-unf-vinv",
+      "nombre": "Vicepresidencia de Investigacion de la UNF",
+      "parent_id": "org-unf",
+      "tipo_dependencia": "vicerrectorado",
+      "tipo_organizacion": "tipo_org_universidad",
+      "es_publica": true,
+      "ubigeo_codigo": "200601",
+      "sector_institucional": "educacion_superior",
+      "perucris_uuid": "d9aa00f8-b90f-43e2-84c5-6644e1754c6b"
+    }
+  ]
+}

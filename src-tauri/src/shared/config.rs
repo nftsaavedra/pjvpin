@@ -38,6 +38,12 @@ pub struct PureConfig {
 pub struct PeruCrisConfig {
     pub api_base_url: String,
     pub api_key: Option<String>,
+    /// RUC de la institucion matriz. Es la "llave de busqueda" para el
+    /// importador inicial de la UNF (recon §1.4: la asociacion
+    /// orgunit->publications no esta formalizada, asi que se consulta por
+    /// RUC en metadata indexada). Opcional; si esta presente, el
+    /// importador puede ejecutarse sin requerir un OrgUnit local con RUC.
+    pub ruc: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -172,10 +178,17 @@ impl PeruCrisConfig {
             .or_else(|| env::var("PJVPIN_PERUCRIS_API_KEY").ok())
             .map(|v| v.trim().to_string())
             .filter(|v| !v.is_empty());
+        let ruc = values
+            .get("PJVPIN_PERUCRIS_RUC")
+            .cloned()
+            .or_else(|| env::var("PJVPIN_PERUCRIS_RUC").ok())
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
 
         Self {
             api_base_url,
             api_key,
+            ruc,
         }
     }
 }
@@ -236,6 +249,7 @@ fn merge_process_env(values: &mut HashMap<String, String>) {
         "PURE_API_KEY",
         "PJVPIN_PERUCRIS_API_BASE_URL",
         "PJVPIN_PERUCRIS_API_KEY",
+        "PJVPIN_PERUCRIS_RUC",
     ] {
         if let Ok(value) = env::var(key) {
             let trimmed = value.trim();
@@ -290,6 +304,7 @@ struct JsonPureConfig {
 struct JsonPeruCrisConfig {
     api_base_url: Option<String>,
     api_key: Option<String>,
+    ruc: Option<String>,
 }
 
 fn merge_json_file(values: &mut HashMap<String, String>, path: &Path) -> Result<(), AppError> {
@@ -340,6 +355,7 @@ fn merge_json_file(values: &mut HashMap<String, String>, path: &Path) -> Result<
             perucris.api_base_url,
         );
         insert_if_non_empty(values, "PJVPIN_PERUCRIS_API_KEY", perucris.api_key);
+        insert_if_non_empty(values, "PJVPIN_PERUCRIS_RUC", perucris.ruc);
     }
 
     Ok(())

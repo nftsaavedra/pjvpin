@@ -86,6 +86,10 @@ pub struct InvestigadorDto {
     /// `sincronizar_pure_person_ids`; permite upsert sin duplicar.
     #[serde(default)]
     pub pure_person_id: Option<String>,
+    /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe
+    /// durante el importador y evita crear duplicados al validar.
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -108,6 +112,14 @@ pub struct CreateInvestigadorRequest {
     /// Fase N0-D (D11): DNI | CE | PASAPORTE. Default DNI.
     #[serde(default)]
     pub tipo_documento: Option<String>,
+    /// PersonID del Master List de Pure (PER000X). Lo setea el importador
+    /// masivo tras matchear el DNI contra `pure_client::fetch_all_persons_mapping`.
+    #[serde(default)]
+    pub pure_person_id: Option<String>,
+    /// UUID canonico PeruCRIS. Lo setea el importador masivo tras matchear
+    /// el DNI contra `perucris_validator::search_by_query(entity_type=Person)`.
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -124,6 +136,10 @@ pub struct UpdateInvestigadorRequest {
     pub id_grado: Option<String>,
     pub grupo_investigacion_id: Option<String>,
     pub perfil: Option<String>,
+    /// UUID PeruCRIS (alineamiento N2-G). Solo lo setea el importador
+    /// o el validador al confirmar match.
+    #[serde(default)]
+    pub perucris_uuid: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]

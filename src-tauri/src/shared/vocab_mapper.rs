@@ -64,12 +64,17 @@ pub const CUARTIL_Q4: &str = "Q4";
 
 pub const CUARTILES_VALIDOS: &[&str] = &[CUARTIL_Q1, CUARTIL_Q2, CUARTIL_Q3, CUARTIL_Q4];
 
-/// Proveniencia de una publicacion (Pure sync vs captura manual).
+/// Proveniencia de una publicacion (Pure sync vs captura manual vs PeruCRIS).
 pub const DEFAULT: &str = "MANUAL";
 pub const DOMINIO_ORIGEN_MANUAL: &str = DEFAULT;
 pub const DOMINIO_ORIGEN_PURE: &str = "PURE";
+pub const DOMINIO_ORIGEN_PERUCRIS: &str = "PERUCRIS";
 
-pub const DOMINIOS_ORIGEN_VALIDOS: &[&str] = &[DOMINIO_ORIGEN_MANUAL, DOMINIO_ORIGEN_PURE];
+pub const DOMINIOS_ORIGEN_VALIDOS: &[&str] = &[
+    DOMINIO_ORIGEN_MANUAL,
+    DOMINIO_ORIGEN_PURE,
+    DOMINIO_ORIGEN_PERUCRIS,
+];
 
 /// Tipos de entidad soportados por `entity_ocde_fields.entity_type` (pivote
 /// polimorfico). Mantener sincronizado con los `entity_type` que los repos de

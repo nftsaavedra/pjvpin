@@ -7,6 +7,9 @@ export const proyectos = {
   breadcrumbEditar: (titulo: string) => `Editar: ${titulo}`,
   crearProyecto: "Crear Proyecto",
   guardarCambios: "Guardar cambios",
+  formDescription:
+    "Registre la informacion basica del proyecto, el equipo de investigacion responsable y los recursos asociados. Validacion en tiempo real contra los registros existentes.",
+  submitDisabledHint: "Complete el titulo y al menos un investigador para habilitar el registro.",
   modoConsulta: "Modo consulta: solo lectura de proyectos.",
   sectionTitles: {
     infoBasica: "Información básica",

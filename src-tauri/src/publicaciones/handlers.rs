@@ -13,7 +13,7 @@ pub async fn crear_publicacion(
     rbac::require_permission(
         state,
         window_label,
-        rbac::AppPermission::InvestigadoresManage,
+        rbac::AppPermission::PublicacionesManage,
     )
     .await?;
     repository::create(state.mongo_db()?, request).await
@@ -23,7 +23,7 @@ pub async fn get_all_publicaciones(
     state: &AppState,
     window_label: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
+    rbac::require_permission(state, window_label, rbac::AppPermission::PublicacionesView).await?;
     repository::get_all(state.mongo_db()?).await
 }
 
@@ -32,7 +32,7 @@ pub async fn get_publicacion_by_id(
     window_label: &str,
     id: &str,
 ) -> Result<PublicacionCientifica, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
+    rbac::require_permission(state, window_label, rbac::AppPermission::PublicacionesView).await?;
     repository::get_by_id(state.mongo_db()?, id).await
 }
 
@@ -41,7 +41,7 @@ pub async fn get_publicaciones_by_investigador(
     window_label: &str,
     id_investigador: &str,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
+    rbac::require_permission(state, window_label, rbac::AppPermission::PublicacionesView).await?;
     repository::get_by_investigador(state.mongo_db()?, id_investigador).await
 }
 
@@ -50,7 +50,7 @@ pub async fn get_publicaciones_by_anio(
     window_label: &str,
     anio: i32,
 ) -> Result<Vec<PublicacionCientifica>, AppError> {
-    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
+    rbac::require_permission(state, window_label, rbac::AppPermission::PublicacionesView).await?;
     repository::get_by_anio(state.mongo_db()?, anio).await
 }
 
@@ -75,7 +75,7 @@ pub async fn actualizar_publicacion(
     rbac::require_permission(
         state,
         window_label,
-        rbac::AppPermission::InvestigadoresManage,
+        rbac::AppPermission::PublicacionesManage,
     )
     .await?;
     repository::update(state.mongo_db()?, id, request).await
@@ -89,7 +89,7 @@ pub async fn eliminar_publicacion(
     rbac::require_permission(
         state,
         window_label,
-        rbac::AppPermission::InvestigadoresManage,
+        rbac::AppPermission::PublicacionesManage,
     )
     .await?;
     repository::delete(state.mongo_db()?, id).await?;
@@ -107,7 +107,7 @@ pub async fn reactivar_publicacion(
     rbac::require_permission(
         state,
         window_label,
-        rbac::AppPermission::InvestigadoresManage,
+        rbac::AppPermission::PublicacionesManage,
     )
     .await?;
     repository::reactivate(state.mongo_db()?, id).await
@@ -129,7 +129,7 @@ pub async fn vincular_autor_publicacion(
     let actor = rbac::require_permission(
         state,
         window_label,
-        rbac::AppPermission::InvestigadoresManage,
+        rbac::AppPermission::PublicacionesManage,
     )
     .await?;
     crate::shared::refs::ensure_exists(
@@ -170,7 +170,7 @@ pub async fn desvincular_autor_publicacion(
     let actor = rbac::require_permission(
         state,
         window_label,
-        rbac::AppPermission::InvestigadoresManage,
+        rbac::AppPermission::PublicacionesManage,
     )
     .await?;
     crate::publicaciones::autores::repository::delete(state.mongo_db()?, &id_pivot).await?;
@@ -189,12 +189,7 @@ pub async fn listar_autores_publicacion(
     _window_label: &str,
     id_publicacion: String,
 ) -> Result<Vec<crate::publicaciones::autores::PublicacionAutor>, AppError> {
-    rbac::require_permission(
-        state,
-        _window_label,
-        rbac::AppPermission::InvestigadoresView,
-    )
-    .await?;
+    rbac::require_permission(state, _window_label, rbac::AppPermission::PublicacionesView).await?;
     crate::publicaciones::autores::repository::list_by_publicacion(
         state.mongo_db()?,
         &id_publicacion,

@@ -31,6 +31,8 @@ mod tests {
             perfil: "docente".to_string(),
             renacyt: None,
             tipo_documento: None,
+            pure_person_id: None,
+            perucris_uuid: None,
         }
     }
 
@@ -112,6 +114,33 @@ mod tests {
         assert!(
             inv.renacyt_fecha_ultima_sincronizacion.is_some(),
             "renacyt presente -> debe setear fecha_ultima_sincronizacion"
+        );
+    }
+
+    #[test]
+    fn new_con_orcid_checksum_invalido_no_aborta_y_conserva_crudo() {
+        let mut req = request_minimo();
+        req.renacyt = Some(CreateInvestigadorRenacytRequest {
+            codigo_registro: "REG-X".to_string(),
+            id_investigador: "REN-X".to_string(),
+            nivel: None,
+            grupo: None,
+            condicion: None,
+            fecha_informe_calificacion: None,
+            fecha_registro: None,
+            fecha_ultima_revision: None,
+            // Cuerpo 15 ceros + '6': checksum invalido (deberia ser '5').
+            orcid: Some("0000-0000-0000-0006".to_string()),
+            scopus_author_id: None,
+            ficha_url: "http://x".to_string(),
+            formaciones_academicas_json: None,
+        });
+        let inv = Investigador::new("inv-orcid".to_string(), &req)
+            .expect("un ORCID con checksum invalido no debe abortar el alta");
+        assert_eq!(
+            inv.renacyt_orcid.as_deref(),
+            Some("0000-0000-0000-0006"),
+            "debe conservar la cadena cruda para trazabilidad"
         );
     }
 

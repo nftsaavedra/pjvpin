@@ -9,6 +9,7 @@ export type {
   EliminarInvestigadorResultado,
   RefreshInvestigadorRenacytFormacionResultado,
   CreateInvestigadorRenacytPayload,
+  ImportInvestigadoresResult,
 } from "./investigador.types";
 
 export type {
@@ -69,6 +70,14 @@ export type {
   ParticipanteEvento,
   EventoAcademico,
 } from "./evento.types";
+
+export type {
+  PeruCrisPushResult,
+  PeruCrisValidationItem,
+  PeruCrisValidationReport,
+  PeruCrisValidationScope,
+  ValidationTipo,
+} from "./perucris.types";
 
 export type { PaginatedResult } from "./pagination.types";
 

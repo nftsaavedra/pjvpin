@@ -14,6 +14,19 @@ export interface OrgUnit {
   es_publica: boolean;
   parent_id?: string | null;
   updated_at?: number | null;
+  // ---- N2-G: alineamiento PeruCRIS ----
+  legal_name?: string | null;
+  acronimo?: string | null;
+  web_site?: string | null;
+  direccion?: string | null;
+  pais?: string | null;
+  descripcion?: string | null;
+  rin_id?: string | null;
+  sunedu_clasificacion?: string | null;
+  sunedu_estado?: string | null;
+  sunedu_resolucion?: string | null;
+  perucris_uuid?: string | null;
+  perucris_handle?: string | null;
 }
 
 export interface CreateOrgUnitRequest {
@@ -30,6 +43,19 @@ export interface CreateOrgUnitRequest {
   ciiuCodigo?: string | null;
   esPublica: boolean;
   parentId?: string | null;
+  // ---- N2-G: alineamiento PeruCRIS ----
+  legalName?: string | null;
+  acronimo?: string | null;
+  webSite?: string | null;
+  direccion?: string | null;
+  pais?: string | null;
+  descripcion?: string | null;
+  rinId?: string | null;
+  suneduClasificacion?: string | null;
+  suneduEstado?: string | null;
+  suneduResolucion?: string | null;
+  perucrisUuid?: string | null;
+  perucrisHandle?: string | null;
 }
 
 export interface UpdateOrgUnitRequest {
@@ -44,4 +70,17 @@ export interface UpdateOrgUnitRequest {
   ciiuCodigo?: string | null;
   esPublica?: boolean;
   parentId?: string | null;
+  // ---- N2-G: alineamiento PeruCRIS ----
+  legalName?: string | null;
+  acronimo?: string | null;
+  webSite?: string | null;
+  direccion?: string | null;
+  pais?: string | null;
+  descripcion?: string | null;
+  rinId?: string | null;
+  suneduClasificacion?: string | null;
+  suneduEstado?: string | null;
+  suneduResolucion?: string | null;
+  perucrisUuid?: string | null;
+  perucrisHandle?: string | null;
 }

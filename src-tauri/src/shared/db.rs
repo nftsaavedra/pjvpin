@@ -112,7 +112,12 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
             IndexModel::builder()
                 .keys(doc! { "renacyt_codigo_registro": 1 })
                 .options(Some(
-                    IndexOptions::builder().unique(true).sparse(true).build(),
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {
+                            "renacyt_codigo_registro": { "$type": "string" }
+                        })
+                        .build(),
                 ))
                 .build(),
         )
@@ -122,7 +127,12 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
             IndexModel::builder()
                 .keys(doc! { "renacyt_orcid": 1 })
                 .options(Some(
-                    IndexOptions::builder().unique(true).sparse(true).build(),
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {
+                            "renacyt_orcid": { "$type": "string" }
+                        })
+                        .build(),
                 ))
                 .build(),
         )
@@ -141,7 +151,14 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         .create_index(
             IndexModel::builder()
                 .keys(doc! { "codigo": 1 })
-                .options(Some(IndexOptions::builder().unique(true).build()))
+                .options(Some(
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {
+                            "codigo": { "$type": "string" }
+                        })
+                        .build(),
+                ))
                 .build(),
         )
         .await?;
@@ -268,6 +285,13 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
     // acepta UNIQUE parciales: el campo polimorfico es whichever este
     // presente; los duplicados se controlan a nivel aplicacion via
     // `validate_titular_uniqueness`.
+    //
+    // Decision: NO migrar a partial_filter_expression aunque `id_org_unit` /
+    // `id_persona` sean Option<String>. El pivote es polimorfico por
+    // `holder_type` (organizacion vs persona), y la unicidad se enforces en
+    // capa aplicacion antes de tocar la BD. Migrar el indice aqui haria que
+    // dos titulares-persona de la misma patente (con id_org_unit ausente
+    // ambos) colisionaran por el lado del indice, no por la validacion.
     let _ = db
         .collection::<Document>("patente_titulares")
         .drop_indexes()
@@ -356,7 +380,12 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
             IndexModel::builder()
                 .keys(doc! { "numero_patente": 1 })
                 .options(Some(
-                    IndexOptions::builder().unique(true).sparse(true).build(),
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {
+                            "numero_patente": { "$type": "string" }
+                        })
+                        .build(),
                 ))
                 .build(),
         )
@@ -381,7 +410,12 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
             IndexModel::builder()
                 .keys(doc! { "codigo_institucional": 1 })
                 .options(Some(
-                    IndexOptions::builder().unique(true).sparse(true).build(),
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {
+                            "codigo_institucional": { "$type": "string" }
+                        })
+                        .build(),
                 ))
                 .build(),
         )
@@ -416,37 +450,6 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
                 .keys(doc! { "departamento": 1, "provincia": 1, "distrito": 1 })
                 .build(),
         )
-        .await?;
-
-    // --- Fase N1-A: OrgUnits (jerarquica, CERIF/PeruCRIS) ---
-    let _ = db.collection::<Document>("org_units").drop_indexes().await;
-    db.collection::<Document>("org_units")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "id_org_unit": 1 })
-                .options(Some(IndexOptions::builder().unique(true).build()))
-                .build(),
-        )
-        .await?;
-    db.collection::<Document>("org_units")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "ruc": 1 })
-                .options(Some(
-                    IndexOptions::builder().unique(true).sparse(true).build(),
-                ))
-                .build(),
-        )
-        .await?;
-    db.collection::<Document>("org_units")
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "parent_id": 1, "tipo_dependencia": 1 })
-                .build(),
-        )
-        .await?;
-    db.collection::<Document>("org_units")
-        .create_index(IndexModel::builder().keys(doc! { "nombre": 1 }).build())
         .await?;
 
     // --- Grupos de investigación ---
@@ -484,13 +487,6 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         )
         .await?;
     pub_coll
-        .create_index(
-            IndexModel::builder()
-                .keys(doc! { "autores_ids": 1 })
-                .build(),
-        )
-        .await?;
-    pub_coll
         .create_index(IndexModel::builder().keys(doc! { "anio": 1 }).build())
         .await?;
     // Fase N2-F: UNIQUE sparse sobre `doi` (un articulo con DOI valido no
@@ -500,7 +496,12 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
             IndexModel::builder()
                 .keys(doc! { "doi": 1 })
                 .options(Some(
-                    IndexOptions::builder().unique(true).sparse(true).build(),
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {
+                            "doi": { "$type": "string" }
+                        })
+                        .build(),
                 ))
                 .build(),
         )
@@ -511,7 +512,12 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
             IndexModel::builder()
                 .keys(doc! { "pure_uuid": 1 })
                 .options(Some(
-                    IndexOptions::builder().unique(true).sparse(true).build(),
+                    IndexOptions::builder()
+                        .unique(true)
+                        .partial_filter_expression(doc! {
+                            "pure_uuid": { "$type": "string" }
+                        })
+                        .build(),
                 ))
                 .build(),
         )
@@ -544,7 +550,7 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
 
     // --- Features CONCYTEC/PeruCRIS: indices UNIQUE propios ---
     // catalogos (tipo,codigo + esquema,codigo_skos), geo (codigo ubigeo),
-    // ocde (entity_type,entity_id,ocde_codigo), org_units (ruc sparse +
+    // ocde (entity_type,entity_id,ocde_codigo), org_units (ruc partial filter +
     // parent_id compuesto).
     crate::catalogos::repository::ensure_indexes(db).await?;
     crate::geo::repository::ensure_indexes(db).await?;

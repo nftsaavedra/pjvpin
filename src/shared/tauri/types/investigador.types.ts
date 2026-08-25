@@ -27,6 +27,9 @@ export interface Investigador {
   /// PersonID del Master List de Pure (PER000X). Sincronizado por
   /// `sincronizar_pure_person_ids` desde la API de pure.unf.edu.pe.
   purePersonId?: string | null;
+  /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe en el
+  /// importador inicial y ancla el match persona↔PeruCRIS.
+  perucrisUuid?: string | null;
 }
 
 export interface InvestigadorDetalle {
@@ -123,4 +126,23 @@ export interface CreateInvestigadorRenacytPayload {
   scopusAuthorId?: string | null;
   fichaUrl: string;
   formacionesAcademicasJson?: string | null;
+}
+
+/// Resultado del comando `importar_investigadores`. Refleja el contract
+/// camelCase del backend (`ImportInvestigadoresResult`).
+export interface ImportInvestigadoresResult {
+  totalEvaluados: number;
+  importados: number;
+  autocompletadosReniec: number;
+  omitidosDuplicado: number;
+  omitidosSinReniec: number;
+  omitidosInvalidos: number;
+  renacytEncontrados: number;
+  renacytNoEncontrados: number;
+  renacytFallos: number;
+  perucrisEnlazados: number;
+  perucrisFallos: number;
+  pureEnlazados: number;
+  pureFallos: number;
+  errores: string[];
 }

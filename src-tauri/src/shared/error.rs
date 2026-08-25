@@ -78,6 +78,16 @@ fn redact_after_marker(input: &str, marker: &str) -> String {
     result
 }
 
+pub(crate) fn format_error_chain(e: &(dyn std::error::Error + 'static)) -> String {
+    let mut msg = e.to_string();
+    let mut source = std::error::Error::source(e);
+    while let Some(s) = source {
+        msg.push_str(&format!(" — {}", s));
+        source = s.source();
+    }
+    msg
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum AppError {
     DatabaseError(String),
@@ -95,6 +105,9 @@ pub enum AppError {
     /// apunta a un id inexistente o desactivado, o un borrado maestro
     /// chocaria con referencias vivas (RESTRICT).
     ReferentialIntegrity(String),
+    /// Input del usuario invalido que la UI deberia mostrar como error de
+    /// formulario (no como bug interno ni como fallo de servicio externo).
+    ValidationError(String),
 }
 
 impl From<mongodb::error::Error> for AppError {
@@ -120,7 +133,7 @@ impl From<mongodb::error::Error> for AppError {
 
 impl From<reqwest::Error> for AppError {
     fn from(err: reqwest::Error) -> Self {
-        AppError::ExternalServiceError(sanitize_external_detail(&err.to_string()))
+        AppError::ExternalServiceError(sanitize_external_detail(&format_error_chain(&err)))
     }
 }
 
@@ -134,7 +147,8 @@ impl fmt::Display for AppError {
             | AppError::ConfigurationError(message)
             | AppError::ExternalServiceError(message)
             | AppError::DataInconsistency(message)
-            | AppError::ReferentialIntegrity(message) => f.write_str(message),
+            | AppError::ReferentialIntegrity(message)
+            | AppError::ValidationError(message) => f.write_str(message),
         }
     }
 }

@@ -19,6 +19,9 @@ pub struct Proyecto {
     pub estado_concytec: Option<String>,     // FK concytec_estado_proyecto
     pub tematica_ambiental: Option<String>,  // FK minam_tematicas_ambientales
     pub tematica_salud: Option<String>,      // FK ins_tematicas_salud
+    // ---- Fase N2-G (alineamiento PeruCRIS): UUID canónico. Permite dedupe
+    // en el importador inicial y validación de outputs vía find_by_uuid. ----
+    pub perucris_uuid: Option<String>,
 }
 
 impl Proyecto {
@@ -60,6 +63,7 @@ impl Proyecto {
             estado_concytec: trim_or_none(request.estado_concytec),
             tematica_ambiental: trim_or_none(request.tematica_ambiental),
             tematica_salud: trim_or_none(request.tematica_salud),
+            perucris_uuid: None,
         })
     }
 }
@@ -137,6 +141,7 @@ impl From<Proyecto> for ProyectoDto {
             estado_concytec: m.estado_concytec,
             tematica_ambiental: m.tematica_ambiental,
             tematica_salud: m.tematica_salud,
+            perucris_uuid: m.perucris_uuid,
         }
     }
 }
@@ -157,6 +162,7 @@ impl From<&Proyecto> for ProyectoDto {
             estado_concytec: m.estado_concytec.clone(),
             tematica_ambiental: m.tematica_ambiental.clone(),
             tematica_salud: m.tematica_salud.clone(),
+            perucris_uuid: m.perucris_uuid.clone(),
         }
     }
 }
@@ -178,6 +184,7 @@ impl TryFrom<ProyectoDto> for Proyecto {
             estado_concytec: d.estado_concytec,
             tematica_ambiental: d.tematica_ambiental,
             tematica_salud: d.tematica_salud,
+            perucris_uuid: d.perucris_uuid,
         })
     }
 }

@@ -312,7 +312,13 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
         IndexModel::builder()
             .keys(doc! { "esquema": 1, "codigo_skos": 1 })
             .options(Some(
-                IndexOptions::builder().unique(true).sparse(true).build(),
+                IndexOptions::builder()
+                    .unique(true)
+                    .partial_filter_expression(doc! {
+                        "esquema": { "$type": "string" },
+                        "codigo_skos": { "$type": "string" }
+                    })
+                    .build(),
             ))
             .build(),
     )

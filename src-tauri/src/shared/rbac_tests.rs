@@ -12,6 +12,8 @@ mod tests {
             AppPermission::ProyectosManage,
             AppPermission::ReportesView,
             AppPermission::ReportesExport,
+            AppPermission::PublicacionesView,
+            AppPermission::PublicacionesManage,
             AppPermission::GradosRead,
             AppPermission::GradosManage,
             AppPermission::GruposView,
@@ -122,6 +124,54 @@ mod tests {
         assert!(role_has_permission(
             " admin ",
             &AppPermission::ProyectosManage
+        ));
+    }
+
+    #[test]
+    fn test_operador_can_manage_publicaciones() {
+        assert!(role_has_permission(
+            "operador",
+            &AppPermission::PublicacionesView
+        ));
+        assert!(role_has_permission(
+            "operador",
+            &AppPermission::PublicacionesManage
+        ));
+    }
+
+    #[test]
+    fn test_consulta_view_only_publicaciones() {
+        assert!(role_has_permission(
+            "consulta",
+            &AppPermission::PublicacionesView
+        ));
+        assert!(!role_has_permission(
+            "consulta",
+            &AppPermission::PublicacionesManage
+        ));
+    }
+
+    #[test]
+    fn test_responsable_proyecto_view_only_publicaciones() {
+        assert!(role_has_permission(
+            "responsable_proyecto",
+            &AppPermission::PublicacionesView
+        ));
+        assert!(!role_has_permission(
+            "responsable_proyecto",
+            &AppPermission::PublicacionesManage
+        ));
+    }
+
+    #[test]
+    fn test_admin_can_manage_publicaciones() {
+        assert!(role_has_permission(
+            "admin",
+            &AppPermission::PublicacionesView
+        ));
+        assert!(role_has_permission(
+            "admin",
+            &AppPermission::PublicacionesManage
         ));
     }
 }

@@ -1,8 +1,9 @@
-import React from "react";
-import { GraduationCap, Plus } from "lucide-react";
+import React, { useState } from "react";
+import { GraduationCap, Plus, UploadCloud } from "lucide-react";
 import type { InvestigadorDetalle } from "../api";
 import { InvestigadoresTableGrid } from "./InvestigadoresTableGrid";
 import { InvestigadoresTableToolbar } from "./InvestigadoresTableToolbar";
+import { ImportInvestigadoresModal } from "./ImportInvestigadoresModal";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { EmptyState } from "@/shared/ui/EmptyState";
@@ -71,6 +72,8 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
   onCreateClick,
   onOpenDetail,
 }) => {
+  const [importModalOpen, setImportModalOpen] = useState(false);
+
   return (
     <div className="tab-panel investigadores-list-panel">
       <div className="table-container">
@@ -81,6 +84,19 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
           </h2>
           {canManage && (
             <div className="section-header-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setImportModalOpen(true);
+                }}
+                data-testid="investigadores-import-btn"
+              >
+                <span className="button-with-icon">
+                  <AppIcon icon={UploadCloud} size={18} />
+                  <span>{messages.investigadores.list.importar}</span>
+                </span>
+              </button>
               <button type="button" className="btn-primary" onClick={onCreateClick}>
                 <span className="button-with-icon">
                   <AppIcon icon={Plus} size={18} />
@@ -159,6 +175,16 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
           onCancel={onCancelDelete}
         />
       )}
+
+      <ImportInvestigadoresModal
+        open={importModalOpen}
+        onClose={() => {
+          setImportModalOpen(false);
+        }}
+        onDataModified={() => {
+          void cargarInvestigadores();
+        }}
+      />
     </div>
   );
 };

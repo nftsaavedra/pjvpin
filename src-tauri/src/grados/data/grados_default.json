@@ -1,0 +1,32 @@
+[
+  {
+    "id_grado": "grado-bachiller",
+    "nombre": "Bachiller",
+    "descripcion": "Grado academico de Bachiller Universitario.",
+    "codigo_skos": "bachiller"
+  },
+  {
+    "id_grado": "grado-licenciado",
+    "nombre": "Licenciado (Titulo Profesional)",
+    "descripcion": "Titulo profesional en una disciplina (Licenciado, Ingeniero, Medico, Abogado, etc.).",
+    "codigo_skos": "licenciado"
+  },
+  {
+    "id_grado": "grado-segunda-especialidad",
+    "nombre": "Segunda Especialidad",
+    "descripcion": "Segunda especializacion profesional (post-titulo).",
+    "codigo_skos": "segunda_especialidad"
+  },
+  {
+    "id_grado": "grado-maestro",
+    "nombre": "Maestro / Magister",
+    "descripcion": "Grado academico de Maestro (Maestria / Magister).",
+    "codigo_skos": "maestro"
+  },
+  {
+    "id_grado": "grado-doctor",
+    "nombre": "Doctor",
+    "descripcion": "Grado academico de Doctor (Doctorado).",
+    "codigo_skos": "doctor"
+  }
+]

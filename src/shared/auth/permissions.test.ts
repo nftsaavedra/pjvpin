@@ -33,11 +33,13 @@ describe("hasPermission", () => {
     expect(hasPermission("admin", "dashboard.view")).toBe(true);
     expect(hasPermission("admin", "usuarios.manage")).toBe(true);
     expect(hasPermission("admin", "configuracion.view")).toBe(true);
+    expect(hasPermission("admin", "publicaciones.manage")).toBe(true);
   });
 
   it("operador has operational permissions but not config", () => {
     expect(hasPermission("operador", "investigadores.manage")).toBe(true);
     expect(hasPermission("operador", "reportes.export")).toBe(true);
+    expect(hasPermission("operador", "publicaciones.manage")).toBe(true);
     expect(hasPermission("operador", "usuarios.manage")).toBe(false);
     expect(hasPermission("operador", "configuracion.view")).toBe(false);
   });
@@ -47,6 +49,8 @@ describe("hasPermission", () => {
     expect(hasPermission("consulta", "investigadores.view")).toBe(true);
     expect(hasPermission("consulta", "investigadores.manage")).toBe(false);
     expect(hasPermission("consulta", "reportes.export")).toBe(false);
+    expect(hasPermission("consulta", "publicaciones.view")).toBe(true);
+    expect(hasPermission("consulta", "publicaciones.manage")).toBe(false);
   });
 });
 
@@ -77,5 +81,7 @@ describe("new roles: superuser and responsable_proyecto", () => {
     expect(hasPermission("responsable_proyecto", "proyectos.view")).toBe(true);
     expect(hasPermission("responsable_proyecto", "proyectos.manage")).toBe(true);
     expect(hasPermission("responsable_proyecto", "reportes.export")).toBe(true);
+    expect(hasPermission("responsable_proyecto", "publicaciones.view")).toBe(true);
+    expect(hasPermission("responsable_proyecto", "publicaciones.manage")).toBe(false);
   });
 });

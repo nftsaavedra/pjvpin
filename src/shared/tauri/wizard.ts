@@ -15,6 +15,10 @@ export interface WizardConfigRequest {
   renacytBaseUrl?: string;
   renacytActoVersion?: string;
   pureApiKey?: string;
+  /** api-key PeruCRIS (opcional). Solo requerida para push/ingest. */
+  perucrisApiKey?: string;
+  /** RUC de la institucion. Llave de busqueda del importador inicial. */
+  perucrisRuc?: string;
 }
 
 export const wizardHasConfig = async (): Promise<boolean> => {
@@ -38,6 +42,14 @@ export const wizardTestPure = async (
   apiKey: string,
 ): Promise<ConnectivityResult> => {
   return await invoke("wizard_test_pure", { baseUrl, apiKey });
+};
+
+export const wizardTestPerucris = async (
+  baseUrl: string,
+  apiKey?: string,
+  ruc?: string,
+): Promise<ConnectivityResult> => {
+  return await invoke("wizard_test_perucris", { baseUrl, apiKey, ruc });
 };
 
 export const wizardSaveConfig = async (request: WizardConfigRequest): Promise<void> => {

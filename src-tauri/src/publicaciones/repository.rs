@@ -54,6 +54,7 @@ fn dto_to_model(dto: PublicacionCientificaDto) -> PublicacionCientifica {
         pure_uuid: dto.pure_uuid,
         estado_publicacion: dto.estado_publicacion,
         id_proyecto: dto.id_proyecto,
+        perucris_uuid: dto.perucris_uuid,
     }
 }
 
@@ -90,6 +91,7 @@ pub(crate) fn model_to_dto(m: &PublicacionCientifica) -> PublicacionCientificaDt
         pure_uuid: m.pure_uuid.clone(),
         estado_publicacion: m.estado_publicacion.clone(),
         id_proyecto: m.id_proyecto.clone(),
+        perucris_uuid: m.perucris_uuid.clone(),
     }
 }
 
@@ -290,6 +292,9 @@ pub async fn update(
     }
     if let Some(v) = request.id_proyecto {
         set.insert("id_proyecto", v);
+    }
+    if let Some(v) = request.perucris_uuid {
+        set.insert("perucris_uuid", v);
     }
 
     db.collection::<Document>("publicaciones_cientificas")

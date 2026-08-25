@@ -79,6 +79,7 @@ mod tests {
             estado_concytec: None,
             tematica_ambiental: None,
             tematica_salud: None,
+            perucris_uuid: None,
         };
         let dto = ProyectoDto::from(original.clone());
         let recovered = Proyecto::try_from(dto).expect("round-trip valido");

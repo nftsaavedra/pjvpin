@@ -104,6 +104,7 @@ mod tests {
             perucris: PeruCrisConfig {
                 api_base_url: "https://x".into(),
                 api_key: api_key.map(str::to_string),
+                ruc: None,
             },
         })
     }

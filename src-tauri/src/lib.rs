@@ -122,6 +122,27 @@ pub fn run() {
                     std::io::Error::other(format!("Error sembrando ubigeos: {}", e))
                 })?;
 
+                tauri::async_runtime::block_on(async {
+                    grados::seed::seed_grados_if_empty(&database).await
+                })
+                .map_err(|e| {
+                    std::io::Error::other(format!("Error sembrando grados: {}", e))
+                })?;
+
+                tauri::async_runtime::block_on(async {
+                    org_units::seed::seed_org_units_unf_if_empty(&database).await
+                })
+                .map_err(|e| {
+                    std::io::Error::other(format!("Error sembrando org_units UNF: {}", e))
+                })?;
+
+                // Nota historica: el seed automatico de investigadores
+                // (55 DNIs embebidos, RENIEC/RENACYT en cada arranque)
+                // fue reemplazado por el flujo manual `importar_investigadores`
+                // disparado desde el tab Investigadores. Ver
+                // `investigadores/import.rs` y AGENTS.md seccion
+                // "Modelo de datos CONCYTEC/PeruCRIS".
+
                 Some(database)
             } else {
                 tracing::info!(
@@ -192,6 +213,8 @@ pub fn run() {
             investigador_cmds::buscar_investigador_por_dni_con_renacyt,
             investigador_cmds::refrescar_formacion_academica_renacyt_investigador,
             investigador_cmds::descargar_constancia_renacyt_investigador,
+            investigador_cmds::importar_investigadores,
+            investigador_cmds::get_plantilla_investigadores_default,
             // Proyectos
             proyecto_cmds::crear_proyecto_con_participantes,
             proyecto_cmds::actualizar_proyecto_con_participantes,
@@ -291,6 +314,12 @@ pub fn run() {
             crate::shared::external::pure_cmd::sincronizar_pure_person_ids,
             // PeruCRIS (conector CERIF)
             crate::shared::external::perucris_cmd::enviar_a_perucris,
+            // PeruCRIS (validacion contra API publica)
+            crate::shared::external::perucris_cmd::validar_sincronizacion_perucris,
+            crate::shared::external::perucris_cmd::validar_org_unit_perucris,
+            crate::shared::external::perucris_cmd::validar_publicacion_perucris,
+            // PeruCRIS (importador inicial desde API publica)
+            crate::shared::external::perucris_cmd::importar_iniciales_perucris,
             // Grupos
             grupo_cmds::get_all_grupos,
             grupo_cmds::create_grupo,

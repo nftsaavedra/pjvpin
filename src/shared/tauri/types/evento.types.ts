@@ -32,6 +32,7 @@ export interface PublicacionConEtiquetas {
   issn?: string | null;
   estado_publicacion?: string | null;
   pure_uuid?: string | null;
+  perucris_uuid?: string | null;
   dominio_origen: string;
   es_revisado_por_pares?: boolean;
 }
@@ -63,6 +64,7 @@ export interface PublicacionCientifica {
   paginas?: string | null;
   dominio_origen?: string;
   pure_uuid?: string | null;
+  perucris_uuid?: string | null;
   estado_publicacion?: string | null;
   id_proyecto?: string | null;
 }

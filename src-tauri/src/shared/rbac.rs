@@ -10,6 +10,8 @@ pub enum AppPermission {
     InvestigadoresManage,
     ProyectosView,
     ProyectosManage,
+    PublicacionesView,
+    PublicacionesManage,
     ReportesView,
     ReportesExport,
     GradosRead,
@@ -38,6 +40,8 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::InvestigadoresManage
                 | AppPermission::ProyectosView
                 | AppPermission::ProyectosManage
+                | AppPermission::PublicacionesView
+                | AppPermission::PublicacionesManage
                 | AppPermission::ReportesView
                 | AppPermission::ReportesExport
                 | AppPermission::GradosRead
@@ -62,6 +66,8 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
                 | AppPermission::InvestigadoresManage
                 | AppPermission::ProyectosView
                 | AppPermission::ProyectosManage
+                | AppPermission::PublicacionesView
+                | AppPermission::PublicacionesManage
                 | AppPermission::ReportesView
                 | AppPermission::ReportesExport
                 | AppPermission::GradosRead
@@ -80,6 +86,7 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
             AppPermission::DashboardView
                 | AppPermission::InvestigadoresView
                 | AppPermission::ProyectosView
+                | AppPermission::PublicacionesView
                 | AppPermission::ReportesView
                 | AppPermission::GruposView
                 | AppPermission::GeoRead
@@ -91,6 +98,7 @@ pub fn role_has_permission(role: &str, permission: &AppPermission) -> bool {
             AppPermission::DashboardView
                 | AppPermission::InvestigadoresView
                 | AppPermission::ProyectosView
+                | AppPermission::PublicacionesView
                 | AppPermission::ReportesView
                 | AppPermission::GruposView
                 | AppPermission::GeoRead

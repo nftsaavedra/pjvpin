@@ -151,6 +151,7 @@ export const investigadores = {
   list: {
     sectionTitle: "Investigadores Registrados",
     nuevoInvestigador: "Nuevo investigador",
+    importar: "Importar por DNI",
     desactivarDialog: {
       title: "Desactivar investigador",
       message: (nombre: string) => `¿Desactivar a "${nombre}"?`,
@@ -171,6 +172,16 @@ export const investigadores = {
     } as const,
   } as const,
   form: {
+    description:
+      "Valide el DNI para autocompletar la identidad desde RENIEC; si el servicio no esta disponible, ingrese los datos manualmente. Luego complete el registro RENACYT y los datos academicos.",
+    sectionTitleIdentidad: "Identidad del investigador",
+    sectionDescIdentidad:
+      "Valide el DNI para autocompletar la identidad desde RENIEC. Si el servicio no está disponible, ingrese los datos manualmente.",
+    sectionTitleRenacyt: "Registro RENACYT",
+    sectionDescRenacyt:
+      "RENACYT se consulta automáticamente tras validar el DNI. Puede sobrescribir el resultado si lo desea.",
+    sectionTitleAcademico: "Datos académicos",
+    sectionDescAcademico: "Grado y perfil del investigador dentro del sistema.",
     gradoLabel: "Grado Académico",
     gradoHelp: "Solo se muestran grados activos.",
     perfilLabel: "Perfil del investigador",
@@ -190,6 +201,18 @@ export const investigadores = {
     dniButtonBusy: "Validando e identificando...",
     dniPreviewLabel: "Nombre a registrar",
     dniPreviewPlaceholder: "Complete nombres y apellidos para ver la vista previa.",
+    identityPlaceholder: "Valida el DNI para autocompletar la identidad.",
+    identitySourceReniec: "RENIEC",
+    identitySourceManual: "Ingreso manual",
+    reniecUnavailableBanner:
+      "RENIEC no está disponible o falló la consulta. Complete la identidad manualmente para continuar.",
+    manualEntryHint: "La identidad se registrará tal como la ingresó.",
+    gradosLoading: "Cargando grados académicos...",
+    submitDisabledHint: "Valida el DNI para habilitar el registro.",
+    submitLabel: "Registrar",
+    cancelLabel: "Cancelar",
+    breadcrumbParent: "Investigadores",
+    breadcrumbCurrent: "Registrar nuevo investigador",
   } as const,
   renacyt: {
     label: "Validación RENACYT",
@@ -244,6 +267,51 @@ export const investigadores = {
       "No hay grados académicos registrados. Cree un grado antes de registrar investigadores.",
   } as const,
   publicacionLoading: "Cargando publicaciones...",
+} as const;
+
+export const importacion = {
+  modal: {
+    title: "Importar investigadores por DNI",
+    description:
+      "Pegue los DNIs (uno por línea, separados por coma o espacio). El sistema validará cada uno y lo enriquecerá con RENIEC, PeruCRIS, Pure y RENACYT antes de crear el registro.",
+    dniLabel: "DNIs",
+    dniPlaceholder: "Ej: 45678912\n87654321\n...",
+    cargarPlantilla: (cantidad: number) => `Cargar plantilla UNF (${cantidad} DNIs)`,
+    cargandoPlantilla: "Cargando plantilla...",
+    contadorValidos: (validos: number, invalidos: number) =>
+      invalidos > 0
+        ? `${validos} DNIs válidos, ${invalidos} inválidos (se ignoran)`
+        : `${validos} DNIs válidos`,
+    submit: "Importar",
+    submitting: "Importando...",
+    cancelar: "Cancelar",
+    helpDnis:
+      "Acepta DNIs separados por saltos de línea, comas o espacios. DNIs duplicados o mal formados se ignoran.",
+  },
+  resultado: {
+    titulo: "Resultado de la importación",
+    totalEvaluados: (n: number) => `Total evaluados: ${n}`,
+    importados: (n: number) => `Importados: ${n}`,
+    autocompletadosReniec: (n: number) => `Autocompletados vía RENIEC: ${n}`,
+    omitidosDuplicado: (n: number) => `Omitidos (ya existentes): ${n}`,
+    omitidosSinReniec: (n: number) => `Omitidos (RENIEC sin match): ${n}`,
+    perucrisEnlazados: (n: number) => `Enlazados a PeruCRIS: ${n}`,
+    pureEnlazados: (n: number) => `Enlazados a Pure: ${n}`,
+    renacytEncontrados: (n: number) => `Con datos RENACYT: ${n}`,
+    renacytFallos: (n: number) => `Fallos RENACYT: ${n}`,
+    perucrisFallos: (n: number) => `Fallos PeruCRIS: ${n}`,
+    pureFallos: (n: number) => `Fallos Pure: ${n}`,
+    erroresTitulo: (n: number) => `Errores (${n})`,
+    cerrar: "Cerrar",
+    success: (importados: number) =>
+      importados === 0
+        ? "No se importaron investigadores."
+        : `Importación completada: ${importados} investigador(es) creado(s).`,
+  },
+  toast: {
+    sinDnisValidos: "Ingrese al menos un DNI válido (8 dígitos) para importar.",
+    importarError: (detalle: string) => `No se pudo completar la importación: ${detalle}`,
+  },
 } as const;
 
 export type InvestigadoresMessageKey = keyof typeof investigadores;

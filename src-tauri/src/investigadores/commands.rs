@@ -1,6 +1,10 @@
 use tauri::{State, Window};
 
 use super::handlers;
+use super::import::{
+    get_plantilla_dnis_default, importar_investigadores_por_dnis, ImportInvestigadoresRequest,
+    ImportInvestigadoresResult,
+};
 use crate::investigadores::dto::{
     CreateInvestigadorRequest, EliminarInvestigadorResultadoDto, InvestigadorDetalleDto,
     InvestigadorDto, RefreshInvestigadorRenacytFormacionResultadoDto, RenacytLookupResult,
@@ -186,4 +190,62 @@ pub async fn descargar_constancia_renacyt_investigador(
 ) -> Result<Vec<u8>, AppError> {
     handlers::descargar_constancia_renacyt_investigador(&state, window.label(), &id_investigador)
         .await
+}
+
+/// Importa investigadores por DNI con enriquecimiento multi-fuente
+/// (RENIEC -> PeruCRIS -> Pure -> RENACYT). Reemplaza el seed automatico
+/// que corria en cada arranque.
+///
+/// RBAC: `InvestigadoresManage` (mismo nivel que el CRUD).
+#[tauri::command]
+pub async fn importar_investigadores(
+    window: Window,
+    state: State<'_, AppState>,
+    request: ImportInvestigadoresRequest,
+) -> Result<ImportInvestigadoresResult, AppError> {
+    let actor = rbac::require_permission(
+        &state,
+        window.label(),
+        rbac::AppPermission::InvestigadoresManage,
+    )
+    .await?;
+    let result = importar_investigadores_por_dnis(&state, request).await?;
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "investigador.import",
+        "investigador",
+        "",
+        format!(
+            "ok total={} importados={} omitidos_dup={} omitidos_sin_reniec={} perucris_enlazados={} pure_enlazados={} renacyt_encontrados={} errores={}",
+            result.total_evaluados,
+            result.importados,
+            result.omitidos_duplicado,
+            result.omitidos_sin_reniec,
+            result.perucris_enlazados,
+            result.pure_enlazados,
+            result.renacyt_encontrados,
+            result.errores.len()
+        ),
+    );
+    Ok(result)
+}
+
+/// Devuelve la lista de DNIs precargados en la plantilla embebida
+/// (los 55 docentes UNF provistos por el usuario). Pensado para alimentar
+/// el modal de importacion con un click.
+///
+/// RBAC: `InvestigadoresView` (cualquier rol con acceso a investigadores
+/// puede ver la plantilla propuesta; el import en si requiere Manage).
+#[tauri::command]
+pub async fn get_plantilla_investigadores_default(
+    window: Window,
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, AppError> {
+    rbac::require_permission(
+        &state,
+        window.label(),
+        rbac::AppPermission::InvestigadoresView,
+    )
+    .await?;
+    get_plantilla_dnis_default()
 }

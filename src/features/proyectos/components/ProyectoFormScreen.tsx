@@ -10,6 +10,7 @@ import { FormSelect } from "@/shared/forms/FormSelect";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { ScreenHeader } from "@/shared/ui/ScreenHeader";
 import { ScreenLayout } from "@/shared/ui/ScreenLayout";
+import { ScreenFormFooter } from "@/shared/ui/ScreenFormFooter";
 import { InvestigadoresChecklist } from "./InvestigadoresChecklist";
 import { ProyectoDiffPanel } from "./ProyectoDiffPanel";
 import { ResourceTabPanel } from "./ResourceTabPanel";
@@ -251,91 +252,111 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
           <ScreenHeader
             parentLabel={messages.proyectos.breadcrumb}
             currentLabel={breadcrumbCurrent}
+            description={messages.proyectos.formDescription}
             onBack={onBack}
-            isLoading={isLoading}
+          />
+        }
+        footer={
+          <ScreenFormFooter
+            formId="proyecto-form"
             submitLabel={
               mode === "create"
                 ? messages.proyectos.crearProyecto
                 : messages.proyectos.guardarCambios
             }
+            cancelLabel={messages.ui.cancelar}
             submitIcon={mode === "create" ? Plus : Save}
-            onSubmit={() =>
-              void handleSubmitForm({ preventDefault: () => {} } as React.SyntheticEvent)
-            }
+            onSubmit={() => {
+              /* no-op: el submit del footer dispara el onSubmit del form via form={formId} */
+            }}
+            onCancel={onBack}
+            isLoading={isLoading}
             submitDisabled={!form.isValid}
+            disabledHint={messages.proyectos.submitDisabledHint}
           />
         }
       >
-        <div className="screen-section">
-          <div className="screen-section-header">
-            <span className="screen-section-title">
-              {messages.proyectos.sectionTitles.infoBasica}
-            </span>
+        <form
+          id="proyecto-form"
+          onSubmit={(e) => {
+            void handleSubmitForm(e);
+          }}
+          className="form"
+          noValidate
+        >
+          <div className="p-6">
+            <div className="screen-section">
+              <div className="screen-section-header">
+                <span className="screen-section-title">
+                  {messages.proyectos.sectionTitles.infoBasica}
+                </span>
+              </div>
+              <FormInput
+                label="Título del Proyecto"
+                value={form.titulo}
+                onChange={form.setTitulo}
+                placeholder="Ej: Análisis de Microalgas en Agua Dulce"
+                required
+              />
+            </div>
+
+            <div className="screen-section">
+              <div className="screen-section-header">
+                <span className="screen-section-title">
+                  {messages.proyectos.sectionTitles.equipoInvestigacion}
+                </span>
+              </div>
+              <FormSelect
+                label="Investigador responsable"
+                value={form.investigadorResponsableId ?? ""}
+                onChange={requestResponsableChange}
+                options={responsableOptions}
+                placeholder={
+                  form.investigadoresSeleccionados.length === 0
+                    ? "Primero agregue investigadores al proyecto"
+                    : "-- Seleccionar responsable --"
+                }
+                disabled={form.investigadoresSeleccionados.length === 0}
+                help={messages.proyectos.formHelp.responsableSelect}
+              />
+              <InvestigadoresChecklist
+                investigadores={investigadores}
+                selectedIds={form.investigadoresSeleccionados}
+                onChange={form.setInvestigadoresSeleccionados}
+                onToggleInvestigador={mode === "edit" ? requestToggleInvestigador : undefined}
+                responsableId={form.investigadorResponsableId}
+                loading={loadingInvestigadores}
+                refreshing={refreshingInvestigadores}
+                showSelectedMeta={false}
+                showRequiredError={mode === "create"}
+              />
+            </div>
+
+            {mode === "edit" && (
+              <ProyectoDiffPanel
+                hasDiff={hasDiff}
+                tituloOriginal={tituloOriginal}
+                tituloActual={form.titulo}
+                responsableOriginalNombre={responsableOriginalNombre}
+                responsableActualNombre={responsableActualNombre}
+                addedInvestigadores={addedInvestigadores}
+                removedInvestigadores={removedInvestigadores}
+              />
+            )}
+
+            <ResourceTabPanel
+              catalogos={catalogos}
+              patentes={patentes}
+              productos={productos}
+              equipamientos={equipamientos}
+              financiamientos={financiamientos}
+              onPatentesChange={onPatentesChange}
+              onProductosChange={onProductosChange}
+              onEquipamientosChange={onEquipamientosChange}
+              onFinanciamientosChange={onFinanciamientosChange}
+            />
           </div>
-          <FormInput
-            label="Título del Proyecto"
-            value={form.titulo}
-            onChange={form.setTitulo}
-            placeholder="Ej: Análisis de Microalgas en Agua Dulce"
-            required
-          />
-        </div>
-
-        <div className="screen-section">
-          <div className="screen-section-header">
-            <span className="screen-section-title">
-              {messages.proyectos.sectionTitles.equipoInvestigacion}
-            </span>
-          </div>
-          <FormSelect
-            label="Investigador responsable"
-            value={form.investigadorResponsableId ?? ""}
-            onChange={requestResponsableChange}
-            options={responsableOptions}
-            placeholder={
-              form.investigadoresSeleccionados.length === 0
-                ? "Primero agregue investigadores al proyecto"
-                : "-- Seleccionar responsable --"
-            }
-            disabled={form.investigadoresSeleccionados.length === 0}
-            help={messages.proyectos.formHelp.responsableSelect}
-          />
-          <InvestigadoresChecklist
-            investigadores={investigadores}
-            selectedIds={form.investigadoresSeleccionados}
-            onChange={form.setInvestigadoresSeleccionados}
-            onToggleInvestigador={mode === "edit" ? requestToggleInvestigador : undefined}
-            responsableId={form.investigadorResponsableId}
-            loading={loadingInvestigadores}
-            refreshing={refreshingInvestigadores}
-            showSelectedMeta={false}
-            showRequiredError={mode === "create"}
-          />
-        </div>
-
-        {mode === "edit" && (
-          <ProyectoDiffPanel
-            hasDiff={hasDiff}
-            tituloOriginal={tituloOriginal}
-            tituloActual={form.titulo}
-            responsableOriginalNombre={responsableOriginalNombre}
-            responsableActualNombre={responsableActualNombre}
-            addedInvestigadores={addedInvestigadores}
-            removedInvestigadores={removedInvestigadores}
-          />
-        )}
-
-        <ResourceTabPanel
-          catalogos={catalogos}
-          patentes={patentes}
-          productos={productos}
-          equipamientos={equipamientos}
-          financiamientos={financiamientos}
-          onPatentesChange={onPatentesChange}
-          onProductosChange={onProductosChange}
-          onEquipamientosChange={onEquipamientosChange}
-          onFinanciamientosChange={onFinanciamientosChange}
-        />
+        </form>
       </ScreenLayout>
 
       <ConfirmDialog

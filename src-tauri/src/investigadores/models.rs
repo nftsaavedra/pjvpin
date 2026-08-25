@@ -38,6 +38,9 @@ pub struct Investigador {
     /// `sincronizar_pure_person_ids` que pagina `GET /persons` y matchea
     /// por DNI. Permite upsert en Pure sin duplicar personas.
     pub pure_person_id: Option<String>,
+    /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe
+    /// durante el importador y ancla el match persona↔PeruCRIS.
+    pub perucris_uuid: Option<String>,
 }
 
 impl Investigador {
@@ -57,16 +60,20 @@ impl Investigador {
             _ => "docente".to_string(),
         };
 
-        // Validar ORCID (ISO 7064 11-2) al construir el modelo.
-        let raw_orcid = renacyt
+        // ORCID best-effort: llega del auto-check RENACYT (fuente externa).
+        // Un ORCID con checksum invalido NO debe abortar el alta (RENACYT
+        // puede devolver valores corruptos). Intentamos normalizarlo; si la
+        // validacion ISO 7064 11-2 falla, conservamos la cadena cruda para
+        // trazabilidad (mismo criterio leniente que `apply_renacyt_refresh`).
+        let orcid_validado: Option<String> = renacyt
             .as_ref()
             .and_then(|value| value.orcid.clone())
             .map(|s| s.trim().to_string())
-            .filter(|s| !s.is_empty());
-        let orcid_validado: Option<String> = match Orcid::new_opt(raw_orcid.as_deref())? {
-            Some(orc) => Some(orc.into_string()),
-            None => None,
-        };
+            .filter(|s| !s.is_empty())
+            .map(|s| match Orcid::new_opt(Some(&s)) {
+                Ok(Some(orc)) => orc.into_string(),
+                _ => s,
+            });
 
         let tipo_documento_raw = request
             .tipo_documento
@@ -132,7 +139,16 @@ impl Investigador {
                 .filter(|value| !value.trim().is_empty()),
             grupo_investigacion_id: None,
             tipo_documento: tipo_documento_raw,
-            pure_person_id: None,
+            pure_person_id: request
+                .pure_person_id
+                .as_ref()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty()),
+            perucris_uuid: request
+                .perucris_uuid
+                .as_ref()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty()),
         })
     }
 
@@ -200,6 +216,7 @@ impl From<Investigador> for InvestigadorDto {
             grupo_investigacion_id: m.grupo_investigacion_id,
             tipo_documento: m.tipo_documento,
             pure_person_id: m.pure_person_id,
+            perucris_uuid: m.perucris_uuid,
         }
     }
 }
@@ -230,6 +247,7 @@ impl TryFrom<InvestigadorDto> for Investigador {
             grupo_investigacion_id: d.grupo_investigacion_id,
             tipo_documento: d.tipo_documento,
             pure_person_id: d.pure_person_id,
+            perucris_uuid: d.perucris_uuid,
         })
     }
 }

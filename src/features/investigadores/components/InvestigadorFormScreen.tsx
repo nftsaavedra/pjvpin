@@ -6,6 +6,7 @@ import { FormSelect } from "@/shared/forms/FormSelect";
 import { DniField } from "@/shared/forms/DniField";
 import { ScreenHeader } from "@/shared/ui/ScreenHeader";
 import { ScreenLayout } from "@/shared/ui/ScreenLayout";
+import { ScreenFormFooter } from "@/shared/ui/ScreenFormFooter";
 import { messages } from "@/shared/feedback/messages";
 import { RenacytValidationSection } from "./RenacytValidationSection";
 
@@ -62,116 +63,138 @@ export const InvestigadorFormScreen: React.FC<InvestigadorFormScreenProps> = ({
     <ScreenLayout
       header={
         <ScreenHeader
-          parentLabel="Investigadores"
-          currentLabel="Registrar nuevo investigador"
+          parentLabel={messages.investigadores.form.breadcrumbParent}
+          currentLabel={messages.investigadores.form.breadcrumbCurrent}
+          description={messages.investigadores.form.description}
           onBack={onBack}
-          isLoading={isLoading}
-          submitLabel="Registrar"
+        />
+      }
+      footer={
+        <ScreenFormFooter
+          formId="investigador-form"
+          submitLabel={messages.investigadores.form.submitLabel}
+          cancelLabel={messages.ui.cancelar}
           submitIcon={Plus}
-          onSubmit={() => void handleSubmit({ preventDefault: () => {} } as React.SyntheticEvent)}
+          onSubmit={() => {
+            /* no-op: el submit del footer dispara el onSubmit del form via form={formId} */
+          }}
+          onCancel={onBack}
+          isLoading={isLoading}
           submitDisabled={!dniFueValidado}
+          disabledHint={messages.investigadores.form.submitDisabledHint}
         />
       }
     >
-      <div className="investigador-form-layout">
-        <div className="investigador-form-grid">
-          <DniField
-            dni={dni}
-            onDniChange={handleDniChange}
-            onValidate={() => void handleValidarDni()}
-            isChecking={isCheckingDni}
-            canValidate={puedeValidarDni}
-            validationStatus={dniValidationStatus}
-            validationMessage={dniValidationMessage}
-            isLoading={isLoading}
-            layout="span-2"
-            inputId="investigador-dni"
-            placeholder={messages.investigadores.form.dniPlaceholder}
-            helpText={messages.investigadores.form.dniHelp}
-            buttonIdleLabel={messages.investigadores.form.dniButtonIdle}
-            buttonBusyLabel={messages.investigadores.form.dniButtonBusy}
-            showPreview
-            nombreCompletoPreview={nombreCompletoPreview}
-            previewLabel={messages.investigadores.form.dniPreviewLabel}
-            previewPlaceholder={messages.investigadores.form.dniPreviewPlaceholder}
-          />
+      <form
+        id="investigador-form"
+        onSubmit={(e) => {
+          void handleSubmit(e);
+        }}
+        className="form"
+        noValidate
+      >
+        <div className="p-6">
+          <div className="investigador-form-layout">
+            <div className="investigador-form-grid">
+              <DniField
+                dni={dni}
+                onDniChange={handleDniChange}
+                onValidate={() => void handleValidarDni()}
+                isChecking={isCheckingDni}
+                canValidate={puedeValidarDni}
+                validationStatus={dniValidationStatus}
+                validationMessage={dniValidationMessage}
+                isLoading={isLoading}
+                layout="span-2"
+                inputId="investigador-dni"
+                placeholder={messages.investigadores.form.dniPlaceholder}
+                helpText={messages.investigadores.form.dniHelp}
+                buttonIdleLabel={messages.investigadores.form.dniButtonIdle}
+                buttonBusyLabel={messages.investigadores.form.dniButtonBusy}
+                showPreview
+                nombreCompletoPreview={nombreCompletoPreview}
+                previewLabel={messages.investigadores.form.dniPreviewLabel}
+                previewPlaceholder={messages.investigadores.form.dniPreviewPlaceholder}
+              />
 
-          <RenacytValidationSection
-            renacytQuery={renacytQuery}
-            onRenacytChange={handleRenacytChange}
-            onValidate={() => void handleValidarRenacyt()}
-            isChecking={isCheckingRenacyt}
-            canValidate={puedeValidarRenacyt}
-            validationStatus={renacytValidationStatus}
-            validationMessage={renacytValidationMessage}
-            isLoading={isLoading}
-            dniFueValidado={dniFueValidado}
-            renacytData={renacytData}
-            isAutoChecking={isAutoCheckingRenacyt}
-            isAutoNotFound={isAutoNotFoundRenacyt}
-            renacytSource={renacytSource}
-          />
+              <RenacytValidationSection
+                renacytQuery={renacytQuery}
+                onRenacytChange={handleRenacytChange}
+                onValidate={() => void handleValidarRenacyt()}
+                isChecking={isCheckingRenacyt}
+                canValidate={puedeValidarRenacyt}
+                validationStatus={renacytValidationStatus}
+                validationMessage={renacytValidationMessage}
+                isLoading={isLoading}
+                dniFueValidado={dniFueValidado}
+                renacytData={renacytData}
+                isAutoChecking={isAutoCheckingRenacyt}
+                isAutoNotFound={isAutoNotFoundRenacyt}
+                renacytSource={renacytSource}
+              />
 
-          <FormSelect
-            label={messages.investigadores.form.gradoLabel}
-            value={idGrado}
-            onChange={setIdGrado}
-            options={grados
-              .filter((g) => g.activo !== 0)
-              .map((g) => ({ value: g.id_grado, label: g.nombre }))}
-            help={messages.investigadores.form.gradoHelp}
-            disabled={camposBloqueados}
-            required
-            containerClassName="investigador-form-span-1"
-          />
+              <FormSelect
+                label={messages.investigadores.form.gradoLabel}
+                value={idGrado}
+                onChange={setIdGrado}
+                options={grados
+                  .filter((g) => g.activo !== 0)
+                  .map((g) => ({ value: g.id_grado, label: g.nombre }))}
+                help={messages.investigadores.form.gradoHelp}
+                disabled={camposBloqueados}
+                required
+                containerClassName="investigador-form-span-1"
+              />
 
-          <FormSelect
-            label={messages.investigadores.form.perfilLabel}
-            value={perfil}
-            onChange={(value) => {
-              setPerfil(value as typeof perfil);
-            }}
-            options={perfiles}
-            help={messages.investigadores.form.perfilHelp}
-            disabled={camposBloqueados}
-            required
-            containerClassName="investigador-form-span-1"
-          />
+              <FormSelect
+                label={messages.investigadores.form.perfilLabel}
+                value={perfil}
+                onChange={(value) => {
+                  setPerfil(value as typeof perfil);
+                }}
+                options={perfiles}
+                help={messages.investigadores.form.perfilHelp}
+                disabled={camposBloqueados}
+                required
+                containerClassName="investigador-form-span-1"
+              />
 
-          <FormInput
-            label={messages.investigadores.form.nombresLabel}
-            value={nombres}
-            onChange={setNombres}
-            placeholder={messages.investigadores.form.nombresPlaceholder}
-            readOnly
-            disabled={camposBloqueados}
-            required
-            containerClassName="investigador-form-span-1"
-          />
+              <FormInput
+                label={messages.investigadores.form.nombresLabel}
+                value={nombres}
+                onChange={setNombres}
+                placeholder={messages.investigadores.form.nombresPlaceholder}
+                readOnly
+                disabled={camposBloqueados}
+                required
+                containerClassName="investigador-form-span-1"
+              />
 
-          <FormInput
-            label={messages.investigadores.form.apellidoPaternoLabel}
-            value={apellidoPaterno}
-            onChange={setApellidoPaterno}
-            placeholder={messages.investigadores.form.apellidoPaternoPlaceholder}
-            readOnly
-            disabled={camposBloqueados}
-            required
-            containerClassName="investigador-form-span-1"
-          />
+              <FormInput
+                label={messages.investigadores.form.apellidoPaternoLabel}
+                value={apellidoPaterno}
+                onChange={setApellidoPaterno}
+                placeholder={messages.investigadores.form.apellidoPaternoPlaceholder}
+                readOnly
+                disabled={camposBloqueados}
+                required
+                containerClassName="investigador-form-span-1"
+              />
 
-          <FormInput
-            label={messages.investigadores.form.apellidoMaternoLabel}
-            value={apellidoMaterno}
-            onChange={setApellidoMaterno}
-            placeholder={messages.investigadores.form.apellidoMaternoPlaceholder}
-            help={messages.investigadores.form.apellidoMaternoHelp}
-            readOnly
-            disabled={camposBloqueados}
-            containerClassName="investigador-form-span-2"
-          />
+              <FormInput
+                label={messages.investigadores.form.apellidoMaternoLabel}
+                value={apellidoMaterno}
+                onChange={setApellidoMaterno}
+                placeholder={messages.investigadores.form.apellidoMaternoPlaceholder}
+                help={messages.investigadores.form.apellidoMaternoHelp}
+                readOnly
+                disabled={camposBloqueados}
+                containerClassName="investigador-form-span-2"
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </form>
     </ScreenLayout>
   );
 };

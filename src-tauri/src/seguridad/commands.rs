@@ -166,9 +166,31 @@ pub async fn wizard_test_pure(
 #[tauri::command]
 pub async fn wizard_test_perucris(
     base_url: String,
-    api_key: String,
+    api_key: Option<String>,
+    ruc: Option<String>,
 ) -> Result<crate::shared::config_wizard::ConnectivityResult, AppError> {
-    Ok(crate::shared::config_wizard::test_perucris_connectivity(&base_url, &api_key).await)
+    let key = api_key.and_then(|k| {
+        let trimmed = k.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    });
+    let ruc_clean = ruc.and_then(|r| {
+        let trimmed = r.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    });
+    Ok(crate::shared::config_wizard::test_perucris_connectivity(
+        &base_url,
+        key.as_deref(),
+        ruc_clean.as_deref(),
+    )
+    .await)
 }
 
 #[tauri::command]
@@ -220,6 +242,7 @@ pub async fn wizard_consultar_dni(
         perucris: PeruCrisConfig {
             api_base_url: String::new(),
             api_key: None,
+            ruc: None,
         },
     };
     let tokens = TokenResolver::from_config(&runtime);
