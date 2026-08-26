@@ -1,5 +1,11 @@
 use serde::{Deserialize, Serialize};
 
+// Re-export DRY: el campo `cambios_renacyt_recientes` de
+// `InvestigadorDetalleDto` consume la misma struct que el modulo
+// `kardex` (panel de cambios recientes en la ficha). Asi no
+// duplicamos tipos y mantenemos una unica fuente de verdad.
+pub use crate::investigadores::kardex::CambioKardex;
+
 fn default_perfil() -> String {
     "docente".to_string()
 }
@@ -90,6 +96,11 @@ pub struct InvestigadorDto {
     /// durante el importador y evita crear duplicados al validar.
     #[serde(default)]
     pub perucris_uuid: Option<String>,
+    /// Marca temporal (ms epoch) de la ultima revision del kardex
+    /// RENACYT por parte del usuario. `None` = nunca revisado.
+    /// Lo setea el handler `marcar_cambios_renacyt_revisados`.
+    #[serde(default)]
+    pub renacyt_cambios_revisados_en: Option<i64>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -173,6 +184,12 @@ pub struct InvestigadorDetalleDto {
     pub renacyt_fecha_ultima_sincronizacion: Option<i64>,
     pub renacyt_ficha_url: Option<String>,
     pub renacyt_formaciones_academicas_json: Option<String>,
+    /// Marca temporal (ms epoch) de la ultima revision del kardex
+    /// RENACYT por parte del usuario. `None` = nunca revisado.
+    pub renacyt_cambios_revisados_en: Option<i64>,
+    /// Cambios RENACYT recientes con `tiene_cambio_clasificatorio() == true`
+    /// (ultimos N). Alimenta el panel de kardex en la ficha.
+    pub cambios_renacyt_recientes: Vec<CambioKardex>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -209,4 +226,22 @@ pub struct SyncPublicacionesResult {
     pub total_encontradas: usize,
     pub nuevas: usize,
     pub actualizadas: usize,
+}
+
+/// Resultado agregado del refresh masivo RENACYT.
+/// - `procesados`: investigadores con vínculo RENACYT que intentaron refrescarse.
+/// - `errores`: cantidad de fallos (RENACYT caido, timeout, sin vínculo, etc.).
+/// - `kardex_generados`: cantidad de entradas de kardex insertadas
+///   (cambios clasificadorios detectados y persistidos).
+/// - `errores_detalle`: primeros N mensajes para mostrar al usuario.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RefreshMasivoRenacytResultadoDto {
+    pub procesados: usize,
+    pub errores: usize,
+    pub kardex_generados: usize,
+    #[serde(default)]
+    pub errores_detalle: Vec<String>,
+    #[serde(default)]
+    pub mensaje: String,
 }

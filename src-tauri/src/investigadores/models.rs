@@ -41,6 +41,12 @@ pub struct Investigador {
     /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe
     /// durante el importador y ancla el match persona↔PeruCRIS.
     pub perucris_uuid: Option<String>,
+    /// Marca temporal (ms epoch) de la ultima vez que el usuario reviso
+    /// los cambios RENACYT pendientes en la ficha del investigador.
+    /// `None` indica que nunca se han revisado (entrada nueva en el
+    /// kardex requiere atencion). Lo setea el handler
+    /// `marcar_cambios_renacyt_revisados` (RBAC `InvestigadoresView`).
+    pub renacyt_cambios_revisados_en: Option<i64>,
 }
 
 impl Investigador {
@@ -149,12 +155,22 @@ impl Investigador {
                 .as_ref()
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty()),
+            renacyt_cambios_revisados_en: None,
         })
     }
 
     pub fn with_persona_id(mut self, persona_id: String) -> Self {
         self.persona_id = persona_id;
         self
+    }
+
+    /// Marca el instante actual como la ultima revision del kardex
+    /// RENACYT por parte del usuario. Usado por el handler
+    /// `marcar_cambios_renacyt_revisados` para silenciar la alerta
+    /// de "cambios sin revisar" en la ficha. No se expone como API
+    /// publica al frontend: solo el handler decide cuando aplicarlo.
+    pub fn marcar_cambios_revisados(&mut self) {
+        self.renacyt_cambios_revisados_en = Some(crate::shared::time::now_ms());
     }
 
     pub fn apply_renacyt_refresh(&mut self, lookup: RenacytLookupResult) -> bool {
@@ -217,6 +233,7 @@ impl From<Investigador> for InvestigadorDto {
             tipo_documento: m.tipo_documento,
             pure_person_id: m.pure_person_id,
             perucris_uuid: m.perucris_uuid,
+            renacyt_cambios_revisados_en: m.renacyt_cambios_revisados_en,
         }
     }
 }
@@ -248,16 +265,35 @@ impl TryFrom<InvestigadorDto> for Investigador {
             tipo_documento: d.tipo_documento,
             pure_person_id: d.pure_person_id,
             perucris_uuid: d.perucris_uuid,
+            renacyt_cambios_revisados_en: d.renacyt_cambios_revisados_en,
         })
     }
 }
 
 impl InvestigadorDetalleDto {
+    /// Construye el DTO desde sus partes sin kardex. Mantener este
+    /// overload para los call-sites que solo necesitan el detalle
+    /// (ej. `get_all_investigadores_con_proyectos` que paginar N
+    /// investigadores no debe disparar N lecturas de kardex).
     pub fn from_parts(
         investigador: Investigador,
         persona: Persona,
         grado: String,
         proyectos: Vec<String>,
+    ) -> Self {
+        Self::from_parts_with_kardex(investigador, persona, grado, proyectos, Vec::new())
+    }
+
+    /// Overload que ademas recibe los cambios RENACYT recientes (con
+    /// `tiene_cambio_clasificatorio() == true`). Usado por
+    /// `get_investigador_detalle_by_id` para alimentar el panel de
+    /// kardex y la marca de revision en la ficha.
+    pub fn from_parts_with_kardex(
+        investigador: Investigador,
+        persona: Persona,
+        grado: String,
+        proyectos: Vec<String>,
+        cambios_renacyt_recientes: Vec<crate::investigadores::kardex::CambioKardex>,
     ) -> Self {
         let cantidad_proyectos = proyectos.len() as i64;
         Self {
@@ -293,6 +329,8 @@ impl InvestigadorDetalleDto {
             renacyt_fecha_ultima_sincronizacion: investigador.renacyt_fecha_ultima_sincronizacion,
             renacyt_ficha_url: investigador.renacyt_ficha_url,
             renacyt_formaciones_academicas_json: investigador.renacyt_formaciones_academicas_json,
+            renacyt_cambios_revisados_en: investigador.renacyt_cambios_revisados_en,
+            cambios_renacyt_recientes,
         }
     }
 }

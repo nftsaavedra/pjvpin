@@ -20,12 +20,21 @@
 //! investigador para el timeline y desde el panel de estado para las
 //! alertas globales.
 
+use futures_util::TryStreamExt;
+use mongodb::bson::{doc, Document};
+use mongodb::options::IndexOptions;
+use mongodb::{Database, IndexModel};
+use serde::{Deserialize, Serialize};
+
 use crate::investigadores::dto::RenacytLookupResult;
 use crate::investigadores::models::Investigador;
+use crate::shared::error::AppError;
 use crate::shared::time::now_ms;
 
+const COLLECTION_RENACYT_KARDEX: &str = "renacyt_kardex";
+
 /// Origen del cambio que se esta registrando en el kardex.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KardexDisparador {
     /// Refresh individual disparado por el usuario (boton en ficha).
     RefreshIndividual,
@@ -46,7 +55,7 @@ impl KardexDisparador {
 }
 
 /// Cambio atómico detectado entre el estado anterior y el nuevo.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CambioKardex {
     /// Nombre canonico del campo (ej: "nivel", "grupo", "orcid").
     pub campo: String,
@@ -61,7 +70,7 @@ pub struct CambioKardex {
 /// es la clave estable (centro + grado + titulo) y los marcadores
 /// relevantes para calcular elegibilidad (`considerado_para_cc`,
 /// `es_calificado`, `puntaje`).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FormacionResumen {
     pub centro: Option<String>,
     pub grado: Option<String>,
@@ -77,7 +86,7 @@ pub struct FormacionResumen {
 /// `sin_detalle` se setea cuando el JSON no parseo como array de objetos
 /// y por tanto solo sabemos que hubo cambio textual sin poder listar
 /// los items agregados/retirados.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FormacionesDiff {
     pub agregadas: Vec<FormacionResumen>,
     pub retiradas: Vec<FormacionResumen>,
@@ -86,7 +95,14 @@ pub struct FormacionesDiff {
 
 /// Entrada del kardex. Solo se construye si `diff_renacyt` detecta
 /// cambios; `id` se asigna en el repository al persistir.
-#[derive(Debug, Clone, PartialEq, Eq)]
+///
+/// Deriva `Serialize` para que el command Tauri `get_kardex_investigador`
+/// pueda retornar el vector al frontend. La persistencia BSON no usa
+/// este derive directamente: pasa por `KardexEntryDoc` (DTO con
+/// `rename_all = camelCase` y `_id`) y el modelo se reconstruye via
+/// `TryFrom<KardexEntryDoc>`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct KardexEntry {
     pub id: String,
     pub investigador_id: String,
@@ -94,6 +110,7 @@ pub struct KardexEntry {
     pub fecha_evento: i64,
     pub disparador: KardexDisparador,
     pub cambios: Vec<CambioKardex>,
+    #[serde(default)]
     pub formaciones_diff: Option<FormacionesDiff>,
 }
 
@@ -316,6 +333,137 @@ fn formacion_key(f: &FormacionResumen) -> String {
         f.grado.as_deref().unwrap_or("").to_lowercase(),
         f.titulo.as_deref().unwrap_or("").to_lowercase()
     )
+}
+
+// =====================================================================
+// Persistencia MongoDB (coleccion `renacyt_kardex`)
+// =====================================================================
+//
+// Patron DTO separado: `KardexEntryDoc` lleva las derives serde (BSON/IPC)
+// y `KardexEntry` permanece puro de dominio. El repository hace la
+// conversion en el limite. Esto evita que el modelo puro dependa de serde
+// y mantiene la inversion de dependencias canonica del proyecto.
+
+/// DTO canónico (BSON) de `KardexEntry`. Persistencia snake_case para
+/// alinearse con la convencion del proyecto (`EntityOcdeFieldDoc`,
+/// `UbigeoDoc`, etc.). La conversion a `KardexEntry` (modelo de
+/// dominio) ocurre en `TryFrom<KardexEntryDoc>`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct KardexEntryDoc {
+    #[serde(rename = "_id")]
+    id: String,
+    investigador_id: String,
+    persona_id: String,
+    fecha_evento: i64,
+    disparador: String,
+    cambios: Vec<CambioKardex>,
+    #[serde(default)]
+    formaciones_diff: Option<FormacionesDiff>,
+}
+
+impl From<&KardexEntry> for KardexEntryDoc {
+    fn from(e: &KardexEntry) -> Self {
+        Self {
+            id: e.id.clone(),
+            investigador_id: e.investigador_id.clone(),
+            persona_id: e.persona_id.clone(),
+            fecha_evento: e.fecha_evento,
+            disparador: e.disparador.as_str().to_string(),
+            cambios: e.cambios.clone(),
+            formaciones_diff: e.formaciones_diff.clone(),
+        }
+    }
+}
+
+impl TryFrom<KardexEntryDoc> for KardexEntry {
+    type Error = AppError;
+    fn try_from(d: KardexEntryDoc) -> Result<Self, Self::Error> {
+        let disparador = match d.disparador.as_str() {
+            "refresh_individual" => KardexDisparador::RefreshIndividual,
+            "refresh_masivo" => KardexDisparador::RefreshMasivo,
+            "importacion_lote" => KardexDisparador::ImportacionLote,
+            other => {
+                return Err(AppError::InternalError(format!(
+                    "Disparador de kardex desconocido en BSON: '{other}'."
+                )))
+            }
+        };
+        Ok(KardexEntry {
+            id: d.id,
+            investigador_id: d.investigador_id,
+            persona_id: d.persona_id,
+            fecha_evento: d.fecha_evento,
+            disparador,
+            cambios: d.cambios,
+            formaciones_diff: d.formaciones_diff,
+        })
+    }
+}
+
+fn entry_to_doc(entry: &KardexEntry) -> Result<Document, AppError> {
+    let dto: KardexEntryDoc = entry.into();
+    mongodb::bson::to_document(&dto).map_err(|e| {
+        AppError::InternalError(format!("No se pudo serializar KardexEntry a BSON: {e}"))
+    })
+}
+
+fn doc_to_entry(doc: Document) -> Result<KardexEntry, AppError> {
+    let dto: KardexEntryDoc = mongodb::bson::from_document(doc).map_err(|e| {
+        AppError::InternalError(format!(
+            "No se pudo deserializar KardexEntry desde BSON: {e}"
+        ))
+    })?;
+    KardexEntry::try_from(dto)
+}
+
+/// Garantiza los indices MongoDB de la coleccion `renacyt_kardex`.
+/// - Compuesto `{investigador_id: 1, fecha_evento: -1}`: timeline por
+///   investigador mas recientes primero (consulta principal del panel).
+pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
+    let opts = IndexOptions::builder().build();
+    let index = IndexModel::builder()
+        .keys(doc! { "investigador_id": 1, "fecha_evento": -1 })
+        .options(Some(opts))
+        .build();
+    db.collection::<Document>(COLLECTION_RENACYT_KARDEX)
+        .create_index(index)
+        .await?;
+    Ok(())
+}
+
+/// Inserta una entrada del kardex. Asigna `entry.id` con un UUID v4
+/// antes de persistir (el campo llega vacio desde `diff_renacyt`).
+/// Es permisivo ante campos BSON desconocidos para tolerar rollouts
+/// de esquema (igual que el resto del proyecto).
+pub async fn insert(db: &Database, entry: &KardexEntry) -> Result<(), AppError> {
+    let mut owned = entry.clone();
+    if owned.id.trim().is_empty() {
+        owned.id = uuid::Uuid::new_v4().to_string();
+    }
+    let doc = entry_to_doc(&owned)?;
+    db.collection::<Document>(COLLECTION_RENACYT_KARDEX)
+        .insert_one(doc)
+        .await?;
+    Ok(())
+}
+
+/// Lista las entradas del kardex de un investigador, ordenadas por
+/// `fecha_evento` descendente (mas recientes primero). Limit sugerido
+/// en v0.1.0: 5 entradas para el panel de ficha; ilimitado para
+/// exportadores.
+pub async fn list_by_investigador(
+    db: &Database,
+    investigador_id: &str,
+    limit: i64,
+) -> Result<Vec<KardexEntry>, AppError> {
+    let cursor = db
+        .collection::<Document>(COLLECTION_RENACYT_KARDEX)
+        .find(doc! { "investigador_id": investigador_id })
+        .sort(doc! { "fecha_evento": -1 })
+        .limit(limit)
+        .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    docs.into_iter().map(doc_to_entry).collect()
 }
 
 #[cfg(test)]
@@ -569,5 +717,112 @@ mod tests {
             es_calificado: None,
         };
         assert_eq!(formacion_key(&f1), formacion_key(&f2));
+    }
+
+    fn entry_minima() -> KardexEntry {
+        KardexEntry {
+            id: String::new(),
+            investigador_id: "inv-test".to_string(),
+            persona_id: "per-test".to_string(),
+            fecha_evento: 1_700_000_000_000,
+            disparador: KardexDisparador::RefreshIndividual,
+            cambios: vec![
+                CambioKardex {
+                    campo: "nivel".to_string(),
+                    valor_anterior: Some("I".to_string()),
+                    valor_nuevo: Some("II".to_string()),
+                },
+                CambioKardex {
+                    campo: "orcid".to_string(),
+                    valor_anterior: None,
+                    valor_nuevo: Some("0000-0001-2345-6789".to_string()),
+                },
+            ],
+            formaciones_diff: None,
+        }
+    }
+
+    #[test]
+    fn kardentry_to_doc_roundtrip_preserva_campos() {
+        let original = entry_minima();
+        let doc = entry_to_doc(&original).expect("serializa a BSON");
+        // _id es vacio porque no fue asignado (responsabilidad del repository).
+        assert_eq!(doc.get_str("_id").unwrap(), "");
+        assert_eq!(doc.get_str("investigador_id").unwrap(), "inv-test");
+        assert_eq!(doc.get_str("persona_id").unwrap(), "per-test");
+        assert_eq!(doc.get_i64("fecha_evento").unwrap(), 1_700_000_000_000);
+        assert_eq!(doc.get_str("disparador").unwrap(), "refresh_individual");
+        let parsed = doc_to_entry(doc).expect("deserializa desde BSON");
+        assert_eq!(parsed.id, original.id);
+        assert_eq!(parsed.investigador_id, original.investigador_id);
+        assert_eq!(parsed.persona_id, original.persona_id);
+        assert_eq!(parsed.fecha_evento, original.fecha_evento);
+        assert_eq!(parsed.disparador, original.disparador);
+        assert_eq!(parsed.cambios.len(), original.cambios.len());
+        assert_eq!(parsed.cambios[0].campo, original.cambios[0].campo);
+        assert_eq!(
+            parsed.cambios[0].valor_anterior,
+            original.cambios[0].valor_anterior
+        );
+        assert_eq!(
+            parsed.cambios[0].valor_nuevo,
+            original.cambios[0].valor_nuevo
+        );
+        assert_eq!(parsed.cambios[1].campo, original.cambios[1].campo);
+        assert_eq!(parsed.formaciones_diff, original.formaciones_diff);
+    }
+
+    #[test]
+    fn kardentry_from_doc_con_formaciones_diff_agregadas_y_retiradas() {
+        let mut entry = entry_minima();
+        entry.disparador = KardexDisparador::RefreshMasivo;
+        entry.formaciones_diff = Some(FormacionesDiff {
+            agregadas: vec![FormacionResumen {
+                centro: Some("UNMSM".to_string()),
+                grado: Some("Doctor".to_string()),
+                titulo: Some("Doc Nueva".to_string()),
+                fecha_inicio: None,
+                fecha_fin: None,
+                puntaje: Some("85".to_string()),
+                considerado_para_cc: Some(true),
+                es_calificado: Some(true),
+            }],
+            retiradas: vec![FormacionResumen {
+                centro: Some("UNI".to_string()),
+                grado: Some("Maestro".to_string()),
+                titulo: Some("Magister Antiguo".to_string()),
+                fecha_inicio: None,
+                fecha_fin: None,
+                puntaje: None,
+                considerado_para_cc: None,
+                es_calificado: None,
+            }],
+            sin_detalle: false,
+        });
+        let doc = entry_to_doc(&entry).expect("serializa a BSON");
+        let parsed = doc_to_entry(doc).expect("deserializa desde BSON");
+        let fd = parsed.formaciones_diff.expect("formaciones_diff presente");
+        assert!(!fd.sin_detalle);
+        assert_eq!(fd.agregadas.len(), 1);
+        assert_eq!(fd.agregadas[0].titulo.as_deref(), Some("Doc Nueva"));
+        assert_eq!(fd.agregadas[0].considerado_para_cc, Some(true));
+        assert_eq!(fd.retiradas.len(), 1);
+        assert_eq!(fd.retiradas[0].titulo.as_deref(), Some("Magister Antiguo"));
+        assert_eq!(parsed.disparador, KardexDisparador::RefreshMasivo);
+    }
+
+    #[test]
+    fn kardentry_from_doc_con_campo_desconocido_es_permisivo() {
+        let original = entry_minima();
+        let mut doc = entry_to_doc(&original).expect("serializa a BSON");
+        // Simulamos un campo extra escrito por una version futura del
+        // schema. La deserializacion tolerante (default ignore_unknown)
+        // del driver Mongo + #[serde(default)] en formaciones_diff debe
+        // absorberlo sin fallar.
+        doc.insert("campo_futuro_desconocido", "valor");
+        doc.insert("otra_version", 42_i64);
+        let parsed = doc_to_entry(doc).expect("campos extra no rompen parseo");
+        assert_eq!(parsed.investigador_id, original.investigador_id);
+        assert_eq!(parsed.cambios.len(), original.cambios.len());
     }
 }

@@ -8,6 +8,7 @@ use crate::investigadores::dto::{
     CreateInvestigadorRequest, EliminarInvestigadorResultadoDto, InvestigadorDetalleDto,
     InvestigadorDto, UpdateInvestigadorRequest,
 };
+use crate::investigadores::kardex;
 use crate::investigadores::models::Investigador;
 use crate::personas;
 use crate::personas::dto::CreatePersonaRequest;
@@ -80,6 +81,7 @@ fn model_to_dto(m: &Investigador) -> InvestigadorDto {
         tipo_documento: m.tipo_documento.clone(),
         pure_person_id: m.pure_person_id.clone(),
         perucris_uuid: m.perucris_uuid.clone(),
+        renacyt_cambios_revisados_en: m.renacyt_cambios_revisados_en,
     }
 }
 
@@ -364,11 +366,34 @@ pub async fn get_investigador_detalle_by_id(
         .map(|grado| grado.nombre.clone())
         .unwrap_or_else(|| "Sin grado".to_string());
 
-    Ok(InvestigadorDetalleDto::from_parts(
+    // Cargar las ultimas 5 entradas del kardex y proyectar a `CambioKardex`
+    // (planos, sin formaciones_diff) filtrando las que sean clasificadorias.
+    // El detalle completo por entrada se obtiene via `get_kardex_investigador`.
+    let mut cambios_renacyt_recientes: Vec<kardex::CambioKardex> = Vec::new();
+    let entries = kardex::list_by_investigador(db, id_investigador, 5).await?;
+    for entry in entries {
+        if entry.tiene_cambio_clasificatorio() {
+            for cambio in entry.cambios {
+                if matches!(
+                    cambio.campo.as_str(),
+                    "nivel"
+                        | "grupo"
+                        | "condicion"
+                        | "fecha_informe_calificacion"
+                        | "fecha_ultima_revision"
+                ) {
+                    cambios_renacyt_recientes.push(cambio);
+                }
+            }
+        }
+    }
+
+    Ok(InvestigadorDetalleDto::from_parts_with_kardex(
         investigador,
         persona,
         grado,
         proyectos_investigador,
+        cambios_renacyt_recientes,
     ))
 }
 
@@ -491,4 +516,45 @@ pub async fn load_all_map(db: &Database) -> Result<HashMap<String, Investigador>
         .into_iter()
         .map(|i| (i.id_investigador.clone(), i))
         .collect())
+}
+
+/// Persiste el timestamp `renacyt_cambios_revisados_en` del investigador.
+/// No toca `updated_at` (es un campo operativo de marca de revision,
+/// no de auditoria). Usado por `marcar_cambios_renacyt_revisados`.
+pub async fn persist_marcador_revisados(
+    db: &Database,
+    investigador: &Investigador,
+) -> Result<(), AppError> {
+    db.collection::<Document>(COLLECTION_INVESTIGADORES)
+        .update_one(
+            doc! { "id_investigador": &investigador.id_investigador },
+            doc! { "$set": { "renacyt_cambios_revisados_en": investigador.renacyt_cambios_revisados_en } },
+        )
+        .await?;
+    Ok(())
+}
+
+/// Lista los investigadores activos con vinculo RENACYT (codigo o id
+/// presente). Usado por `refrescar_renacyt_todos`. No aplica dedupe
+/// ni filtrado por estado de vinculacion a un servicio externo: el
+/// RENACYT puede haber devuelto 404 en algun momento y eso se
+/// descubrira en el handler individual.
+pub async fn list_all_with_renacyt_vinculo(db: &Database) -> Result<Vec<Investigador>, AppError> {
+    let cursor = db
+        .collection::<Document>(COLLECTION_INVESTIGADORES)
+        .find(doc! {
+            "activo": 1i64,
+            "$or": [
+                { "renacyt_codigo_registro": { "$exists": true, "$ne": "" } },
+                { "renacyt_id_investigador": { "$exists": true, "$ne": "" } },
+            ],
+        })
+        .await?;
+    let docs: Vec<Document> = cursor.try_collect().await?;
+    let mut investigadores: Vec<Investigador> = docs
+        .into_iter()
+        .map(|d| dto_to_model(doc_to_dto(d)?))
+        .collect::<Result<Vec<_>, _>>()?;
+    investigadores.sort_by(|a, b| a.id_investigador.cmp(&b.id_investigador));
+    Ok(investigadores)
 }

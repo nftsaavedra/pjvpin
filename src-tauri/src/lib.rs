@@ -215,6 +215,9 @@ pub fn run() {
             investigador_cmds::descargar_constancia_renacyt_investigador,
             investigador_cmds::importar_investigadores,
             investigador_cmds::get_plantilla_investigadores_default,
+            investigador_cmds::get_kardex_investigador,
+            investigador_cmds::marcar_cambios_renacyt_revisados,
+            investigador_cmds::refrescar_renacyt_todos,
             // Proyectos
             proyecto_cmds::crear_proyecto_con_participantes,
             proyecto_cmds::actualizar_proyecto_con_participantes,

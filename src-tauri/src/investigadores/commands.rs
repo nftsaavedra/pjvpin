@@ -7,9 +7,11 @@ use super::import::{
 };
 use crate::investigadores::dto::{
     CreateInvestigadorRequest, EliminarInvestigadorResultadoDto, InvestigadorDetalleDto,
-    InvestigadorDto, RefreshInvestigadorRenacytFormacionResultadoDto, RenacytLookupResult,
-    ReniecDniLookupResult, UpdateInvestigadorRequest,
+    InvestigadorDto, RefreshInvestigadorRenacytFormacionResultadoDto,
+    RefreshMasivoRenacytResultadoDto, RenacytLookupResult, ReniecDniLookupResult,
+    UpdateInvestigadorRequest,
 };
+use crate::investigadores::kardex::KardexEntry;
 use crate::shared::dni::Dni;
 use crate::shared::error::AppError;
 use crate::shared::external::renacyt_client;
@@ -248,4 +250,38 @@ pub async fn get_plantilla_investigadores_default(
     )
     .await?;
     get_plantilla_dnis_default()
+}
+
+/// Lista el kardex RENACYT completo de un investigador.
+/// RBAC: `InvestigadoresView` (cualquier rol con acceso a la ficha
+/// puede ver el historial de cambios).
+#[tauri::command]
+pub async fn get_kardex_investigador(
+    window: Window,
+    state: State<'_, AppState>,
+    id_investigador: String,
+) -> Result<Vec<KardexEntry>, AppError> {
+    handlers::get_kardex_investigador(&state, window.label(), &id_investigador).await
+}
+
+/// Marca el kardex RENACYT del investigador como revisado.
+/// RBAC: `InvestigadoresView`.
+#[tauri::command]
+pub async fn marcar_cambios_renacyt_revisados(
+    window: Window,
+    state: State<'_, AppState>,
+    id_investigador: String,
+) -> Result<InvestigadorDto, AppError> {
+    handlers::marcar_cambios_renacyt_revisados(&state, window.label(), &id_investigador).await
+}
+
+/// Refresh RENACYT en lote sobre todos los investigadores activos con
+/// vinculo RENACYT.
+/// RBAC: `InvestigadoresManage`.
+#[tauri::command]
+pub async fn refrescar_renacyt_todos(
+    window: Window,
+    state: State<'_, AppState>,
+) -> Result<RefreshMasivoRenacytResultadoDto, AppError> {
+    handlers::refrescar_renacyt_todos(&state, window.label()).await
 }
