@@ -66,9 +66,11 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
         handleRefreshRenacytFormaciones={(id: string) => {
           void table.handleRefreshRenacytFormaciones(id);
         }}
+        handleRefrescarRenacytTodos={() => table.handleRefrescarRenacytTodos()}
         handleReactivarInvestigador={(id: string) => {
           void table.handleReactivarInvestigador(id);
         }}
+        isRefreshingRenacytTodos={table.isRefreshingRenacytTodos}
         limpiarFiltros={table.limpiarFiltros}
         loading={table.loading}
         nivelesRenacytDisponibles={table.nivelesRenacytDisponibles}
@@ -148,9 +150,11 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
       handleRefreshRenacytFormaciones={(id: string) => {
         void table.handleRefreshRenacytFormaciones(id);
       }}
+      handleRefrescarRenacytTodos={() => table.handleRefrescarRenacytTodos()}
       handleReactivarInvestigador={(id: string) => {
         void table.handleReactivarInvestigador(id);
       }}
+      isRefreshingRenacytTodos={table.isRefreshingRenacytTodos}
       limpiarFiltros={table.limpiarFiltros}
       loading={table.loading}
       nivelesRenacytDisponibles={table.nivelesRenacytDisponibles}

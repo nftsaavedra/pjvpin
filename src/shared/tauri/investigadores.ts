@@ -1,11 +1,13 @@
 import { invoke } from "./client";
 import type {
+  CambioKardex,
   CreateInvestigadorRenacytPayload,
   EliminarInvestigadorResultado,
   ImportInvestigadoresResult,
   Investigador,
   InvestigadorDetalle,
   RefreshInvestigadorRenacytFormacionResultado,
+  RefreshMasivoRenacytResultado,
   RenacytLookupResult,
   ReniecDniLookupResult,
   SyncPurePersonIdsResult,
@@ -114,4 +116,39 @@ export const importarInvestigadores = async (
 
 export const getPlantillaInvestigadoresDefault = async (): Promise<string[]> => {
   return await invoke("get_plantilla_investigadores_default");
+};
+
+/// Kardex RENACYT completo del investigador (timeline de entradas con
+/// cambios). RBAC: `InvestigadoresView`. La ficha proyecta los
+/// `CambioKardex` de cada entrada a una línea del timeline.
+export interface KardexEntry {
+  id: string;
+  investigadorId: string;
+  personaId: string;
+  fechaEvento: number;
+  cambios: CambioKardex[];
+  formacionesDiff?: {
+    agregadas: unknown[];
+    retiradas: unknown[];
+    sinDetalle: boolean;
+  } | null;
+}
+
+export const getKardexInvestigador = async (idInvestigador: string): Promise<KardexEntry[]> => {
+  return await invoke("get_kardex_investigador", { idInvestigador });
+};
+
+/// Marca el kardex RENACYT del investigador como revisado por el
+/// usuario actual. Devuelve el `Investigador` actualizado. RBAC:
+/// `InvestigadoresView`.
+export const marcarCambiosRenacytRevisados = async (
+  idInvestigador: string,
+): Promise<Investigador> => {
+  return await invoke("marcar_cambios_renacyt_revisados", { idInvestigador });
+};
+
+/// Refresh RENACYT bulk sobre todos los investigadores activos con
+/// vinculo RENACYT. RBAC: `InvestigadoresManage`.
+export const refrescarRenacytTodos = async (): Promise<RefreshMasivoRenacytResultado> => {
+  return await invoke("refrescar_renacyt_todos");
 };

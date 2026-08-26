@@ -56,6 +56,7 @@ impl KardexDisparador {
 
 /// Cambio atómico detectado entre el estado anterior y el nuevo.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CambioKardex {
     /// Nombre canonico del campo (ej: "nivel", "grupo", "orcid").
     pub campo: String,
@@ -71,6 +72,7 @@ pub struct CambioKardex {
 /// relevantes para calcular elegibilidad (`considerado_para_cc`,
 /// `es_calificado`, `puntaje`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FormacionResumen {
     pub centro: Option<String>,
     pub grado: Option<String>,
@@ -87,6 +89,7 @@ pub struct FormacionResumen {
 /// y por tanto solo sabemos que hubo cambio textual sin poder listar
 /// los items agregados/retirados.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FormacionesDiff {
     pub agregadas: Vec<FormacionResumen>,
     pub retiradas: Vec<FormacionResumen>,

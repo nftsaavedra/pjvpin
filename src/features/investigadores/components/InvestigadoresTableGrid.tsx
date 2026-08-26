@@ -4,8 +4,10 @@ import type { InvestigadorDetalle } from "../api";
 import { Badge } from "@/shared/ui/Badge";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
+import { StatusChip } from "@/shared/ui/StatusChip";
 import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
+import { tieneCambiosSinRevisar } from "@/shared/utils/investigadorUtils";
 import { messages } from "@/shared/feedback/messages";
 
 interface InvestigadoresTableGridProps {
@@ -92,6 +94,7 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
               const estaActualizando =
                 refreshingRenacytInvestigadorId === investigador.idInvestigador;
               const nivelRenacyt = formatRenacytNivel(investigador.renacytNivel);
+              const cambiosSinRevisar = tieneCambiosSinRevisar(investigador);
 
               return (
                 <tr
@@ -117,7 +120,17 @@ export const InvestigadoresTableGrid: React.FC<InvestigadoresTableGridProps> = (
                     </div>
                   </td>
                   <td className="font-semibold">
-                    {investigador.nombresApellidos || messages.investigadores.fallbacks.sinNombre}
+                    <span className="inline-flex items-center gap-2">
+                      <span>
+                        {investigador.nombresApellidos ||
+                          messages.investigadores.fallbacks.sinNombre}
+                      </span>
+                      {cambiosSinRevisar && (
+                        <StatusChip variant="warning">
+                          {messages.investigadores.kardex.alertaBadge}
+                        </StatusChip>
+                      )}
+                    </span>
                   </td>
                   <td>
                     <Badge variant={investigador.cantidadProyectos === 0 ? "warning" : "success"}>

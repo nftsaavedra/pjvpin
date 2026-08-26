@@ -9,6 +9,7 @@ import {
   getTauriErrorMessage,
   reactivarInvestigador,
   refrescarFormacionAcademicaRenacytInvestigador,
+  refrescarRenacytTodos,
   type InvestigadorDetalle,
 } from "../api";
 import { formatRenacytNivel, normalizeRenacytNivelSearch } from "@/shared/utils/renacyt";
@@ -26,6 +27,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
   const [refreshingRenacytInvestigadorId, setRefreshingRenacytInvestigadorId] = useState<
     string | null
   >(null);
+  const [isRefreshingRenacytTodos, setIsRefreshingRenacytTodos] = useState(false);
 
   const {
     data: investigadores,
@@ -83,6 +85,26 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
       toast.error(getTauriErrorMessage(error));
     } finally {
       setRefreshingRenacytInvestigadorId(null);
+    }
+  };
+
+  const handleRefrescarRenacytTodos = async () => {
+    setIsRefreshingRenacytTodos(true);
+    try {
+      const resultado = await refrescarRenacytTodos();
+      toast.success(
+        messages.investigadores.kardex.refrescarTodos.exito(
+          resultado.procesados,
+          resultado.errores,
+        ),
+      );
+      await cargarInvestigadores();
+    } catch (error) {
+      toast.error(
+        `${messages.investigadores.kardex.refrescarTodos.fallo}: ${getTauriErrorMessage(error)}`,
+      );
+    } finally {
+      setIsRefreshingRenacytTodos(false);
     }
   };
 
@@ -176,8 +198,10 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
     gradoFiltro,
     gradosDisponibles,
     handleEliminarInvestigador,
+    handleRefrescarRenacytTodos,
     handleRefreshRenacytFormaciones,
     handleReactivarInvestigador,
+    isRefreshingRenacytTodos,
     limpiarFiltros,
     loading,
     nivelesRenacytDisponibles,

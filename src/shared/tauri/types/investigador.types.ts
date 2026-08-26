@@ -1,3 +1,12 @@
+/// Cambio atómico detectado por el kardex RENACYT entre dos snapshots.
+/// Proyectado al frontend por `InvestigadorDetalle.cambiosRenacytRecientes`
+/// (entradas recientes con cambios clasificadorios).
+export interface CambioKardex {
+  campo: string;
+  valorAnterior: string | null;
+  valorNuevo: string | null;
+}
+
 export interface Investigador {
   idInvestigador: string;
   dni: string;
@@ -30,6 +39,9 @@ export interface Investigador {
   /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe en el
   /// importador inicial y ancla el match persona↔PeruCRIS.
   perucrisUuid?: string | null;
+  /// Marca temporal (ms epoch) de la ultima revision del kardex RENACYT.
+  /// `null` = nunca revisado. Lo setea el handler `marcar_cambios_renacyt_revisados`.
+  renacytCambiosRevisadosEn?: number | null;
 }
 
 export interface InvestigadorDetalle {
@@ -61,6 +73,26 @@ export interface InvestigadorDetalle {
   renacytFechaUltimaSincronizacion?: number | null;
   renacytFichaUrl?: string | null;
   renacytFormacionesAcademicasJson?: string | null;
+  /// Marca temporal (ms epoch) de la ultima revision del kardex RENACYT.
+  /// `null` = nunca revisado.
+  renacytCambiosRevisadosEn?: number | null;
+  /// Cambios RENACYT recientes (ultimas 5 entradas del kardex, filtrados a
+  /// campos clasificadorios: nivel, grupo, condicion,
+  /// fecha_informe_calificacion, fecha_ultima_revision).
+  /// Alimenta el panel de kardex en la ficha y el badge de alerta en la
+  /// tabla. Plana, sin `fecha_evento` por entrada; ver
+  /// `getKardexInvestigador` para el timeline completo con fecha.
+  cambiosRenacytRecientes?: CambioKardex[];
+}
+
+/// Resultado agregado del comando `refrescar_renacyt_todos` (RBAC
+/// `InvestigadoresManage`).
+export interface RefreshMasivoRenacytResultado {
+  procesados: number;
+  errores: number;
+  kardexGenerados: number;
+  erroresDetalle: string[];
+  mensaje: string;
 }
 
 export interface RenacytFormacionAcademicaResumen {

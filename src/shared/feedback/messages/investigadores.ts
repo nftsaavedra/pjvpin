@@ -104,6 +104,24 @@ export const investigadores = {
     origenImportado: "Importado",
     origenManual: "Manual",
   } as const,
+  kardex: {
+    titulo: "Kardex RENACYT",
+    sinCambios: "Sin cambios registrados",
+    desactualizado: "RENACYT desactualizado (>90 días)",
+    cambioLinea: (campo: string, anterior: string | null, nuevo: string | null) =>
+      `${campo}: ${anterior ?? "—"} → ${nuevo ?? "—"}`,
+    refrescarTodos: {
+      boton: "Refrescar todos",
+      confirmTitulo: "Refrescar RENACYT masivo",
+      confirmPregunta: "¿Refrescar RENACYT de todos los investigadores?",
+      confirmConsecuencia: "Actualizará el kardex de cada uno.",
+      ejecutando: "Refrescando RENACYT...",
+      exito: (procesados: number, errores: number) =>
+        `${procesados} procesados, ${errores} errores`,
+      fallo: "No se pudo refrescar",
+    },
+    alertaBadge: "Cambios RENACYT sin revisar",
+  } as const,
   publicaciones: {
     sectionTitle: "Publicaciones (Pure)",
     sinScopusId:

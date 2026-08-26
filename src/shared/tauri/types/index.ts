@@ -1,8 +1,10 @@
 export type { Usuario, AuthStatus } from "./auth.types";
 
 export type {
+  CambioKardex,
   Investigador,
   InvestigadorDetalle,
+  RefreshMasivoRenacytResultado,
   RenacytFormacionAcademicaResumen,
   RenacytLookupResult,
   ReniecDniLookupResult,

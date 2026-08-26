@@ -12,7 +12,11 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
 import { InlineIconButton } from "@/shared/ui/InlineIconButton";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
-import { formatDate, parseFormacionesAcademicas } from "@/shared/utils/investigadorUtils";
+import {
+  estaDesactualizado,
+  formatDate,
+  parseFormacionesAcademicas,
+} from "@/shared/utils/investigadorUtils";
 import { openExternalUrl } from "@/shared/utils/linkUtils";
 import { messages } from "@/shared/feedback/messages";
 import type { InvestigadorDetalle } from "../../api";
@@ -51,6 +55,7 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
   const formacionesAcademicas = parseFormacionesAcademicas(
     investigador.renacytFormacionesAcademicasJson,
   );
+  const renacytDesactualizado = estaDesactualizado(investigador.renacytFechaUltimaSincronizacion);
 
   const scopusUrl = investigador.renacytScopusAuthorId
     ? `https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(investigador.renacytScopusAuthorId)}`
@@ -195,7 +200,14 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
                   <span className="renacyt-detail-label">
                     {messages.investigadores.renacytSection.ultimaSincronizacion}
                   </span>
-                  <strong>{formatDate(investigador.renacytFechaUltimaSincronizacion)}</strong>
+                  <strong className="inline-flex items-center gap-2">
+                    <span>{formatDate(investigador.renacytFechaUltimaSincronizacion)}</span>
+                    {renacytDesactualizado && (
+                      <Badge variant="warning">
+                        {messages.investigadores.kardex.desactualizado}
+                      </Badge>
+                    )}
+                  </strong>
                 </div>
                 {renderLinkedIdentifier(
                   messages.investigadores.renacytSection.orcid,

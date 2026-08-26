@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GraduationCap, Plus, UploadCloud } from "lucide-react";
+import { GraduationCap, Loader2, Plus, RefreshCw, UploadCloud } from "lucide-react";
 import type { InvestigadorDetalle } from "../api";
 import { InvestigadoresTableGrid } from "./InvestigadoresTableGrid";
 import { InvestigadoresTableToolbar } from "./InvestigadoresTableToolbar";
@@ -22,7 +22,9 @@ interface InvestigadoresListViewProps {
   gradoFiltro: string;
   gradosDisponibles: string[];
   handleRefreshRenacytFormaciones: (id: string) => void;
+  handleRefrescarRenacytTodos: () => Promise<void>;
   handleReactivarInvestigador: (id: string) => void;
+  isRefreshingRenacytTodos: boolean;
   limpiarFiltros: () => void;
   loading: boolean;
   nivelesRenacytDisponibles: string[];
@@ -54,7 +56,9 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
   gradoFiltro,
   gradosDisponibles,
   handleRefreshRenacytFormaciones,
+  handleRefrescarRenacytTodos,
   handleReactivarInvestigador,
+  isRefreshingRenacytTodos,
   limpiarFiltros,
   loading,
   nivelesRenacytDisponibles,
@@ -73,6 +77,12 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
   onOpenDetail,
 }) => {
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [refrescarTodosOpen, setRefrescarTodosOpen] = useState(false);
+
+  const handleConfirmRefrescarTodos = async () => {
+    setRefrescarTodosOpen(false);
+    await handleRefrescarRenacytTodos();
+  };
 
   return (
     <div className="tab-panel investigadores-list-panel">
@@ -95,6 +105,24 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
                 <span className="button-with-icon">
                   <AppIcon icon={UploadCloud} size={18} />
                   <span>{messages.investigadores.list.importar}</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setRefrescarTodosOpen(true);
+                }}
+                disabled={isRefreshingRenacytTodos}
+                data-testid="investigadores-refrescar-todos-btn"
+              >
+                <span className="button-with-icon">
+                  <AppIcon icon={isRefreshingRenacytTodos ? Loader2 : RefreshCw} size={18} />
+                  <span>
+                    {isRefreshingRenacytTodos
+                      ? messages.investigadores.kardex.refrescarTodos.ejecutando
+                      : messages.investigadores.kardex.refrescarTodos.boton}
+                  </span>
                 </span>
               </button>
               <button type="button" className="btn-primary" onClick={onCreateClick}>
@@ -173,6 +201,22 @@ export const InvestigadoresListView: React.FC<InvestigadoresListViewProps> = ({
             onConfirmDelete();
           }}
           onCancel={onCancelDelete}
+        />
+      )}
+
+      {canManage && (
+        <ConfirmDialog
+          open={refrescarTodosOpen}
+          title={messages.investigadores.kardex.refrescarTodos.confirmTitulo}
+          message={`${messages.investigadores.kardex.refrescarTodos.confirmPregunta} ${messages.investigadores.kardex.refrescarTodos.confirmConsecuencia}`}
+          confirmText={messages.investigadores.kardex.refrescarTodos.boton}
+          cancelText={messages.ui.cancelar}
+          onConfirm={() => {
+            void handleConfirmRefrescarTodos();
+          }}
+          onCancel={() => {
+            setRefrescarTodosOpen(false);
+          }}
         />
       )}
 

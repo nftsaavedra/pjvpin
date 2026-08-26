@@ -8,10 +8,14 @@ export {
   eliminarInvestigador,
   getAllInvestigadores,
   getAllInvestigadoresConProyectos,
+  getKardexInvestigador,
   getPlantillaInvestigadoresDefault,
   importarInvestigadores,
+  marcarCambiosRenacytRevisados,
   refrescarFormacionAcademicaRenacytInvestigador,
+  refrescarRenacytTodos,
   reactivarInvestigador,
+  type KardexEntry,
 } from "@/shared/tauri/investigadores";
 
 export {
@@ -27,6 +31,7 @@ export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/sh
 export { getTauriErrorMessage } from "@/shared/tauri/error";
 
 export type {
+  CambioKardex,
   ImportInvestigadoresResult,
   Investigador,
   InvestigadorDetalle,
@@ -35,6 +40,7 @@ export type {
   ParticipanteEvento,
   PublicacionCientifica,
   RefreshInvestigadorRenacytFormacionResultado,
+  RefreshMasivoRenacytResultado,
   RenacytFormacionAcademicaResumen,
   RenacytLookupResult,
   ReniecDniLookupResult,
