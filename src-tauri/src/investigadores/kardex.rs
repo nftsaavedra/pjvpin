@@ -160,6 +160,10 @@ fn collect_cambios_campos(
     lookup: &RenacytLookupResult,
 ) -> Vec<CambioKardex> {
     let mut cambios = Vec::new();
+    let actual_inf = actual.renacyt_fecha_informe_calificacion.map(ts_to_iso);
+    let lookup_inf = lookup.fecha_informe_calificacion.map(ts_to_iso);
+    let actual_rev = actual.renacyt_fecha_ultima_revision.map(ts_to_iso);
+    let lookup_rev = lookup.fecha_ultima_revision.map(ts_to_iso);
     let pairs: [(&str, Option<&str>, Option<&str>); 7] = [
         (
             "nivel",
@@ -188,19 +192,13 @@ fn collect_cambios_campos(
         ),
         (
             "fecha_informe_calificacion",
-            actual
-                .renacyt_fecha_informe_calificacion
-                .map(ts_to_iso)
-                .as_deref(),
-            lookup.fecha_informe_calificacion.map(ts_to_iso).as_deref(),
+            actual_inf.as_deref(),
+            lookup_inf.as_deref(),
         ),
         (
             "fecha_ultima_revision",
-            actual
-                .renacyt_fecha_ultima_revision
-                .map(ts_to_iso)
-                .as_deref(),
-            lookup.fecha_ultima_revision.map(ts_to_iso).as_deref(),
+            actual_rev.as_deref(),
+            lookup_rev.as_deref(),
         ),
     ];
     for (campo, anterior, nuevo) in pairs {
