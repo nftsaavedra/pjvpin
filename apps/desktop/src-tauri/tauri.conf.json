@@ -1,20 +1,22 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "pjvpin",
+  "productName": "PJVPIN",
   "version": "0.1.0",
   "identifier": "com.vpin.pjvpin",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "pnpm -w --filter @pjvpin/desktop run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "pnpm -w --filter @pjvpin/desktop run build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "pjvpin",
-        "width": 800,
-        "height": 600
+        "title": "PJVPIN",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 600
       }
     ],
     "security": {

@@ -1,5 +1,6 @@
 {
-  "name": "pjvpin",
+  "name": "@pjvpin/desktop",
+  "description": "PJVPIN — desktop (Tauri v2 + React). Cliente HTTP del backend @pjvpin/api.",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -18,13 +19,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "check": "npm run lint && npm run typecheck",
+    "check": "pnpm run lint && pnpm run typecheck",
     "tauri": "tauri",
-    "tauri:build:exe": "powershell -ExecutionPolicy Bypass -File ./scripts/tauri-build.ps1 --no-bundle",
-    "tauri:build:portable": "powershell -ExecutionPolicy Bypass -File ./scripts/tauri-build-portable.ps1",
-    "tauri:build:installer": "powershell -ExecutionPolicy Bypass -File ./scripts/tauri-build.ps1",
-    "tauri:build:nsis": "powershell -ExecutionPolicy Bypass -File ./scripts/tauri-build.ps1 --bundles nsis",
-    "tauri:build:msi": "powershell -ExecutionPolicy Bypass -File ./scripts/tauri-build.ps1 --bundles msi"
+    "tauri:dev": "tauri dev",
+    "tauri:build:exe": "powershell -ExecutionPolicy Bypass -File ../../scripts/tauri-build.ps1 --no-bundle",
+    "tauri:build:portable": "powershell -ExecutionPolicy Bypass -File ../../scripts/tauri-build-portable.ps1",
+    "tauri:build:installer": "powershell -ExecutionPolicy Bypass -File ../../scripts/tauri-build.ps1",
+    "tauri:build:nsis": "powershell -ExecutionPolicy Bypass -File ../../scripts/tauri-build.ps1 --bundles nsis",
+    "tauri:build:msi": "powershell -ExecutionPolicy Bypass -File ../../scripts/tauri-build.ps1 --bundles msi"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",

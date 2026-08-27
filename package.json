@@ -1,0 +1,22 @@
+{
+  "name": "pjvpin-monorepo",
+  "description": "PJVPIN — monorepo. Apps: @pjvpin/desktop (Tauri v2 + React), @pjvpin/api (NestJS REST). Paquete: @pjvpin/shared (contratos TS).",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --stream run dev",
+    "dev:desktop": "pnpm --filter @pjvpin/desktop run dev",
+    "dev:api": "pnpm --filter @pjvpin/api run start:dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "check": "pnpm -r run typecheck && pnpm -r run lint",
+    "clean": "pnpm -r exec rm -rf dist .turbo node_modules/.cache"
+  }
+}

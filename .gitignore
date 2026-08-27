@@ -40,9 +40,11 @@ coverage/
 
 # === Scripts temporales / Agentes / OpenCode / IDE ===
 scripts/
+!scripts/tauri-*.ps1
 .agents/
 .continue/
 .opencode/
+.impeccable/
 .vscode/*
 !.vscode/extensions.json
 .idea/
