@@ -8,6 +8,8 @@ node_modules/
 # === Build / Distribucion ===
 dist/
 dist-ssr/
+apps/*/dist/
+packages/*/dist/
 *.zip
 *.tar.gz
 *.tar

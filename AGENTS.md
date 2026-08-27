@@ -285,21 +285,48 @@ Si los endpoints externos cambian en el futuro, basta actualizar `defaults.rs` y
 
 ---
 
-## Decisión de arquitectura diferida: backend centralizado (NestJS)
+## Decisión de arquitectura: migración a backend centralizado NestJS (ACTIVADA 2026-08-27)
 
-Visión de producto a 1-2 años: plataforma web institucional multi-usuario.
-Arquitectura actual (Tauri v2 + React + Rust embebido + MongoDB Atlas) es
-**correcta para la etapa desktop single-user de v0.1.0**. La migración a un
-backend NestJS independiente (misma BD MongoDB) se iniciara SOLO cuando se
-cumplan los tres gatillos:
+**Estado**: MIGRACIÓN APROBADA E INICIADA. La anterior "decisión diferida" queda
+reemplazada: los tres gatillos se consideran cumplidos.
 
-1. **Requisito formal de acceso web multi-usuario** (>5 usuarios concurrentes desde navegador).
-2. **Infraestructura de servidor disponible** (hosting, TLS, backups, operación nominal — no PoC casera).
-3. **v0.1.0 estable**: features core completas (investigadores, proyectos, grupos, reportes, conectores) con quality gates verdes.
+1. **Requisito de multi-usuario: CUMPLIDO.** El sistema se utilizará en modalidad multi-usuario institucional.
+2. **Infraestructura de servidor: CUMPLIDO.** VPS con soporte Node.js; despliegue de producción vía **Dokploy** (Docker). El backend NestJS (API REST) se alojará allí.
+3. **Ventana de desarrollo: APROVECHADA.** El proyecto está en etapa de construcción (v0.1.0) — se migra ahora para no consolidar deuda sobre el backend embebido.
 
-Mientras tanto, mantener la disciplina hexagonal actual (separación `*Doc` DTO de persistencia / `*Model` dominio, `repository.rs` por feature, BD como única fuente de verdad) para que la migración futura solo reescriba la capa de API (handlers + commands Tauri → controllers/services NestJS), **sin tocar el modelo de datos ni el dominio**.
+### Objetivo de arquitectura (target)
 
-Lección consolidada: los errores de índices MongoDB (E11000 null, IndexKeySpecsConflict) que han aparecido en este periodo son bugs de **modelado de datos**, independientes del stack Rust. Una migración a NestJS los reproduciría idénticos (Mongoose replica las mismas opciones de índice). Por eso la decisión de estabilizar el backend actual precede a cualquier decisión de reescritura.
+El proyecto se convierte en un **monorepo** (pnpm workspaces, convención del
+monorepo `congreso`) con:
+
+```
+pjvpin/
+├── apps/
+│   ├── desktop/        # Tauri v2 + React → shell delgada, cliente HTTP del API
+│   └── api/            # NestJS (API REST) — TODO el dominio y los conectores
+├── packages/
+│   └── shared/         # Contratos TS (DTOs request/response) compartidos api↔desktop
+```
+
+### Invariantes de la migración
+
+- **Misma base de datos**: MongoDB Atlas existente (URI y DB de `.env` / env vars del servidor). El modelo de datos (23 colecciones, índices partial/sparse) se replica 1:1 — NO se rediseña. Los seeds (catálogos, vocabularios SKOS, ubigeo, grados, org_units) y `ensure_indexes` (idempotente) corren en el boot de NestJS.
+- **Secretos se mueven al servidor**: `PJVPIN_MONGODB_URI`, `PJVPIN_MONGODB_DB`, `PJVPIN_RENIEC_TOKEN`, `PJVPIN_PURE_API_KEY`, `PJVPIN_PERUCRIS_*`, `PJVPIN_RENACYT_*` viven SOLO como env vars del API (Dokploy). El desktop NO almacena credenciales de BD ni de servicios externos → su `.env` se reduce a `PJVPIN_API_URL`. Los clientes HTTP externos (RENIEC/RENACYT/Pure/PeruCRIS) se reimplementan en NestJS.
+- **Wizard de configuración del desktop se simplifica**: se limita a (1) establecer/validar la **URL del API REST** (test `GET /health`) y (2) login del primer superuser contra el endpoint de bootstrap del API (que solo opera con colección `usuarios` vacía). La configuración de BD/tokens/URLs externas del servidor se gestiona por env vars en Dokploy, NO desde el desktop. La sección "Asistente de configuración (wizard)" de este documento describe el comportamiento legacy (Rust embebido) y queda vigente solo hasta el switch final del desktop.
+- **Disciplina hexagonal preservada**: `commands.rs` → `*.controller.ts`; `handlers.rs` → `*.service.ts`; `repository.rs` + `*Doc` → repositorios TS sobre driver MongoDB (sin Mongoose ODM completo si replica índices distintos — mantener opciones de índice EXACTAS, incl. `partial_filter_expression`); `AppError` → excepciones + exception filter global; RBAC (`AppPermission` + matriz) → guards/decoradores; auditoría JSONL → interceptor (misma salida); sesiones en memoria Rust → **JWT access/refresh** (stateless, multi-usuario); `write_export_file` → descarga HTTP (bytes/stream).
+- **Contratos IPC actuales como base**: en la fase 1 los DTOs conservan sus shapes (respuestas snake_case, requests camelCase) para que el frontend solo cambie el transporte (`invoke` → `fetch`); normalización a camelCase unificado queda como deuda controlada posterior.
+- **Transición sin escritura dual**: mientras un módulo convive, el desktop en modo API NO usa el backend Rust para ese módulo. Nunca corren seeds/`ensure_indexes` dos backends contra la misma BD a la vez (los índices son idempotentes, pero se evita por higiene).
+
+### Documentación de soporte
+
+- `docs/backend/README.md` — censo ejecutivo + mapa de correspondencia Rust → NestJS.
+- `docs/backend/01-endpoints-ipc.md` — los 155 comandos IPC (inventario de endpoints a migrar).
+- `docs/backend/02-features-dominio.md` — features, colecciones, índices, dependencias.
+- `docs/backend/03-shared-infraestructura.md` — infraestructura transversal + matriz RBAC + clientes HTTP externos.
+- `docs/backend/04-capa-cliente-frontend.md` — capa API del frontend (a convertir en cliente HTTP).
+- `docs/backend/05-escenarios-migracion-nestjs.md` — análisis de escenarios de backend, despliegue y operación.
+
+Lección consolidada (vigente): los errores de índices MongoDB (E11000 null, IndexKeySpecsConflict) son bugs de **modelado de datos**, independientes del stack. NestJS/Mongoose los reproduciría idénticos — por eso el modelo y sus índices se migran tal cual, sin rediseño.
 
 ---
 
@@ -326,6 +353,60 @@ La capa de datos está alineada a la especificación relacional 3NF (CERIF) de C
 ---
 
 ## Flujo de Trabajo con OpenCode
+
+### Flujo de desarrollo con Árbitro de Cumplimiento (estándar OBLIGATORIO desde 2026-08-27)
+
+Todo trabajo de construcción (feature, fix, refactor, migración) sigue el ciclo
+**Plan → Build → Árbitro → Fix → Gates → Commit**. Fundamentado en las prácticas
+2026 de flujos con agentes: separación builder/reviewer (la sesión que escribió
+el código jamás lo audita), patrón LLM-as-Judge con criterios explícitos,
+spec-first (criterios de aceptación antes de implementar) y stop rules
+anti-drift.
+
+**Ciclo por unidad de trabajo (feature/fix/refactor):**
+
+1. **Plan** — tarea no trivial → `submit_plan` (plannotator) con criterios de
+   aceptación por tarea. El usuario aprueba; nada fuera del plan se implementa
+   (scope creep se REPORTA, no se ejecuta).
+2. **Build** — subagente implementador (`build`) ejecuta SOLO el plan aprobado
+   en branch `feat/*` o `fix/*`. Diffs pequeños y revisables.
+3. **Árbitro** (gate OBLIGATORIO antes de commit) — agente auditor INDEPENDIENTE
+   del implementador (subagente `explore` read-only o agente `plan` en rol de
+   árbitro; nunca el mismo contexto que escribió el código). Verifica con un
+   reporte de hallazgos **bloqueantes / no bloqueantes**:
+   - **Cumplimiento del plan**: cada tarea marcada implementada/no implementada;
+     desviaciones del plan listadas explícitamente.
+   - **No-regresión**: ninguna funcionalidad existente VÁLIDA eliminada o
+     modificada sin estar prevista en el plan. Inventario de referencia:
+     `docs/backend/01-endpoints-ipc.md` (155 comandos) y los 94 wrappers de
+     `src/shared/tauri/`.
+   - **Buenas prácticas del stack** — NestJS/REST: controllers sin lógica de
+     negocio, DTOs + class-validator en toda entrada, guards/decoradores RBAC,
+     exception filter global, códigos HTTP correctos (200/201/204/400/401/403/
+     404/409), rutas kebab-case, DI por constructor, config por env vars, sin
+     `any`. React/TS: hooks ≤200 líneas, feature-based, mensajes centralizados
+     (`messages/*`), componentes compartidos (`EmptyState`/`Badge`/`FormInput`).
+     Rust: `Result<T, AppError>`, sin `unwrap()`, cero dead code.
+   - **Principios AGENTS.md**: SOLID/DRY/KISS/YAGNI, cero secretos hardcodeados,
+     convención serde camelCase en requests, opciones de índice exactas.
+   - **Blast-radius**: `pr_impact`/`call_graph` del codebase-index cuando el
+     cambio toca símbolos compartidos (>5 callers).
+4. **Fix loop** — el implementador corrige hallazgos; el Árbitro re-verifica
+   hasta cero bloqueantes. **Regla de 2 correcciones**: si el mismo hallazgo
+   reaparece 2 veces, detener y escalar al usuario (stop rule anti-drift).
+5. **Gates técnicos** — typecheck/lint/test/build cero errores/warnings +
+   auditorías de literales/secretos de este documento.
+6. **Commit atómico** (Conventional Commits, subject en español) — solo con
+   Árbitro aprobado.
+7. **Persistencia** — `memory add` de decisiones/patrones al cierre de hitos.
+
+**Definition of Done** de toda unidad de trabajo: tareas 100% + Árbitro sin
+hallazgos bloqueantes + gates técnicos verdes + no-regresión confirmada.
+
+**Herramientas del Árbitro**: subagente `explore` (read-only por diseño),
+`pr_impact`/`call_graph` (blast radius), skill `plannotator-review` (revisión
+visual del diff por el usuario), comandos `/security-check` y `/prepare-pr`
+(checks previos a PR).
 
 ### Herramienta prioritaria de descubrimiento: plugin `opencode-codebase-index`
 
