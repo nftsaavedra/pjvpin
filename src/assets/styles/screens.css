@@ -1,317 +1,36 @@
 @layer components {
-  .screen-layout {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .screen-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.25rem 1.5rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--card-bg);
-    flex-shrink: 0;
-  }
-
-  .screen-header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 0;
-  }
-
-  .screen-header-right {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    flex-shrink: 0;
-  }
-
-  .screen-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-  }
-
-  .screen-breadcrumb-back {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 0.75rem;
-    transition: var(--transition);
-    flex-shrink: 0;
-  }
-
-  .screen-breadcrumb-back:hover {
-    background: var(--primary-light);
-    color: var(--primary-dark);
-    border-color: var(--primary-light);
-  }
-
-  .screen-breadcrumb-sep {
-    color: var(--border-color);
-    font-weight: 700;
-  }
-
-  .screen-breadcrumb-current {
-    color: var(--text-primary);
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .screen-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.3;
-  }
-
-  .screen-body {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .screen-footer {
-    border-top: 1px solid var(--border-color);
-    background: var(--card-bg);
-    flex-shrink: 0;
-  }
-
-  .screen-header-title {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 0;
-  }
-
-  .screen-header-description {
-    margin: 0;
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    line-height: 1.4;
-  }
-
-  .screen-title {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.25;
-  }
-
-  .screen-title-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 8px;
-    background: var(--primary-light);
-    color: var(--primary-dark);
-    flex-shrink: 0;
-  }
-
-  .screen-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 1.25rem;
-  }
-
-  .screen-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    gap: 0.75rem;
-  }
-
-  .screen-section-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .screen-tabs {
-    display: flex;
-    gap: 0.25rem;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
-    flex-shrink: 0;
-  }
-
-  .screen-tab-button {
-    padding: 0.55rem 1rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    white-space: nowrap;
-  }
-
-  .screen-tab-button:hover {
-    color: var(--text-primary);
-    border-bottom-color: var(--border-color);
-  }
-
-  .screen-tab-button.active {
-    color: var(--primary-dark);
-    border-bottom-color: var(--primary-color);
-  }
-
-  .screen-tab-button:focus-visible {
-    outline: 3px solid rgba(37, 99, 235, 0.45);
-    outline-offset: -1px;
-  }
-
-  .screen-kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 0.85rem;
-  }
-
-  .screen-kpi-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.85rem 1rem;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    transition: var(--transition);
-  }
-
-  .screen-kpi-card:hover {
-    border-color: var(--primary-light);
-    box-shadow: var(--shadow-xs);
-  }
-
-  .screen-kpi-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 10px;
-    background: var(--primary-light);
-    color: var(--primary-dark);
-    flex-shrink: 0;
-  }
-
-  .screen-kpi-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-  }
-
-  .screen-kpi-value {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.2;
-  }
-
-  .screen-kpi-label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-
-  .screen-placeholder-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem;
-    background: var(--bg-color);
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius);
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    text-align: center;
-  }
-
-  .screen-readonly-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .screen-readonly-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.65rem 0.85rem;
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 0.85rem;
-  }
-
-  .screen-readonly-item strong {
-    color: var(--text-primary);
-  }
-
-  .screen-readonly-item-meta {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.65rem;
-    padding: 2.5rem 1.5rem;
-    background: var(--bg-color);
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius);
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    text-align: center;
-  }
-
-  .empty-state strong {
-    color: var(--text-primary);
-    font-size: 1rem;
-  }
+  .screen-layout { @apply flex flex-col h-full overflow-hidden bg-card rounded-xl shadow-sm; }
+  .screen-header { @apply flex flex-col gap-2 px-6 pt-5 pb-4 border-b border-gray-200 bg-card flex-shrink-0; }
+  .screen-header-left { @apply flex flex-col gap-1 min-w-0; }
+  .screen-header-right { @apply flex items-center gap-2.5 flex-shrink-0; }
+  .screen-breadcrumb { @apply flex items-center gap-1.5 text-[0.82rem] text-gray-500; }
+  .screen-breadcrumb-back { @apply inline-flex items-center justify-center w-6 h-6 rounded-lg border border-gray-200 bg-white text-gray-500 cursor-pointer text-xs flex-shrink-0 transition-colors hover:bg-blue-50 hover:text-blue-700 hover:border-blue-100; }
+  .screen-breadcrumb-sep { @apply text-gray-300 font-bold; }
+  .screen-breadcrumb-current { @apply text-gray-800 font-semibold whitespace-nowrap overflow-hidden text-ellipsis; }
+  .screen-title { @apply m-0 text-[1.35rem] font-bold text-gray-800 leading-tight flex items-center gap-2.5; }
+  .screen-body { @apply flex-1 overflow-y-auto overflow-x-hidden p-6 flex flex-col gap-5; }
+  .screen-footer { @apply border-t border-gray-200 bg-card flex-shrink-0; }
+  .screen-header-title { @apply flex flex-col gap-1 min-w-0; }
+  .screen-header-description { @apply m-0 text-[0.82rem] text-gray-500 leading-snug; }
+  .screen-title-icon { @apply inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex-shrink-0; }
+  .screen-section { @apply bg-white border border-gray-200 rounded-xl p-5; }
+  .screen-section-header { @apply flex items-center justify-between mb-4 gap-3; }
+  .screen-section-title { @apply text-[0.95rem] font-bold text-gray-800 flex items-center gap-2; }
+  .screen-tabs { @apply flex gap-1 border-b border-gray-200 mb-4 flex-shrink-0; }
+  .screen-tab-button { @apply px-4 py-2 text-sm font-semibold text-gray-500 bg-transparent border-0 border-b-2 border-transparent cursor-pointer transition-colors flex items-center gap-1.5 whitespace-nowrap hover:text-gray-800 hover:border-gray-200; }
+  .screen-tab-button.active { @apply text-blue-700 border-blue-500; }
+  .screen-tab-button:focus-visible { @apply outline-[3px] outline-blue-500/45 outline-offset-[-1px]; }
+  .screen-kpis { @apply grid gap-3.5; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .screen-kpi-card { @apply flex items-center gap-3 p-3.5 px-4 bg-white border border-gray-200 rounded-xl transition-colors hover:border-blue-100 hover:shadow-xs; }
+  .screen-kpi-icon { @apply inline-flex items-center justify-center w-9 h-9 rounded-[10px] bg-blue-50 text-blue-700 flex-shrink-0; }
+  .screen-kpi-copy { @apply flex flex-col gap-0.5; }
+  .screen-kpi-value { @apply text-[1.15rem] font-bold text-gray-800 leading-tight; }
+  .screen-kpi-label { @apply text-xs text-gray-500 font-medium; }
+  .screen-placeholder-card { @apply flex flex-col items-center justify-center gap-2 p-8 bg-slate-50 border border-dashed border-gray-200 rounded-xl text-gray-500 text-sm text-center; }
+  .screen-readonly-list { @apply flex flex-col gap-2; }
+  .screen-readonly-item { @apply flex items-center justify-between gap-4 p-2.5 px-3.5 bg-slate-50 border border-gray-200 rounded-lg text-sm; }
+  .screen-readonly-item strong { @apply text-gray-800; }
+  .screen-readonly-item-meta { @apply flex gap-2 items-center; }
+  .empty-state { @apply flex flex-col items-center justify-center gap-2.5 p-10 px-6 bg-slate-50 border border-dashed border-gray-200 rounded-xl text-gray-500 text-[0.9rem] text-center; }
+  .empty-state strong { @apply text-gray-800 text-base; }
 }

@@ -25,6 +25,5 @@
   .skeleton-kpi-card { @apply p-4 rounded-xl border border-gray-200 bg-white; }
   .skeleton-kpi-grid { @apply grid gap-4; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
   .auth-card-loading { @apply pointer-events-none; }
-  .auth-loading-form { @apply flex flex-col gap-3.5; }
 }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }

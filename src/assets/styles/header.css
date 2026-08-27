@@ -5,9 +5,4 @@
   .title-with-icon { @apply inline-flex items-center gap-2.5; }
   .title-with-icon svg { @apply flex-shrink-0; }
   .app-subtitle { @apply text-base opacity-90 font-normal tracking-[0.3px]; }
-  .session-box { @apply flex items-center gap-4; }
-  .session-user { @apply flex flex-col items-end gap-0.5; }
-  .session-user span { @apply text-sm opacity-85; }
-  .session-logout { @apply border-white/35 text-white bg-white/10; }
-  .session-logout:hover { @apply bg-white/20; }
 }

@@ -9,7 +9,6 @@
   .form-input-action-group { @apply flex gap-2 items-stretch; }
   .form-input-action-group .form-input { @apply flex-1; }
   .form-input-action-button { @apply flex-shrink-0 min-w-[152px] whitespace-nowrap; }
-  .form-inline-hint { @apply text-gray-500 text-sm mt-1.5; }
   .form-inline-status { @apply mt-0.5 px-3 py-2.5 rounded-xl text-xs leading-5 border border-transparent; }
   .form-inline-status-idle, .form-inline-status-checking { @apply bg-blue-50 text-blue-800 border-blue-200; }
   .form-inline-status-validated { @apply bg-green-50 text-green-700 border-green-200; }
@@ -32,7 +31,6 @@
   .investigador-form-preview-card { @apply justify-center min-h-full; }
   .investigador-form-preview-card strong { @apply uppercase tracking-wider; }
   .investigador-renacyt-card { @apply gap-2; }
-  .form-buttons { @apply flex items-center gap-3 justify-end pt-2; }
   .form-hint-error { @apply text-red-600 text-xs mt-1; }
   .ubigeo-select-grid { @apply grid grid-cols-3 gap-x-4 gap-y-3 items-start; }
   @media (max-width: 768px) {

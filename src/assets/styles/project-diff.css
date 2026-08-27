@@ -1,5 +1,4 @@
 @layer components {
-  .project-diff-card { @apply flex flex-col gap-3.5 p-4 rounded-2xl; border: 1px solid var(--primary-light); background: linear-gradient(180deg, var(--bg-color) 0%, var(--primary-light) 100%); }
   .project-diff-header { @apply flex items-center justify-between gap-3; }
   .project-diff-empty { @apply m-0 text-sm; color: var(--gray-500, #6b7280); }
   .project-diff-list { @apply flex flex-col gap-2.5; }
@@ -14,5 +13,4 @@
   .project-diff-chip { @apply inline-flex items-center px-2.5 py-1.5 rounded-full text-xs font-bold; }
   .project-diff-chip.is-added { @apply border; background-color: var(--success-light, #f0fdf4); color: var(--success, #15803d); border-color: var(--success-light, #bbf7d0); }
   .project-diff-chip.is-removed { @apply border; background-color: var(--error-light, #fef2f2); color: var(--error, #b91c1c); border-color: var(--error-light, #fecaca); }
-  .project-diff-muted { @apply text-sm; color: var(--gray-500, #6b7280); }
 }
