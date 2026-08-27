@@ -1,3 +1,17 @@
+/**
+ * Renderizador Excel para reportes de investigadores/proyectos.
+ *
+ * Contrato estricto (alineamiento Fase 4, anotacion del usuario sobre
+ * motores de exportacion): el frontend SOLO formatea a Excel. Todos los
+ * datos y agregaciones vienen del backend Rust
+ * (`reportes::repository_export` -> DTOs `DatosExportInvestigadorAgrupado`
+ * y `DatosExportInvestigadorPlano`). No se recalculan metricas ni se
+ * transforman esquemas de datos.
+ *
+ * La unica transformacion local es `formatRenacytNivel` que es presentacion
+ * (display del enum), no calculo.
+ */
+
 import ExcelJS from "exceljs";
 import { formatRenacytNivel } from "@/shared/utils/renacyt";
 import { getDataExportacionAgrupada, getDataExportacionPlana } from "./api";

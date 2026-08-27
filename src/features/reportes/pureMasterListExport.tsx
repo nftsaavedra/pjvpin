@@ -1,3 +1,16 @@
+/**
+ * Renderizador Excel para el Master List de Pure (Persons +
+ * StaffOrganisationRelations).
+ *
+ * Contrato estricto (alineamiento Fase 4): el frontend SOLO formatea a
+ * Excel. Todos los datos vienen del backend Rust
+ * (`reportes::repository_pure_masterlist` -> `PureMasterlistData`). No se
+ * recalculan conteos ni se transforman campos.
+ *
+ * `pureRemoteTotal` es el conteo de personas en Pure remoto que ya viene
+ * del backend; no se vuelve a contar en el frontend.
+ */
+
 import ExcelJS from "exceljs";
 import type {
   PureMasterlistData,

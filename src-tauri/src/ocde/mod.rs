@@ -12,6 +12,7 @@
 //! - UNIQUE (entity_type, entity_id, ocde_codigo) en `shared/db.rs`.
 
 pub mod commands;
+pub mod dto;
 pub mod handlers;
 pub mod models;
 pub mod repository;

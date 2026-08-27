@@ -10,7 +10,7 @@ import { AuthShell } from "./app/AuthShell";
 import { TabRenderers } from "./app/TabRenderers";
 import { AppLoadingScreen } from "./app/components/AppLoadingScreen";
 import { TAB_DEFINITIONS, TAB_HEADER_META } from "./app/tabDefinitions";
-import { useAuth } from "./app/hooks/useAuth";
+import { useAuth } from "./features/auth/hooks/useAuth";
 import { useAutoRefresh } from "./app/hooks/useAutoRefresh";
 import { WizardScreen } from "./features/wizard";
 import { wizardHasConfig } from "@/shared/tauri/wizard";

@@ -4,7 +4,7 @@ use serde::Deserialize;
 use tauri::{State, Window};
 
 use super::handlers;
-use crate::ocde::models::EntityOcdeFieldDoc;
+use crate::ocde::dto::EntityOcdeFieldDoc;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 

@@ -9,7 +9,8 @@ use futures_util::TryStreamExt;
 use mongodb::bson::{doc, Document};
 use mongodb::Database;
 
-use crate::ocde::models::{EntidadCampoOcde, EntityOcdeFieldDoc};
+use crate::ocde::dto::EntityOcdeFieldDoc;
+use crate::ocde::models::EntidadCampoOcde;
 use crate::ocde::COLLECTION;
 use crate::shared::error::AppError;
 use crate::shared::refs;

@@ -8,3 +8,6 @@ pub mod repository_investigador;
 pub mod repository_proyecto;
 pub mod repository_pure_masterlist;
 pub mod sync_reportes;
+
+#[cfg(test)]
+mod dto_tests;

@@ -4,7 +4,7 @@
 //! `listar` no exige manage: cualquier viewer puede ver los codigos
 //! asociados a una entidad.
 
-use crate::ocde::models::EntityOcdeFieldDoc;
+use crate::ocde::dto::EntityOcdeFieldDoc;
 use crate::ocde::repository;
 use crate::shared::error::AppError;
 use crate::shared::rbac;

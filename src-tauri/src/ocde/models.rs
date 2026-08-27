@@ -1,7 +1,7 @@
 //! Modelos de dominio de la feature `ocde`.
 //!
 //! Sin serde; la conversion a BSON se hace en `repository.rs` via
-//! `EntityOcdeFieldDoc`.
+//! `dto::EntityOcdeFieldDoc`.
 
 use crate::shared::error::AppError;
 use crate::shared::vocab_mapper::ENTITY_TYPES_VALIDOS;
@@ -64,37 +64,5 @@ impl EntidadCampoOcde {
             entity_id: entity_id.trim().to_string(),
             ocde_codigo: ocde_trim,
         })
-    }
-}
-
-/// DTO canónico (BSON + IPC) del pivot.
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-pub struct EntityOcdeFieldDoc {
-    #[serde(rename = "_id")]
-    pub id: String,
-    pub entity_type: String,
-    pub entity_id: String,
-    pub ocde_codigo: String,
-}
-
-impl From<EntidadCampoOcde> for EntityOcdeFieldDoc {
-    fn from(m: EntidadCampoOcde) -> Self {
-        Self {
-            id: m.id,
-            entity_type: m.entity_type,
-            entity_id: m.entity_id,
-            ocde_codigo: m.ocde_codigo,
-        }
-    }
-}
-
-impl From<EntityOcdeFieldDoc> for EntidadCampoOcde {
-    fn from(d: EntityOcdeFieldDoc) -> Self {
-        Self {
-            id: d.id,
-            entity_type: d.entity_type,
-            entity_id: d.entity_id,
-            ocde_codigo: d.ocde_codigo,
-        }
     }
 }

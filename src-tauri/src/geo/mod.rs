@@ -23,4 +23,7 @@ pub mod models;
 pub mod repository;
 pub mod seed;
 
+#[cfg(test)]
+mod dto_tests;
+
 pub use seed::{reseed_ubigeos, seed_ubigeos_if_empty};
