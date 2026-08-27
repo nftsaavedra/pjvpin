@@ -192,7 +192,7 @@ export const GruposTab: React.FC<GruposTabProps> = ({ canManage }) => {
                             </span>
                           ))
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold italic text-gray-400">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold italic">
                             {messages.grupos.sinLineasRegistradas}
                           </span>
                         )}

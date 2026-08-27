@@ -37,7 +37,7 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
               <h2 id="wizard-required-section" className="text-sm font-bold text-primary-dark m-0">
                 {messages.wizard.requiredSection.title}
               </h2>
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-primary-dark">
+              <span className="text-[0.7rem] font-bold uppercase tracking-[0.1em] text-primary-dark">
                 Requerido
               </span>
             </div>
@@ -85,7 +85,7 @@ export const StepCredentials: React.FC<Props> = ({ state, update, onNext, onBack
               >
                 {messages.wizard.optionalSection.title}
               </h2>
-              <span className="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-text-secondary">
+              <span className="text-[0.7rem] font-bold uppercase tracking-[0.1em] text-text-secondary">
                 Opcional
               </span>
             </div>

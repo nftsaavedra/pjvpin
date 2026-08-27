@@ -63,7 +63,7 @@ export const StepperHeader: React.FC<StepperHeaderProps> = ({ steps, currentStep
               aria-current={isCurrent ? "step" : undefined}
             >
               <span
-                className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[0.6rem] font-bold ${
+                className={`inline-flex items-center justify-center w-4.5 h-4.5 rounded-full text-[0.7rem] font-bold ${
                   isDone
                     ? "bg-secondary text-white"
                     : isCurrent

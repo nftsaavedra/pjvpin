@@ -19,6 +19,8 @@
   .checkbox-item:hover { @apply bg-blue-100; }
   .investigador-option { @apply w-full justify-between border border-transparent bg-transparent text-left cursor-pointer; }
   .investigador-option.selected { @apply bg-blue-50 border-blue-200; }
+  .investigador-option.selected .investigador-option-name { @apply text-blue-900; }
+  .investigador-option.selected .investigador-option-dni { @apply text-blue-800; }
   .investigador-option-main { @apply flex flex-col gap-1; }
   .investigador-option-name { @apply font-semibold text-gray-800; }
   .investigador-option-dni { @apply text-gray-500 text-sm; }

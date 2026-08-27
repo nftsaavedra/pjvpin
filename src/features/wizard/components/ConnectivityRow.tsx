@@ -71,7 +71,7 @@ export const ConnectivityRow: React.FC<ConnectivityRowProps> = ({
         <div className="flex items-center gap-2">
           <strong className="text-sm font-bold text-text-primary">{label}</strong>
           {optional && (
-            <span className="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-text-secondary">
+            <span className="text-[0.7rem] font-bold uppercase tracking-[0.08em] text-text-secondary">
               Opcional
             </span>
           )}
@@ -85,7 +85,7 @@ export const ConnectivityRow: React.FC<ConnectivityRowProps> = ({
         </span>
       </div>
       <span
-        className={`shrink-0 text-[0.65rem] font-bold uppercase tracking-[0.08em] px-2 py-0.5 rounded-full ${
+        className={`shrink-0 text-[0.7rem] font-bold uppercase tracking-[0.08em] px-2 py-0.5 rounded-full ${
           status === "ok"
             ? "bg-emerald-100 text-emerald-700"
             : status === "fail"
