@@ -16,15 +16,20 @@ import { ExportPreviewPanel } from "./components/ExportPreviewPanel";
 import { ReporteProyectoPanel } from "./components/ReporteProyectoPanel";
 import { ReporteInvestigadorPanel } from "./components/ReporteInvestigadorPanel";
 import { PureMasterListPanel } from "./components/PureMasterListPanel";
+import { PureVerificationPanel } from "./components/PureVerificationPanel";
 import { PeruCrisPanel } from "./components/PeruCrisPanel";
 
 interface ReportesTabProps {
   canExport?: boolean;
+  canVerificarPure?: boolean;
+  canAdoptarPure?: boolean;
   refreshTrigger?: number;
 }
 
 export const ReportesTab: React.FC<ReportesTabProps> = ({
   canExport = true,
+  canVerificarPure = false,
+  canAdoptarPure = false,
   refreshTrigger = 0,
 }) => {
   const [exportingFormat, setExportingFormat] = useState<"xlsx" | "pdf" | null>(null);
@@ -135,6 +140,12 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
       />
 
       <PureMasterListPanel canExport={canExport} refreshTrigger={refreshTrigger} />
+
+      <PureVerificationPanel
+        investigadores={investigadores}
+        canView={canVerificarPure}
+        canManage={canAdoptarPure}
+      />
 
       <ReporteProyectoPanel proyectos={proyectos} proyectosLoading={proyectosLoading} />
 

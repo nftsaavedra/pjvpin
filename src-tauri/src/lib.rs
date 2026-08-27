@@ -251,6 +251,8 @@ pub fn run() {
             reporte_cmds::get_renacyt_distribucion,
             reporte_cmds::exportar_cerif,
             reporte_cmds::get_data_pure_masterlist,
+            reporte_cmds::verificar_diferencias_pure,
+            reporte_cmds::list_sync_reports,
             // Grados
             grado_cmds::get_all_grados,
             grado_cmds::get_all_grados_paginated,

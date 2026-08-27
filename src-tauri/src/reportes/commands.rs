@@ -8,6 +8,7 @@ use crate::reportes::cerif::CerifExportResult;
 use crate::reportes::dto::{
     PureMasterlistData, ReporteInvestigadorIntegral, ReporteProyectoIntegral,
 };
+use crate::reportes::sync_reportes::SyncReport;
 use crate::shared::error::AppError;
 use crate::shared::state::AppState;
 use tauri::{State, Window};
@@ -155,4 +156,28 @@ pub async fn get_data_pure_masterlist(
     pure_remote_total: Option<usize>,
 ) -> Result<PureMasterlistData, AppError> {
     handlers::get_data_pure_masterlist(&state, window.label(), pure_remote_total).await
+}
+
+/// Verificacion de doble via contra Pure (READ-ONLY). Con `investigador_id`
+/// compara sus publicaciones; sin el, compara el mapeo global de personas.
+/// El reporte se persiste en `sync_reportes` y se devuelve al frontend.
+#[tauri::command]
+pub async fn verificar_diferencias_pure(
+    window: Window,
+    state: State<'_, AppState>,
+    investigador_id: Option<String>,
+) -> Result<SyncReport, AppError> {
+    handlers::verificar_diferencias_pure(&state, window.label(), investigador_id).await
+}
+
+/// Historial de reportes de sincronizacion persistidos (Pure diff y
+/// validacion PeruCRIS), del mas reciente al mas antiguo.
+#[tauri::command]
+pub async fn list_sync_reports(
+    window: Window,
+    state: State<'_, AppState>,
+    tipo: Option<String>,
+    limit: Option<i64>,
+) -> Result<Vec<SyncReport>, AppError> {
+    handlers::list_sync_reports(&state, window.label(), tipo, limit).await
 }

@@ -109,6 +109,8 @@ export function TabRenderers({
           <Suspense fallback={<TableOnlyFallback columns={5} />}>
             <ReportesTab
               canExport={hasPermission(currentRole, "reportes.export")}
+              canVerificarPure={hasPermission(currentRole, "investigadores.view")}
+              canAdoptarPure={hasPermission(currentRole, "investigadores.manage")}
               refreshTrigger={refreshTrigger}
             />
           </Suspense>

@@ -7,7 +7,9 @@ use crate::reportes::cerif::{self, CerifExportResult};
 use crate::reportes::dto::{
     PureMasterlistData, ReporteInvestigadorIntegral, ReporteProyectoIntegral,
 };
+use crate::reportes::sync_reportes::{self, SyncReport, SyncReportTipo};
 use crate::shared::error::AppError;
+use crate::shared::external::pure_diff_service;
 use crate::shared::rbac;
 use crate::shared::state::AppState;
 
@@ -236,4 +238,52 @@ pub async fn get_data_pure_masterlist(
         pure_remote_total,
     )
     .await
+}
+
+/// Ejecuta la verificacion de doble via contra Pure (READ-ONLY) y persiste
+/// el reporte. Con `investigador_id` compara las publicaciones de ese
+/// investigador; sin el, compara el mapeo global de personas.
+pub async fn verificar_diferencias_pure(
+    state: &AppState,
+    window_label: &str,
+    investigador_id: Option<String>,
+) -> Result<SyncReport, AppError> {
+    let actor =
+        rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView)
+            .await?;
+    let report = match investigador_id.as_deref().map(str::trim) {
+        Some(id) if !id.is_empty() => pure_diff_service::diff_publicaciones(state, id).await?,
+        _ => pure_diff_service::diff_personas(state).await?,
+    };
+    crate::shared::audit::write_generic_audit(
+        &actor,
+        "pure.diff",
+        "sync_reporte",
+        &report.id,
+        format!(
+            "solo_local={} solo_pure={} diferentes={}",
+            report.resumen.solo_local, report.resumen.solo_pure, report.resumen.diferentes
+        ),
+    );
+    Ok(report)
+}
+
+/// Historial de reportes de sincronizacion persistidos, del mas reciente al
+/// mas antiguo. `tipo` filtra por subsistema (`pure_diff` /
+/// `perucris_validacion`).
+pub async fn list_sync_reports(
+    state: &AppState,
+    window_label: &str,
+    tipo: Option<String>,
+    limit: Option<i64>,
+) -> Result<Vec<SyncReport>, AppError> {
+    rbac::require_permission(state, window_label, rbac::AppPermission::InvestigadoresView).await?;
+    let tipo = tipo
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(SyncReportTipo::parse)
+        .transpose()?;
+    let limit = limit.unwrap_or(10).clamp(1, 100);
+    sync_reportes::list_recent(state.mongo_db()?, tipo, limit).await
 }

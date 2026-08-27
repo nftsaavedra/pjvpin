@@ -7,3 +7,4 @@ pub mod repository_export;
 pub mod repository_investigador;
 pub mod repository_proyecto;
 pub mod repository_pure_masterlist;
+pub mod sync_reportes;

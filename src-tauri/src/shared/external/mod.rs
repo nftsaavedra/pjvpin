@@ -7,6 +7,7 @@ pub mod perucris_validation_service;
 pub mod perucris_validator;
 pub mod pure_client;
 pub mod pure_cmd;
+pub mod pure_diff_service;
 pub mod pure_service;
 pub mod renacyt_client;
 pub mod reniec_client;

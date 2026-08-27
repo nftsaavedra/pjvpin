@@ -94,3 +94,11 @@ export type {
   PureMasterlistData,
   SyncPurePersonIdsResult,
 } from "./pureMasterList.types";
+
+export type {
+  ItemClasificacion,
+  SyncReport,
+  SyncReportItem,
+  SyncReportResumen,
+  SyncReportTipo,
+} from "./syncReport.types";

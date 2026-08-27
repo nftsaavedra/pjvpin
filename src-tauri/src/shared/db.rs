@@ -26,6 +26,7 @@ pub const DEV_RESET_COLLECTIONS: &[&str] = &[
     "patente_titulares",
     "publicacion_autores",
     "renacyt_kardex",
+    "sync_reportes",
 ];
 
 /// Drop best-effort de las colecciones dev reestructuradas (D10). Ignora
@@ -560,6 +561,9 @@ pub async fn ensure_indexes(db: &Database) -> Result<(), AppError> {
 
     // --- Kardex RENACYT: indice compuesto {investigador_id, fecha_evento:-1} ---
     crate::investigadores::kardex::ensure_indexes(db).await?;
+
+    // --- Reportes de sincronizacion: {tipo, ejecutado_at:-1} ---
+    crate::reportes::sync_reportes::ensure_indexes(db).await?;
 
     Ok(())
 }

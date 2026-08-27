@@ -12,6 +12,9 @@
 use std::time::Instant;
 
 use crate::reportes::cerif;
+use crate::reportes::sync_reportes::{
+    self, ItemClasificacion, SyncReport, SyncReportItem, SyncReportResumen, SyncReportTipo,
+};
 use crate::shared::error::AppError;
 use crate::shared::external::perucris_validation_dto::{
     PeruCrisValidationItem, PeruCrisValidationReport, ValidationTipo,
@@ -56,7 +59,7 @@ pub async fn validar_sincronizacion(
     let con_diferencias = items.iter().filter(|i| !i.diferencias.is_empty()).count();
     let faltantes = total - encontrados;
 
-    Ok(PeruCrisValidationReport {
+    let report = PeruCrisValidationReport {
         ejecutado_at: time::now_ms(),
         total_evaluados: total,
         total_encontrados: encontrados,
@@ -65,6 +68,71 @@ pub async fn validar_sincronizacion(
         tiempo_total_ms: start.elapsed().as_millis() as i64,
         fuente_perucris: crate::shared::defaults::PERUCRIS_PUBLIC_API_BASE_URL.to_string(),
         items,
+    };
+
+    persistir_reporte(db, &report).await;
+
+    Ok(report)
+}
+
+/// Persiste el reporte de validacion en `sync_reportes` como side-effect.
+///
+/// El contrato publico de `validar_sincronizacion` no cambia: si la
+/// escritura falla, se registra un warning y el reporte se devuelve igual
+/// (la verificacion ya se ejecuto y su valor no depende del historial).
+async fn persistir_reporte(db: &mongodb::Database, report: &PeruCrisValidationReport) {
+    let items: Vec<SyncReportItem> = report.items.iter().filter_map(map_item).collect();
+    let persisted = SyncReport {
+        id: String::new(),
+        tipo: SyncReportTipo::PeruCrisValidacion,
+        ejecutado_at: report.ejecutado_at,
+        resumen: SyncReportResumen {
+            total: report.total_evaluados,
+            solo_local: report.total_faltantes,
+            // PeruCRIS se valida contra el modelo local: no existe el caso
+            // "solo en la fuente remota" (el universo lo define el CERIF local).
+            solo_pure: 0,
+            diferentes: report.total_con_diferencias,
+            tiempo_total_ms: report.tiempo_total_ms,
+        },
+        items,
+    };
+    if let Err(e) = sync_reportes::insert(db, persisted).await {
+        tracing::warn!(
+            error = %e,
+            "No se pudo persistir el reporte de validacion PeruCRIS en sync_reportes"
+        );
+    }
+}
+
+/// Mapea un item de validacion al item generico del reporte persistido.
+/// Las entidades sincronizadas sin diferencias no generan item (misma
+/// semantica que el diff de Pure: el reporte lista solo lo divergente).
+fn map_item(item: &PeruCrisValidationItem) -> Option<SyncReportItem> {
+    let clasificacion = match (item.encontrado_en_perucris, item.diferencias.is_empty()) {
+        (true, true) => return None,
+        (true, false) => ItemClasificacion::Diferente,
+        (false, _) => ItemClasificacion::SoloLocal,
+    };
+    Some(SyncReportItem {
+        id_local: Some(item.id_local.clone()),
+        id_pure: item.perucris_uuid.clone(),
+        doi: item
+            .identificadores_esperados
+            .get("doi")
+            .cloned()
+            .unwrap_or(None),
+        titulo: item
+            .identificadores_esperados
+            .get("titulo")
+            .cloned()
+            .unwrap_or(None),
+        anio: None,
+        clasificacion,
+        diferencias: item.diferencias.clone(),
+        // El push a PeruCRIS tiene su propio command (`enviar_a_perucris`);
+        // este reporte es solo de lectura.
+        adoptable: false,
     })
 }
 
