@@ -18,6 +18,7 @@ import { GradosModule } from "./grados/grados.module";
 import { GruposModule } from "./grupos/grupos.module";
 import { OrgUnitsModule } from "./org-units/org-units.module";
 import { OcdeModule } from "./ocde/ocde.module";
+import { InvestigadoresModule } from "./investigadores/investigadores.module";
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { OcdeModule } from "./ocde/ocde.module";
     GruposModule,
     OrgUnitsModule,
     OcdeModule,
+    InvestigadoresModule,
   ],
   providers: [
     AppErrorFilter,
