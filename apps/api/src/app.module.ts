@@ -12,6 +12,7 @@ import { UsuariosModule } from "./usuarios/usuarios.module";
 import { PersonasModule } from "./personas/personas.module";
 import { HealthModule } from "./health/health.module";
 import { SecurityModule } from "./security/security.module";
+import { CatalogosModule } from "./catalogos/catalogos.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { SecurityModule } from "./security/security.module";
     PersonasModule,
     HealthModule,
     SecurityModule,
+    CatalogosModule,
   ],
   providers: [
     AppErrorFilter,
