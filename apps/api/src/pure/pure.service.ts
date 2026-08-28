@@ -278,7 +278,7 @@ export class PureService {
       });
     }
     const resumen: SyncReportResumenDto = {
-      total: this.contarUniverso(remotas, items.length),
+      total: this.contarUniverso(locales, remotas),
       solo_local: items.filter((i) => i.clasificacion === "solo_local").length,
       solo_pure: items.filter((i) => i.clasificacion === "solo_pure").length,
       diferentes: items.filter((i) => i.clasificacion === "diferente").length,
@@ -357,9 +357,13 @@ export class PureService {
   private async publicacionesPorInvestigador(
     idInvestigador: string,
   ): Promise<PublicacionCientificaDoc[]> {
+    const inv = await this.db
+      .collection<{ id_investigador: string; id_persona?: string }>("investigadores")
+      .findOne({ id_investigador: idInvestigador });
+    const idPersona = inv?.id_persona ?? idInvestigador;
     const pivot = await this.db
       .collection<{ id_publicacion: string }>("publicacion_autores")
-      .find({ id_persona: idInvestigador }, { projection: { id_publicacion: 1 } })
+      .find({ id_persona: idPersona }, { projection: { id_publicacion: 1 } })
       .toArray();
     const ids = pivot.map((p) => p.id_publicacion);
     if (ids.length === 0) return [];
@@ -369,8 +373,18 @@ export class PureService {
       .toArray();
   }
 
-  private contarUniverso(remotas: FetchedPublication[], itemsLength: number): number {
-    return remotas.length + itemsLength;
+  private contarUniverso(
+    locales: PublicacionCientificaDoc[],
+    remotas: FetchedPublication[],
+  ): number {
+    const emparejadas = remotas.filter((r) => {
+      return locales.some(
+        (l) =>
+          (l.pure_uuid && l.pure_uuid === r.pure_uuid) ||
+          (l.doi && r.doi && normDoi(l.doi) === normDoi(r.doi)),
+      );
+    }).length;
+    return locales.length + remotas.length - emparejadas;
   }
 }
 

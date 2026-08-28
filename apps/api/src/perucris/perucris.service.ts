@@ -4,6 +4,7 @@ import { MONGO_DB } from "../infra/mongo/mongo.module";
 import { AppError } from "../infra/errors/app-error";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import { AuditService } from "../audit/audit.service";
+import { JobRegistry } from "../external-http/job-registry.service";
 import { PeruCrisClient, type PeruCrisHit } from "../infra/http/perucris.client";
 
 interface SyncReportItem {
@@ -63,6 +64,7 @@ export class PeruCrisService {
   constructor(
     private readonly perucris: PeruCrisClient,
     private readonly audit: AuditService,
+    private readonly jobs: JobRegistry,
     @Inject(MONGO_DB) private readonly db: Db,
   ) {}
 
@@ -145,26 +147,15 @@ export class PeruCrisService {
   }
 
   /**
-   * Push CERIF al endpoint de ingesta de PeruCRIS. Stub: la
-   * serializacion completa del payload CERIF (OrgUnit/Person/Publication/
-   * Project/Patent) aterriza en Bloque F3 con el port de `cerif.rs`.
+   * Push CERIF al endpoint de ingesta de PeruCRIS — pospuesto a Bloque F3
+   * con el port de `cerif.rs` (1 145 lineas). Mientras tanto, este metodo
+   * queda declarado solo como type-checking helper.
    */
-  async pushCerif(payload: unknown, actor: AuthenticatedUser) {
-    const result = await this.perucris.pushCerif(payload);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "perucris.push",
-      "perucris",
-      "cerif/ingest",
-      JSON.stringify({ status: result.status }),
-    );
-    return result;
-  }
 
   /**
-   * Lookup directo por DNI en el HAL publico. Usado por el pipeline
-   * de import por DNI para capturar `perucris_uuid` sin instanciar un
-   * SyncReport.
+   * Resuelve el `perucris_uuid` canonico para una persona a partir de su
+   * DNI, filtrando por entity_type Person/ResearcherProfile en el HAL
+   * publico. Usado por el pipeline de import por DNI (T11).
    */
   async resolverUuidPorDni(dni: string): Promise<string | null> {
     const hits = await this.perucris.searchByQuery(dni, 5).catch(() => []);
@@ -175,16 +166,51 @@ export class PeruCrisService {
     return match?.uuid ?? null;
   }
 
-  async importIniciales(actor: AuthenticatedUser): Promise<PeruCrisImportResultado> {
+  async importIniciales(actor: AuthenticatedUser): Promise<{ jobId: string; message: string }> {
+    const jobId = `perucris-import-${Date.now()}`;
+    this.jobs.crear(jobId, 2);
+    this.jobs.enEjecucion(jobId);
+    void this.ejecutarImportIniciales(jobId, actor).catch((err) => {
+      this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
+    });
+    return {
+      jobId,
+      message: `Job enqueued. Procesara proyectos + publicaciones de UNF desde PeruCRIS.`,
+    };
+  }
+
+  private async ejecutarImportIniciales(jobId: string, actor: AuthenticatedUser): Promise<void> {
     const result: PeruCrisImportResultado = {
       importados: 0,
       omitidos: 0,
       errores: [],
     };
-    result.importados += await this.importarProyectosUnf();
-    result.importados += await this.importarPublicacionesUnf();
-    void actor;
-    return result;
+    try {
+      result.importados += await this.importarProyectosUnf();
+      this.jobs.incrementar(jobId);
+      result.importados += await this.importarPublicacionesUnf();
+      this.jobs.incrementar(jobId);
+      this.jobs.completar(jobId, {
+        importados: result.importados,
+        omitidos: result.omitidos,
+        errores: result.errores.length,
+      });
+      await this.audit.writeGenericAudit(
+        { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+        "perucris.import",
+        "perucris.import",
+        "iniciales",
+        JSON.stringify({
+          jobId,
+          importados: result.importados,
+          errores: result.errores.length,
+        }),
+      );
+    } catch (err) {
+      result.errores.push(err instanceof Error ? err.message : String(err));
+      this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
+      throw err;
+    }
   }
 
   private async validarPersonas(): Promise<SyncReportItem[]> {

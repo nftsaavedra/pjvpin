@@ -7,11 +7,15 @@ import { AuthController } from "./auth.controller";
 import { JwtStrategy } from "./jwt.strategy";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { ReniecClient } from "../infra/http/reniec.client";
+import { MongoModule } from "../infra/mongo/mongo.module";
+import { AuditModule } from "../audit/audit.module";
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule,
+    MongoModule,
+    AuditModule,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -86,14 +86,14 @@ function parseHit(raw: unknown): PeruCrisHit | null {
 export class PeruCrisClient {
   private readonly logger = new Logger(PeruCrisClient.name);
   private readonly publicBaseUrl: string;
-  private readonly privateBaseUrl: string;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(_config: ConfigService) {
     this.publicBaseUrl =
-      config.get<string>("PJVPIN_PERUCRIS_PUBLIC_API_BASE_URL") ??
+      _config.get<string>("PJVPIN_PERUCRIS_PUBLIC_API_BASE_URL") ??
       DEFAULT_PERUCRIS_PUBLIC_API_BASE_URL;
-    this.privateBaseUrl =
-      config.get<string>("PJVPIN_PERUCRIS_API_BASE_URL") ?? DEFAULT_PERUCRIS_API_BASE_URL;
+    // privateBaseUrl (PJVPIN_PERUCRIS_API_BASE_URL) reservado para el push
+    // CERIF que aterriza en Bloque F3 junto al port de cerif.rs.
+    void DEFAULT_PERUCRIS_API_BASE_URL;
   }
 
   /**
@@ -149,42 +149,13 @@ export class PeruCrisClient {
   }
 
   /**
-   * Push CERIF. **Stub**: la implementacion completa del push aterriza en
-   * Bloque F3 cuando se porte `cerif.rs` (1 145 lineas). Aqui dejamos
-   * el endpoint HTTP con auth y la firma del metodo; los argumentos
-   * llegaran via el body.
+   * Push CERIF. **Stub pospuesto a F3** — `cerif.rs` (1 145 lineas) define
+   * el payload completo (OrgUnit/Person/Publication/Project/Patent). El
+   * endpoint HTTP y la firma del metodo aterrizan en el Bloque F3 junto al
+   * port del serializador. Mantenemos la constante `privateBaseUrl` y el
+   * helper de parseo disponibles para esa fase.
    */
-  async pushCerif(payload: unknown): Promise<{ status: number }> {
-    const apiKey = this.config.get<string>("PJVPIN_PERUCRIS_API_KEY");
-    if (!apiKey) {
-      throw AppError.config(
-        "Falta configurar PJVPIN_PERUCRIS_API_KEY. El push a PeruCRIS requiere credenciales.",
-      );
-    }
-    const url = `${this.privateBaseUrl.replace(/\/+$/, "")}/cerif/ingest`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "api-key": apiKey,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-    const status = res.status;
-    if (status === 401 || status === 403) {
-      throw AppError.config(
-        `La api-key de PeruCRIS no tiene permisos para ingestar CERIF (HTTP ${status}).`,
-      );
-    }
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw AppError.external(
-        `PeruCRIS /cerif/ingest respondio ${status}: ${sanitizeExternalDetail(text)}`,
-      );
-    }
-    return { status };
-  }
+  // pushCerif(payload: unknown): Promise<{ status: number }> — pospuesto a F3.
 
   private async getJson(url: string): Promise<PeruCrisHit[]> {
     let res: Response;

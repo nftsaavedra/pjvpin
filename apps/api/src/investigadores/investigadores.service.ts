@@ -340,13 +340,30 @@ export class InvestigadoresService {
     const result = this.nuevoResultadoImport(dnis.length);
     const dniToPureId = await this.descargarMapeoPure(dnis);
     let cursor = 0;
+    let reniecFallos = 0;
+    const circuitBreakerThreshold = 25;
+    const circuitBreakerAbierto = { v: false };
     const worker = async (): Promise<void> => {
       while (cursor < dnis.length) {
         const idx = cursor++;
         const dni = dnis[idx];
+        if (circuitBreakerAbierto.v) {
+          result.errores.push({
+            dni,
+            fase: "reniec",
+            error: "circuit_breaker_abierto",
+          });
+          this.jobs.incrementar(jobId);
+          continue;
+        }
         try {
           await this.procesarDni(dni, dniToPureId, result, actor);
+          reniecFallos = 0;
         } catch (err) {
+          reniecFallos++;
+          if (reniecFallos >= circuitBreakerThreshold) {
+            circuitBreakerAbierto.v = true;
+          }
           result.errores.push({
             dni,
             fase: "reniec",

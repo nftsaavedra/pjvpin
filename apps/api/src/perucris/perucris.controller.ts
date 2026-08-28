@@ -5,7 +5,6 @@ import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
-import { AppError } from "../infra/errors/app-error";
 
 interface ValidarRequest {
   scope?: "all" | "person" | "org" | "publication";
@@ -32,15 +31,6 @@ export class PeruCrisController {
   @RequirePermission(AppPermission.ReportesView)
   async validarPublicacion(@Param("id") id: string, @CurrentUser() actor: AuthenticatedUser) {
     return this.service.validarPublicacion(id, actor);
-  }
-
-  @Post("push")
-  @RequirePermission(AppPermission.ReportesExport)
-  async push(@Body() body: unknown, @CurrentUser() actor: AuthenticatedUser) {
-    if (!body || typeof body !== "object") {
-      throw AppError.validation("Body invalido: se esperaba un payload CERIF JSON.");
-    }
-    return this.service.pushCerif(body, actor);
   }
 
   @Post("import/iniciales")
