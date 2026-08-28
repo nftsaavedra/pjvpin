@@ -3,6 +3,10 @@ import { AuditService } from "../audit/audit.service";
 import { AppError } from "../infra/errors/app-error";
 import { ReniecClient } from "../infra/http/reniec.client";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
+import { JobRegistry } from "../external-http/job-registry.service";
+import { KardexService } from "../kardex/kardex.service";
+import type { KardexEntry } from "../kardex/kardex.logic";
+import { RenacytService } from "../renacyt/renacyt.service";
 import {
   InvestigadoresRepository,
   type InvestigadorDoc,
@@ -13,9 +17,9 @@ import type {
   InvestigadorDetalleDto,
   InvestigadorDto,
   ImportInvestigadoresResult,
-  KardexEntry,
   UpdateInvestigadorRequest,
 } from "./dto/investigadores.dto";
+import { loadPlantillaDefault } from "./data/plantilla-loader";
 
 function toDto(doc: InvestigadorDoc): InvestigadorDto {
   return {
@@ -42,12 +46,27 @@ function toDto(doc: InvestigadorDoc): InvestigadorDto {
   };
 }
 
+function kardexDocToEntry(doc: KardexDoc): KardexEntry {
+  return {
+    id: doc.id_kardex,
+    investigador_id: doc.id_investigador,
+    persona_id: doc.id_persona,
+    fecha_evento: doc.fecha_evento,
+    disparador: doc.disparador,
+    cambios: doc.cambios,
+    formaciones_diff: doc.formaciones_diff,
+  };
+}
+
 @Injectable()
 export class InvestigadoresService {
   constructor(
     private readonly repo: InvestigadoresRepository,
     private readonly audit: AuditService,
     private readonly reniec: ReniecClient,
+    private readonly renacyt: RenacytService,
+    private readonly kardex: KardexService,
+    private readonly jobs: JobRegistry,
   ) {}
 
   async listAll(): Promise<InvestigadorDto[]> {
@@ -111,28 +130,39 @@ export class InvestigadoresService {
 
   async create(req: CreateInvestigadorRequest, actor: AuthenticatedUser): Promise<InvestigadorDto> {
     const existing = await this.repo.findByDni(req.dni);
-    if (existing) throw AppError.internal("Ya existe un investigador con ese DNI.");
+    if (existing) throw AppError.unique("Ya existe un investigador con ese DNI.");
     const id_persona = `persona-${req.dni}`;
     const id_investigador = `investigador-${req.dni}`;
     const doc: InvestigadorDoc = {
       id_investigador,
       dni: req.dni,
       id_persona,
+      nombres: req.nombres,
+      apellido_paterno: req.apellido_paterno,
+      apellido_materno: req.apellido_materno ?? "",
+      nombre_completo:
+        `${req.nombres} ${req.apellido_paterno} ${req.apellido_materno ?? ""}`.trim(),
       id_grado: req.id_grado ?? null,
       renacyt_codigo_registro: req.renacyt_codigo_registro ?? null,
-      renacyt_orcid: null,
+      renacyt_id_investigador: null,
       renacyt_nivel: null,
+      renacyt_grupo: null,
+      renacyt_condicion: null,
+      renacyt_fecha_informe_calificacion: null,
+      renacyt_fecha_registro: null,
+      renacyt_fecha_ultima_revision: null,
+      renacyt_orcid: null,
+      renacyt_scopus_author_id: null,
+      renacyt_fecha_ultima_sincronizacion: null,
+      renacyt_ficha_url: null,
+      renacyt_formaciones_academicas_json: null,
+      renacyt_cambios_revisados_en: null,
       grupo_investigacion_id: req.grupo_investigacion_id ?? null,
       orcid: req.orcid ?? null,
       correo_institucional: req.correo_institucional ?? null,
       estado_renacyt: null,
       pure_person_id: null,
       perucris_uuid: null,
-      nombres: req.nombres,
-      apellido_paterno: req.apellido_paterno,
-      apellido_materno: req.apellido_materno ?? "",
-      nombre_completo:
-        `${req.nombres} ${req.apellido_paterno} ${req.apellido_materno ?? ""}`.trim(),
       activo: 1,
       cambios_renacyt_revisados: 0,
     };
@@ -142,7 +172,6 @@ export class InvestigadoresService {
       "investigador.create",
       "investigador",
       id_investigador,
-      JSON.stringify({ dni: req.dni }),
     );
     return toDto(doc);
   }
@@ -152,8 +181,6 @@ export class InvestigadoresService {
     req: UpdateInvestigadorRequest,
     actor: AuthenticatedUser,
   ): Promise<InvestigadorDto> {
-    const existing = await this.repo.findById(id);
-    if (!existing) throw AppError.notFound("Investigador no encontrado.");
     const set: Partial<InvestigadorDoc> = {};
     if (req.nombres !== undefined) set.nombres = req.nombres;
     if (req.apellido_paterno !== undefined) set.apellido_paterno = req.apellido_paterno;
@@ -164,21 +191,18 @@ export class InvestigadoresService {
     if (req.orcid !== undefined) set.orcid = req.orcid;
     if (req.correo_institucional !== undefined) set.correo_institucional = req.correo_institucional;
     if (req.estado_renacyt !== undefined) set.estado_renacyt = req.estado_renacyt;
-    if (set.nombres || set.apellido_paterno || set.apellido_materno) {
-      const nombres = set.nombres ?? existing.nombres;
-      const ap = set.apellido_paterno ?? existing.apellido_paterno;
-      const am = set.apellido_materno ?? existing.apellido_materno;
-      set.nombre_completo = `${nombres} ${ap} ${am}`.trim();
+    if (Object.keys(set).length > 0) {
+      await this.repo.updateById(id, set);
     }
-    await this.repo.updateById(id, set);
+    const updated = await this.repo.findById(id);
+    if (!updated) throw AppError.notFound("Investigador no encontrado.");
     await this.audit.writeGenericAudit(
       { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
       "investigador.update",
       "investigador",
       id,
     );
-    const updated = await this.repo.findById(id);
-    return toDto(updated!);
+    return toDto(updated);
   }
 
   async deactivate(id: string, actor: AuthenticatedUser): Promise<InvestigadorDto> {
@@ -187,7 +211,7 @@ export class InvestigadoresService {
     if (!updated) throw AppError.notFound("Investigador no encontrado.");
     await this.audit.writeGenericAudit(
       { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "investigador.delete",
+      "investigador.deactivate",
       "investigador",
       id,
     );
@@ -207,31 +231,16 @@ export class InvestigadoresService {
     return toDto(updated);
   }
 
-  async consultarDni(numero: string) {
-    return this.reniec.consultar(numero);
-  }
-
   async listKardex(id: string): Promise<KardexEntry[]> {
     const docs = await this.repo.listKardex(id);
-    return docs as unknown as KardexEntry[];
-  }
-
-  async insertKardex(idInvestigador: string, entry: KardexEntry): Promise<void> {
-    const doc: KardexDoc = {
-      id_investigador: idInvestigador,
-      fecha_evento: entry.fecha_evento,
-      tipo_evento: entry.tipo_evento,
-      descripcion: entry.descripcion,
-      metadata: entry.metadata,
-    };
-    await this.repo.insertKardex(doc);
+    return docs.map(kardexDocToEntry);
   }
 
   async marcarCambiosRenacytRevisados(
     id: string,
     actor: AuthenticatedUser,
   ): Promise<InvestigadorDto> {
-    await this.repo.updateById(id, { cambios_renacyt_revisados: 1 });
+    await this.repo.updateById(id, { renacyt_cambios_revisados_en: Date.now() });
     const updated = await this.repo.findById(id);
     if (!updated) throw AppError.notFound("Investigador no encontrado.");
     await this.audit.writeGenericAudit(
@@ -244,9 +253,14 @@ export class InvestigadoresService {
   }
 
   async getPlantillaDefault(): Promise<string[]> {
-    return PLANTILLA_DNI_UNF;
+    return loadPlantillaDefault();
   }
 
+  /**
+   * Importa lote de DNIs ejecutando RENIEC (obligatorio) y registrando
+   * entradas en el kardex por cada DNI nuevo/actualizado. Las fases
+   * PeruCRIS/Pure/RENACYT se conectan en commits D2/D3.
+   */
   async importarDnis(
     dnis: string[],
     actor: AuthenticatedUser,
@@ -271,12 +285,14 @@ export class InvestigadoresService {
         const nombres = r.firstName;
         const ap = r.firstLastName;
         const am = r.secondLastName;
+        const now = Date.now();
         if (existing) {
           await this.repo.updateById(existing.id_investigador, {
             nombres,
             apellido_paterno: ap,
             apellido_materno: am,
             nombre_completo: r.fullName,
+            renacyt_fecha_ultima_sincronizacion: now,
           });
           result.actualizados++;
         } else {
@@ -285,20 +301,31 @@ export class InvestigadoresService {
             id_investigador: `investigador-${dni}`,
             dni,
             id_persona,
+            nombres,
+            apellido_paterno: ap,
+            apellido_materno: am,
+            nombre_completo: r.fullName,
             id_grado: null,
             renacyt_codigo_registro: null,
-            renacyt_orcid: null,
+            renacyt_id_investigador: null,
             renacyt_nivel: null,
+            renacyt_grupo: null,
+            renacyt_condicion: null,
+            renacyt_fecha_informe_calificacion: null,
+            renacyt_fecha_registro: null,
+            renacyt_fecha_ultima_revision: null,
+            renacyt_orcid: null,
+            renacyt_scopus_author_id: null,
+            renacyt_fecha_ultima_sincronizacion: now,
+            renacyt_ficha_url: null,
+            renacyt_formaciones_academicas_json: null,
+            renacyt_cambios_revisados_en: null,
             grupo_investigacion_id: null,
             orcid: null,
             correo_institucional: null,
             estado_renacyt: null,
             pure_person_id: null,
             perucris_uuid: null,
-            nombres,
-            apellido_paterno: ap,
-            apellido_materno: am,
-            nombre_completo: r.fullName,
             activo: 1,
             cambios_renacyt_revisados: 0,
           });
@@ -326,37 +353,137 @@ export class InvestigadoresService {
     return result;
   }
 
-  async refreshRenacytTodos(
-    _actor: AuthenticatedUser,
-  ): Promise<{ jobId: string; message: string }> {
+  /**
+   * Refresca la formacion RENACYT de un investigador. Usa el codigo RENACYT
+   * almacenado; si no hay, consulta RENACYT por DNI para obtenerlo. Persiste
+   * la entrada del kardex si hay cambios.
+   */
+  async refrescarFormacionRenacyt(
+    id: string,
+    actor: AuthenticatedUser,
+  ): Promise<{ refreshed: number; kardex: KardexEntry | null }> {
+    const inv = await this.repo.findById(id);
+    if (!inv) throw AppError.notFound("Investigador no encontrado.");
+    let codigo = inv.renacyt_codigo_registro;
+    if (!codigo) {
+      const found = await this.renacyt.buscarPorDni(inv.dni);
+      if (!found) throw AppError.notFound("El DNI no esta registrado en RENACYT.");
+      codigo = found.codigo_registro;
+      await this.repo.updateById(id, {
+        renacyt_codigo_registro: codigo,
+        renacyt_id_investigador: found.id_investigador || null,
+        renacyt_nivel: found.nivel || null,
+        renacyt_grupo: found.grupo || null,
+        renacyt_condicion: found.condicion || null,
+        renacyt_orcid: found.orcid || null,
+      });
+    }
+    const lookup = await this.renacyt.consultarInvestigador(codigo);
+    const now = Date.now();
+    await this.repo.updateById(id, {
+      renacyt_codigo_registro: lookup.codigo_registro || codigo,
+      renacyt_id_investigador: lookup.id_investigador || null,
+      renacyt_nivel: lookup.nivel,
+      renacyt_grupo: lookup.grupo,
+      renacyt_condicion: lookup.condicion,
+      renacyt_fecha_informe_calificacion: lookup.fecha_informe_calificacion,
+      renacyt_fecha_registro: lookup.fecha_registro,
+      renacyt_fecha_ultima_revision: lookup.fecha_ultima_revision,
+      renacyt_orcid: lookup.orcid,
+      renacyt_scopus_author_id: lookup.scopus_author_id,
+      renacyt_fecha_ultima_sincronizacion: now,
+      renacyt_ficha_url: lookup.ficha_url,
+      renacyt_formaciones_academicas_json: lookup.formaciones_academicas_json,
+    });
+    const entry = await this.kardex.registrarCambioSiAplica(id, lookup, "refresh_individual");
+    await this.audit.writeGenericAudit(
+      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+      "renacyt.refresh.individual",
+      "investigador",
+      id,
+      JSON.stringify({
+        codigo,
+        cambios: entry ? entry.cambios.length : 0,
+        kardex_id: entry?.id ?? null,
+      }),
+    );
+    return { refreshed: 1, kardex: entry };
+  }
+
+  /**
+   * Refresca RENACYT para todos los investigadores con codigo RENACYT
+   * registrado. Ejecuta en background con JobRegistry; el endpoint devuelve
+   * 202 + jobId inmediatamente.
+   */
+  async refreshRenacytTodos(actor: AuthenticatedUser): Promise<{ jobId: string; message: string }> {
+    const candidatos = await this.repo.listAllDnisRenacyt();
+    const jobId = `renacyt-refresh-${Date.now()}`;
+    const job = this.jobs.crear(jobId, candidatos.length);
+    this.jobs.enEjecucion(jobId);
+    void this.ejecutarRefreshMasivo(jobId, candidatos, actor).catch((err) => {
+      this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
+    });
+    void job;
     return {
-      jobId: `renacyt-refresh-${Date.now()}`,
-      message: "Job enqueued. Verifique progreso en sync/reportes.",
+      jobId,
+      message: `Job enqueued. Procesara ${candidatos.length} investigadores. Verifique progreso en sync/reportes.`,
     };
   }
 
-  async refrescarFormacionRenacyt(
-    id: string,
-    _actor: AuthenticatedUser,
-  ): Promise<{ refreshed: number }> {
-    await this.repo.updateById(id, { renacyt_nivel: "pendiente-refresh" });
-    return { refreshed: 0 };
+  private async ejecutarRefreshMasivo(
+    jobId: string,
+    candidatos: Array<{ id_investigador: string }>,
+    actor: AuthenticatedUser,
+  ): Promise<void> {
+    let ok = 0;
+    const errores: Array<{ id: string; error: string }> = [];
+    for (const c of candidatos) {
+      try {
+        const inv = await this.repo.findById(c.id_investigador);
+        if (!inv?.renacyt_codigo_registro) {
+          this.jobs.incrementar(jobId);
+          continue;
+        }
+        const lookup = await this.renacyt.consultarInvestigador(inv.renacyt_codigo_registro);
+        const now = Date.now();
+        await this.repo.updateById(c.id_investigador, {
+          renacyt_nivel: lookup.nivel,
+          renacyt_grupo: lookup.grupo,
+          renacyt_condicion: lookup.condicion,
+          renacyt_orcid: lookup.orcid,
+          renacyt_scopus_author_id: lookup.scopus_author_id,
+          renacyt_fecha_informe_calificacion: lookup.fecha_informe_calificacion,
+          renacyt_fecha_ultima_revision: lookup.fecha_ultima_revision,
+          renacyt_formaciones_academicas_json: lookup.formaciones_academicas_json,
+          renacyt_ficha_url: lookup.ficha_url,
+          renacyt_fecha_ultima_sincronizacion: now,
+        });
+        await this.kardex.registrarCambioSiAplica(c.id_investigador, lookup, "refresh_masivo");
+        ok++;
+      } catch (err) {
+        errores.push({
+          id: c.id_investigador,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      } finally {
+        this.jobs.incrementar(jobId);
+      }
+    }
+    this.jobs.completar(jobId, { ok, errores });
+    await this.audit.writeGenericAudit(
+      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+      "renacyt.refresh.batch",
+      "investigadores",
+      "lote",
+      JSON.stringify({ jobId, total: candidatos.length, ok, errores: errores.length }),
+    );
   }
 
-  async descargarConstanciaRenacyt(_id: string): Promise<Buffer> {
-    return Buffer.from("");
+  async descargarConstanciaRenacyt(id: string): Promise<Buffer> {
+    const inv = await this.repo.findById(id);
+    if (!inv?.renacyt_codigo_registro) {
+      throw AppError.notFound("El investigador no tiene codigo RENACYT registrado.");
+    }
+    return this.renacyt.descargarConstancia(inv.renacyt_codigo_registro);
   }
 }
-
-const PLANTILLA_DNI_UNF = [
-  "00000001",
-  "00000002",
-  "00000003",
-  "00000004",
-  "00000005",
-  "00000006",
-  "00000007",
-  "00000008",
-  "00000009",
-  "00000010",
-];

@@ -7,8 +7,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
   Res,
+  UseGuards,
 } from "@nestjs/common";
 import type { Response } from "express";
 import { InvestigadoresService } from "./investigadores.service";
@@ -16,25 +16,21 @@ import {
   CreateInvestigadorRequest,
   ImportDniRequest,
   UpdateInvestigadorRequest,
+  type ImportInvestigadoresResult,
   type InvestigadorDetalleDto,
   type InvestigadorDto,
-  type ImportInvestigadoresResult,
-  type KardexEntry,
 } from "./dto/investigadores.dto";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
-import { ReniecClient } from "../infra/http/reniec.client";
+import type { KardexEntry } from "../kardex/kardex.logic";
 
 @Controller("investigadores")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class InvestigadoresController {
-  constructor(
-    private readonly service: InvestigadoresService,
-    private readonly reniec: ReniecClient,
-  ) {}
+  constructor(private readonly service: InvestigadoresService) {}
 
   @Get()
   @RequirePermission(AppPermission.InvestigadoresView)
@@ -131,13 +127,10 @@ export class InvestigadoresController {
     return this.service.marcarCambiosRenacytRevisados(id, actor);
   }
 
-  @Post("renacyt/formacion/refrescar")
+  @Post(":id/renacyt/formacion/refrescar")
   @RequirePermission(AppPermission.InvestigadoresManage)
-  async refreshFormacion(
-    @Body() body: { id_investigador: string },
-    @CurrentUser() actor: AuthenticatedUser,
-  ) {
-    return this.service.refrescarFormacionRenacyt(body.id_investigador, actor);
+  async refreshFormacion(@Param("id") id: string, @CurrentUser() actor: AuthenticatedUser) {
+    return this.service.refrescarFormacionRenacyt(id, actor);
   }
 
   @Post("renacyt/refrescar-todos")
@@ -153,12 +146,6 @@ export class InvestigadoresController {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="constancia-${id}.pdf"`);
     res.send(buffer);
-  }
-
-  @Get("reniec/dni/:numero")
-  @RequirePermission(AppPermission.InvestigadoresManage)
-  async consultarReniec(@Param("numero") numero: string) {
-    return this.reniec.consultar(numero);
   }
 
   @Get("import/plantilla")

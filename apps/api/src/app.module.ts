@@ -19,6 +19,9 @@ import { GruposModule } from "./grupos/grupos.module";
 import { OrgUnitsModule } from "./org-units/org-units.module";
 import { OcdeModule } from "./ocde/ocde.module";
 import { InvestigadoresModule } from "./investigadores/investigadores.module";
+import { ExternalHttpModule } from "./external-http/external-http.module";
+import { KardexModule } from "./kardex/kardex.module";
+import { RenacytModule } from "./renacyt/renacyt.module";
 
 @Module({
   imports: [
@@ -49,6 +52,9 @@ import { InvestigadoresModule } from "./investigadores/investigadores.module";
     OrgUnitsModule,
     OcdeModule,
     InvestigadoresModule,
+    ExternalHttpModule,
+    KardexModule,
+    RenacytModule,
   ],
   providers: [
     AppErrorFilter,

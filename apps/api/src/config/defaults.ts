@@ -5,6 +5,28 @@ export const DEFAULT_GLOBAL_PREFIX = "api/v1";
 export const DEFAULT_RENIEC_API_BASE_URL = "https://api.decolecta.com/v1";
 export const RENIEC_TEST_DNI = "00000000";
 
+export const DEFAULT_RENACYT_API_BASE_URL = "https://renacyt.concytec.gob.pe/renacyt-backend";
+export const DEFAULT_RENACYT_FICHA_BASE_URL =
+  "https://servicio-renacyt.concytec.gob.pe/ficha-renacyt/";
+export const DEFAULT_RENACYT_ACTO_VERSION = "2021";
+export const RENACYT_TEST_CTI_VITAE = "80203";
+
+export const DEFAULT_PURE_API_BASE_URL = "https://pure.unf.edu.pe/ws/api";
+
+export const DEFAULT_PERUCRIS_API_BASE_URL = "https://perucris.example.org/api";
+export const DEFAULT_PERUCRIS_PUBLIC_API_BASE_URL = "https://rest.perucris.pe/server/api";
+
+export const PURE_MASTERLIST_DEFAULT_ORG_UNIT_ID = "UNF001";
+export const PURE_MASTERLIST_DEFAULT_VISIBILITY = "public";
+export const PURE_MASTERLIST_DEFAULT_EMPLOYED_AS = "academic";
+export const PURE_MASTERLIST_DEFAULT_STAFF_TYPE = "academic";
+export const PURE_MASTERLIST_DEFAULT_START_DATE = "2025-06-02";
+
+export const CONSTANCIA_PDF_MIN_BYTES = 1024;
+export const CONSTANCIA_PDF_TIMEOUT_MS = 30_000;
+export const IMPORT_BATCH_ASYNC_THRESHOLD = 25;
+export const IMPORT_BATCH_CONCURRENCY = 5;
+
 export const JWT_ACCESS_TTL_DEFAULT = "15m";
 export const JWT_REFRESH_TTL_DEFAULT = "7d";
 

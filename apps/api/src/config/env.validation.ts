@@ -59,6 +59,38 @@ export class EnvValidationSchema {
 
   @IsString()
   @IsOptional()
+  PJVPIN_RENACYT_API_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  PJVPIN_RENACYT_FICHA_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  PJVPIN_RENACYT_ACTO_VERSION?: string;
+
+  @IsString()
+  @IsOptional()
+  PJVPIN_PURE_API_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  PJVPIN_PURE_API_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  PJVPIN_PERUCRIS_API_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  PJVPIN_PERUCRIS_API_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  PJVPIN_PERUCRIS_PUBLIC_API_BASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
   NODE_ENV?: string;
 }
 
