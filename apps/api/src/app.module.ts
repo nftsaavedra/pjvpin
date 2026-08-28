@@ -22,6 +22,7 @@ import { InvestigadoresModule } from "./investigadores/investigadores.module";
 import { ExternalHttpModule } from "./external-http/external-http.module";
 import { KardexModule } from "./kardex/kardex.module";
 import { RenacytModule } from "./renacyt/renacyt.module";
+import { PureModule } from "./pure/pure.module";
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { RenacytModule } from "./renacyt/renacyt.module";
     ExternalHttpModule,
     KardexModule,
     RenacytModule,
+    PureModule,
   ],
   providers: [
     AppErrorFilter,
