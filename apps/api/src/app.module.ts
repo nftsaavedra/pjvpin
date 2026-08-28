@@ -16,6 +16,8 @@ import { CatalogosModule } from "./catalogos/catalogos.module";
 import { GeoModule } from "./geo/geo.module";
 import { GradosModule } from "./grados/grados.module";
 import { GruposModule } from "./grupos/grupos.module";
+import { OrgUnitsModule } from "./org-units/org-units.module";
+import { OcdeModule } from "./ocde/ocde.module";
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { GruposModule } from "./grupos/grupos.module";
     GeoModule,
     GradosModule,
     GruposModule,
+    OrgUnitsModule,
+    OcdeModule,
   ],
   providers: [
     AppErrorFilter,
