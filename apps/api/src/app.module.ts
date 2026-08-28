@@ -23,6 +23,7 @@ import { ExternalHttpModule } from "./external-http/external-http.module";
 import { KardexModule } from "./kardex/kardex.module";
 import { RenacytModule } from "./renacyt/renacyt.module";
 import { PureModule } from "./pure/pure.module";
+import { PeruCrisModule } from "./perucris/perucris.module";
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { PureModule } from "./pure/pure.module";
     KardexModule,
     RenacytModule,
     PureModule,
+    PeruCrisModule,
   ],
   providers: [
     AppErrorFilter,

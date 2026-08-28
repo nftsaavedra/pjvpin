@@ -7,6 +7,8 @@ import { JobRegistry } from "../external-http/job-registry.service";
 import { KardexService } from "../kardex/kardex.service";
 import type { KardexEntry } from "../kardex/kardex.logic";
 import { RenacytService } from "../renacyt/renacyt.service";
+import { PureService } from "../pure/pure.service";
+import { PeruCrisService } from "../perucris/perucris.service";
 import {
   InvestigadoresRepository,
   type InvestigadorDoc,
@@ -20,6 +22,7 @@ import type {
   UpdateInvestigadorRequest,
 } from "./dto/investigadores.dto";
 import { loadPlantillaDefault } from "./data/plantilla-loader";
+import { IMPORT_BATCH_ASYNC_THRESHOLD, IMPORT_BATCH_CONCURRENCY } from "../config/defaults";
 
 function toDto(doc: InvestigadorDoc): InvestigadorDto {
   return {
@@ -67,6 +70,8 @@ export class InvestigadoresService {
     private readonly renacyt: RenacytService,
     private readonly kardex: KardexService,
     private readonly jobs: JobRegistry,
+    private readonly pure: PureService,
+    private readonly perucris: PeruCrisService,
   ) {}
 
   async listAll(): Promise<InvestigadorDto[]> {
@@ -257,16 +262,225 @@ export class InvestigadoresService {
   }
 
   /**
-   * Importa lote de DNIs ejecutando RENIEC (obligatorio) y registrando
-   * entradas en el kardex por cada DNI nuevo/actualizado. Las fases
-   * PeruCRIS/Pure/RENACYT se conectan en commits D2/D3.
+   * Importa lote de DNIs ejecutando el pipeline multi-fuente:
+   * RENIEC -> PeruCRIS (search_by_query DNI, captura perucris_uuid) ->
+   * Pure (mapping maestro descargado 1 vez por lote, asigna pure_person_id) ->
+   * RENACYT (nivel/codigo/grupo + kardex si hay cambios).
+   *
+   * Concurrencia 5 (IMPORT_BATCH_CONCURRENCY), circuit breaker RENIEC (skip
+   * si >25 fallos consecutivos), idempotencia per-DNI (re-import no duplica).
+   * Lote > IMPORT_BATCH_ASYNC_THRESHOLD: ejecuta en background con JobRegistry.
    */
   async importarDnis(
     dnis: string[],
     actor: AuthenticatedUser,
+  ): Promise<ImportInvestigadoresResult | { jobId: string; message: string }> {
+    const uniqueDnis = Array.from(new Set(dnis.filter((d) => /^\d{8}$/.test(d))));
+    if (uniqueDnis.length > IMPORT_BATCH_ASYNC_THRESHOLD) {
+      const jobId = `import-${Date.now()}`;
+      this.jobs.crear(jobId, uniqueDnis.length);
+      this.jobs.enEjecucion(jobId);
+      void this.ejecutarImportMasivo(jobId, uniqueDnis, actor).catch((err) => {
+        this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
+      });
+      return {
+        jobId,
+        message: `Job enqueued. Procesara ${uniqueDnis.length} DNIs.`,
+      };
+    }
+    return this.ejecutarImportSecuencial(uniqueDnis, actor);
+  }
+
+  private async ejecutarImportSecuencial(
+    dnis: string[],
+    actor: AuthenticatedUser,
   ): Promise<ImportInvestigadoresResult> {
-    const result: ImportInvestigadoresResult = {
-      total: dnis.length,
+    const result = this.nuevoResultadoImport(dnis.length);
+    const dniToPureId = await this.descargarMapeoPure(dnis);
+    let reniecFallos = 0;
+    const circuitBreakerThreshold = 25;
+    for (const dni of dnis) {
+      result.procesados++;
+      try {
+        if (reniecFallos >= circuitBreakerThreshold) {
+          result.errores.push({
+            dni,
+            fase: "reniec",
+            error: "circuit_breaker_abierto",
+          });
+          continue;
+        }
+        await this.procesarDni(dni, dniToPureId, result, actor);
+        reniecFallos = 0;
+      } catch (err) {
+        reniecFallos++;
+        result.errores.push({
+          dni,
+          fase:
+            err instanceof Error && err.message.includes("RENACYT")
+              ? "renacyt"
+              : err instanceof Error && err.message.includes("Pure")
+                ? "pure"
+                : err instanceof Error && err.message.includes("PeruCRIS")
+                  ? "perucris"
+                  : "reniec",
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+    await this.auditImport(result, actor, dnis.length);
+    return result;
+  }
+
+  private async ejecutarImportMasivo(
+    jobId: string,
+    dnis: string[],
+    actor: AuthenticatedUser,
+  ): Promise<void> {
+    const result = this.nuevoResultadoImport(dnis.length);
+    const dniToPureId = await this.descargarMapeoPure(dnis);
+    let cursor = 0;
+    const worker = async (): Promise<void> => {
+      while (cursor < dnis.length) {
+        const idx = cursor++;
+        const dni = dnis[idx];
+        try {
+          await this.procesarDni(dni, dniToPureId, result, actor);
+        } catch (err) {
+          result.errores.push({
+            dni,
+            fase: "reniec",
+            error: err instanceof Error ? err.message : String(err),
+          });
+        } finally {
+          this.jobs.incrementar(jobId);
+        }
+      }
+    };
+    const pool = Array.from({ length: Math.min(IMPORT_BATCH_CONCURRENCY, dnis.length) }, () =>
+      worker(),
+    );
+    await Promise.all(pool);
+    this.jobs.completar(jobId, { total: result.total, ok: result.creados + result.actualizados });
+    await this.auditImport(result, actor, dnis.length, jobId);
+  }
+
+  private async procesarDni(
+    dni: string,
+    dniToPureId: Map<string, string>,
+    result: ImportInvestigadoresResult,
+    actor: AuthenticatedUser,
+  ): Promise<void> {
+    const r = await this.reniec.consultar(dni);
+    if (r.fullName) result.reniec_ok++;
+    const existing = await this.repo.findByDni(dni);
+    const now = Date.now();
+    let id_investigador: string;
+    if (existing) {
+      id_investigador = existing.id_investigador;
+      await this.repo.updateById(id_investigador, {
+        nombres: r.firstName,
+        apellido_paterno: r.firstLastName,
+        apellido_materno: r.secondLastName,
+        nombre_completo: r.fullName,
+        renacyt_fecha_ultima_sincronizacion: now,
+      });
+      result.actualizados++;
+    } else {
+      id_investigador = `investigador-${dni}`;
+      const id_persona = `persona-${dni}`;
+      await this.repo.insert({
+        id_investigador,
+        dni,
+        id_persona,
+        nombres: r.firstName,
+        apellido_paterno: r.firstLastName,
+        apellido_materno: r.secondLastName,
+        nombre_completo: r.fullName,
+        id_grado: null,
+        renacyt_codigo_registro: null,
+        renacyt_id_investigador: null,
+        renacyt_nivel: null,
+        renacyt_grupo: null,
+        renacyt_condicion: null,
+        renacyt_fecha_informe_calificacion: null,
+        renacyt_fecha_registro: null,
+        renacyt_fecha_ultima_revision: null,
+        renacyt_orcid: null,
+        renacyt_scopus_author_id: null,
+        renacyt_fecha_ultima_sincronizacion: now,
+        renacyt_ficha_url: null,
+        renacyt_formaciones_academicas_json: null,
+        renacyt_cambios_revisados_en: null,
+        grupo_investigacion_id: null,
+        orcid: null,
+        correo_institucional: null,
+        estado_renacyt: null,
+        pure_person_id: null,
+        perucris_uuid: null,
+        activo: 1,
+        cambios_renacyt_revisados: 0,
+      });
+      result.creados++;
+    }
+    // PeruCRIS: lookup por DNI (Person/ResearcherProfile)
+    try {
+      const perucrisUuid = await this.perucris.resolverUuidPorDni(dni);
+      if (perucrisUuid) {
+        await this.repo.updateById(id_investigador, { perucris_uuid: perucrisUuid });
+        result.perucris_ok++;
+      }
+    } catch {
+      // fase perucris opcional
+    }
+    // Pure: resolver pure_person_id del mapping maestro
+    const pid = dniToPureId.get(dni);
+    if (pid) {
+      await this.repo.updateById(id_investigador, { pure_person_id: pid });
+      result.pure_ok++;
+    }
+    // RENACYT: buscar por DNI y refrescar
+    try {
+      const renacytHit = await this.renacyt.buscarPorDni(dni);
+      if (renacytHit?.codigo_registro) {
+        await this.repo.updateById(id_investigador, {
+          renacyt_codigo_registro: renacytHit.codigo_registro,
+          renacyt_id_investigador: renacytHit.id_investigador || null,
+          renacyt_nivel: renacytHit.nivel || null,
+          renacyt_grupo: renacytHit.grupo || null,
+          renacyt_condicion: renacytHit.condicion || null,
+          renacyt_orcid: renacytHit.orcid || null,
+          renacyt_fecha_ultima_sincronizacion: now,
+        });
+        try {
+          await this.refrescarFormacionRenacyt(id_investigador, actor);
+        } catch {
+          // kardex falla no aborta
+        }
+        result.renacyt_ok++;
+      }
+    } catch {
+      // fase renacyt opcional
+    }
+  }
+
+  private async descargarMapeoPure(dnis: string[]): Promise<Map<string, string>> {
+    try {
+      const map = await this.pure.descargarMapeoMaestroDni();
+      const filtered = new Map<string, string>();
+      for (const d of dnis) {
+        const pid = map.get(d);
+        if (pid) filtered.set(d, pid);
+      }
+      return filtered;
+    } catch {
+      return new Map();
+    }
+  }
+
+  private nuevoResultadoImport(total: number): ImportInvestigadoresResult {
+    return {
+      total,
       procesados: 0,
       creados: 0,
       actualizados: 0,
@@ -276,81 +490,30 @@ export class InvestigadoresService {
       renacyt_ok: 0,
       errores: [],
     };
-    for (const dni of dnis) {
-      result.procesados++;
-      try {
-        const r = await this.reniec.consultar(dni);
-        if (r.fullName) result.reniec_ok++;
-        const existing = await this.repo.findByDni(dni);
-        const nombres = r.firstName;
-        const ap = r.firstLastName;
-        const am = r.secondLastName;
-        const now = Date.now();
-        if (existing) {
-          await this.repo.updateById(existing.id_investigador, {
-            nombres,
-            apellido_paterno: ap,
-            apellido_materno: am,
-            nombre_completo: r.fullName,
-            renacyt_fecha_ultima_sincronizacion: now,
-          });
-          result.actualizados++;
-        } else {
-          const id_persona = `persona-${dni}`;
-          await this.repo.insert({
-            id_investigador: `investigador-${dni}`,
-            dni,
-            id_persona,
-            nombres,
-            apellido_paterno: ap,
-            apellido_materno: am,
-            nombre_completo: r.fullName,
-            id_grado: null,
-            renacyt_codigo_registro: null,
-            renacyt_id_investigador: null,
-            renacyt_nivel: null,
-            renacyt_grupo: null,
-            renacyt_condicion: null,
-            renacyt_fecha_informe_calificacion: null,
-            renacyt_fecha_registro: null,
-            renacyt_fecha_ultima_revision: null,
-            renacyt_orcid: null,
-            renacyt_scopus_author_id: null,
-            renacyt_fecha_ultima_sincronizacion: now,
-            renacyt_ficha_url: null,
-            renacyt_formaciones_academicas_json: null,
-            renacyt_cambios_revisados_en: null,
-            grupo_investigacion_id: null,
-            orcid: null,
-            correo_institucional: null,
-            estado_renacyt: null,
-            pure_person_id: null,
-            perucris_uuid: null,
-            activo: 1,
-            cambios_renacyt_revisados: 0,
-          });
-          result.creados++;
-        }
-      } catch (err) {
-        result.errores.push({
-          dni,
-          fase: "reniec",
-          error: err instanceof Error ? err.message : String(err),
-        });
-      }
-    }
+  }
+
+  private async auditImport(
+    result: ImportInvestigadoresResult,
+    actor: AuthenticatedUser,
+    total: number,
+    jobId?: string,
+  ): Promise<void> {
     await this.audit.writeGenericAudit(
       { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
       "investigador.import",
       "investigador.import",
       "lote",
       JSON.stringify({
-        total: result.total,
+        jobId: jobId ?? null,
+        total,
         ok: result.creados + result.actualizados,
+        reniec_ok: result.reniec_ok,
+        perucris_ok: result.perucris_ok,
+        pure_ok: result.pure_ok,
+        renacyt_ok: result.renacyt_ok,
         errores: result.errores.length,
       }),
     );
-    return result;
   }
 
   /**

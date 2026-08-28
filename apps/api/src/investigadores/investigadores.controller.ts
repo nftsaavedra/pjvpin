@@ -165,7 +165,7 @@ export class InvestigadoresController {
   async importar(
     @Body() body: ImportDniRequest,
     @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<ImportInvestigadoresResult> {
+  ): Promise<ImportInvestigadoresResult | { jobId: string; message: string }> {
     const dnis = body.dnis.split(/[\s,;]+/).filter((s) => /^\d{8}$/.test(s));
     return this.service.importarDnis(dnis.slice(0, 200), actor);
   }

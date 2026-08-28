@@ -158,13 +158,7 @@ export class PureService {
     matched: number;
     unmatched: number;
   }> {
-    const mapping = await this.pure.fetchAllPersonsMapping();
-    const byDni = new Map<string, string>();
-    for (const m of mapping) {
-      if (m.dni && /^\d{8}$/.test(m.dni)) {
-        byDni.set(m.dni, m.pure_person_id);
-      }
-    }
+    const byDni = await this.descargarMapeoMaestroDni();
     let matched = 0;
     let unmatched = 0;
     const invs = await this.db
@@ -192,9 +186,25 @@ export class PureService {
       "pure.sync.person_ids",
       "investigadores",
       "lote",
-      JSON.stringify({ fetched: mapping.length, matched, unmatched }),
+      JSON.stringify({ fetched: byDni.size, matched, unmatched }),
     );
-    return { fetched: mapping.length, matched, unmatched };
+    return { fetched: byDni.size, matched, unmatched };
+  }
+
+  /**
+   * Descarga una vez el master list de Pure y devuelve un `Map<DNI, pure_person_id>`.
+   * Usado por el pipeline de import por DNI (T11) para resolver personas
+   * sin re-descargar el master por cada investigador.
+   */
+  async descargarMapeoMaestroDni(): Promise<Map<string, string>> {
+    const mapping = await this.pure.fetchAllPersonsMapping();
+    const byDni = new Map<string, string>();
+    for (const m of mapping) {
+      if (m.dni && /^\d{8}$/.test(m.dni)) {
+        byDni.set(m.dni, m.pure_person_id);
+      }
+    }
+    return byDni;
   }
 
   /**

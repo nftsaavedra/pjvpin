@@ -9,6 +9,7 @@
 |---|---|
 | Prefijo global | `app.setGlobalPrefix('api/v1')` → todos los endpoints bajo `/api/v1/...` |
 | Naming | Recursos plurales kebab-case: `/usuarios`, `/org-units`, `/sync/reportes` |
+| Paginacion dual | `GET /<recurso>` devuelve lista plana; `GET /<recurso>/paginated?page=&limit=` devuelve `PaginatedResult<T>` (mismo shape del IPC `get_all_*_paginated`). Convencion adoptada por `grados`, `usuarios`, `investigadores` y futuros modulos. |
 | Métodos | GET lectura, POST creación/acción, PATCH actualización parcial, DELETE borrado |
 | Acciones de estado | Sub-recurso PATCH: `/usuarios/:id/desactivar`, `/:id/reactivar` |
 | Paginación | Query params `?page=1&limit=20` → mismo shape `PaginatedResult<T>` (items/total/page/limit/total_pages) |
