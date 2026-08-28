@@ -1,0 +1,48 @@
+import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { ConfigModule } from "@nestjs/config";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { validateEnv } from "./config/env.validation";
+import { MongoModule } from "./infra/mongo/mongo.module";
+import { AppErrorFilter } from "./infra/errors/app-error.filter";
+import { RbacModule } from "./rbac/rbac.module";
+import { AuditModule } from "./audit/audit.module";
+import { AuthModule } from "./auth/auth.module";
+import { UsuariosModule } from "./usuarios/usuarios.module";
+import { PersonasModule } from "./personas/personas.module";
+import { HealthModule } from "./health/health.module";
+import { SecurityModule } from "./security/security.module";
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      validate: validateEnv,
+    }),
+    ThrottlerModule.forRoot([
+      {
+        name: "default",
+        ttl: 900_000,
+        limit: 5,
+      },
+    ]),
+    MongoModule,
+    RbacModule,
+    AuditModule,
+    AuthModule,
+    UsuariosModule,
+    PersonasModule,
+    HealthModule,
+    SecurityModule,
+  ],
+  providers: [
+    AppErrorFilter,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
+  exports: [AppErrorFilter],
+})
+export class AppModule {}
