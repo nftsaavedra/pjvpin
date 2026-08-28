@@ -13,6 +13,9 @@ import { PersonasModule } from "./personas/personas.module";
 import { HealthModule } from "./health/health.module";
 import { SecurityModule } from "./security/security.module";
 import { CatalogosModule } from "./catalogos/catalogos.module";
+import { GeoModule } from "./geo/geo.module";
+import { GradosModule } from "./grados/grados.module";
+import { GruposModule } from "./grupos/grupos.module";
 
 @Module({
   imports: [
@@ -37,6 +40,9 @@ import { CatalogosModule } from "./catalogos/catalogos.module";
     HealthModule,
     SecurityModule,
     CatalogosModule,
+    GeoModule,
+    GradosModule,
+    GruposModule,
   ],
   providers: [
     AppErrorFilter,
