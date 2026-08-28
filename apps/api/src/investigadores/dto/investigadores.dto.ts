@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from "class-validator";
-import type { CambioKardex, FormacionesDiff, KardexDisparador } from "../../kardex/kardex.logic";
 
 export class CreateInvestigadorRequest {
   @IsString()
@@ -124,16 +123,6 @@ export class ImportDniRequest {
   @IsNotEmpty()
   @MinLength(8)
   dnis!: string;
-}
-
-export interface KardexEntryDto {
-  id: string;
-  investigador_id: string;
-  persona_id: string;
-  fecha_evento: number;
-  disparador: KardexDisparador;
-  cambios: CambioKardex[];
-  formaciones_diff: FormacionesDiff | null;
 }
 
 export interface ImportInvestigadoresResult {

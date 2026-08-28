@@ -115,10 +115,6 @@ export class InvestigadoresRepository {
     return this.inv.findOne({ dni });
   }
 
-  async findByRenacytCodigo(codigo: string): Promise<InvestigadorDoc | null> {
-    return this.inv.findOne({ renacyt_codigo_registro: codigo });
-  }
-
   async insert(doc: InvestigadorDoc): Promise<void> {
     await this.inv.insertOne(doc as unknown as Parameters<typeof this.inv.insertOne>[0]);
   }
@@ -150,10 +146,6 @@ export class InvestigadoresRepository {
       .find({ id_investigador: idInvestigador })
       .sort({ fecha_evento: -1 })
       .toArray();
-  }
-
-  async insertKardex(doc: KardexDoc): Promise<void> {
-    await this.kardex.insertOne(doc as unknown as Parameters<typeof this.kardex.insertOne>[0]);
   }
 
   async countProyectosPorInvestigador(id: string): Promise<number> {

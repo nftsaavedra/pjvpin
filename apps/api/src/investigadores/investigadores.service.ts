@@ -418,12 +418,11 @@ export class InvestigadoresService {
   async refreshRenacytTodos(actor: AuthenticatedUser): Promise<{ jobId: string; message: string }> {
     const candidatos = await this.repo.listAllDnisRenacyt();
     const jobId = `renacyt-refresh-${Date.now()}`;
-    const job = this.jobs.crear(jobId, candidatos.length);
+    this.jobs.crear(jobId, candidatos.length);
     this.jobs.enEjecucion(jobId);
     void this.ejecutarRefreshMasivo(jobId, candidatos, actor).catch((err) => {
       this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
     });
-    void job;
     return {
       jobId,
       message: `Job enqueued. Procesara ${candidatos.length} investigadores. Verifique progreso en sync/reportes.`,
@@ -437,38 +436,45 @@ export class InvestigadoresService {
   ): Promise<void> {
     let ok = 0;
     const errores: Array<{ id: string; error: string }> = [];
-    for (const c of candidatos) {
-      try {
-        const inv = await this.repo.findById(c.id_investigador);
-        if (!inv?.renacyt_codigo_registro) {
+    const CONCURRENCY = 5;
+    let cursor = 0;
+    const worker = async (): Promise<void> => {
+      while (cursor < candidatos.length) {
+        const idx = cursor++;
+        const c = candidatos[idx];
+        try {
+          const inv = await this.repo.findById(c.id_investigador);
+          if (!inv?.renacyt_codigo_registro) {
+            continue;
+          }
+          const lookup = await this.renacyt.consultarInvestigador(inv.renacyt_codigo_registro);
+          const now = Date.now();
+          await this.repo.updateById(c.id_investigador, {
+            renacyt_nivel: lookup.nivel,
+            renacyt_grupo: lookup.grupo,
+            renacyt_condicion: lookup.condicion,
+            renacyt_orcid: lookup.orcid,
+            renacyt_scopus_author_id: lookup.scopus_author_id,
+            renacyt_fecha_informe_calificacion: lookup.fecha_informe_calificacion,
+            renacyt_fecha_ultima_revision: lookup.fecha_ultima_revision,
+            renacyt_formaciones_academicas_json: lookup.formaciones_academicas_json,
+            renacyt_ficha_url: lookup.ficha_url,
+            renacyt_fecha_ultima_sincronizacion: now,
+          });
+          await this.kardex.registrarCambioSiAplica(c.id_investigador, lookup, "refresh_masivo");
+          ok++;
+        } catch (err) {
+          errores.push({
+            id: c.id_investigador,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        } finally {
           this.jobs.incrementar(jobId);
-          continue;
         }
-        const lookup = await this.renacyt.consultarInvestigador(inv.renacyt_codigo_registro);
-        const now = Date.now();
-        await this.repo.updateById(c.id_investigador, {
-          renacyt_nivel: lookup.nivel,
-          renacyt_grupo: lookup.grupo,
-          renacyt_condicion: lookup.condicion,
-          renacyt_orcid: lookup.orcid,
-          renacyt_scopus_author_id: lookup.scopus_author_id,
-          renacyt_fecha_informe_calificacion: lookup.fecha_informe_calificacion,
-          renacyt_fecha_ultima_revision: lookup.fecha_ultima_revision,
-          renacyt_formaciones_academicas_json: lookup.formaciones_academicas_json,
-          renacyt_ficha_url: lookup.ficha_url,
-          renacyt_fecha_ultima_sincronizacion: now,
-        });
-        await this.kardex.registrarCambioSiAplica(c.id_investigador, lookup, "refresh_masivo");
-        ok++;
-      } catch (err) {
-        errores.push({
-          id: c.id_investigador,
-          error: err instanceof Error ? err.message : String(err),
-        });
-      } finally {
-        this.jobs.incrementar(jobId);
       }
-    }
+    };
+    const pool = Array.from({ length: Math.min(CONCURRENCY, candidatos.length) }, () => worker());
+    await Promise.all(pool);
     this.jobs.completar(jobId, { ok, errores });
     await this.audit.writeGenericAudit(
       { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
@@ -479,11 +485,22 @@ export class InvestigadoresService {
     );
   }
 
-  async descargarConstanciaRenacyt(id: string): Promise<Buffer> {
+  async descargarConstanciaRenacyt(id: string, actor: AuthenticatedUser): Promise<Buffer> {
     const inv = await this.repo.findById(id);
     if (!inv?.renacyt_codigo_registro) {
       throw AppError.notFound("El investigador no tiene codigo RENACYT registrado.");
     }
-    return this.renacyt.descargarConstancia(inv.renacyt_codigo_registro);
+    const bytes = await this.renacyt.descargarConstancia(inv.renacyt_codigo_registro);
+    await this.audit.writeGenericAudit(
+      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+      "renacyt.constancia.download",
+      "investigador",
+      id,
+      JSON.stringify({
+        codigo: inv.renacyt_codigo_registro,
+        bytes: bytes.length,
+      }),
+    );
+    return bytes;
   }
 }

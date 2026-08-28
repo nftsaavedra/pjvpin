@@ -1,6 +1,7 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import type { Db, Collection } from "mongodb";
 import { MONGO_DB } from "../infra/mongo/mongo.module";
+import { AppError } from "../infra/errors/app-error";
 import {
   diffRenacyt,
   type CambioKardex,
@@ -60,7 +61,7 @@ export class KardexService {
       .collection<InvestigadorKardexSnapshotDoc>("investigadores")
       .findOne({ id_investigador: idInvestigador });
     if (!snapshot) {
-      throw new NotFoundException(`Investigador ${idInvestigador} no encontrado.`);
+      throw AppError.notFound(`Investigador ${idInvestigador} no encontrado.`);
     }
     const investigadorSnapshot: InvestigadorRenacytSnapshot = {
       id_investigador: snapshot.id_investigador,

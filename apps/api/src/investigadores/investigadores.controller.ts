@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -134,6 +135,7 @@ export class InvestigadoresController {
   }
 
   @Post("renacyt/refrescar-todos")
+  @HttpCode(202)
   @RequirePermission(AppPermission.InvestigadoresManage)
   async refreshTodos(@CurrentUser() actor: AuthenticatedUser) {
     return this.service.refreshRenacytTodos(actor);
@@ -141,8 +143,12 @@ export class InvestigadoresController {
 
   @Get(":id/renacyt/constancia")
   @RequirePermission(AppPermission.InvestigadoresView)
-  async descargarConstancia(@Param("id") id: string, @Res() res: Response): Promise<void> {
-    const buffer = await this.service.descargarConstanciaRenacyt(id);
+  async descargarConstancia(
+    @Param("id") id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+    @Res() res: Response,
+  ): Promise<void> {
+    const buffer = await this.service.descargarConstanciaRenacyt(id, actor);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="constancia-${id}.pdf"`);
     res.send(buffer);
