@@ -159,4 +159,27 @@ export class InvestigadoresRepository {
   async countPatentesPorInvestigador(id: string): Promise<number> {
     return this.db.collection("patente_inventores").countDocuments({ id_persona: id });
   }
+
+  /**
+   * Acceso de solo lectura al `Db` subyacente para queries de composicion
+   * compartida (joins manuales, FK probes). Usar solo cuando el modulo
+   * consumidor justifica la dependencia sin acoplarse a repos de cada
+   * coleccion externa (e.g. `proyectos.composeDetalle`).
+   */
+  getDb(): Db {
+    return this.db;
+  }
+
+  /**
+   * Cuenta cuantos de los ids proporcionados corresponden a investigadores
+   * activos. Usado para validar una lista de participantes en una sola query
+   * (1 round-trip) en vez de N findById paralelos.
+   */
+  async countActivosByIds(ids: string[]): Promise<number> {
+    if (ids.length === 0) return 0;
+    return this.inv.countDocuments({
+      id_investigador: { $in: ids },
+      activo: 1,
+    });
+  }
 }

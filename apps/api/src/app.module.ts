@@ -24,6 +24,7 @@ import { KardexModule } from "./kardex/kardex.module";
 import { RenacytModule } from "./renacyt/renacyt.module";
 import { PureModule } from "./pure/pure.module";
 import { PeruCrisModule } from "./perucris/perucris.module";
+import { ProyectosModule } from "./proyectos/proyectos.module";
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { PeruCrisModule } from "./perucris/perucris.module";
     RenacytModule,
     PureModule,
     PeruCrisModule,
+    ProyectosModule,
   ],
   providers: [
     AppErrorFilter,
