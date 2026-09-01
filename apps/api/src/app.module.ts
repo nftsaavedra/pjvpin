@@ -25,6 +25,7 @@ import { RenacytModule } from "./renacyt/renacyt.module";
 import { PureModule } from "./pure/pure.module";
 import { PeruCrisModule } from "./perucris/perucris.module";
 import { ProyectosModule } from "./proyectos/proyectos.module";
+import { RecursosModule } from "./recursos/recursos.module";
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { ProyectosModule } from "./proyectos/proyectos.module";
     PureModule,
     PeruCrisModule,
     ProyectosModule,
+    RecursosModule,
   ],
   providers: [
     AppErrorFilter,
