@@ -5,9 +5,11 @@ import { ReportesService } from "./reportes.service";
 import { ReportesExportRepository } from "./repository-export";
 import { ReportesIntegralRepository } from "./repository-integral";
 import { ReportesMasterlistRepository } from "./repository-masterlist";
+import { CerifModule } from "../cerif/cerif.module";
+import { AuditModule } from "../audit/audit.module";
 
 @Module({
-  imports: [MongoModule],
+  imports: [MongoModule, CerifModule, AuditModule],
   controllers: [ReportesController],
   providers: [
     ReportesService,

@@ -86,14 +86,14 @@ function parseHit(raw: unknown): PeruCrisHit | null {
 export class PeruCrisClient {
   private readonly logger = new Logger(PeruCrisClient.name);
   private readonly publicBaseUrl: string;
+  private readonly privateBaseUrl: string;
 
-  constructor(_config: ConfigService) {
+  constructor(private readonly config: ConfigService) {
     this.publicBaseUrl =
-      _config.get<string>("PJVPIN_PERUCRIS_PUBLIC_API_BASE_URL") ??
+      config.get<string>("PJVPIN_PERUCRIS_PUBLIC_API_BASE_URL") ??
       DEFAULT_PERUCRIS_PUBLIC_API_BASE_URL;
-    // privateBaseUrl (PJVPIN_PERUCRIS_API_BASE_URL) reservado para el push
-    // CERIF que aterriza en Bloque F3 junto al port de cerif.rs.
-    void DEFAULT_PERUCRIS_API_BASE_URL;
+    this.privateBaseUrl =
+      config.get<string>("PJVPIN_PERUCRIS_API_BASE_URL") ?? DEFAULT_PERUCRIS_API_BASE_URL;
   }
 
   /**
@@ -149,13 +149,64 @@ export class PeruCrisClient {
   }
 
   /**
-   * Push CERIF. **Stub pospuesto a F3** — `cerif.rs` (1 145 lineas) define
-   * el payload completo (OrgUnit/Person/Publication/Project/Patent). El
-   * endpoint HTTP y la firma del metodo aterrizan en el Bloque F3 junto al
-   * port del serializador. Mantenemos la constante `privateBaseUrl` y el
-   * helper de parseo disponibles para esa fase.
+   * Pushea un payload CERIF (JSON) al endpoint de ingesta de PeruCRIS.
+   *
+   * Port de `shared/external/perucris_client.rs::push_cerif`.
+   * Devuelve el código de status HTTP 2xx en éxito. Errores 401/403 se
+   * traducen a `AppError.config`; otros fallos a `AppError.external`
+   * con detalle sanitizado.
    */
-  // pushCerif(payload: unknown): Promise<{ status: number }> — pospuesto a F3.
+  async pushCerif(payload: unknown): Promise<number> {
+    const apiKey = this.apiKey();
+    const url = `${this.privateBaseUrl.replace(/\/+$/, "")}/cerif/ingest`;
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "api-key": apiKey,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      this.logger.error(
+        `PeruCRIS /cerif/ingest: ${sanitizeExternalDetail(err instanceof Error ? err.message : String(err))}`,
+      );
+      throw AppError.external(
+        "PeruCRIS /cerif/ingest fallo de transporte. Verifique conectividad del servidor.",
+      );
+    }
+
+    if (res.ok) return res.status;
+
+    const status = res.status;
+    const text = await res.text().catch(() => "");
+    const safe = sanitizeExternalDetail(text);
+
+    if (status === 401) {
+      throw AppError.config(
+        "La api-key de PeruCRIS es invalida o expiro (HTTP 401). " +
+          "Verifique PJVPIN_PERUCRIS_API_KEY.",
+      );
+    }
+    if (status === 403) {
+      throw AppError.config(
+        "La api-key de PeruCRIS no tiene permisos para ingestar CERIF (HTTP 403).",
+      );
+    }
+    throw AppError.external(`PeruCRIS /cerif/ingest respondio ${status}: ${safe}`);
+  }
+
+  private apiKey(): string {
+    const key = this.config.get<string>("PJVPIN_PERUCRIS_API_KEY");
+    if (!key || key.length === 0) {
+      throw AppError.config("Falta configurar PJVPIN_PERUCRIS_API_KEY en el servidor.");
+    }
+    return key;
+  }
 
   private async getJson(url: string): Promise<PeruCrisHit[]> {
     let res: Response;

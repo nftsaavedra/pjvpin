@@ -31,6 +31,7 @@ import { RecursosModule } from "./recursos/recursos.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { ReportesModule } from "./reportes/reportes.module";
 import { SyncModule } from "./sync/sync.module";
+import { CerifModule } from "./cerif/cerif.module";
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { SyncModule } from "./sync/sync.module";
     DashboardModule,
     ReportesModule,
     SyncModule,
+    CerifModule,
   ],
   providers: [
     AppErrorFilter,

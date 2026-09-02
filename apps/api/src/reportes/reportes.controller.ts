@@ -1,8 +1,10 @@
-import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, Res, UseGuards } from "@nestjs/common";
+import type { Response } from "express";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
+import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
 import {
   ExportDataConProjectosDto,
   ExportDataDto,
@@ -69,6 +71,31 @@ export class ReportesController {
   @RequirePermission(AppPermission.ReportesView)
   async getExportProyectosArea(): Promise<ExportDataProyectoAreaDto[]> {
     return this.service.getExportProyectosArea();
+  }
+
+  // ---------------------------------------------------------------
+  // Exportador CERIF (JSON)
+  // ---------------------------------------------------------------
+
+  /**
+   * Exporta el modelo consolidado a un documento CERIF (JSON) como
+   * descarga `Content-Disposition`. `entidad` opcional filtra el alcance.
+   *
+   * Port de `exportar_cerif` (Rust). Sin `file_path`: devuelve bytes.
+   */
+  @Get("cerif")
+  @RequirePermission(AppPermission.ReportesExport)
+  async getCerif(
+    @Query("entidad") entidad: string | undefined,
+    @CurrentUser() actor: AuthenticatedUser,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<Buffer> {
+    const { buffer, filename } = await this.service.exportarCerif(entidad ?? null, actor);
+    res.set({
+      "Content-Type": "application/json",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    });
+    return buffer;
   }
 
   // ---------------------------------------------------------------

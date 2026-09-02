@@ -6,6 +6,7 @@ import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import { AuditService } from "../audit/audit.service";
 import { JobRegistry } from "../external-http/job-registry.service";
 import { PeruCrisClient, type PeruCrisHit } from "../infra/http/perucris.client";
+import { CerifService } from "../cerif/cerif.service";
 
 interface SyncReportItem {
   id_local: string | null;
@@ -40,6 +41,17 @@ interface PeruCrisImportResultado {
   errores: string[];
 }
 
+export interface PeruCrisPushResult {
+  success: boolean;
+  httpStatus: number;
+  enviadoAt: number;
+  totalOrganizaciones: number;
+  totalPersonas: number;
+  totalProyectos: number;
+  totalPublicaciones: number;
+  totalPatentes: number;
+}
+
 const UNF_PERUCRIS_UUID = "97674e53-90f5-4e9c-b9a9-1c2efa766bd5";
 const UNF_SCOPE_CONFIG = "RELATION.OrgUnit.projects";
 
@@ -65,6 +77,7 @@ export class PeruCrisService {
     private readonly perucris: PeruCrisClient,
     private readonly audit: AuditService,
     private readonly jobs: JobRegistry,
+    private readonly cerif: CerifService,
     @Inject(MONGO_DB) private readonly db: Db,
   ) {}
 
@@ -147,10 +160,41 @@ export class PeruCrisService {
   }
 
   /**
-   * Push CERIF al endpoint de ingesta de PeruCRIS — pospuesto a Bloque F3
-   * con el port de `cerif.rs` (1 145 lineas). Mientras tanto, este metodo
-   * queda declarado solo como type-checking helper.
+   * Construye el documento CERIF (scope `todo`), lo serializa y lo pushea
+   * al endpoint de ingesta de PeruCRIS. Devuelve totales por entidad.
+   *
+   * Port de `shared/external/perucris_service.rs::enviar_a_perucris`.
    */
+  async pushCerif(actor: AuthenticatedUser): Promise<PeruCrisPushResult> {
+    const doc = await this.cerif.buildCerifDocument("todo");
+    const payload = JSON.parse(JSON.stringify(doc)) as unknown;
+    const httpStatus = await this.perucris.pushCerif(payload);
+    const result: PeruCrisPushResult = {
+      success: true,
+      httpStatus,
+      enviadoAt: Date.now(),
+      totalOrganizaciones: doc.organizaciones.length,
+      totalPersonas: doc.personas.length,
+      totalProyectos: doc.proyectos.length,
+      totalPublicaciones: doc.publicaciones.length,
+      totalPatentes: doc.patentes.length,
+    };
+    await this.audit.writeGenericAudit(
+      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+      "perucris.push",
+      "perucris",
+      "push",
+      JSON.stringify({
+        httpStatus,
+        organizaciones: result.totalOrganizaciones,
+        personas: result.totalPersonas,
+        proyectos: result.totalProyectos,
+        publicaciones: result.totalPublicaciones,
+        patentes: result.totalPatentes,
+      }),
+    );
+    return result;
+  }
 
   /**
    * Resuelve el `perucris_uuid` canonico para una persona a partir de su

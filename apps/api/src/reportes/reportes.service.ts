@@ -49,6 +49,10 @@ import type {
 import { ReportesExportRepository } from "./repository-export";
 import { ReportesIntegralRepository } from "./repository-integral";
 import { ReportesMasterlistRepository } from "./repository-masterlist";
+import { CerifService } from "../cerif/cerif.service";
+import { parseScope } from "../cerif/cerif.logic";
+import type { AuthenticatedUser } from "../rbac/current-user.decorator";
+import { AuditService } from "../audit/audit.service";
 
 /**
  * Maestros compartidos por los reportes integrales. Se cargan una sola vez
@@ -71,6 +75,8 @@ export class ReportesService {
     private readonly exportRepo: ReportesExportRepository,
     private readonly integralRepo: ReportesIntegralRepository,
     private readonly masterlistRepo: ReportesMasterlistRepository,
+    private readonly cerif: CerifService,
+    private readonly audit: AuditService,
   ) {}
 
   // ===============================================================
@@ -214,6 +220,42 @@ export class ReportesService {
       this.masterlistRepo.loadPersonasMap(),
     ]);
     return buildMasterlistData({ investigadoresActivos, personas, pureRemoteTotal });
+  }
+
+  // ===============================================================
+  // Exportador CERIF (JSON)
+  // ===============================================================
+
+  /**
+   * Construye el documento CERIF, lo serializa a JSON pretty y audita.
+   * Devuelve el buffer + filename para que el controller setee headers.
+   *
+   * Port de `reportes/handlers.rs::exportar_cerif`.
+   */
+  async exportarCerif(
+    rawEntidad: string | null | undefined,
+    actor: AuthenticatedUser,
+  ): Promise<{ buffer: Buffer; filename: string; scope: string }> {
+    const scope = parseScope(rawEntidad);
+    const doc = await this.cerif.buildCerifDocument(scope);
+    const json = JSON.stringify(doc, null, 2);
+    const buffer = Buffer.from(json, "utf-8");
+    const entidad = scope === "todo" ? "todo" : scope;
+    await this.audit.writeGenericAudit(
+      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+      "reportes.export",
+      "cerif",
+      entidad,
+      JSON.stringify({
+        bytes: buffer.length,
+        organizaciones: doc.organizaciones.length,
+        personas: doc.personas.length,
+        proyectos: doc.proyectos.length,
+        publicaciones: doc.publicaciones.length,
+        patentes: doc.patentes.length,
+      }),
+    );
+    return { buffer, filename: `cerif-${entidad}.json`, scope: entidad };
   }
 
   // ===============================================================

@@ -15,6 +15,12 @@ interface ValidarRequest {
 export class PeruCrisController {
   constructor(private readonly service: PeruCrisService) {}
 
+  @Post("push")
+  @RequirePermission(AppPermission.ReportesExport)
+  async push(@CurrentUser() actor: AuthenticatedUser) {
+    return this.service.pushCerif(actor);
+  }
+
   @Post("validacion")
   @RequirePermission(AppPermission.ReportesView)
   async validar(@Body() body: ValidarRequest, @CurrentUser() actor: AuthenticatedUser) {
