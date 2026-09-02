@@ -19,8 +19,10 @@ import { GruposModule } from "./grupos/grupos.module";
 import { OrgUnitsModule } from "./org-units/org-units.module";
 import { OcdeModule } from "./ocde/ocde.module";
 import { InvestigadoresModule } from "./investigadores/investigadores.module";
+import { EventosModule } from "./eventos/eventos.module";
 import { ExternalHttpModule } from "./external-http/external-http.module";
 import { KardexModule } from "./kardex/kardex.module";
+import { PublicacionesModule } from "./publicaciones/publicaciones.module";
 import { RenacytModule } from "./renacyt/renacyt.module";
 import { PureModule } from "./pure/pure.module";
 import { PeruCrisModule } from "./perucris/perucris.module";
@@ -63,6 +65,8 @@ import { RecursosModule } from "./recursos/recursos.module";
     PeruCrisModule,
     ProyectosModule,
     RecursosModule,
+    PublicacionesModule,
+    EventosModule,
   ],
   providers: [
     AppErrorFilter,
