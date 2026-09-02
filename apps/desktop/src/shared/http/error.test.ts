@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getApiErrorMessage } from "./error";
+import { getApiErrorMessage, getErrorMessage, AppError } from "./error";
 
 describe("getApiErrorMessage", () => {
   it("extracts variant message from body", () => {
@@ -46,5 +46,47 @@ describe("getApiErrorMessage", () => {
     expect(getApiErrorMessage(400, { ValidationError: "  " })).toBe(
       "Solicitud incorrecta",
     );
+  });
+});
+
+describe("getErrorMessage", () => {
+  it("returns default for falsy values", () => {
+    expect(getErrorMessage(null)).toBe("Error desconocido");
+    expect(getErrorMessage(undefined)).toBe("Error desconocido");
+    expect(getErrorMessage(false)).toBe("Error desconocido");
+    expect(getErrorMessage(0)).toBe("Error desconocido");
+  });
+
+  it("returns string as-is", () => {
+    expect(getErrorMessage("connection failed")).toBe("connection failed");
+  });
+
+  it("extracts .message from Error objects", () => {
+    expect(getErrorMessage(new Error("something broke"))).toBe("something broke");
+  });
+
+  it("extracts .message from AppError", () => {
+    expect(getErrorMessage(new AppError("API error"))).toBe("API error");
+  });
+
+  it("extracts variant message from object body", () => {
+    expect(getErrorMessage({ NotFound: "No existe" })).toBe("No existe");
+    expect(getErrorMessage({ ValidationError: "campo requerido" })).toBe("campo requerido");
+  });
+
+  it("prefers .message over variant when both present", () => {
+    expect(getErrorMessage({ message: "direct msg", NotFound: "variant msg" })).toBe("direct msg");
+  });
+
+  it("falls back to JSON.stringify for objects without message/variant", () => {
+    expect(getErrorMessage({ code: 42, detail: "unknown" })).toBe('{"code":42,"detail":"unknown"}');
+  });
+
+  it("handles objects with circular references gracefully", () => {
+    const circular: Record<string, unknown> = {};
+    circular.self = circular;
+    const result = getErrorMessage(circular);
+    expect(typeof result).toBe("string");
+    expect(result.length).toBeGreaterThan(0);
   });
 });
