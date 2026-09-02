@@ -3,7 +3,7 @@
  * (PURE + PeruCRIS). Aisladas en `.ts` (sin JSX) para cumplir
  * `react-refresh/only-export-components` de eslint-plugin-react-refresh.
  */
-import type { PeruCrisValidationItem } from "@/shared/tauri/types/perucris.types";
+import type { PeruCrisValidationItem } from "@/shared/api/types/perucris.types";
 import type { PeruCrisVariant } from "./SyncBadge";
 
 export function pureBadgeVariant(dominioOrigen?: string | null): "synced" | "manual" {

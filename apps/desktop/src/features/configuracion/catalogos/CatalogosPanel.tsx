@@ -14,8 +14,8 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
 import { messages } from "@/shared/feedback/messages";
 import { getAllCatalogosAdmin } from "../api";
-import { listarVocabulariosConcytec } from "@/shared/tauri/vocabularios";
-import type { CatalogoItem } from "@/shared/tauri/types";
+import { listarVocabulariosConcytec } from "@/shared/api/vocabularios";
+import type { CatalogoItem } from "@/shared/api/types";
 
 const CatalogosTab = lazy(async () => {
   const module = await import("./CatalogosTab");

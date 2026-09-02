@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
-import { getDataPureMasterlist } from "@/shared/tauri/reportes";
-import { sincronizarPurePersonIds } from "@/shared/tauri/investigadores";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
-import type { PureMasterlistData } from "@/shared/tauri/types";
+import { getDataPureMasterlist } from "@/shared/api/reportes";
+import { sincronizarPurePersonIds } from "@/shared/api/investigadores";
+import { getTauriErrorMessage } from "@/shared/api/error";
+import type { PureMasterlistData } from "@/shared/api/types";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";

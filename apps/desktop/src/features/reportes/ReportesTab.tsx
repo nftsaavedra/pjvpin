@@ -4,9 +4,9 @@ import {
   getTauriErrorMessage,
   type DatosExportInvestigadorAgrupado,
 } from "./api";
-import { getAllProyectosDetalle } from "@/shared/tauri/proyectos";
-import { getAllInvestigadores } from "@/shared/tauri/investigadores";
-import type { Investigador, ProyectoDetalle } from "@/shared/tauri/types";
+import { getAllProyectosDetalle } from "@/shared/api/proyectos";
+import { getAllInvestigadores } from "@/shared/api/investigadores";
+import type { Investigador, ProyectoDetalle } from "@/shared/api/types";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";

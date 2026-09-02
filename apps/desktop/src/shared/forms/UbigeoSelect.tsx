@@ -4,8 +4,8 @@ import { inputClassName } from "./inputClassName";
 import { ui } from "@/shared/feedback/messages";
 import { geo as geoMsg } from "@/shared/feedback/messages";
 import { useStableFetch } from "@/shared/hooks/useStableFetch";
-import { obtenerUbigeos } from "@/shared/tauri/geo";
-import type { Ubigeo } from "@/shared/tauri/types";
+import { obtenerUbigeos } from "@/shared/api/geo";
+import type { Ubigeo } from "@/shared/api/types";
 
 interface UbigeoSelectProps {
   value: string;

@@ -1,4 +1,4 @@
-import { AppError } from "../tauri/client";
+import { AppError } from "../api/client";
 import { getApiErrorMessage } from "./error";
 import { getApiBaseUrl } from "./config";
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./tokenStore";

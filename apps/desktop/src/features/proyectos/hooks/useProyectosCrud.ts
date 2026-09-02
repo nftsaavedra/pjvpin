@@ -10,7 +10,7 @@ import {
   type ProyectoParticipantesPayload,
   type ProyectoDetalle,
 } from "../api";
-import type { Proyecto } from "@/shared/tauri/types";
+import type { Proyecto } from "@/shared/api/types";
 
 export const useProyectosCrud = (refreshTrigger: number, onProyectoCreated: () => void) => {
   const {

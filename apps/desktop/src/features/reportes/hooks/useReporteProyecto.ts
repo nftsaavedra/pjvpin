@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { getReporteProyectoIntegral, type ReporteProyectoIntegral } from "../api";
 import { toast } from "@/shared/feedback/toast";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
+import { getTauriErrorMessage } from "@/shared/api/error";
 
 export function useReporteProyecto() {
   const [proyectoReport, setProyectoReport] = useState<ReporteProyectoIntegral | null>(null);

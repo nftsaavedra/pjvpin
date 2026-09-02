@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
+import { getTauriErrorMessage } from "@/shared/api/error";
 
 export interface StableFetchState<T> {
   data: T;

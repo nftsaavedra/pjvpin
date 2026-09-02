@@ -17,4 +17,4 @@ export type {
 
 export { getApiErrorMessage } from "@/shared/http/error";
 
-export type { AuthStatus, Usuario } from "@/shared/tauri/types";
+export type { AuthStatus, Usuario } from "@/shared/api/types";

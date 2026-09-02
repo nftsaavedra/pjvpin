@@ -7,9 +7,9 @@ export {
   eliminarRelacionesProyecto,
   getAllProyectosDetalle,
   reactivarProyecto,
-} from "@/shared/tauri/proyectos";
+} from "@/shared/api/proyectos";
 
-export { getTauriErrorMessage } from "@/shared/tauri/error";
+export { getTauriErrorMessage } from "@/shared/api/error";
 
 export type {
   InvestigadorDetalle,
@@ -17,6 +17,6 @@ export type {
   Proyecto,
   ProyectoDetalle,
   ProyectoParticipanteResumen,
-} from "@/shared/tauri/types";
+} from "@/shared/api/types";
 
-export type { ProyectoParticipantesPayload } from "@/shared/tauri/proyectos";
+export type { ProyectoParticipantesPayload } from "@/shared/api/proyectos";

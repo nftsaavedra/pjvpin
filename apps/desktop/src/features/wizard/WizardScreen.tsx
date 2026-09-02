@@ -5,7 +5,7 @@ import { useWizardState } from "./useWizardState";
 import { StepperHeader, type StepMeta } from "./components/StepperHeader";
 import { StepApiUrl } from "./steps/StepApiUrl";
 import { StepCreateAdmin } from "./steps/StepCreateAdmin";
-import type { Usuario } from "@/shared/tauri/types";
+import type { Usuario } from "@/shared/api/types";
 import { messages } from "@/shared/feedback/messages";
 
 interface Props {

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import type { ReniecDniLookupResult } from "@/shared/tauri/types";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
+import type { ReniecDniLookupResult } from "@/shared/api/types";
+import { getTauriErrorMessage } from "@/shared/api/error";
 import { toast } from "@/shared/feedback/toast";
 
 export type DniValidationStatus = "idle" | "checking" | "duplicate" | "validated" | "error";

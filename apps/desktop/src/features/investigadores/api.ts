@@ -16,7 +16,7 @@ export {
   refrescarRenacytTodos,
   reactivarInvestigador,
   type KardexEntry,
-} from "@/shared/tauri/investigadores";
+} from "@/shared/api/investigadores";
 
 export {
   actualizarEvento,
@@ -24,11 +24,11 @@ export {
   eliminarEvento,
   getEventosByInvestigador,
   reactivarEvento,
-} from "@/shared/tauri/eventos";
+} from "@/shared/api/eventos";
 
-export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/shared/tauri/pure";
+export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/shared/api/pure";
 
-export { getTauriErrorMessage } from "@/shared/tauri/error";
+export { getTauriErrorMessage } from "@/shared/api/error";
 
 export type {
   CambioKardex,
@@ -45,4 +45,4 @@ export type {
   RenacytLookupResult,
   ReniecDniLookupResult,
   SyncPublicacionesResult,
-} from "@/shared/tauri/types";
+} from "@/shared/api/types";

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useDniValidation } from "./useDniValidation";
-import type { ReniecDniLookupResult } from "@/shared/tauri/types";
+import type { ReniecDniLookupResult } from "@/shared/api/types";
 
 const reniecMock: ReniecDniLookupResult = {
   firstName: "juan carlos",

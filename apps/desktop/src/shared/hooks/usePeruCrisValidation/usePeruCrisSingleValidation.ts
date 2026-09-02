@@ -22,7 +22,7 @@ export function usePeruCrisSingleValidation(): {
       setError(null);
       try {
         const { validarOrgUnitPeruCris, validarPublicacionPeruCris } =
-          await import("@/shared/tauri/perucris");
+          await import("@/shared/api/perucris");
         const item =
           tipo === "orgunit"
             ? await validarOrgUnitPeruCris(idLocal)

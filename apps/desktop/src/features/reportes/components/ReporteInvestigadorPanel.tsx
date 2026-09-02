@@ -6,7 +6,7 @@ import { useReporteInvestigador } from "../hooks/useReporteInvestigador";
 import { useExport } from "../hooks/useExport";
 import { messages } from "@/shared/feedback/messages";
 import { inputClassName } from "@/shared/forms/inputClassName";
-import type { Investigador } from "@/shared/tauri/types";
+import type { Investigador } from "@/shared/api/types";
 
 interface ReporteInvestigadorPanelProps {
   investigadores: Investigador[];

@@ -4,14 +4,14 @@ import {
   listSyncReports,
   sincronizarPublicacionesPure,
   verificarDiferenciasPure,
-} from "@/shared/tauri/pure";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
+} from "@/shared/api/pure";
+import { getTauriErrorMessage } from "@/shared/api/error";
 import type {
   Investigador,
   ItemClasificacion,
   SyncReport,
   SyncReportItem,
-} from "@/shared/tauri/types";
+} from "@/shared/api/types";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { AppIcon } from "@/shared/ui/AppIcon";

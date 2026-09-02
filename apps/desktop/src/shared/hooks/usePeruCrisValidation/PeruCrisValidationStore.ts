@@ -5,7 +5,7 @@
  * `react-refresh/only-export-components` de eslint-plugin-react-refresh.
  * El Provider consume esta clase y los hooks la consultan via Context.
  */
-import type { PeruCrisValidationItem, ValidationTipo } from "@/shared/tauri/types/perucris.types";
+import type { PeruCrisValidationItem, ValidationTipo } from "@/shared/api/types/perucris.types";
 
 /** Item cacheado con su timestamp de validacion. */
 type CachedValidation = {

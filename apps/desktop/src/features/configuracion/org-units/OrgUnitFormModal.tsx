@@ -9,10 +9,10 @@ import { inputClassName } from "@/shared/forms/inputClassName";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { useStableFetch } from "@/shared/hooks/useStableFetch";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
-import { actualizarOrgUnit, crearOrgUnit } from "@/shared/tauri/orgUnits";
-import { listarVocabItems } from "@/shared/tauri/vocabularios";
-import type { CatalogoItem, OrgUnit } from "@/shared/tauri/types";
+import { getTauriErrorMessage } from "@/shared/api/error";
+import { actualizarOrgUnit, crearOrgUnit } from "@/shared/api/orgUnits";
+import { listarVocabItems } from "@/shared/api/vocabularios";
+import type { CatalogoItem, OrgUnit } from "@/shared/api/types";
 
 interface OrgUnitFormModalProps {
   mode: "create" | "edit";

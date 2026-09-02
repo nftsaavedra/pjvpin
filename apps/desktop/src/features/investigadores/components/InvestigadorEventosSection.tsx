@@ -12,7 +12,7 @@ import { inputClassName } from "@/shared/forms/inputClassName";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { crearEvento, eliminarEvento, getTauriErrorMessage } from "../api";
-import type { EventoAcademico } from "@/shared/tauri/types";
+import type { EventoAcademico } from "@/shared/api/types";
 import { useEventosInvestigador } from "../hooks/useEventosInvestigador";
 import { hasPermission } from "@/shared/auth/permissions";
 

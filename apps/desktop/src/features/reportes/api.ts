@@ -4,9 +4,9 @@ export {
   getReporteProyectoIntegral,
   getReporteInvestigadorIntegral,
   getReportesInvestigadoresIntegral,
-} from "@/shared/tauri/reportes";
+} from "@/shared/api/reportes";
 
-export { getTauriErrorMessage } from "@/shared/tauri/error";
+export { getTauriErrorMessage } from "@/shared/api/error";
 
 // PeruCRIS (push + validacion contra API publica)
 export {
@@ -15,7 +15,7 @@ export {
   validarOrgUnitPeruCris,
   validarPublicacionPeruCris,
   importarInicialesPeruCris,
-} from "@/shared/tauri/perucris";
+} from "@/shared/api/perucris";
 
 export type {
   DatosExportInvestigadorAgrupado,
@@ -36,7 +36,7 @@ export type {
   ReporteProyectoIntegral,
   ResumenFinanciero,
   TrazabilidadInvestigador,
-} from "@/shared/tauri/types";
+} from "@/shared/api/types";
 
 export type {
   PeruCrisImportResult,
@@ -47,4 +47,4 @@ export type {
   PeruCrisValidationReport,
   PeruCrisValidationScope,
   ValidationTipo,
-} from "@/shared/tauri/types/perucris.types";
+} from "@/shared/api/types/perucris.types";

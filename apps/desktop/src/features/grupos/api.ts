@@ -6,8 +6,8 @@ export {
   deleteGrupo,
   type CreateGrupoPayload,
   type UpdateGrupoPayload,
-} from '@/shared/tauri/grupos';
+} from '@/shared/api/grupos';
 
-export { getTauriErrorMessage } from '@/shared/tauri/error';
+export { getTauriErrorMessage } from '@/shared/api/error';
 
-export type { GrupoInvestigacion } from '@/shared/tauri/types';
+export type { GrupoInvestigacion } from '@/shared/api/types';

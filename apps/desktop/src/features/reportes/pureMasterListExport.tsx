@@ -16,8 +16,8 @@ import type {
   PureMasterlistData,
   PureMasterlistPersonRow,
   PureMasterlistStaffRow,
-} from "@/shared/tauri/types";
-import { getDataPureMasterlist } from "@/shared/tauri/reportes";
+} from "@/shared/api/types";
+import { getDataPureMasterlist } from "@/shared/api/reportes";
 
 interface PureMasterListPayload {
   bytes: Uint8Array;

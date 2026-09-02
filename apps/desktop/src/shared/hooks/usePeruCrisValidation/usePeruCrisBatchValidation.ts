@@ -6,7 +6,7 @@
  */
 import { useEffect, useState } from "react";
 import { usePeruCrisValidation } from "./usePeruCrisContext";
-import type { PeruCrisValidationScope } from "@/shared/tauri/types/perucris.types";
+import type { PeruCrisValidationScope } from "@/shared/api/types/perucris.types";
 
 export function usePeruCrisBatchValidation(
   scope: "todo" | PeruCrisValidationScope,
@@ -26,7 +26,7 @@ export function usePeruCrisBatchValidation(
 
     void (async () => {
       try {
-        const { validarAPeruCris } = await import("@/shared/tauri/perucris");
+        const { validarAPeruCris } = await import("@/shared/api/perucris");
         const report = await validarAPeruCris(scope);
         // `cancelled` cambia entre awaits (cleanup); el compilador no ve
         // el set async. Falso positivo esperado por `no-unnecessary-condition`.

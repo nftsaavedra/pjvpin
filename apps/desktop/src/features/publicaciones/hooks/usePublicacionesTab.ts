@@ -3,7 +3,7 @@ import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { getAllPublicaciones } from "../api";
 import { messages } from "@/shared/feedback/messages";
-import type { PublicacionCientifica } from "@/shared/tauri/types";
+import type { PublicacionCientifica } from "@/shared/api/types";
 
 export type OrigenFilter = "todos" | "PURE" | "MANUAL" | "PERUCRIS";
 

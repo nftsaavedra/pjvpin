@@ -19,9 +19,9 @@ export {
   reactivarUsuario,
   type ActualizarUsuarioIdentidad,
   type CrearUsuarioArgs,
-} from "@/shared/tauri/configuracion";
+} from "@/shared/api/configuracion";
 
-export { getTauriErrorMessage } from "@/shared/tauri/error";
+export { getTauriErrorMessage } from "@/shared/api/error";
 
 export type {
   CatalogoItem,
@@ -29,4 +29,4 @@ export type {
   GradoAcademico,
   Persona,
   Usuario,
-} from "@/shared/tauri/types";
+} from "@/shared/api/types";

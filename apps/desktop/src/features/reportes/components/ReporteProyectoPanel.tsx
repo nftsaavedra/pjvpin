@@ -17,7 +17,7 @@ import type {
   FinanciamientoConEtiquetas,
   ProyectoDetalle,
   SoftwareConEtiquetas,
-} from "@/shared/tauri/types";
+} from "@/shared/api/types";
 
 interface ReporteProyectoPanelProps {
   proyectos: ProyectoDetalle[];

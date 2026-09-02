@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import type { Usuario, AuthStatus } from "../tauri/types";
+import type { Usuario, AuthStatus } from "../api/types";
 
 export interface AuthResponse {
   user: Usuario;

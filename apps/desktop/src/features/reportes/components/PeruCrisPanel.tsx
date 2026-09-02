@@ -16,7 +16,7 @@ import { SkeletonBlock } from "@/shared/ui/Skeleton";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
+import { getTauriErrorMessage } from "@/shared/api/error";
 
 interface PeruCrisPanelProps {
   canExport?: boolean;

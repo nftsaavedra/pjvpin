@@ -1,5 +1,5 @@
-export { getAllPublicaciones } from "@/shared/tauri/publicaciones";
+export { getAllPublicaciones } from "@/shared/api/publicaciones";
 
-export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/shared/tauri/pure";
+export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/shared/api/pure";
 
-export type { PublicacionCientifica } from "@/shared/tauri/types";
+export type { PublicacionCientifica } from "@/shared/api/types";

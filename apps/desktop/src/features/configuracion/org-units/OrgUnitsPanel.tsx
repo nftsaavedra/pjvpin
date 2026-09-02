@@ -8,9 +8,9 @@ import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
-import { eliminarOrgUnit, listarOrgUnits } from "@/shared/tauri/orgUnits";
-import type { OrgUnit } from "@/shared/tauri/types";
+import { getTauriErrorMessage } from "@/shared/api/error";
+import { eliminarOrgUnit, listarOrgUnits } from "@/shared/api/orgUnits";
+import type { OrgUnit } from "@/shared/api/types";
 import { OrgUnitFormModal } from "./OrgUnitFormModal";
 
 interface OrgUnitsPanelProps {

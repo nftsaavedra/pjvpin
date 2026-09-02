@@ -5,7 +5,7 @@ import {
   type PeruCrisPushResult,
 } from "@/features/reportes/api";
 import type { PeruCrisValidationReport, PeruCrisValidationScope } from "@/features/reportes/api";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
+import { getTauriErrorMessage } from "@/shared/api/error";
 
 /** Estado del flujo combinado push + validar. */
 export type PeruCrisSyncState =

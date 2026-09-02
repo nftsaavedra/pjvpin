@@ -13,9 +13,9 @@ import {
   listarVocabItems,
   listarVocabulariosConcytec,
   reimportarVocabulario,
-} from "@/shared/tauri/vocabularios";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
-import type { CatalogoItem } from "@/shared/tauri/types";
+} from "@/shared/api/vocabularios";
+import { getTauriErrorMessage } from "@/shared/api/error";
+import type { CatalogoItem } from "@/shared/api/types";
 
 interface VocabulariosPanelProps {
   canManage: boolean;

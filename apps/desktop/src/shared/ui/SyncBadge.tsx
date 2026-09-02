@@ -99,7 +99,7 @@ export const PureBadge: React.FC<PureBadgeProps> = ({ variant, tooltip, ariaLabe
 export interface SyncBadgeProps {
   pure: "synced" | "manual";
   perucris: PeruCrisVariant;
-  perucrisItem?: import("@/shared/tauri/types/perucris.types").PeruCrisValidationItem;
+  perucrisItem?: import("@/shared/api/types/perucris.types").PeruCrisValidationItem;
   noValidableReason?: string;
 }
 
@@ -137,7 +137,7 @@ export const SyncBadge: React.FC<SyncBadgeProps> = ({
 };
 
 const PeruCrisTooltipContent: React.FC<{
-  item: import("@/shared/tauri/types/perucris.types").PeruCrisValidationItem;
+  item: import("@/shared/api/types/perucris.types").PeruCrisValidationItem;
 }> = ({ item }) => (
   <div className="space-y-1 max-w-xs">
     <strong>PeruCRIS · {item.encontradoEnPeruCris ? "Sincronizado" : "No encontrado"}</strong>

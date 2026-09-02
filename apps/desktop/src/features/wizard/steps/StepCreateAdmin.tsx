@@ -6,7 +6,7 @@ import { useWizardCreateAdmin } from "../hooks/useWizardCreateAdmin";
 import { messages } from "@/shared/feedback/messages";
 import { StepHeader } from "../components/StepHeader";
 import { StepFooter } from "../components/StepFooter";
-import type { Usuario } from "@/shared/tauri/types";
+import type { Usuario } from "@/shared/api/types";
 
 interface Props {
   reniecDisponible: boolean;

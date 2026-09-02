@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDniValidation } from "@/shared/forms/useDniValidation";
 import { bootstrap, bootstrapReniecDni } from "@/features/auth/api";
 import { toast } from "@/shared/feedback/toast";
-import type { Usuario } from "@/shared/tauri/types";
+import type { Usuario } from "@/shared/api/types";
 
 interface UseWizardCreateAdminOptions {
   reniecDisponible: boolean;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { getEventosByInvestigador, getTauriErrorMessage } from "../api";
-import type { EventoAcademico } from "@/shared/tauri/types";
+import type { EventoAcademico } from "@/shared/api/types";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 
