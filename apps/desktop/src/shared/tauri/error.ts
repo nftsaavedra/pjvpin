@@ -1,29 +1,38 @@
-export const getTauriErrorMessage = (error: unknown): string => {
-  if (!error) return 'Error desconocido';
-  if (typeof error === 'string') return error;
+const API_ERROR_VARIANTS = [
+  "ValidationError",
+  "NotFound",
+  "UniqueConstraintViolation",
+  "ConfigurationError",
+  "ExternalServiceError",
+  "ReferentialIntegrity",
+  "DatabaseError",
+  "InternalError",
+  "DataInconsistency",
+] as const;
 
-  if (typeof error === 'object') {
+function extractVariantMessage(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const obj = body as Record<string, unknown>;
+  for (const variant of API_ERROR_VARIANTS) {
+    const value = obj[variant];
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return null;
+}
+
+export const getTauriErrorMessage = (error: unknown): string => {
+  if (!error) return "Error desconocido";
+  if (typeof error === "string") return error;
+
+  if (typeof error === "object") {
     const maybe = error as Record<string, unknown>;
 
-    if (typeof maybe.message === 'string' && maybe.message.trim()) {
+    if (typeof maybe.message === "string" && maybe.message.trim()) {
       return maybe.message;
     }
 
-    const keys = [
-      'DatabaseError',
-      'UniqueConstraintViolation',
-      'NotFound',
-      'InternalError',
-      'ConfigurationError',
-      'ExternalServiceError',
-    ];
-
-    for (const key of keys) {
-      const value = maybe[key];
-      if (typeof value === 'string' && value.trim()) {
-        return value;
-      }
-    }
+    const variantMsg = extractVariantMessage(maybe);
+    if (variantMsg) return variantMsg;
 
     try {
       return JSON.stringify(error);

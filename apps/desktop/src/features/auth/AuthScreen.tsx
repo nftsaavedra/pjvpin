@@ -1,6 +1,7 @@
 import React, { useId, useState } from "react";
 import { LogIn } from "lucide-react";
-import { getTauriErrorMessage, loginUsuario, type Usuario } from "./api";
+import { loginUsuario, type Usuario } from "./api";
+import { setTokens } from "@/shared/http/tokenStore";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { toast } from "@/shared/feedback/toast";
@@ -28,13 +29,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
 
     setIsLoading(true);
     try {
-      const usuario = await loginUsuario(username, password);
+      const auth = await loginUsuario(username, password);
+      setTokens(auth.accessToken, auth.refreshToken);
       toast.success(
-        messages.auth.bienvenido(usuario.nombre_completo ?? messages.auth.fallbackUsuario),
+        messages.auth.bienvenido(auth.user.nombre_completo ?? messages.auth.fallbackUsuario),
       );
-      onAuthenticated(usuario);
+      onAuthenticated(auth.user);
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

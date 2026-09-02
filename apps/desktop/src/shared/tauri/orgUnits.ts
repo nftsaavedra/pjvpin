@@ -1,25 +1,28 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type { CreateOrgUnitRequest, OrgUnit, UpdateOrgUnitRequest } from "./types";
 
 export const crearOrgUnit = async (request: CreateOrgUnitRequest): Promise<OrgUnit> => {
-  return await invoke("crear_org_unit", { request });
+  return apiFetch("/org-units", { method: "POST", body: request });
 };
 
 export const actualizarOrgUnit = async (
   id: string,
   request: UpdateOrgUnitRequest,
 ): Promise<OrgUnit> => {
-  return await invoke("actualizar_org_unit", { id, request });
+  return apiFetch(`/org-units/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: request,
+  });
 };
 
 export const obtenerOrgUnit = async (id: string): Promise<OrgUnit> => {
-  return await invoke("obtener_org_unit", { id });
+  return apiFetch(`/org-units/${encodeURIComponent(id)}`);
 };
 
 export const listarOrgUnits = async (parentId?: string | null): Promise<OrgUnit[]> => {
-  return await invoke("listar_org_units", { parentId: parentId ?? null });
+  return apiFetch("/org-units", { query: parentId ? { parentId } : undefined });
 };
 
 export const eliminarOrgUnit = async (id: string): Promise<void> => {
-  await invoke("eliminar_org_unit", { id });
+  await apiFetch(`/org-units/${encodeURIComponent(id)}`, { method: "DELETE" });
 };

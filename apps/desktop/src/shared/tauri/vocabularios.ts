@@ -1,17 +1,21 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type { CatalogoItem } from "./types";
 
 export const listarVocabulariosConcytec = async (): Promise<string[]> => {
-  return await invoke("listar_vocabularios_concytec");
+  return apiFetch("/vocabularios");
 };
 
 export const listarVocabItems = async (
   esquema: string,
   padreCodigo?: string | null,
 ): Promise<CatalogoItem[]> => {
-  return await invoke("listar_vocab_items", { esquema, padreCodigo: padreCodigo ?? null });
+  return apiFetch(`/vocabularios/${encodeURIComponent(esquema)}/items`, {
+    query: padreCodigo ? { padreCodigo } : undefined,
+  });
 };
 
 export const reimportarVocabulario = async (esquema: string): Promise<void> => {
-  await invoke("reimportar_vocabulario", { esquema });
+  await apiFetch(`/vocabularios/${encodeURIComponent(esquema)}/reimportar`, {
+    method: "POST",
+  });
 };

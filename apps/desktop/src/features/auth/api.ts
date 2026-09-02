@@ -1,11 +1,20 @@
 export {
+  checkHealth,
   getAuthStatus,
   getCurrentSession,
   loginUsuario,
   logoutUsuario,
-  registrarPrimerUsuario,
-} from '@/shared/tauri/auth';
+  bootstrap,
+  bootstrapReniecDni,
+} from "@/shared/http/auth";
 
-export { getTauriErrorMessage } from '@/shared/tauri/error';
+export type {
+  AuthResponse,
+  HealthStatus,
+  BootstrapArgs,
+  ReniecDniLookupResult,
+} from "@/shared/http/auth";
 
-export type { AuthStatus, Usuario } from '@/shared/tauri/types';
+export { getApiErrorMessage } from "@/shared/http/error";
+
+export type { AuthStatus, Usuario } from "@/shared/tauri/types";

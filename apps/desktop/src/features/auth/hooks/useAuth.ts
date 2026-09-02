@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAuthStatus, getCurrentSession, logoutUsuario, type Usuario } from "@/features/auth/api";
-import { toast } from "@/shared/feedback/toast";
-import { getTauriErrorMessage } from "@/shared/tauri/error";
+import { getRefreshToken, clearTokens } from "@/shared/http/tokenStore";
+import { apiFetch } from "@/shared/http/client";
 
 export interface UseAuthReturn {
   authLoading: boolean;
@@ -10,16 +10,42 @@ export interface UseAuthReturn {
   handleLogout: () => Promise<void>;
 }
 
+async function tryRefreshTokens(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+  try {
+    const data = await apiFetch<{ accessToken: string; refreshToken: string }>(
+      "/auth/refresh",
+      { method: "POST", body: { refreshToken }, noAuth: true },
+    );
+    const { setTokens } = await import("@/shared/http/tokenStore");
+    setTokens(data.accessToken, data.refreshToken);
+    return true;
+  } catch {
+    clearTokens();
+    return false;
+  }
+}
+
 export function useAuth(): UseAuthReturn {
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
 
   const cargarAuthStatus = async () => {
     try {
+      const hasRefreshToken = !!getRefreshToken();
+      if (hasRefreshToken) {
+        const refreshed = await tryRefreshTokens();
+        if (!refreshed) {
+          setAuthLoading(false);
+          return;
+        }
+      }
+
       const [, session] = await Promise.all([getAuthStatus(), getCurrentSession()]);
       setCurrentUser(session);
-    } catch (error) {
-      toast.error("Error verificando autenticación: " + getTauriErrorMessage(error));
+    } catch {
+      clearTokens();
     } finally {
       setAuthLoading(false);
     }
@@ -32,9 +58,11 @@ export function useAuth(): UseAuthReturn {
   const handleLogout = async () => {
     try {
       await logoutUsuario();
+    } catch {
+      // Logout best-effort
+    } finally {
+      clearTokens();
       setCurrentUser(null);
-    } catch (error) {
-      toast.error("Error al cerrar sesión: " + getTauriErrorMessage(error));
     }
   };
 
@@ -42,8 +70,8 @@ export function useAuth(): UseAuthReturn {
     const init = async () => {
       try {
         await cargarAuthStatus();
-      } catch (error) {
-        console.error("useAuth: init failed", error);
+      } catch {
+        // Error already handled in cargarAuthStatus
       }
     };
     void init();

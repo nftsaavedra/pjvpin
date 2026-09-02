@@ -9,19 +9,13 @@ import { StepFooter } from "../components/StepFooter";
 import type { Usuario } from "@/shared/tauri/types";
 
 interface Props {
-  reniecToken: string;
   reniecDisponible: boolean;
-  mongodbUri: string;
-  mongodbDb?: string;
   onNext: (usuario: Usuario) => void;
   onBack: () => void;
 }
 
 export const StepCreateAdmin: React.FC<Props> = ({
-  reniecToken,
   reniecDisponible,
-  mongodbUri,
-  mongodbDb,
   onNext,
   onBack,
 }) => {
@@ -38,10 +32,7 @@ export const StepCreateAdmin: React.FC<Props> = ({
     canSubmit,
     handleSubmit,
   } = useWizardCreateAdmin({
-    reniecToken,
     reniecDisponible,
-    mongodbUri,
-    mongodbDb,
     onCreated: onNext,
   });
 

@@ -1,19 +1,20 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type {
   CatalogoItem,
   EliminarCatalogoResultado,
   EliminarGradoResultado,
   GradoAcademico,
   Persona,
+  ReniecDniLookupResult,
   Usuario,
 } from "./types";
 
 export const getAllGrados = async (): Promise<GradoAcademico[]> => {
-  return await invoke("get_all_grados");
+  return apiFetch("/grados");
 };
 
 export const crearGrado = async (nombre: string, descripcion?: string): Promise<GradoAcademico> => {
-  return await invoke("crear_grado", { request: { nombre, descripcion } });
+  return apiFetch("/grados", { method: "POST", body: { nombre, descripcion } });
 };
 
 export const actualizarGrado = async (
@@ -21,15 +22,18 @@ export const actualizarGrado = async (
   nombre: string,
   descripcion?: string,
 ): Promise<GradoAcademico> => {
-  return await invoke("actualizar_grado", { idGrado: id_grado, request: { nombre, descripcion } });
+  return apiFetch(`/grados/${encodeURIComponent(id_grado)}`, {
+    method: "PATCH",
+    body: { nombre, descripcion },
+  });
 };
 
 export const eliminarGrado = async (id_grado: string): Promise<EliminarGradoResultado> => {
-  return await invoke("eliminar_grado", { idGrado: id_grado });
+  return apiFetch(`/grados/${encodeURIComponent(id_grado)}`, { method: "DELETE" });
 };
 
 export const reactivarGrado = async (id_grado: string): Promise<GradoAcademico> => {
-  return await invoke("reactivar_grado", { idGrado: id_grado });
+  return apiFetch(`/grados/${encodeURIComponent(id_grado)}/reactivar`, { method: "PATCH" });
 };
 
 export interface CrearUsuarioArgs {
@@ -43,8 +47,9 @@ export interface CrearUsuarioArgs {
 }
 
 export const crearUsuario = async (args: CrearUsuarioArgs): Promise<Usuario> => {
-  return await invoke("crear_usuario", {
-    request: {
+  return apiFetch("/usuarios", {
+    method: "POST",
+    body: {
       username: args.username,
       dni: args.dni,
       nombres: args.nombres,
@@ -58,12 +63,12 @@ export const crearUsuario = async (args: CrearUsuarioArgs): Promise<Usuario> => 
 
 export const consultarDniParaUsuario = async (
   numero: string,
-): Promise<import("./types").ReniecDniLookupResult> => {
-  return await invoke("consultar_dni_para_usuario", { numero });
+): Promise<ReniecDniLookupResult> => {
+  return apiFetch("/usuarios/reniec-dni", { method: "POST", body: { numero } });
 };
 
 export const getAllUsuarios = async (): Promise<Usuario[]> => {
-  return await invoke("get_all_usuarios");
+  return apiFetch("/usuarios");
 };
 
 export interface ActualizarUsuarioIdentidad {
@@ -73,7 +78,7 @@ export interface ActualizarUsuarioIdentidad {
 }
 
 export const consultarPersonaDeUsuario = async (id_usuario: string): Promise<Persona> => {
-  return await invoke("consultar_persona_de_usuario", { idUsuario: id_usuario });
+  return apiFetch(`/usuarios/${encodeURIComponent(id_usuario)}/persona`);
 };
 
 export const actualizarUsuario = async (
@@ -83,9 +88,9 @@ export const actualizarUsuario = async (
   password?: string,
   identidad?: ActualizarUsuarioIdentidad,
 ): Promise<Usuario> => {
-  return await invoke("actualizar_usuario", {
-    idUsuario: id_usuario,
-    request: {
+  return apiFetch(`/usuarios/${encodeURIComponent(id_usuario)}`, {
+    method: "PATCH",
+    body: {
       username,
       rol,
       password: password?.trim() ? password : null,
@@ -97,19 +102,19 @@ export const actualizarUsuario = async (
 };
 
 export const desactivarUsuario = async (id_usuario: string): Promise<Usuario> => {
-  return await invoke("desactivar_usuario", { idUsuario: id_usuario });
+  return apiFetch(`/usuarios/${encodeURIComponent(id_usuario)}/desactivar`, { method: "PATCH" });
 };
 
 export const reactivarUsuario = async (id_usuario: string): Promise<Usuario> => {
-  return await invoke("reactivar_usuario", { idUsuario: id_usuario });
+  return apiFetch(`/usuarios/${encodeURIComponent(id_usuario)}/reactivar`, { method: "PATCH" });
 };
 
 export const getCatalogos = async (tipo: string): Promise<CatalogoItem[]> => {
-  return await invoke("get_catalogos", { tipo });
+  return apiFetch("/catalogos", { query: { tipo } });
 };
 
 export const getAllCatalogosAdmin = async (tipo: string): Promise<CatalogoItem[]> => {
-  return await invoke("get_all_catalogos_admin", { tipo });
+  return apiFetch("/catalogos/admin", { query: { tipo } });
 };
 
 export const crearCatalogo = async (request: {
@@ -119,7 +124,7 @@ export const crearCatalogo = async (request: {
   descripcion?: string;
   orden?: number;
 }): Promise<CatalogoItem> => {
-  return await invoke("crear_catalogo", { request });
+  return apiFetch("/catalogos", { method: "POST", body: request });
 };
 
 export const actualizarCatalogo = async (
@@ -132,13 +137,13 @@ export const actualizarCatalogo = async (
     orden?: number;
   },
 ): Promise<CatalogoItem> => {
-  return await invoke("actualizar_catalogo", { id, request });
+  return apiFetch(`/catalogos/${encodeURIComponent(id)}`, { method: "PATCH", body: request });
 };
 
 export const eliminarCatalogo = async (id: string): Promise<EliminarCatalogoResultado> => {
-  return await invoke("eliminar_catalogo", { id });
+  return apiFetch(`/catalogos/${encodeURIComponent(id)}`, { method: "DELETE" });
 };
 
 export const reactivarCatalogo = async (id: string): Promise<CatalogoItem> => {
-  return await invoke("reactivar_catalogo", { id });
+  return apiFetch(`/catalogos/${encodeURIComponent(id)}/reactivar`, { method: "PATCH" });
 };

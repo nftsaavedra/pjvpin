@@ -1,23 +1,19 @@
 import { useState } from "react";
 import { useDniValidation } from "@/shared/forms/useDniValidation";
-import { getTauriErrorMessage, registrarPrimerUsuario } from "@/features/auth/api";
-import { wizardConsultarDni } from "@/shared/tauri/wizard";
+import { bootstrap, bootstrapReniecDni } from "@/features/auth/api";
 import { toast } from "@/shared/feedback/toast";
 import type { Usuario } from "@/shared/tauri/types";
 
 interface UseWizardCreateAdminOptions {
-  reniecToken: string;
   reniecDisponible: boolean;
-  mongodbUri: string;
-  mongodbDb?: string;
   onCreated: (usuario: Usuario) => void;
 }
 
 export const useWizardCreateAdmin = (options: UseWizardCreateAdminOptions) => {
-  const { reniecToken, reniecDisponible, mongodbUri, mongodbDb, onCreated } = options;
+  const { reniecDisponible, onCreated } = options;
 
   const dni = useDniValidation({
-    consultar: (numero) => wizardConsultarDni(reniecToken, numero),
+    consultar: (numero) => bootstrapReniecDni(numero),
   });
 
   const [username, setUsername] = useState("");
@@ -54,20 +50,19 @@ export const useWizardCreateAdmin = (options: UseWizardCreateAdminOptions) => {
     }
     setIsSubmitting(true);
     try {
-      const usuario = await registrarPrimerUsuario({
+      const usuario = await bootstrap({
         username,
         password,
         dni: dni.dniLimpio,
         nombres: dni.nombres,
         apellidoPaterno: dni.apellidoPaterno,
         apellidoMaterno: dni.apellidoMaterno,
-        mongodbUri,
-        mongodbDb,
       });
       toast.success("Usuario superuser creado correctamente");
       onCreated(usuario);
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

@@ -29,7 +29,7 @@
 
 | Comando IPC | Endpoint REST | Permiso | Notas |
 |---|---|---|---|
-| — | `+ GET /health` | público | `{ ok, bootstrapRequired, version }`. Reemplaza `wizard_has_config` (bootstrapRequired = usuarios vacía) |
+| — | `+ GET /health` | público | `{ ok, has_users, requires_setup, version }`. Reemplaza `wizard_has_config` (`requires_setup` = usuarios vacía) |
 | `get_security_status` | `→ GET /security/status` | público | Estado de config del servidor SIN exponer secretos |
 | `get_setup_guide` | `✗` — | — | Guía estática legacy del setup embebido; eliminada |
 | `get_security_recommendations` | `✗` — | — | Ídem |

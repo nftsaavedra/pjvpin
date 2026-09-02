@@ -1,4 +1,4 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type {
   InvestigadorProyectosCount,
   KpisDashboard,
@@ -9,17 +9,17 @@ import type {
 export const getEstadisticasProyectosXInvestigador = async (): Promise<
   InvestigadorProyectosCount[]
 > => {
-  return await invoke("get_estadisticas_proyectos_x_investigador");
+  return apiFetch("/dashboard/estadisticas-proyectos-investigador");
 };
 
 export const getKpisDashboard = async (): Promise<KpisDashboard> => {
-  return await invoke("get_kpis_dashboard");
+  return apiFetch("/dashboard/kpis");
 };
 
 export const getProyectosTrend = async (): Promise<ProyectosTrendItem[]> => {
-  return await invoke("get_proyectos_trend");
+  return apiFetch("/dashboard/proyectos-trend");
 };
 
 export const getRenacytDistribucion = async (): Promise<RenacytDistribucionItem[]> => {
-  return await invoke("get_renacyt_distribucion");
+  return apiFetch("/dashboard/renacyt-distribucion");
 };

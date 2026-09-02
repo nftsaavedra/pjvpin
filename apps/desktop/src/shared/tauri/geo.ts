@@ -1,16 +1,16 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type { Ubigeo } from "./types";
 
 export const obtenerUbigeos = async (): Promise<Ubigeo[]> => {
-  return await invoke("obtener_ubigeos");
+  return apiFetch("/geo/ubigeos");
 };
 
 export const obtenerUbigeosPorDepartamento = async (
   departamento: string,
 ): Promise<Ubigeo[]> => {
-  return await invoke("obtener_ubigeos_por_departamento", { departamento });
+  return apiFetch("/geo/ubigeos", { query: { departamento } });
 };
 
 export const buscarUbigeos = async (prefix: string): Promise<Ubigeo[]> => {
-  return await invoke("buscar_ubigeos", { prefix });
+  return apiFetch("/geo/ubigeos", { query: { prefix } });
 };

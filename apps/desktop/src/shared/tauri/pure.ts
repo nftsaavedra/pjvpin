@@ -1,4 +1,4 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type {
   PublicacionCientifica,
   SyncPublicacionesResult,
@@ -9,27 +9,32 @@ import type {
 export const sincronizarPublicacionesPure = async (
   investigador_id: string,
 ): Promise<SyncPublicacionesResult> => {
-  return await invoke("sincronizar_publicaciones_pure", { investigadorId: investigador_id });
+  return apiFetch(`/investigadores/${encodeURIComponent(investigador_id)}/pure/sync`, {
+    method: "POST",
+  });
 };
 
 export const getPublicacionesInvestigador = async (
   investigador_id: string,
 ): Promise<PublicacionCientifica[]> => {
-  return await invoke("get_publicaciones_investigador", { investigadorId: investigador_id });
+  return apiFetch(`/investigadores/${encodeURIComponent(investigador_id)}/publicaciones`);
 };
 
-/**
- * Verificacion de doble via contra Pure (solo lectura). Sin
- * `investigador_id` compara el mapeo global de personas.
- */
 export const verificarDiferenciasPure = async (investigador_id?: string): Promise<SyncReport> => {
-  return await invoke("verificar_diferencias_pure", { investigadorId: investigador_id ?? null });
+  return apiFetch("/pure/verificar-diferencias", {
+    method: "POST",
+    body: investigador_id ? { investigadorId: investigador_id } : {},
+  });
 };
 
-/** Historial de reportes de sincronizacion persistidos. */
 export const listSyncReports = async (
   tipo?: SyncReportTipo,
   limit?: number,
 ): Promise<SyncReport[]> => {
-  return await invoke("list_sync_reports", { tipo: tipo ?? null, limit: limit ?? null });
+  return apiFetch("/sync/reportes", {
+    query: {
+      ...(tipo ? { tipo } : {}),
+      ...(limit ? { limit } : {}),
+    },
+  });
 };

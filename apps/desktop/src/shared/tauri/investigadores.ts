@@ -1,4 +1,4 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type {
   CambioKardex,
   CreateInvestigadorRenacytPayload,
@@ -24,8 +24,9 @@ export interface CrearInvestigadorArgs {
 }
 
 export const crearInvestigador = async (args: CrearInvestigadorArgs): Promise<Investigador> => {
-  return await invoke("crear_investigador", {
-    request: {
+  return apiFetch("/investigadores", {
+    method: "POST",
+    body: {
       dni: args.dni,
       idGrado: args.idGrado,
       nombres: args.nombres,
@@ -38,49 +39,54 @@ export const crearInvestigador = async (args: CrearInvestigadorArgs): Promise<In
 };
 
 export const getAllInvestigadores = async (): Promise<Investigador[]> => {
-  return await invoke("get_all_investigadores");
+  return apiFetch("/investigadores");
 };
 
 export const buscarInvestigadorPorDni = async (dni: string): Promise<Investigador | null> => {
-  return await invoke("buscar_investigador_por_dni", { dni });
+  return apiFetch(`/investigadores/dni/${encodeURIComponent(dni)}`);
 };
 
 export const buscarInvestigadorPorDniConRenacyt = async (
   dni: string,
 ): Promise<RenacytLookupResult | null> => {
-  return await invoke("buscar_investigador_por_dni_con_renacyt", { dni });
+  return apiFetch(`/investigadores/dni/${encodeURIComponent(dni)}/renacyt`);
 };
 
 export const consultarDniReniec = async (numero: string): Promise<ReniecDniLookupResult> => {
-  return await invoke("consultar_dni_reniec", { numero });
+  return apiFetch(`/external/reniec/dni/${encodeURIComponent(numero)}`);
 };
 
 export const consultarRenacytInvestigador = async (
   codigoOId: string,
 ): Promise<RenacytLookupResult> => {
-  return await invoke("consultar_renacyt_investigador", { codigoOId });
+  return apiFetch(`/external/renacyt/investigador/${encodeURIComponent(codigoOId)}`);
 };
 
 export const getAllInvestigadoresConProyectos = async (): Promise<InvestigadorDetalle[]> => {
-  return await invoke("get_all_investigadores_con_proyectos");
+  return apiFetch("/investigadores/detalle");
 };
 
 export const eliminarInvestigador = async (
   idInvestigador: string,
 ): Promise<EliminarInvestigadorResultado> => {
-  return await invoke("eliminar_investigador", { idInvestigador });
+  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}`, {
+    method: "DELETE",
+  });
 };
 
 export const reactivarInvestigador = async (idInvestigador: string): Promise<Investigador> => {
-  return await invoke("reactivar_investigador", { idInvestigador });
+  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}/reactivar`, {
+    method: "PATCH",
+  });
 };
 
 export const refrescarFormacionAcademicaRenacytInvestigador = async (
   idInvestigador: string,
 ): Promise<RefreshInvestigadorRenacytFormacionResultado> => {
-  return await invoke("refrescar_formacion_academica_renacyt_investigador", {
-    idInvestigador,
-  });
+  return apiFetch(
+    `/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/formacion/refrescar`,
+    { method: "POST" },
+  );
 };
 
 export const actualizarInvestigador = async (
@@ -93,34 +99,42 @@ export const actualizarInvestigador = async (
     grupoInvestigacionId?: string;
   },
 ): Promise<Investigador> => {
-  return await invoke("actualizar_investigador", { idInvestigador, request });
+  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}`, {
+    method: "PATCH",
+    body: request,
+  });
 };
 
 export const descargarConstanciaRenacytInvestigador = async (
   idInvestigador: string,
 ): Promise<Uint8Array> => {
-  const bytes = await invoke<number[]>("descargar_constancia_renacyt_investigador", {
-    idInvestigador,
-  });
-  return new Uint8Array(bytes);
+  const url = `${(await import("../http/config")).getApiBaseUrl()}/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/constancia`;
+  const token = (await import("../http/tokenStore")).getAccessToken();
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    const { getApiErrorMessage } = await import("../http/error");
+    const body = await res.text().catch(() => "");
+    throw new (await import("./client")).AppError(getApiErrorMessage(res.status, body));
+  }
+  const buffer = await res.arrayBuffer();
+  return new Uint8Array(buffer);
 };
 
 export const sincronizarPurePersonIds = async (): Promise<SyncPurePersonIdsResult> =>
-  await invoke("sincronizar_pure_person_ids");
+  apiFetch("/pure/person-ids/sync", { method: "POST" });
 
 export const importarInvestigadores = async (
   dnis: string[],
 ): Promise<ImportInvestigadoresResult> => {
-  return await invoke("importar_investigadores", { request: { dnis } });
+  return apiFetch("/investigadores/import", { method: "POST", body: { dnis } });
 };
 
 export const getPlantillaInvestigadoresDefault = async (): Promise<string[]> => {
-  return await invoke("get_plantilla_investigadores_default");
+  return apiFetch("/investigadores/import/plantilla");
 };
 
-/// Kardex RENACYT completo del investigador (timeline de entradas con
-/// cambios). RBAC: `InvestigadoresView`. La ficha proyecta los
-/// `CambioKardex` de cada entrada a una línea del timeline.
 export interface KardexEntry {
   id: string;
   investigadorId: string;
@@ -135,20 +149,18 @@ export interface KardexEntry {
 }
 
 export const getKardexInvestigador = async (idInvestigador: string): Promise<KardexEntry[]> => {
-  return await invoke("get_kardex_investigador", { idInvestigador });
+  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}/kardex`);
 };
 
-/// Marca el kardex RENACYT del investigador como revisado por el
-/// usuario actual. Devuelve el `Investigador` actualizado. RBAC:
-/// `InvestigadoresView`.
 export const marcarCambiosRenacytRevisados = async (
   idInvestigador: string,
 ): Promise<Investigador> => {
-  return await invoke("marcar_cambios_renacyt_revisados", { idInvestigador });
+  return apiFetch(
+    `/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/cambios-revisados`,
+    { method: "PATCH" },
+  );
 };
 
-/// Refresh RENACYT bulk sobre todos los investigadores activos con
-/// vinculo RENACYT. RBAC: `InvestigadoresManage`.
 export const refrescarRenacytTodos = async (): Promise<RefreshMasivoRenacytResultado> => {
-  return await invoke("refrescar_renacyt_todos");
+  return apiFetch("/investigadores/renacyt/refrescar-todos", { method: "POST" });
 };

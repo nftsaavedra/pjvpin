@@ -1,6 +1,6 @@
 import { dirname, join } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
-import { writeExportFile } from "@/shared/tauri/files";
+import { writeFile } from "@tauri-apps/plugin-fs";
 
 const LAST_EXPORT_DIRECTORY_KEY = "pjvpin.exports.lastDirectory";
 
@@ -82,7 +82,7 @@ export const saveDesktopFile = async ({
     return null;
   }
 
-  await writeExportFile(filePath, bytes);
+  await writeFile(filePath, bytes);
 
   try {
     const directory = await dirname(filePath);

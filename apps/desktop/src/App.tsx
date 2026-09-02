@@ -13,7 +13,7 @@ import { TAB_DEFINITIONS, TAB_HEADER_META } from "./app/tabDefinitions";
 import { useAuth } from "./features/auth/hooks/useAuth";
 import { useAutoRefresh } from "./app/hooks/useAutoRefresh";
 import { WizardScreen } from "./features/wizard";
-import { wizardHasConfig } from "@/shared/tauri/wizard";
+import { checkHealth } from "@/features/auth/api";
 import { messages } from "@/shared/feedback/messages";
 import "@/assets/styles/index.css";
 import { PeruCrisValidationProvider } from "@/shared/hooks/usePeruCrisValidation";
@@ -34,8 +34,8 @@ function App() {
   useEffect(() => {
     const check = async () => {
       try {
-        const hasConfig = await wizardHasConfig();
-        setShowWizard(!hasConfig);
+        const health = await checkHealth();
+        setShowWizard(health.requires_setup);
       } catch {
         setShowWizard(true);
       } finally {

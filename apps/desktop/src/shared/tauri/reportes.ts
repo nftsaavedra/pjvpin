@@ -1,4 +1,4 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type {
   DatosExportInvestigadorAgrupado,
   ExportData,
@@ -8,27 +8,30 @@ import type {
 } from "./types";
 
 export const getDataExportacionPlana = async (): Promise<ExportData[]> => {
-  return await invoke("get_data_exportacion_plana");
+  return apiFetch("/reportes/export/plana");
 };
 
 export const getDataExportacionAgrupada = async (): Promise<DatosExportInvestigadorAgrupado[]> => {
-  return await invoke("get_data_exportacion_agrupada_investigador");
+  return apiFetch("/reportes/export/agrupada");
 };
 
 export const getReporteProyectoIntegral = async (
   id_proyecto: string,
 ): Promise<ReporteProyectoIntegral> =>
-  await invoke("get_reporte_proyecto_integral", { idProyecto: id_proyecto });
+  apiFetch(`/reportes/integral/proyecto/${encodeURIComponent(id_proyecto)}`);
 
 export const getReporteInvestigadorIntegral = async (
   id_investigador: string,
 ): Promise<ReporteInvestigadorIntegral> =>
-  await invoke("get_reporte_investigador_integral", { id_investigador });
+  apiFetch(`/reportes/integral/investigador/${encodeURIComponent(id_investigador)}`);
 
-export const getReportesInvestigadoresIntegral = async (): Promise<ReporteInvestigadorIntegral[]> =>
-  await invoke("get_reportes_investigadores_integral");
+export const getReportesInvestigadoresIntegral = async (): Promise<
+  ReporteInvestigadorIntegral[]
+> => apiFetch("/reportes/integral/investigadores");
 
 export const getDataPureMasterlist = async (
   pureRemoteTotal?: number,
 ): Promise<PureMasterlistData> =>
-  await invoke("get_data_pure_masterlist", { pureRemoteTotal: pureRemoteTotal ?? null });
+  apiFetch("/reportes/pure/masterlist", {
+    query: pureRemoteTotal ? { pureRemoteTotal } : undefined,
+  });

@@ -1,6 +1,6 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type { PublicacionCientifica } from "./types";
 
 export const getAllPublicaciones = async (): Promise<PublicacionCientifica[]> => {
-  return await invoke("get_all_publicaciones");
+  return apiFetch("/publicaciones");
 };

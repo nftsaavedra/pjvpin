@@ -1,4 +1,4 @@
-import { invoke } from "./client";
+import { apiFetch } from "../http/client";
 import type { EventoAcademico, ParticipanteEvento } from "./types";
 
 export { type EventoAcademico, type ParticipanteEvento };
@@ -12,21 +12,21 @@ export const crearEvento = async (request: {
   descripcion?: string;
   participantes?: ParticipanteEvento[];
 }): Promise<EventoAcademico> => {
-  return await invoke("crear_evento", { request });
+  return apiFetch("/eventos", { method: "POST", body: request });
 };
 
 export const getAllEventos = async (): Promise<EventoAcademico[]> => {
-  return await invoke("get_all_eventos");
+  return apiFetch("/eventos");
 };
 
 export const getEventoById = async (id: string): Promise<EventoAcademico> => {
-  return await invoke("get_evento_by_id", { id });
+  return apiFetch(`/eventos/${encodeURIComponent(id)}`);
 };
 
 export const getEventosByInvestigador = async (
   investigadorId: string,
 ): Promise<EventoAcademico[]> => {
-  return await invoke("get_eventos_by_investigador", { idInvestigador: investigadorId });
+  return apiFetch(`/investigadores/${encodeURIComponent(investigadorId)}/eventos`);
 };
 
 export const actualizarEvento = async (
@@ -41,13 +41,13 @@ export const actualizarEvento = async (
     participantes?: ParticipanteEvento[];
   },
 ): Promise<EventoAcademico> => {
-  return await invoke("actualizar_evento", { id, request });
+  return apiFetch(`/eventos/${encodeURIComponent(id)}`, { method: "PATCH", body: request });
 };
 
 export const eliminarEvento = async (id: string): Promise<void> => {
-  await invoke("eliminar_evento", { id });
+  await apiFetch(`/eventos/${encodeURIComponent(id)}`, { method: "DELETE" });
 };
 
 export const reactivarEvento = async (id: string): Promise<EventoAcademico> => {
-  return await invoke("reactivar_evento", { id });
+  return apiFetch(`/eventos/${encodeURIComponent(id)}/reactivar`, { method: "PATCH" });
 };
