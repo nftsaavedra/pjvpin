@@ -54,8 +54,16 @@ pjvpin/
 │   │   ├── feedback/             #   ToastContainer
 │   │   ├── hooks/                #   useStableFetch, useRefreshToast
 │   │   └── utils/                #   renacyt, saveDesktopFile
-│   ├── services/                 # Capa de API (Tauri IPC wrappers)
-│   │   └── tauri/                #   client, error, types, auth, investigadores, proyectos, ...
+│   ├── http/                     # Transporte puro (fetch, errores, tokens, URL)
+│   │   ├── client.ts             #   apiFetch + refreshSession
+│   │   ├── error.ts              #   AppError, getApiErrorMessage, getErrorMessage
+│   │   ├── config.ts, tokenStore.ts, index.ts
+│   │   └── *.test.ts             #   40 tests
+│   ├── api/                      # Cliente de dominio (wrappers HTTP + tipos)
+│   │   ├── auth.ts               #   login, session, bootstrap, health
+│   │   ├── investigadores.ts     #   CRUD + RENIEC/RENACYT/Pure + import
+│   │   ├── proyectos.ts, recursos.ts, reportes.ts, ...
+│   │   └── types/                #   17 archivos de tipos
 │   └── hooks/                    # Barrel re-exports → features/*/hooks + shared/hooks
 │
 ├── src-tauri/                    # Backend Rust
@@ -161,7 +169,7 @@ cargo clippy             # Linter Rust
 - **Imports**: Usar alias `@/` → `./src/` (ej: `@/shared/ui/AppIcon`)
 - **Componentes**: PascalCase, una exportación por archivo
 - **Hooks**: `use` prefix, extraer lógica de negocio del JSX
-- **Tipos**: Interfaces en `services/tauri/types.ts`, tipos locales en el feature
+- **Tipos**: Interfaces en `shared/api/types/`, tipos locales en el feature
 - **Manejo de errores**: Siempre `try/catch` con `getTauriErrorMessage(error)`
 - **Lazy loading**: Features grandes con `React.lazy` + `Suspense` + skeleton fallback
 
@@ -179,6 +187,18 @@ cargo clippy             # Linter Rust
   - Cachés no usados → integrarlos en el flujo de consulta externa
   - Campos redundantes → eliminarlos del struct
 - **Seguridad**: Nunca hardcodear credenciales, URIs reales ni tokens en el código fuente. Usar `localhost` o placeholders vacíos en templates por defecto. Las credenciales reales solo en `.env` (gitignorado).
+
+### Generación de archivos vía CLI (convención CLI-first)
+
+Para **NestJS**, usar siempre `nest generate` (`nest g module|service|controller|guard|interceptor|decorator|filter`) antes que crear archivos a mano. El CLI genera estructura canónica + registra el módulo automáticamente. Ejemplo:
+
+```bash
+nest g module usuarios
+nest g service usuarios
+nest g controller usuarios
+```
+
+Para **React/Vite** no hay scaffold CLI oficial → se mantiene la estructura feature-based manual (documentada en AGENTS.md §Estructura). Aplica a toda la migración en curso y a futuro.
 
 ---
 
@@ -379,7 +399,7 @@ anti-drift.
    - **No-regresión**: ninguna funcionalidad existente VÁLIDA eliminada o
      modificada sin estar prevista en el plan. Inventario de referencia:
      `docs/backend/01-endpoints-ipc.md` (155 comandos) y los 94 wrappers de
-     `src/shared/tauri/`.
+     `src/shared/api/`.
    - **Buenas prácticas del stack** — NestJS/REST: controllers sin lógica de
      negocio, DTOs + class-validator en toda entrada, guards/decoradores RBAC,
      exception filter global, códigos HTTP correctos (200/201/204/400/401/403/
