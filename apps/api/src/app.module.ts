@@ -29,6 +29,7 @@ import { PeruCrisModule } from "./perucris/perucris.module";
 import { ProyectosModule } from "./proyectos/proyectos.module";
 import { RecursosModule } from "./recursos/recursos.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
+import { ReportesModule } from "./reportes/reportes.module";
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { DashboardModule } from "./dashboard/dashboard.module";
     PublicacionesModule,
     EventosModule,
     DashboardModule,
+    ReportesModule,
   ],
   providers: [
     AppErrorFilter,
