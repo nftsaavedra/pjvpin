@@ -18,6 +18,10 @@ interface PublicacionCientificaDoc {
   anio?: number | null;
   autores_json?: string;
   dominio_origen?: string;
+  tipo?: string | null;
+  issn?: string | null;
+  estado_publicacion?: string | null;
+  revista_titulo?: string | null;
 }
 
 interface InvestigadorPureRef {
@@ -65,17 +69,27 @@ function normDoi(value: string | null | undefined): string | null {
   return t.length > 0 ? t : null;
 }
 
-function mapPureTipo(tipo: string | null): string {
-  if (!tipo) return "otros";
+/**
+ * Canoniza un `tipo_publicacion` de Pure al vocabulario canónico del modelo
+ * (`publicaciones_cientificas.tipo`). Devuelve `null` cuando Pure reporta un
+ * tipo sin representación en el vocabulario (p. ej. `dataset`, `working_paper`,
+ * o cualquier cadena desconocida). En ese caso el sync **omite** la
+ * publicación para no persistir un tipo inválido que corrompa reportes
+ * CONCYTEC; queda visible en `verificarDiferencias` como `solo_pure`.
+ */
+export function mapPureTipo(tipo: string | null): string | null {
+  if (!tipo) return null;
   const t = tipo.toLowerCase();
-  if (t.includes("article")) return "articulo";
-  if (t.includes("book")) return "libro";
-  if (t.includes("conference") || t.includes("proceeding")) return "conferencia";
-  if (t.includes("chapter")) return "capitulo";
-  if (t.includes("software")) return "software";
-  if (t.includes("dataset")) return "dataset";
-  if (t.includes("working paper")) return "working_paper";
-  return "otros";
+  if (t === "article" || t === "journal article") return "articulo";
+  if (t === "conference paper" || t === "conference" || t === "proceeding")
+    return "articulo_conferencia";
+  if (t === "book") return "libro";
+  if (t === "chapter") return "capitulo_libro";
+  if (t === "software") return "software";
+  if (t === "letter") return "carta";
+  if (t === "review") return "resena";
+  if (t === "thesis") return "tesis";
+  return null;
 }
 
 @Injectable()
@@ -88,16 +102,22 @@ export class PureService {
 
   /**
    * Sincroniza las publicaciones de un investigador desde Pure.
-   * - Upsert en `publicaciones_cientificas` por `pure_uuid` UNIQUE sparse.
-   * - Popula `publicacion_autores` resolviendo por `nombre_completo`.
-   * - Marca `dominio_origen: "PURE"`.
+   * - Upsert en `publicaciones_cientificas` por `id_publicacion = pub-pure-{uuid}`
+   *   (UNIQUE; convención D8 preservada para trazabilidad).
+   * - Marca `dominio_origen: "PURE"`, persiste `revista_titulo` (no `journal_titulo`,
+   *   D3: campo del doc canónico del modelo Rust).
+   * - Publicaciones con tipo sin representación en vocabulario canónico se
+   *   OMITEN del upsert (counted en `skipped`) — no se fabrican tipos falsos.
+   * - `$unset autores_json` idempotente: limpia campo legacy de syncs previos.
+   * - Popula `publicacion_autores` resolviendo por `nombre_completo`; sólo inserta
+   *   autores con persona resuelta (D3: evita E11000 contra UNIQUE no-sparse).
    *
    * Idempotente: re-ejecuciones sobre los mismos `pure_uuid` no duplican.
    */
   async syncPublicaciones(
     idInvestigador: string,
     actor: AuthenticatedUser,
-  ): Promise<{ fetched: number; upserted: number }> {
+  ): Promise<{ fetched: number; upserted: number; skipped: number }> {
     const inv = await this.db
       .collection<InvestigadorPureRef>("investigadores")
       .findOne({ id_investigador: idInvestigador });
@@ -111,8 +131,14 @@ export class PureService {
     const fetched = await this.pure.fetchResearchOutputsByScopusId(scopusAuthorId);
     const coll = this.db.collection<PublicacionCientificaDoc>("publicaciones_cientificas");
     let upserted = 0;
+    let skipped = 0;
     for (const pub of fetched) {
       if (!pub.pure_uuid) continue;
+      const tipoCanonico = mapPureTipo(pub.tipo_publicacion);
+      if (tipoCanonico === null) {
+        skipped++;
+        continue;
+      }
       const idPublicacion = `pub-pure-${pub.pure_uuid}`;
       await coll.updateOne(
         { id_publicacion: idPublicacion },
@@ -123,18 +149,18 @@ export class PureService {
             doi: pub.doi,
             titulo: pub.titulo,
             anio: pub.anio_publicacion,
-            autores_json: pub.autores_json,
             dominio_origen: "PURE",
-            tipo: mapPureTipo(pub.tipo_publicacion),
-            journal_titulo: pub.journal_titulo,
+            tipo: tipoCanonico,
+            revista_titulo: pub.journal_titulo,
             issn: pub.issn,
             estado_publicacion: pub.estado_publicacion,
             updated_at: nowMs(),
           },
+          $unset: { autores_json: "", journal_titulo: "" },
         },
         { upsert: true },
       );
-      await this.poblarPivotAutores(idPublicacion, idInvestigador, pub.autores_json);
+      await this.poblarPivotAutores(idPublicacion, pub.autores_json);
       upserted++;
     }
     await this.audit.writeGenericAudit(
@@ -142,9 +168,9 @@ export class PureService {
       "pure.sync.publicaciones",
       "investigador",
       idInvestigador,
-      JSON.stringify({ fetched: fetched.length, upserted }),
+      JSON.stringify({ fetched: fetched.length, upserted, skipped }),
     );
-    return { fetched: fetched.length, upserted };
+    return { fetched: fetched.length, upserted, skipped };
   }
 
   /**
@@ -313,7 +339,6 @@ export class PureService {
 
   private async poblarPivotAutores(
     idPublicacion: string,
-    idInvestigadorPrincipal: string,
     autoresJson: string,
   ): Promise<void> {
     let autores: string[];
@@ -328,30 +353,29 @@ export class PureService {
       .collection<{ id_persona: string; nombre_completo: string }>("personas")
       .find({}, { projection: { id_persona: 1, nombre_completo: 1 } })
       .toArray();
-    const ordenados = autores.map((nombre) => {
-      const match = personas.find(
-        (p) => p.nombre_completo?.toLowerCase().trim() === nombre.toLowerCase().trim(),
-      );
-      return {
-        id_publicacion: idPublicacion,
-        id_persona: match?.id_persona ?? null,
-        nombre_raw: nombre,
-        orden: 0,
-        es_autor_correspondiente: false,
-      };
-    });
-    void idInvestigadorPrincipal;
-    if (ordenados.length > 0) {
-      await this.db
-        .collection("publicacion_autores")
-        .insertMany(
-          ordenados as unknown as Parameters<typeof this.db.collection>[0] extends Collection<
-            infer T
-          >
-            ? T[]
-            : never[],
+    const rows = autores
+      .map((nombre, idx) => {
+        const match = personas.find(
+          (p) => p.nombre_completo?.toLowerCase().trim() === nombre.toLowerCase().trim(),
         );
-    }
+        const idPersona = match?.id_persona?.trim();
+        if (!idPersona) return null;
+        return {
+          id_publicacion: idPublicacion,
+          id_persona: idPersona,
+          orden: idx + 1,
+          es_autor_correspondiente: false,
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+    if (rows.length === 0) return;
+    await this.db
+      .collection("publicacion_autores")
+      .insertMany(
+        rows as unknown as Parameters<typeof this.db.collection>[0] extends Collection<infer T>
+          ? T[]
+          : never[],
+      );
   }
 
   private async publicacionesPorInvestigador(
@@ -360,7 +384,8 @@ export class PureService {
     const inv = await this.db
       .collection<{ id_investigador: string; id_persona?: string }>("investigadores")
       .findOne({ id_investigador: idInvestigador });
-    const idPersona = inv?.id_persona ?? idInvestigador;
+    const idPersona = inv?.id_persona?.trim();
+    if (!idPersona) return [];
     const pivot = await this.db
       .collection<{ id_publicacion: string }>("publicacion_autores")
       .find({ id_persona: idPersona }, { projection: { id_publicacion: 1 } })
@@ -369,7 +394,7 @@ export class PureService {
     if (ids.length === 0) return [];
     return this.db
       .collection<PublicacionCientificaDoc>("publicaciones_cientificas")
-      .find({ id_publicacion: { $in: ids } })
+      .find({ id_publicacion: { $in: ids }, activo: 1 })
       .toArray();
   }
 
