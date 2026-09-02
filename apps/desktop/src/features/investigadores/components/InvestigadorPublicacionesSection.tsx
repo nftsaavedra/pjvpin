@@ -4,7 +4,7 @@ import type { PublicacionCientifica, SyncPublicacionesResult } from "../api";
 import {
   getPublicacionesInvestigador,
   sincronizarPublicacionesPure,
-  getTauriErrorMessage,
+  getErrorMessage,
 } from "../api";
 import { AppIcon } from "@/shared/ui/AppIcon";
 import { Badge } from "@/shared/ui/Badge";
@@ -44,7 +44,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
       const data = await getPublicacionesInvestigador(investigadorId);
       setPublicaciones(data);
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
       setPublicaciones([]);
     } finally {
       setIsLoading(false);
@@ -78,7 +78,7 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
       }
       await load();
     } catch (error) {
-      const errorMessage = getTauriErrorMessage(error);
+      const errorMessage = getErrorMessage(error);
       if (isNotConfiguredError(errorMessage)) {
         setPureNoConfigurado(true);
         toast.error(messages.investigadores.publicaciones.pureNoConfigurado);

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { ReniecDniLookupResult } from "@/shared/api/types";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import { toast } from "@/shared/feedback/toast";
 
 export type DniValidationStatus = "idle" | "checking" | "duplicate" | "validated" | "error";
@@ -141,8 +141,8 @@ export const useDniValidation = (options: UseDniValidationOptions): UseDniValida
     } catch (error) {
       clearIdentity();
       setStatus("error");
-      setMessage(getTauriErrorMessage(error));
-      toast.error(getTauriErrorMessage(error));
+      setMessage(getErrorMessage(error));
+      toast.error(getErrorMessage(error));
     } finally {
       setIsChecking(false);
     }

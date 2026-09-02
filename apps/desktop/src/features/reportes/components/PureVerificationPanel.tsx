@@ -5,7 +5,7 @@ import {
   sincronizarPublicacionesPure,
   verificarDiferenciasPure,
 } from "@/shared/api/pure";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import type {
   Investigador,
   ItemClasificacion,
@@ -72,7 +72,7 @@ export const PureVerificationPanel: React.FC<PureVerificationPanelProps> = ({
     } catch (err: unknown) {
       setError(true);
       toast.error(
-        `${messages.reportes.pureVerification.errorCargando} ${getTauriErrorMessage(err)}`,
+        `${messages.reportes.pureVerification.errorCargando} ${getErrorMessage(err)}`,
       );
     } finally {
       setVerificando(false);
@@ -89,7 +89,7 @@ export const PureVerificationPanel: React.FC<PureVerificationPanelProps> = ({
       toast.success(messages.reportes.pureVerification.adoptarExito);
       setReport(await verificarDiferenciasPure(investigadorId));
     } catch (err: unknown) {
-      toast.error(messages.reportes.pureVerification.adoptarError(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.pureVerification.adoptarError(getErrorMessage(err)));
     } finally {
       setAdoptando(false);
     }

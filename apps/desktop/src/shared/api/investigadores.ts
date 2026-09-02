@@ -116,7 +116,8 @@ export const descargarConstanciaRenacytInvestigador = async (
   if (!res.ok) {
     const { getApiErrorMessage } = await import("../http/error");
     const body = await res.text().catch(() => "");
-    throw new (await import("./client")).AppError(getApiErrorMessage(res.status, body));
+    const { AppError } = await import("../http/error");
+    throw new AppError(getApiErrorMessage(res.status, body));
   }
   const buffer = await res.arrayBuffer();
   return new Uint8Array(buffer);

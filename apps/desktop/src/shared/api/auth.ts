@@ -1,5 +1,5 @@
-import { apiFetch } from "./client";
-import type { Usuario, AuthStatus } from "../api/types";
+import { apiFetch } from "../http/client";
+import type { Usuario, AuthStatus } from "./types";
 
 export interface AuthResponse {
   user: Usuario;

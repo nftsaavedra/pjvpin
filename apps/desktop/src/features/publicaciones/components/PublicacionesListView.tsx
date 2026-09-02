@@ -6,7 +6,7 @@ import { AppIcon } from "@/shared/ui/AppIcon";
 import { FieldHelpTooltip } from "@/shared/forms/FieldHelpTooltip";
 import { inputClassName } from "@/shared/forms/inputClassName";
 import { SkeletonTable } from "@/shared/ui/Skeleton";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import { messages } from "@/shared/feedback/messages";
 import type { PublicacionesTabState, OrigenFilter } from "../hooks/usePublicacionesTab";
 
@@ -151,7 +151,7 @@ export const PublicacionesListView: React.FC<PublicacionesListViewProps> = ({ st
 
       {error ? (
         <div className="card p-6" role="alert">
-          <p className="text-sm text-red-700">{getTauriErrorMessage(error)}</p>
+          <p className="text-sm text-red-700">{getErrorMessage(error)}</p>
         </div>
       ) : null}
 

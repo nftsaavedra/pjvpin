@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getEventosByInvestigador, getTauriErrorMessage } from "../api";
+import { getEventosByInvestigador, getErrorMessage } from "../api";
 import type { EventoAcademico } from "@/shared/api/types";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
@@ -24,7 +24,7 @@ export const useEventosInvestigador = (investigadorId: string): UseEventosInvest
       const data = await getEventosByInvestigador(investigadorId);
       setEventos(data);
     } catch (error) {
-      toast.error(`${messages.ui.error}: ${getTauriErrorMessage(error)}`);
+      toast.error(`${messages.ui.error}: ${getErrorMessage(error)}`);
       setEventos([]);
     } finally {
       setIsLoading(false);

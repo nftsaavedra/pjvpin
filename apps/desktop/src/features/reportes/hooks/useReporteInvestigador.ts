@@ -5,7 +5,7 @@ import {
   type ReporteInvestigadorIntegral,
 } from "../api";
 import { toast } from "@/shared/feedback/toast";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 
 export function useReporteInvestigador() {
   const [investigadorReport, setInvestigadorReport] = useState<ReporteInvestigadorIntegral | null>(
@@ -40,7 +40,7 @@ export function useReporteInvestigador() {
         toast.success("Reporte de investigador generado");
       }
     } catch (err) {
-      toast.error("Error generando reporte: " + getTauriErrorMessage(err));
+      toast.error("Error generando reporte: " + getErrorMessage(err));
     } finally {
       setGenerating(false);
     }

@@ -11,7 +11,7 @@ import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { inputClassName } from "@/shared/forms/inputClassName";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { crearEvento, eliminarEvento, getTauriErrorMessage } from "../api";
+import { crearEvento, eliminarEvento, getErrorMessage } from "../api";
 import type { EventoAcademico } from "@/shared/api/types";
 import { useEventosInvestigador } from "../hooks/useEventosInvestigador";
 import { hasPermission } from "@/shared/auth/permissions";
@@ -116,7 +116,7 @@ export const InvestigadorEventosSection: React.FC<InvestigadorEventosSectionProp
       await loadEventos();
     } catch (error) {
       toast.error(
-        `${messages.investigadores.eventos.errorOperacion}: ${getTauriErrorMessage(error)}`,
+        `${messages.investigadores.eventos.errorOperacion}: ${getErrorMessage(error)}`,
       );
     } finally {
       setIsSubmitting(false);
@@ -132,7 +132,7 @@ export const InvestigadorEventosSection: React.FC<InvestigadorEventosSectionProp
       await loadEventos();
     } catch (error) {
       toast.error(
-        `${messages.investigadores.eventos.errorOperacion}: ${getTauriErrorMessage(error)}`,
+        `${messages.investigadores.eventos.errorOperacion}: ${getErrorMessage(error)}`,
       );
     }
   };

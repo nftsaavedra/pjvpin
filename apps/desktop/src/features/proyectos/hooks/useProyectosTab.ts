@@ -5,7 +5,7 @@ import { useProyectosRecursos } from "./useProyectosRecursos";
 import { useFetchInvestigadores } from "../../investigadores/hooks/useFetchInvestigadores";
 import { useCatalogosProyectos } from "./useCatalogosProyectos";
 import { toast } from "@/shared/feedback/toast";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import type { ProyectoDetalle, ProyectoParticipantesPayload } from "../api";
 
 export type ProyectosView = "list" | "create" | "edit" | "detail";
@@ -116,7 +116,7 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
       onProyectoCreated();
       navigateToProyectoDetail(proyecto.idProyecto);
     } catch (error) {
-      toast.error("Error al crear proyecto: " + getTauriErrorMessage(error));
+      toast.error("Error al crear proyecto: " + getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +136,7 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
       await crudHandleDelete(proyectoToDelete.idProyecto);
       setProyectoToDelete(null);
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -144,7 +144,7 @@ export const useProyectosTab = (refreshTrigger = 0, onProyectoCreated: () => voi
     try {
       await crudHandleReactivate(id);
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   };
 

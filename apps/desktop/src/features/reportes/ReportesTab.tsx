@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   getDataExportacionAgrupada,
-  getTauriErrorMessage,
+  getErrorMessage,
   type DatosExportInvestigadorAgrupado,
 } from "./api";
 import { getAllProyectosDetalle } from "@/shared/api/proyectos";
@@ -119,7 +119,7 @@ export const ReportesTab: React.FC<ReportesTabProps> = ({
         ),
       );
     } catch (err) {
-      toast.error(messages.reportes.tab.errorExportandoReporte(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.tab.errorExportandoReporte(getErrorMessage(err)));
     } finally {
       setExportingFormat(null);
     }

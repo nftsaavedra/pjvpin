@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { descargarConstanciaRenacytInvestigador, getTauriErrorMessage } from "../api";
+import { descargarConstanciaRenacytInvestigador, getErrorMessage } from "../api";
 
 interface DescargarConstanciaArgs {
   idInvestigador: string;
@@ -39,7 +39,7 @@ export function useConstanciaRenacyt() {
           toast.success(messages.investigadores.constancia.success(args.codigoRegistro));
         }
       } catch (err) {
-        toast.error(`${messages.investigadores.constancia.error}: ${getTauriErrorMessage(err)}`);
+        toast.error(`${messages.investigadores.constancia.error}: ${getErrorMessage(err)}`);
       } finally {
         setIsDownloadingConstancia(false);
       }

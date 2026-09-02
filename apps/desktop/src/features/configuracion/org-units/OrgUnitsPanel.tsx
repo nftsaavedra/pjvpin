@@ -8,7 +8,7 @@ import { TableActionButton } from "@/shared/ui/TableActionButton";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import { eliminarOrgUnit, listarOrgUnits } from "@/shared/api/orgUnits";
 import type { OrgUnit } from "@/shared/api/types";
 import { OrgUnitFormModal } from "./OrgUnitFormModal";
@@ -48,7 +48,7 @@ export const OrgUnitsPanel: React.FC<OrgUnitsPanelProps> = ({
       const units = await listarOrgUnits(null);
       setUnitsByParent((prev) => ({ ...prev, [ROOT_KEY]: units }));
     } catch (err) {
-      setErrorByParent((prev) => ({ ...prev, [ROOT_KEY]: getTauriErrorMessage(err) }));
+      setErrorByParent((prev) => ({ ...prev, [ROOT_KEY]: getErrorMessage(err) }));
     } finally {
       setLoadingByParent((prev) => ({ ...prev, [ROOT_KEY]: false }));
     }
@@ -75,7 +75,7 @@ export const OrgUnitsPanel: React.FC<OrgUnitsPanelProps> = ({
           setUnitsByParent((prev) => ({ ...prev, [unitId]: units }));
         })
         .catch((err: unknown) => {
-          setErrorByParent((prev) => ({ ...prev, [unitId]: getTauriErrorMessage(err) }));
+          setErrorByParent((prev) => ({ ...prev, [unitId]: getErrorMessage(err) }));
         })
         .finally(() => {
           setLoadingByParent((prev) => ({ ...prev, [unitId]: false }));
@@ -127,7 +127,7 @@ export const OrgUnitsPanel: React.FC<OrgUnitsPanelProps> = ({
       setRefreshKey((key) => key + 1);
       onDataModified();
     } catch (err) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(err)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(err)));
     }
   };
 

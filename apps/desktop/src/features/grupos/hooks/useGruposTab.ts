@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useStableFetchData } from "@/shared/hooks/useStableFetch";
 import { useRefreshToast } from "@/shared/hooks/useRefreshToast";
 import { toast } from "@/shared/feedback/toast";
-import { deleteGrupo, getAllGrupos, getTauriErrorMessage, type GrupoInvestigacion } from "../api";
+import { deleteGrupo, getAllGrupos, getErrorMessage, type GrupoInvestigacion } from "../api";
 
 export type Grupo = GrupoInvestigacion & {
   coordinador_nombre?: string;
@@ -45,7 +45,7 @@ export const useGruposTab = (_canManage: boolean) => {
       setDeletingId(null);
       await recargar();
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   };
 

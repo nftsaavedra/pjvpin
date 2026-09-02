@@ -8,6 +8,6 @@ export {
   type UpdateGrupoPayload,
 } from '@/shared/api/grupos';
 
-export { getTauriErrorMessage } from '@/shared/api/error';
+export { getErrorMessage } from '@/shared/http/error';
 
 export type { GrupoInvestigacion } from '@/shared/api/types';

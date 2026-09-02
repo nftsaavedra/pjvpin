@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import { getDataPureMasterlist } from "@/shared/api/reportes";
 import { sincronizarPurePersonIds } from "@/shared/api/investigadores";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import type { PureMasterlistData } from "@/shared/api/types";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
@@ -58,7 +58,7 @@ export const PureMasterListPanel: React.FC<PureMasterListPanelProps> = ({
       );
       await recargarDatos();
     } catch (err: unknown) {
-      toast.error(messages.reportes.pureMasterList.sincronizarError(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.pureMasterList.sincronizarError(getErrorMessage(err)));
     } finally {
       setSyncing(false);
     }
@@ -81,7 +81,7 @@ export const PureMasterListPanel: React.FC<PureMasterListPanelProps> = ({
       }
       toast.success(messages.reportes.pureMasterList.exportarExito);
     } catch (err: unknown) {
-      toast.error(messages.reportes.pureMasterList.exportarError(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.pureMasterList.exportarError(getErrorMessage(err)));
     } finally {
       setExporting(false);
     }

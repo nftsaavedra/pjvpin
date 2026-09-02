@@ -5,7 +5,7 @@ import {
   type PeruCrisPushResult,
 } from "@/features/reportes/api";
 import type { PeruCrisValidationReport, PeruCrisValidationScope } from "@/features/reportes/api";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 
 /** Estado del flujo combinado push + validar. */
 export type PeruCrisSyncState =
@@ -41,7 +41,7 @@ export function useEnviarPeruCris() {
         };
       });
     } catch (err) {
-      setState({ fase: "error", message: getTauriErrorMessage(err) });
+      setState({ fase: "error", message: getErrorMessage(err) });
     }
   }, []);
 
@@ -59,7 +59,7 @@ export function useEnviarPeruCris() {
         };
       });
     } catch (err) {
-      setState({ fase: "error", message: getTauriErrorMessage(err) });
+      setState({ fase: "error", message: getErrorMessage(err) });
     }
   }, []);
 

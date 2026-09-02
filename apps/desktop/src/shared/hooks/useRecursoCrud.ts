@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "@/shared/feedback/toast";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 
 interface IncomingItem {
   id: string;
@@ -22,7 +22,7 @@ export function useRecursoCrud<TItem, TCreatePayload>(
       const data = await getItems(id);
       setItems(data);
     } catch (error) {
-      toast.error("Error al cargar: " + getTauriErrorMessage(error));
+      toast.error("Error al cargar: " + getErrorMessage(error));
     }
   };
 
@@ -55,7 +55,7 @@ export function useRecursoCrud<TItem, TCreatePayload>(
         createItem(payload)
           .then(() => {})
           .catch((error: unknown) => {
-            toast.error("Error al crear: " + getTauriErrorMessage(error));
+            toast.error("Error al crear: " + getErrorMessage(error));
           }),
       );
     }
@@ -64,7 +64,7 @@ export function useRecursoCrud<TItem, TCreatePayload>(
         deleteItem(id)
           .then(() => {})
           .catch((error: unknown) => {
-            toast.error("Error al eliminar: " + getTauriErrorMessage(error));
+            toast.error("Error al eliminar: " + getErrorMessage(error));
           }),
       );
     }

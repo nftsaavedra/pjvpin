@@ -8,7 +8,7 @@ import {
   consultarPersonaDeUsuario,
   crearUsuario,
   desactivarUsuario,
-  getTauriErrorMessage,
+  getErrorMessage,
   reactivarUsuario,
   type Usuario,
 } from "../../api";
@@ -119,7 +119,7 @@ export const useUsuariosTab = (
       await recargar();
       onUsuarioModified();
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +146,7 @@ export const useUsuariosTab = (
     } catch (error) {
       dni.setDni(usuario.dni);
       toast.warning(
-        `No se pudo cargar la persona vinculada (${getTauriErrorMessage(error)}). Puede actualizar el resto de los datos del usuario.`,
+        `No se pudo cargar la persona vinculada (${getErrorMessage(error)}). Puede actualizar el resto de los datos del usuario.`,
       );
     } finally {
       setIsCargandoPersona(false);
@@ -185,7 +185,7 @@ export const useUsuariosTab = (
       await recargar();
       onUsuarioModified();
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   };
 

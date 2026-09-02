@@ -18,7 +18,7 @@ import {
   actualizarCatalogo,
   crearCatalogo,
   eliminarCatalogo,
-  getTauriErrorMessage,
+  getErrorMessage,
   reactivarCatalogo,
   type CatalogoItem,
 } from "../api";
@@ -101,7 +101,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
       await recargar();
       onModified();
     } catch (error) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(error)));
     } finally {
       setIsLoading(false);
     }
@@ -148,7 +148,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
       await recargar();
       onModified();
     } catch (error) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(error)));
     }
   };
 
@@ -159,7 +159,7 @@ export const CatalogosTab: React.FC<CatalogosTabProps> = ({
       await recargar();
       onModified();
     } catch (error) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(error)));
     }
   };
 

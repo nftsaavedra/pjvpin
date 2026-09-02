@@ -4,7 +4,7 @@ import { messages } from "@/shared/feedback/messages";
 import {
   buscarInvestigadorPorDniConRenacyt,
   consultarRenacytInvestigador,
-  getTauriErrorMessage,
+  getErrorMessage,
   type RenacytLookupResult,
 } from "../api";
 
@@ -117,8 +117,8 @@ export const useRenacytValidation = ({ onRenacytValidated }: UseRenacytValidatio
       } catch (error) {
         resetRenacyt(true);
         setRenacytValidationStatus("error");
-        setRenacytValidationMessage(getTauriErrorMessage(error));
-        toast.error(getTauriErrorMessage(error));
+        setRenacytValidationMessage(getErrorMessage(error));
+        toast.error(getErrorMessage(error));
       }
     },
     [onRenacytValidated, resetRenacyt],

@@ -31,6 +31,13 @@ function extractVariantMessage(body: unknown): string | null {
   return null;
 }
 
+export class AppError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AppError";
+  }
+}
+
 export function getApiErrorMessage(status: number, body: unknown): string {
   const variantMsg = extractVariantMessage(body);
   if (variantMsg) return variantMsg;
@@ -42,3 +49,29 @@ export function getApiErrorMessage(status: number, body: unknown): string {
 
   return `Error HTTP ${status}`;
 }
+
+export const getErrorMessage = (error: unknown): string => {
+  if (!error) return "Error desconocido";
+  if (typeof error === "string") return error;
+
+  if (typeof error === "object") {
+    const maybe = error as Record<string, unknown>;
+
+    if (typeof maybe.message === "string" && maybe.message.trim()) {
+      return maybe.message;
+    }
+
+    const variantMsg = extractVariantMessage(maybe);
+    if (variantMsg) return variantMsg;
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return String(error);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  return String(error);
+};

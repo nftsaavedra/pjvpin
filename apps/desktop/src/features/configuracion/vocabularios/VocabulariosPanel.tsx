@@ -14,7 +14,7 @@ import {
   listarVocabulariosConcytec,
   reimportarVocabulario,
 } from "@/shared/api/vocabularios";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import type { CatalogoItem } from "@/shared/api/types";
 
 interface VocabulariosPanelProps {
@@ -72,7 +72,7 @@ export const VocabulariosPanel: React.FC<VocabulariosPanelProps> = ({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setErrorItems(getTauriErrorMessage(err));
+        setErrorItems(getErrorMessage(err));
       });
     return () => {
       cancelled = true;
@@ -119,7 +119,7 @@ export const VocabulariosPanel: React.FC<VocabulariosPanelProps> = ({
       recargarItemsRaiz();
       onDataModified();
     } catch (err) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(err)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(err)));
     } finally {
       setIsReimporting(false);
     }

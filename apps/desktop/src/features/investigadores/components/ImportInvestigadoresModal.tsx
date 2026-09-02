@@ -6,7 +6,7 @@ import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import {
   getPlantillaInvestigadoresDefault,
-  getTauriErrorMessage,
+  getErrorMessage,
   importarInvestigadores,
   type ImportInvestigadoresResult,
 } from "../api";
@@ -51,7 +51,7 @@ export const ImportInvestigadoresModal: React.FC<ImportInvestigadoresModalProps>
       const dnis = await getPlantillaInvestigadoresDefault();
       setTexto(dnis.join("\n"));
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     } finally {
       setCargandoPlantilla(false);
     }
@@ -73,7 +73,7 @@ export const ImportInvestigadoresModal: React.FC<ImportInvestigadoresModalProps>
       toast.success(messages.importacion.resultado.success(resultado.importados));
       onDataModified();
     } catch (error) {
-      toast.error(messages.importacion.toast.importarError(getTauriErrorMessage(error)));
+      toast.error(messages.importacion.toast.importarError(getErrorMessage(error)));
       setEstado({ kind: "edicion" });
     }
   };

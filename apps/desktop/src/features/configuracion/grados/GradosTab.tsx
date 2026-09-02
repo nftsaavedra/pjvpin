@@ -18,7 +18,7 @@ import {
   actualizarGrado,
   crearGrado,
   eliminarGrado,
-  getTauriErrorMessage,
+  getErrorMessage,
   reactivarGrado,
   type GradoAcademico,
 } from "../api";
@@ -70,7 +70,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
       await recargar();
       onGradoModified();
     } catch (error) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(error)));
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +113,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
       await recargar();
       onGradoModified();
     } catch (error) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(error)));
     }
   };
 
@@ -124,7 +124,7 @@ export const GradosTab: React.FC<GradosTabProps> = ({ onGradoModified, refreshTr
       await recargar();
       onGradoModified();
     } catch (error) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(error)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(error)));
     }
   };
 

@@ -6,7 +6,7 @@ export {
   getReportesInvestigadoresIntegral,
 } from "@/shared/api/reportes";
 
-export { getTauriErrorMessage } from "@/shared/api/error";
+export { getErrorMessage } from "@/shared/http/error";
 
 // PeruCRIS (push + validacion contra API publica)
 export {

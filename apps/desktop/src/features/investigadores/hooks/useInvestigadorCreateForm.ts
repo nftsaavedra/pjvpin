@@ -6,7 +6,7 @@ import {
   buscarInvestigadorPorDni,
   consultarDniReniec,
   crearInvestigador,
-  getTauriErrorMessage,
+  getErrorMessage,
 } from "../api";
 import { useRenacytValidation } from "./useRenacytValidation";
 
@@ -142,8 +142,8 @@ export const useInvestigadorCreateForm = (
       clearValidatedIdentity();
       renacyt.resetRenacyt(true);
       setDniValidationStatus("error");
-      setDniValidationMessage(getTauriErrorMessage(error));
-      toast.error(getTauriErrorMessage(error));
+      setDniValidationMessage(getErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -216,7 +216,7 @@ export const useInvestigadorCreateForm = (
       onClose();
     } catch (error) {
       toast.error(
-        messages.investigadores.toast.investigadorCrearError(getTauriErrorMessage(error)),
+        messages.investigadores.toast.investigadorCrearError(getErrorMessage(error)),
       );
     } finally {
       setIsLoading(false);

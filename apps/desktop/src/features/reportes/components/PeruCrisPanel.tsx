@@ -16,7 +16,7 @@ import { SkeletonBlock } from "@/shared/ui/Skeleton";
 import { ConfirmDialog } from "@/shared/overlays/ConfirmDialog";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 
 interface PeruCrisPanelProps {
   canExport?: boolean;
@@ -47,7 +47,7 @@ export const PeruCrisPanel: React.FC<PeruCrisPanelProps> = ({ canExport = false 
         `PeruCRIS: ${result.proyectos.importados} proyectos, ${result.publicaciones.importados} publicaciones, ${result.publicaciones.autoresVinculados} autores`,
       );
     } catch (err) {
-      toast.error(messages.perucris.importar.error(getTauriErrorMessage(err)));
+      toast.error(messages.perucris.importar.error(getErrorMessage(err)));
     } finally {
       setImportando(false);
     }

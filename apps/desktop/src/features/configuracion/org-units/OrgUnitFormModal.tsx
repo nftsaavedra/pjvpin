@@ -9,7 +9,7 @@ import { inputClassName } from "@/shared/forms/inputClassName";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
 import { useStableFetch } from "@/shared/hooks/useStableFetch";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 import { actualizarOrgUnit, crearOrgUnit } from "@/shared/api/orgUnits";
 import { listarVocabItems } from "@/shared/api/vocabularios";
 import type { CatalogoItem, OrgUnit } from "@/shared/api/types";
@@ -189,7 +189,7 @@ export const OrgUnitFormModal: React.FC<OrgUnitFormModalProps> = ({
       onSaved();
       onClose();
     } catch (err) {
-      toast.error(messages.ui.errorConDetalle(getTauriErrorMessage(err)));
+      toast.error(messages.ui.errorConDetalle(getErrorMessage(err)));
     } finally {
       setIsLoading(false);
     }

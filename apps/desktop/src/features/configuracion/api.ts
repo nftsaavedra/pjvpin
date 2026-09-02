@@ -21,7 +21,7 @@ export {
   type CrearUsuarioArgs,
 } from "@/shared/api/configuracion";
 
-export { getTauriErrorMessage } from "@/shared/api/error";
+export { getErrorMessage } from "@/shared/http/error";
 
 export type {
   CatalogoItem,

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { getReporteProyectoIntegral, type ReporteProyectoIntegral } from "../api";
 import { toast } from "@/shared/feedback/toast";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 
 export function useReporteProyecto() {
   const [proyectoReport, setProyectoReport] = useState<ReporteProyectoIntegral | null>(null);
@@ -25,7 +25,7 @@ export function useReporteProyecto() {
       setExpandedSections({ "proy-cabecera": true });
       toast.success("Reporte de proyecto generado");
     } catch (err) {
-      toast.error("Error generando reporte: " + getTauriErrorMessage(err));
+      toast.error("Error generando reporte: " + getErrorMessage(err));
     } finally {
       setGenerating(false);
     }

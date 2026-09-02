@@ -4,7 +4,7 @@ import { pdf } from "@react-pdf/renderer";
 import { saveDesktopFile } from "@/shared/utils/saveDesktopFile";
 import { toast } from "@/shared/feedback/toast";
 import { messages } from "@/shared/feedback/messages";
-import { getTauriErrorMessage } from "../api";
+import { getErrorMessage } from "../api";
 import { ProyectoIntegralPdf, InvestigadorIntegralPdf } from "../components/PdfComponents";
 import type { ReporteProyectoIntegral, ReporteInvestigadorIntegral } from "../api";
 
@@ -82,7 +82,7 @@ export function useExport({
       });
       toast.success(messages.reportes.useExport.excelExportado);
     } catch (err) {
-      toast.error(messages.reportes.useExport.excelError(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.useExport.excelError(getErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }
@@ -103,7 +103,7 @@ export function useExport({
       });
       toast.success(messages.reportes.useExport.pdfExportado);
     } catch (err) {
-      toast.error(messages.reportes.useExport.pdfError(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.useExport.pdfError(getErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }
@@ -156,7 +156,7 @@ export function useExport({
       });
       toast.success(messages.reportes.useExport.excelExportado);
     } catch (err) {
-      toast.error(messages.reportes.useExport.excelError(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.useExport.excelError(getErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }
@@ -184,7 +184,7 @@ export function useExport({
       }
       toast.success(messages.reportes.useExport.pdfExportado);
     } catch (err) {
-      toast.error(messages.reportes.useExport.pdfError(getTauriErrorMessage(err)));
+      toast.error(messages.reportes.useExport.pdfError(getErrorMessage(err)));
     } finally {
       setExportingIntegral(null);
     }

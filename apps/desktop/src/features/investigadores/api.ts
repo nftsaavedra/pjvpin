@@ -28,7 +28,7 @@ export {
 
 export { sincronizarPublicacionesPure, getPublicacionesInvestigador } from "@/shared/api/pure";
 
-export { getTauriErrorMessage } from "@/shared/api/error";
+export { getErrorMessage } from "@/shared/http/error";
 
 export type {
   CambioKardex,

@@ -1,5 +1,5 @@
 export { apiFetch } from "./client";
-export { getApiErrorMessage } from "./error";
+export { getApiErrorMessage, getErrorMessage, AppError } from "./error";
 export { getApiUrl, setApiUrl, getApiBaseUrl } from "./config";
 export {
   getAccessToken,

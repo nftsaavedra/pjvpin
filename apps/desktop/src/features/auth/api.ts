@@ -6,15 +6,15 @@ export {
   logoutUsuario,
   bootstrap,
   bootstrapReniecDni,
-} from "@/shared/http/auth";
+} from "@/shared/api/auth";
 
 export type {
   AuthResponse,
   HealthStatus,
   BootstrapArgs,
   ReniecDniLookupResult,
-} from "@/shared/http/auth";
+} from "@/shared/api/auth";
 
-export { getApiErrorMessage } from "@/shared/http/error";
+export { getApiErrorMessage, getErrorMessage } from "@/shared/http/error";
 
 export type { AuthStatus, Usuario } from "@/shared/api/types";

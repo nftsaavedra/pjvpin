@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getTauriErrorMessage } from "@/shared/api/error";
+import { getErrorMessage } from "@/shared/http/error";
 
 export interface StableFetchState<T> {
   data: T;
@@ -44,7 +44,7 @@ export const useStableFetch = <T>(
       setError(null);
       hasLoadedRef.current = true;
     } catch (err) {
-      const message = getTauriErrorMessage(err);
+      const message = getErrorMessage(err);
       setData(initialDataRef.current);
       setError(message);
       console.error(`${errorLabelRef.current}:`, err);

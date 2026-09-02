@@ -9,7 +9,7 @@ export {
   reactivarProyecto,
 } from "@/shared/api/proyectos";
 
-export { getTauriErrorMessage } from "@/shared/api/error";
+export { getErrorMessage } from "@/shared/http/error";
 
 export type {
   InvestigadorDetalle,

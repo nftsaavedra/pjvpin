@@ -6,7 +6,7 @@ import { messages } from "@/shared/feedback/messages";
 import {
   eliminarInvestigador,
   getAllInvestigadoresConProyectos,
-  getTauriErrorMessage,
+  getErrorMessage,
   reactivarInvestigador,
   refrescarFormacionAcademicaRenacytInvestigador,
   refrescarRenacytTodos,
@@ -56,7 +56,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
       setInvestigadorToDelete(null);
       await cargarInvestigadores();
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -66,7 +66,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
       toast.success(messages.investigadores.toast.investigadorReactivado);
       await cargarInvestigadores();
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -82,7 +82,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
 
       await cargarInvestigadores();
     } catch (error) {
-      toast.error(getTauriErrorMessage(error));
+      toast.error(getErrorMessage(error));
     } finally {
       setRefreshingRenacytInvestigadorId(null);
     }
@@ -101,7 +101,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
       await cargarInvestigadores();
     } catch (error) {
       toast.error(
-        `${messages.investigadores.kardex.refrescarTodos.fallo}: ${getTauriErrorMessage(error)}`,
+        `${messages.investigadores.kardex.refrescarTodos.fallo}: ${getErrorMessage(error)}`,
       );
     } finally {
       setIsRefreshingRenacytTodos(false);
