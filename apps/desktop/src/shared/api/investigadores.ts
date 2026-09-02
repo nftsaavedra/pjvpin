@@ -1,4 +1,7 @@
 import { apiFetch } from "../http/client";
+import { AppError, getApiErrorMessage } from "../http/error";
+import { getApiBaseUrl } from "../http/config";
+import { getAccessToken } from "../http/tokenStore";
 import type {
   CambioKardex,
   CreateInvestigadorRenacytPayload,
@@ -108,15 +111,13 @@ export const actualizarInvestigador = async (
 export const descargarConstanciaRenacytInvestigador = async (
   idInvestigador: string,
 ): Promise<Uint8Array> => {
-  const url = `${(await import("../http/config")).getApiBaseUrl()}/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/constancia`;
-  const token = (await import("../http/tokenStore")).getAccessToken();
+  const url = `${getApiBaseUrl()}/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/constancia`;
+  const token = getAccessToken();
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
   const res = await fetch(url, { headers });
   if (!res.ok) {
-    const { getApiErrorMessage } = await import("../http/error");
     const body = await res.text().catch(() => "");
-    const { AppError } = await import("../http/error");
     throw new AppError(getApiErrorMessage(res.status, body));
   }
   const buffer = await res.arrayBuffer();

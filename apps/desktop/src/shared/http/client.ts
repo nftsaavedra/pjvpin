@@ -26,7 +26,7 @@ function isAuthPath(path: string): boolean {
 
 let refreshPromise: Promise<boolean> | null = null;
 
-async function tryRefresh(): Promise<boolean> {
+export async function refreshSession(): Promise<boolean> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return false;
 
@@ -67,7 +67,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
 
   if (res.status === 401 && !noAuth && !isAuthPath(path)) {
     if (!refreshPromise) {
-      refreshPromise = tryRefresh();
+      refreshPromise = refreshSession();
     }
     const refreshed = await refreshPromise;
     refreshPromise = null;
