@@ -15,6 +15,7 @@ import {
   type CatalogoMap,
 } from "./catalogo.helper";
 import {
+  buildMasterlistData,
   buildReporteInvestigadorIntegral,
   buildReporteProyectoIntegral,
   buildReportesInvestigadoresIntegral,
@@ -22,6 +23,7 @@ import {
   indexById,
   joinOrNone,
   mapFinanciamientoConEtiquetas,
+  mapGender,
   mapPatenteConEtiquetas,
   proyectarAgrupadaInvestigador,
   proyectarGrupos,
@@ -29,6 +31,7 @@ import {
   proyectarPlana,
   proyectarProyectosArea,
   proyectarRecursos,
+  pureMasterlistNewPersonId,
   resolveGradoNombre,
   resolveRenacytNivel,
   type ReporteInvestigadorInput,
@@ -1130,5 +1133,356 @@ describe("buildReportesInvestigadoresIntegral", () => {
 
   it("devuelve lista vacia sin investigadores", () => {
     expect(buildReportesInvestigadoresIntegral([])).toEqual([]);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// Pure Master List (V8) - builder puro
+// ═══════════════════════════════════════════════════════════════════
+
+import type {
+  InvestigadorMasterlistDoc,
+  PersonaMasterlistDoc,
+} from "./repository-masterlist";
+
+function personaMasterlist(
+  id: string,
+  dni: string,
+  overrides: Partial<PersonaMasterlistDoc> = {},
+): PersonaMasterlistDoc {
+  return {
+    id_persona: id,
+    dni,
+    nombres: `Nombre${id}`,
+    apellido_paterno: `Apellido${id}`,
+    apellido_materno: null,
+    correo: null,
+    sexo: null,
+    ...overrides,
+  };
+}
+
+function investigadorMasterlist(
+  id: string,
+  idPersona: string,
+  overrides: Partial<InvestigadorMasterlistDoc> = {},
+): InvestigadorMasterlistDoc {
+  return {
+    id_investigador: id,
+    id_persona: idPersona,
+    activo: 1,
+    pure_person_id: null,
+    renacyt_orcid: null,
+    renacyt_scopus_author_id: null,
+    ...overrides,
+  };
+}
+
+describe("mapGender (Pure Lists tab)", () => {
+  it("canoniza variantes en espanol y abreviaturas", () => {
+    expect(mapGender("M")).toBe("male");
+    expect(mapGender("Masculino")).toBe("male");
+    expect(mapGender("F")).toBe("female");
+    expect(mapGender("Femenino")).toBe("female");
+    expect(mapGender("male")).toBe("male");
+    expect(mapGender("female")).toBe("female");
+  });
+
+  it("es case-insensitive y trimea bordes", () => {
+    expect(mapGender("MALE")).toBe("male");
+    expect(mapGender("  Female  ")).toBe("female");
+  });
+
+  it("devuelve 'unknown' para null, vacio o valores no reconocidos", () => {
+    expect(mapGender(null)).toBe("unknown");
+    expect(mapGender("")).toBe("unknown");
+    expect(mapGender("otro")).toBe("unknown");
+  });
+});
+
+describe("pureMasterlistNewPersonId", () => {
+  it("formato PJV-{dni} con DNI valido", () => {
+    expect(pureMasterlistNewPersonId("02857417")).toBe("PJV-02857417");
+  });
+
+  it("vacio para DNI vacio o whitespace", () => {
+    expect(pureMasterlistNewPersonId("")).toBe("");
+    expect(pureMasterlistNewPersonId("   ")).toBe("");
+  });
+});
+
+describe("buildMasterlistData", () => {
+  it("genera una fila Persons y una fila Staff por investigador activo", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1"),
+        investigadorMasterlist("i2", "p2"),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111").id_persona, personaMasterlist("p1", "11111111")],
+        [personaMasterlist("p2", "22222222").id_persona, personaMasterlist("p2", "22222222")],
+      ]),
+    });
+
+    expect(data.persons).toHaveLength(2);
+    expect(data.staff_relations).toHaveLength(2);
+    expect(data.summary.total).toBe(2);
+  });
+
+  it("emite person_id=PJV-{dni} para altas nuevas (sin pure_person_id)", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [investigadorMasterlist("i1", "p1")],
+      personas: new Map([
+        [personaMasterlist("p1", "12345678").id_persona, personaMasterlist("p1", "12345678")],
+      ]),
+    });
+    expect(data.persons[0]?.person_id).toBe("PJV-12345678");
+    expect(data.summary.altas_nuevas).toBe(1);
+    expect(data.summary.actualizaciones_pure).toBe(0);
+  });
+
+  it("usa pure_person_id cuando existe (actualizacion)", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1", { pure_person_id: "PER1234" }),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111").id_persona, personaMasterlist("p1", "11111111")],
+      ]),
+    });
+    expect(data.persons[0]?.person_id).toBe("PER1234");
+    expect(data.staff_relations[0]?.person_id).toBe("PER1234");
+    expect(data.summary.actualizaciones_pure).toBe(1);
+    expect(data.summary.altas_nuevas).toBe(0);
+  });
+
+  it("descarta investigadores cuya Persona no existe", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1"),
+        investigadorMasterlist("i2", "p-inexistente"),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111").id_persona, personaMasterlist("p1", "11111111")],
+      ]),
+    });
+    expect(data.persons).toHaveLength(1);
+    expect(data.summary.total).toBe(1);
+  });
+
+  it("popula campos del V8 template (profiled=no, visibility, employed_as, staff_type, primary, externally_authenticated)", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [investigadorMasterlist("i1", "p1")],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111").id_persona, personaMasterlist("p1", "11111111")],
+      ]),
+    });
+    expect(data.persons[0]).toMatchObject({
+      profiled: "no",
+      visibility: "public",
+      externally_authenticated: "yes",
+    });
+    expect(data.staff_relations[0]).toMatchObject({
+      organisation_id: "UNF001",
+      employed_as: "academic",
+      staff_type: "academic",
+      primary: "yes",
+      start_date: "2025-06-02",
+    });
+  });
+
+  it("aplica defaults V8 a campos requeridos (title, nationality, etc.) como null", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [investigadorMasterlist("i1", "p1")],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111").id_persona, personaMasterlist("p1", "11111111")],
+      ]),
+    });
+    expect(data.persons[0]).toMatchObject({
+      title: null,
+      title_translated: null,
+      post_nominals: null,
+      firstname_translated: null,
+      lastname_translated: null,
+      first_name_known_as: null,
+      last_name_known_as: null,
+      first_name_sorting: null,
+      last_name_sorting: null,
+      former_last_name: null,
+      prior_affiliations: null,
+      nationality: null,
+      profile_photo: null,
+      client_id_1: null,
+    });
+    expect(data.staff_relations[0]).toMatchObject({
+      contract_type: null,
+      job_title: null,
+      job_description: null,
+      job_description_translated: null,
+      fte: null,
+      end_date: null,
+      direct_phone_nr: null,
+      mobile_phone_nr: null,
+      fax_nr: null,
+      website_url_en: null,
+      website_url_translated: null,
+    });
+  });
+
+  it("cuenta sin_correo y sin_orcid cuando faltan los datos", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1", { renacyt_orcid: "0000-0002-1825-0097" }),
+        investigadorMasterlist("i2", "p2"),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111", { correo: "ana@example.com" }).id_persona,
+          personaMasterlist("p1", "11111111", { correo: "ana@example.com" })],
+        [personaMasterlist("p2", "22222222").id_persona, personaMasterlist("p2", "22222222")],
+      ]),
+    });
+    expect(data.summary.sin_correo).toBe(1);
+    expect(data.summary.sin_orcid).toBe(1);
+    expect(data.persons[0]?.email).toBe("ana@example.com");
+    expect(data.persons[1]?.email).toBeNull();
+    expect(data.persons[1]?.orcid).toBeNull();
+  });
+
+  it("trimea correo y orcid, descartando valores whitespace", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1", { renacyt_orcid: "  " }),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111", { correo: "  " }).id_persona,
+          personaMasterlist("p1", "11111111", { correo: "  " })],
+      ]),
+    });
+    expect(data.persons[0]?.email).toBeNull();
+    expect(data.persons[0]?.orcid).toBeNull();
+    expect(data.summary.sin_correo).toBe(1);
+    expect(data.summary.sin_orcid).toBe(1);
+  });
+
+  it("mapea gender desde sexo de Persona (aliases en espanol)", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1"),
+        investigadorMasterlist("i2", "p2"),
+        investigadorMasterlist("i3", "p3"),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111", { sexo: "Masculino" }).id_persona,
+          personaMasterlist("p1", "11111111", { sexo: "Masculino" })],
+        [personaMasterlist("p2", "22222222", { sexo: "Femenino" }).id_persona,
+          personaMasterlist("p2", "22222222", { sexo: "Femenino" })],
+        [personaMasterlist("p3", "33333333", { sexo: "otro" }).id_persona,
+          personaMasterlist("p3", "33333333", { sexo: "otro" })],
+      ]),
+    });
+    expect(data.persons[0]?.gender).toBe("male");
+    expect(data.persons[1]?.gender).toBe("female");
+    expect(data.persons[2]?.gender).toBe("unknown");
+  });
+
+  it("compone lastname con apellido_paterno + apellido_materno (o solo uno / null)", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1"),
+        investigadorMasterlist("i2", "p2"),
+        investigadorMasterlist("i3", "p3"),
+        investigadorMasterlist("i4", "p4"),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "1", {
+          apellido_paterno: "Perez",
+          apellido_materno: "Gomez",
+        }).id_persona,
+          personaMasterlist("p1", "1", {
+            apellido_paterno: "Perez",
+            apellido_materno: "Gomez",
+          })],
+        [personaMasterlist("p2", "2", {
+          apellido_paterno: "Perez",
+          apellido_materno: null,
+        }).id_persona,
+          personaMasterlist("p2", "2", {
+            apellido_paterno: "Perez",
+            apellido_materno: null,
+          })],
+        [personaMasterlist("p3", "3", {
+          apellido_paterno: null,
+          apellido_materno: "Gomez",
+        }).id_persona,
+          personaMasterlist("p3", "3", {
+            apellido_paterno: null,
+            apellido_materno: "Gomez",
+          })],
+        [personaMasterlist("p4", "4", {
+          apellido_paterno: "",
+          apellido_materno: "  ",
+        }).id_persona,
+          personaMasterlist("p4", "4", {
+            apellido_paterno: "",
+            apellido_materno: "  ",
+          })],
+      ]),
+    });
+    expect(data.persons[0]?.lastname).toBe("Perez Gomez");
+    expect(data.persons[1]?.lastname).toBe("Perez");
+    expect(data.persons[2]?.lastname).toBe("Gomez");
+    expect(data.persons[3]?.lastname).toBeNull();
+  });
+
+  it("popula client_id_2 con Scopus Author ID y client_id_3 con DNI", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1", {
+          renacyt_scopus_author_id: "  6601234567  ",
+        }),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "11111111").id_persona, personaMasterlist("p1", "11111111")],
+      ]),
+    });
+    expect(data.persons[0]?.client_id_2).toBe("6601234567");
+    expect(data.persons[0]?.client_id_3).toBe("11111111");
+  });
+
+  it("summary: pure_remoto_total = 0 por defecto, o el valor del caller", () => {
+    const base = {
+      investigadoresActivos: [investigadorMasterlist("i1", "p1")],
+      personas: new Map([
+        [personaMasterlist("p1", "1").id_persona, personaMasterlist("p1", "1")],
+      ]),
+    };
+    expect(buildMasterlistData(base).summary.pure_remoto_total).toBe(0);
+    expect(
+      buildMasterlistData({ ...base, pureRemoteTotal: 123 }).summary.pure_remoto_total,
+    ).toBe(123);
+  });
+
+  it("summary: contadores coinciden con el set de investigadores", () => {
+    const data = buildMasterlistData({
+      investigadoresActivos: [
+        investigadorMasterlist("i1", "p1", { pure_person_id: "PER1" }),
+        investigadorMasterlist("i2", "p2"),
+        investigadorMasterlist("i3", "p3"),
+      ],
+      personas: new Map([
+        [personaMasterlist("p1", "1", { correo: "a@x.com" }).id_persona,
+          personaMasterlist("p1", "1", { correo: "a@x.com" })],
+        [personaMasterlist("p2", "2").id_persona, personaMasterlist("p2", "2")],
+        [personaMasterlist("p3", "3").id_persona, personaMasterlist("p3", "3")],
+      ]),
+    });
+    expect(data.summary).toEqual({
+      total: 3,
+      actualizaciones_pure: 1,
+      altas_nuevas: 2,
+      sin_correo: 2,
+      sin_orcid: 3,
+      pure_remoto_total: 0,
+    });
   });
 });

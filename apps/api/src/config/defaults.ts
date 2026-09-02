@@ -21,6 +21,12 @@ export const PURE_MASTERLIST_DEFAULT_VISIBILITY = "public";
 export const PURE_MASTERLIST_DEFAULT_EMPLOYED_AS = "academic";
 export const PURE_MASTERLIST_DEFAULT_STAFF_TYPE = "academic";
 export const PURE_MASTERLIST_DEFAULT_START_DATE = "2025-06-02";
+/**
+ * `ExternallyAuthenticated` por defecto. La plantilla institucional usa `yes`
+ * para todos los investigadores. Port de
+ * `shared::defaults::PURE_MASTERLIST_DEFAULT_EXTERNALLY_AUTH`.
+ */
+export const PURE_MASTERLIST_DEFAULT_EXTERNALLY_AUTH = "yes";
 
 export const CONSTANCIA_PDF_MIN_BYTES = 1024;
 export const CONSTANCIA_PDF_TIMEOUT_MS = 30_000;

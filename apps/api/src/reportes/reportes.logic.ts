@@ -1071,3 +1071,225 @@ export function compareStrings(a: string, b: string): number {
   if (a > b) return 1;
   return 0;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Pure Master List (V8) - `GET /reportes/pure/masterlist`
+// ═══════════════════════════════════════════════════════════════════
+
+import {
+  PURE_MASTERLIST_DEFAULT_EMPLOYED_AS,
+  PURE_MASTERLIST_DEFAULT_EXTERNALLY_AUTH,
+  PURE_MASTERLIST_DEFAULT_ORG_UNIT_ID,
+  PURE_MASTERLIST_DEFAULT_STAFF_TYPE,
+  PURE_MASTERLIST_DEFAULT_START_DATE,
+  PURE_MASTERLIST_DEFAULT_VISIBILITY,
+} from "../config/defaults";
+import type {
+  PureMasterlistData,
+  PureMasterlistPersonRow,
+  PureMasterlistStaffRow,
+  PureMasterlistSummary,
+} from "./dto/masterlist.dto";
+import type {
+  InvestigadorMasterlistDoc,
+  PersonaMasterlistDoc,
+} from "./repository-masterlist";
+
+/**
+ * Prefijo para PersonIDs de altas nuevas (alta en Pure). Distinto de `PER`
+ * (reservado para los PersonIDs institucionales ya cargados) para evitar
+ * colisiones. Coincide con `shared::defaults::PURE_MASTERLIST_NEW_PERSON_PREFIX`
+ * del Rust.
+ */
+export const PURE_MASTERLIST_NEW_PERSON_PREFIX = "PJV-";
+
+/**
+ * Genera un PersonID deterministico para un investigador nuevo (no presente
+ * en Pure). Formato: `PJV-{dni}`. Vacio si el DNI es vacio.
+ *
+ * Port 1:1 de `shared::defaults::pure_masterlist_new_person_id`.
+ */
+export function pureMasterlistNewPersonId(dni: string): string {
+  const trimmed = dni.trim();
+  if (trimmed.length === 0) return "";
+  return `${PURE_MASTERLIST_NEW_PERSON_PREFIX}${trimmed}`;
+}
+
+/**
+ * Constantes del V8 template: el master list SIEMPRE emite estos valores para
+ * los campos con defaults del template institucional. Se acceden via
+ * `apps/api/src/config/defaults.ts` (single source of truth con el Rust).
+ */
+export const PURE_MASTERLIST_PROFILED = "no";
+export const PURE_MASTERLIST_PRIMARY = "yes";
+
+/**
+ * Mapea `persona.sexo` (M / Masculino / Male / F / Femenino / Female / etc.)
+ * a los valores canonicos del Lists tab de Pure (`male` / `female` / `unknown`).
+ * Devuelve `unknown` para valores no reconocidos o ausentes (Pure lo acepta).
+ *
+ * Port 1:1 de `repository_pure_masterlist::map_gender`.
+ */
+export function mapGender(sexo: string | null | undefined): "male" | "female" | "unknown" {
+  if (!sexo) return "unknown";
+  const trimmed = sexo.trim().toLowerCase();
+  switch (trimmed) {
+    case "m":
+    case "male":
+    case "masculino":
+    case "masc":
+    case "hombre":
+    case "man":
+      return "male";
+    case "f":
+    case "female":
+    case "femenino":
+    case "fem":
+    case "mujer":
+    case "woman":
+      return "female";
+    default:
+      return "unknown";
+  }
+}
+
+/**
+ * Une apellido paterno y materno con un espacio. Si ambos son vacios,
+ * devuelve `null` para no emitir una celda con un unico espacio.
+ *
+ * Port 1:1 de `repository_pure_masterlist::join_apellidos`.
+ */
+function joinApellidos(
+  paterno: string | null | undefined,
+  materno: string | null | undefined,
+): string | null {
+  const p = paterno?.trim() ?? "";
+  const m = materno?.trim() ?? "";
+  if (p.length === 0 && m.length === 0) return null;
+  if (m.length === 0) return p;
+  if (p.length === 0) return m;
+  return `${p} ${m}`;
+}
+
+export interface BuildMasterlistInput {
+  investigadoresActivos: InvestigadorMasterlistDoc[];
+  personas: Map<string, PersonaMasterlistDoc>;
+  /** Total de personas en el portal Pure remoto (opcional, viene del panel). */
+  pureRemoteTotal?: number;
+}
+
+/**
+ * Construye el payload completo (Persons + Staffrelations + Summary) del
+ * master list V8 a partir de los investigadores activos y las personas.
+ *
+ * Reglas (port 1:1 del Rust `build_pure_masterlist_data`):
+ *   - Solo se procesan investigadores cuya `Persona` referenciada existe.
+ *   - `person_id` = `pure_person_id` si existe, o `PJV-{dni}` para altas
+ *     nuevas (namespace propio, sin colision con los `PERxxx` institucionales).
+ *   - `gender` se mapea via `mapGender` a `male` / `female` / `unknown`.
+ *   - `correo` y `orcid` se trimean y se descartan si quedan vacios.
+ *   - Defaults del V8 template (UNF001, public, academic, yes, 2025-06-02) en
+ *     `apps/api/src/config/defaults.ts`.
+ */
+export function buildMasterlistData(input: BuildMasterlistInput): PureMasterlistData {
+  const persons: PureMasterlistPersonRow[] = [];
+  const staffRelations: PureMasterlistStaffRow[] = [];
+
+  let actualizacionesPure = 0;
+  let altasNuevas = 0;
+  let sinCorreo = 0;
+  let sinOrcid = 0;
+
+  for (const inv of input.investigadoresActivos) {
+    const persona = input.personas.get(inv.id_persona);
+    if (!persona) continue;
+
+    const hasPureId =
+      inv.pure_person_id != null && inv.pure_person_id.trim().length > 0;
+    const personId = hasPureId
+      ? (inv.pure_person_id as string).trim()
+      : pureMasterlistNewPersonId(persona.dni);
+    if (hasPureId) {
+      actualizacionesPure += 1;
+    } else {
+      altasNuevas += 1;
+    }
+
+    const correoTrim = persona.correo?.trim() ?? "";
+    const emailValue = correoTrim.length > 0 ? correoTrim : null;
+    if (emailValue === null) sinCorreo += 1;
+
+    const orcidTrim = inv.renacyt_orcid?.trim() ?? "";
+    const orcidValue = orcidTrim.length > 0 ? orcidTrim : null;
+    if (orcidValue === null) sinOrcid += 1;
+
+    const lastname = joinApellidos(persona.apellido_paterno, persona.apellido_materno);
+    const scopusTrim = inv.renacyt_scopus_author_id?.trim() ?? "";
+    const clientId2 = scopusTrim.length > 0 ? scopusTrim : null;
+
+    persons.push({
+      person_id: personId,
+      profiled: PURE_MASTERLIST_PROFILED,
+      username: emailValue,
+      email: emailValue,
+      title: null,
+      title_translated: null,
+      post_nominals: null,
+      firstname: persona.nombres,
+      lastname,
+      firstname_translated: null,
+      lastname_translated: null,
+      first_name_known_as: null,
+      last_name_known_as: null,
+      first_name_sorting: null,
+      last_name_sorting: null,
+      former_last_name: null,
+      prior_affiliations: null,
+      nationality: null,
+      gender: mapGender(persona.sexo),
+      visibility: PURE_MASTERLIST_DEFAULT_VISIBILITY,
+      orcid: orcidValue,
+      profile_photo: null,
+      client_id_1: null,
+      client_id_2: clientId2,
+      client_id_3: persona.dni,
+      externally_authenticated: PURE_MASTERLIST_DEFAULT_EXTERNALLY_AUTH,
+    });
+
+    staffRelations.push({
+      person_id: personId,
+      organisation_id: PURE_MASTERLIST_DEFAULT_ORG_UNIT_ID,
+      contract_type: null,
+      job_title: null,
+      job_description: null,
+      job_description_translated: null,
+      employed_as: PURE_MASTERLIST_DEFAULT_EMPLOYED_AS,
+      fte: null,
+      start_date: PURE_MASTERLIST_DEFAULT_START_DATE,
+      end_date: null,
+      direct_phone_nr: null,
+      mobile_phone_nr: null,
+      fax_nr: null,
+      email: emailValue,
+      website_url_en: null,
+      website_url_translated: null,
+      primary: PURE_MASTERLIST_PRIMARY,
+      staff_type: PURE_MASTERLIST_DEFAULT_STAFF_TYPE,
+    });
+  }
+
+  const summary: PureMasterlistSummary = {
+    total: persons.length,
+    actualizaciones_pure: actualizacionesPure,
+    altas_nuevas: altasNuevas,
+    sin_correo: sinCorreo,
+    sin_orcid: sinOrcid,
+    pure_remoto_total: input.pureRemoteTotal ?? 0,
+  };
+
+  return {
+    persons,
+    staff_relations: staffRelations,
+    summary,
+  };
+}

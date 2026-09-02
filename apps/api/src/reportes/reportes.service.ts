@@ -16,6 +16,7 @@ import type {
   ExportDataProyectoAreaDto,
   ExportDataRecursoDto,
 } from "./dto/export.dto";
+import type { PureMasterlistData } from "./dto/masterlist.dto";
 import type {
   RecursosProyectoResumen,
   ReporteInvestigadorIntegral,
@@ -24,6 +25,7 @@ import type {
 import {
   assertInvestigadorEncontrado,
   assertProyectoEncontrado,
+  buildMasterlistData,
   buildReporteInvestigadorIntegral,
   buildReporteProyectoIntegral,
   buildReportesInvestigadoresIntegral,
@@ -46,6 +48,7 @@ import type {
 } from "./reportes.docs";
 import { ReportesExportRepository } from "./repository-export";
 import { ReportesIntegralRepository } from "./repository-integral";
+import { ReportesMasterlistRepository } from "./repository-masterlist";
 
 /**
  * Maestros compartidos por los reportes integrales. Se cargan una sola vez
@@ -67,6 +70,7 @@ export class ReportesService {
   constructor(
     private readonly exportRepo: ReportesExportRepository,
     private readonly integralRepo: ReportesIntegralRepository,
+    private readonly masterlistRepo: ReportesMasterlistRepository,
   ) {}
 
   // ===============================================================
@@ -193,6 +197,23 @@ export class ReportesService {
       this.exportRepo.listParticipaciones(),
     ]);
     return proyectarProyectosArea({ proyectosActivos, participaciones });
+  }
+
+  // ===============================================================
+  // Pure Master List (V8)
+  // ===============================================================
+
+  /**
+   * Genera el payload del master list V8 de Pure (Persons + Staffrelations +
+   * Summary). `pureRemoteTotal` opcional se popula desde el panel de sync
+   * si el caller conoce el total remoto; si no, el summary emite 0.
+   */
+  async getMasterlist(pureRemoteTotal?: number): Promise<PureMasterlistData> {
+    const [investigadoresActivos, personas] = await Promise.all([
+      this.masterlistRepo.listInvestigadoresActivos(),
+      this.masterlistRepo.loadPersonasMap(),
+    ]);
+    return buildMasterlistData({ investigadoresActivos, personas, pureRemoteTotal });
   }
 
   // ===============================================================

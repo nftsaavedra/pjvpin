@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
@@ -11,6 +11,7 @@ import {
   ExportDataProyectoAreaDto,
   ExportDataRecursoDto,
 } from "./dto/export.dto";
+import { PureMasterlistData } from "./dto/masterlist.dto";
 import {
   ReporteInvestigadorIntegral,
   ReporteProyectoIntegral,
@@ -18,9 +19,10 @@ import {
 import { ReportesService } from "./reportes.service";
 
 /**
- * 9 endpoints GET read-only del modulo `reportes` (F2a):
+ * 10 endpoints GET read-only del modulo `reportes`:
  *   - 6 datasets de exportacion (`export/*`)
  *   - 3 reportes integrales (`integral/*`)
+ *   - 1 master list de Pure V8 (`pure/masterlist`)
  *
  * Sin logica de negocio: solo delega en `ReportesService`.
  */
@@ -67,6 +69,31 @@ export class ReportesController {
   @RequirePermission(AppPermission.ReportesView)
   async getExportProyectosArea(): Promise<ExportDataProyectoAreaDto[]> {
     return this.service.getExportProyectosArea();
+  }
+
+  // ---------------------------------------------------------------
+  // Pure Master List (V8)
+  // ---------------------------------------------------------------
+
+  /**
+   * Genera las filas de las hojas `Persons` y `Stafforganisationrelations`
+   * del master list V8 de Elsevier Pure para todos los investigadores
+   * activos. `pureRemoteTotal` (opcional) enriquece el chip "Pure remoto" del
+   * summary si el panel conoce el total del portal.
+   */
+  @Get("pure/masterlist")
+  @RequirePermission(AppPermission.ReportesView)
+  async getPureMasterlist(
+    @Query("pureRemoteTotal") pureRemoteTotal?: string,
+  ): Promise<PureMasterlistData> {
+    let parsed: number | undefined;
+    if (pureRemoteTotal != null && pureRemoteTotal !== "") {
+      const n = Number(pureRemoteTotal);
+      if (!Number.isNaN(n) && Number.isFinite(n) && n >= 0) {
+        parsed = Math.trunc(n);
+      }
+    }
+    return this.service.getMasterlist(parsed);
   }
 
   // ---------------------------------------------------------------

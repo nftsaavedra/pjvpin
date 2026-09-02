@@ -30,6 +30,7 @@ import { ProyectosModule } from "./proyectos/proyectos.module";
 import { RecursosModule } from "./recursos/recursos.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { ReportesModule } from "./reportes/reportes.module";
+import { SyncModule } from "./sync/sync.module";
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { ReportesModule } from "./reportes/reportes.module";
     EventosModule,
     DashboardModule,
     ReportesModule,
+    SyncModule,
   ],
   providers: [
     AppErrorFilter,
