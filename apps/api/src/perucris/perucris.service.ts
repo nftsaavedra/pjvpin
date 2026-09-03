@@ -212,7 +212,7 @@ export class PeruCrisService {
 
   async importIniciales(actor: AuthenticatedUser): Promise<{ jobId: string; message: string }> {
     const jobId = `perucris-import-${Date.now()}`;
-    this.jobs.crear(jobId, 2);
+    this.jobs.crear(jobId, 2, actor.id_usuario);
     this.jobs.enEjecucion(jobId);
     void this.ejecutarImportIniciales(jobId, actor).catch((err) => {
       this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));

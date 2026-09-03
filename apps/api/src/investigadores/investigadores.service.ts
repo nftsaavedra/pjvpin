@@ -278,7 +278,7 @@ export class InvestigadoresService {
     const uniqueDnis = Array.from(new Set(dnis.filter((d) => /^\d{8}$/.test(d))));
     if (uniqueDnis.length > IMPORT_BATCH_ASYNC_THRESHOLD) {
       const jobId = `import-${Date.now()}`;
-      this.jobs.crear(jobId, uniqueDnis.length);
+      this.jobs.crear(jobId, uniqueDnis.length, actor.id_usuario);
       this.jobs.enEjecucion(jobId);
       void this.ejecutarImportMasivo(jobId, uniqueDnis, actor).catch((err) => {
         this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
@@ -598,7 +598,7 @@ export class InvestigadoresService {
   async refreshRenacytTodos(actor: AuthenticatedUser): Promise<{ jobId: string; message: string }> {
     const candidatos = await this.repo.listAllDnisRenacyt();
     const jobId = `renacyt-refresh-${Date.now()}`;
-    this.jobs.crear(jobId, candidatos.length);
+    this.jobs.crear(jobId, candidatos.length, actor.id_usuario);
     this.jobs.enEjecucion(jobId);
     void this.ejecutarRefreshMasivo(jobId, candidatos, actor).catch((err) => {
       this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));

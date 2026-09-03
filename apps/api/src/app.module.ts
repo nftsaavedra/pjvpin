@@ -32,6 +32,7 @@ import { DashboardModule } from "./dashboard/dashboard.module";
 import { ReportesModule } from "./reportes/reportes.module";
 import { SyncModule } from "./sync/sync.module";
 import { CerifModule } from "./cerif/cerif.module";
+import { WsModule } from "./ws/ws.module";
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { CerifModule } from "./cerif/cerif.module";
     OrgUnitsModule,
     OcdeModule,
     InvestigadoresModule,
+    WsModule,
     ExternalHttpModule,
     KardexModule,
     RenacytModule,

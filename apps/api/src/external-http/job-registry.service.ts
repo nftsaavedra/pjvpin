@@ -2,16 +2,21 @@
  * Registro in-memory de jobs asincronos. Acepta el patron `202 + jobId`
  * del spec §1 sin requerir infraestructura externa (Redis/BullMQ/etc.).
  *
+ * Emite eventos via `EventEmitter2` para que el `JobEventsGateway`
+ * notifique a los clientes WebSocket conectados.
+ *
  * **Limitaciones v1 single-instance**: el estado se pierde al reiniciar
  * el proceso. Para multi-replica migrar a Redis antes de escalar Dokploy.
  */
 
 import { Injectable } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 export type JobEstado = "enqueued" | "running" | "completed" | "failed";
 
 export interface JobSnapshot<T = unknown> {
   jobId: string;
+  id_usuario: string;
   estado: JobEstado;
   progreso: number;
   fechaInicio: number;
@@ -26,9 +31,12 @@ export interface JobSnapshot<T = unknown> {
 export class JobRegistry {
   private readonly jobs = new Map<string, JobSnapshot>();
 
-  crear<T>(jobId: string, totalUnidades: number): JobSnapshot<T> {
+  constructor(private readonly events: EventEmitter2) {}
+
+  crear<T>(jobId: string, totalUnidades: number, id_usuario: string): JobSnapshot<T> {
     const snapshot: JobSnapshot<T> = {
       jobId,
+      id_usuario,
       estado: "enqueued",
       progreso: 0,
       fechaInicio: Date.now(),
@@ -39,6 +47,7 @@ export class JobRegistry {
       error: null,
     };
     this.jobs.set(jobId, snapshot as unknown as JobSnapshot);
+    this.emit("job.progress", snapshot);
     return snapshot;
   }
 
@@ -46,6 +55,7 @@ export class JobRegistry {
     const job = this.jobs.get(jobId);
     if (!job) return;
     job.estado = "running";
+    this.emit("job.progress", job);
   }
 
   incrementar(jobId: string, cantidad = 1): void {
@@ -54,6 +64,7 @@ export class JobRegistry {
     job.unidadesProcesadas += cantidad;
     job.progreso =
       job.totalUnidades > 0 ? Math.min(1, job.unidadesProcesadas / job.totalUnidades) : 0;
+    this.emit("job.progress", job);
   }
 
   completar<T>(jobId: string, resultado: T): void {
@@ -63,6 +74,7 @@ export class JobRegistry {
     job.progreso = 1;
     job.fechaFin = Date.now();
     job.resultado = resultado as unknown as JobSnapshot["resultado"];
+    this.emit("job.completed", job);
   }
 
   fallar(jobId: string, error: string): void {
@@ -71,9 +83,22 @@ export class JobRegistry {
     job.estado = "failed";
     job.fechaFin = Date.now();
     job.error = error;
+    this.emit("job.failed", job);
   }
 
   obtener(jobId: string): JobSnapshot | undefined {
     return this.jobs.get(jobId);
+  }
+
+  private emit(event: string, job: JobSnapshot): void {
+    void this.events.emit(event, {
+      jobId: job.jobId,
+      id_usuario: job.id_usuario,
+      estado: job.estado,
+      progreso: job.progreso,
+      unidadesProcesadas: job.unidadesProcesadas,
+      totalUnidades: job.totalUnidades,
+      error: job.error,
+    });
   }
 }

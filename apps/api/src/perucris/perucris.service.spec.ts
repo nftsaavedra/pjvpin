@@ -2,6 +2,13 @@
  * Tests del service de PeruCRIS (`pushCerif`). Cubre la orquestacion:
  * build CERIF → push → audit → resultado.
  */
+jest.mock("@nestjs/event-emitter", () => ({
+  EventEmitter2: jest.fn().mockImplementation(() => ({
+    emit: jest.fn(),
+  })),
+  OnEvent: () => () => {},
+}));
+
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import type { PeruCrisClient } from "../infra/http/perucris.client";
 import type { CerifService } from "../cerif/cerif.service";
