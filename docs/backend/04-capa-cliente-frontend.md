@@ -74,6 +74,19 @@ Orden: `localStorage['pjvpin.apiUrl']` → `import.meta.env.PJVPIN_API_URL` → 
 
 Claves: `pjvpin.auth.access`, `pjvpin.auth.refresh`. Funciones: `getAccessToken`, `getRefreshToken`, `setTokens`, `clearTokens`.
 
+### Serialización camelCase ↔ snake_case (`apps/api/src/infra/serialization/`)
+
+**Estado actual**: el `CamelToSnakePipe` está ACTIVO (convierte requests camelCase → snake_case antes de `ValidationPipe`). El `SnakeToCamelInterceptor` existe pero está DESACTIVADO (el frontend espera snake_case en responses). La normalización completa a camelCase en el wire es deuda diferida.
+
+| Componente | Estado | Propósito |
+|---|---|---|
+| `CamelToSnakePipe` | ✅ Activo | Transforma body/query camelCase → snake_case antes de validación |
+| `SnakeToCamelInterceptor` | ⏸️ Desactivado | Transforma response snake_case → camelCase (listo para activar) |
+| `@SkipSerialization()` | ✅ Disponible | Opt-out para endpoints con schema de dominio (CERIF) |
+| `camelToSnakeKeys` / `snakeToCamelKeys` | ✅ Disponibles | Utilidades puras, recursivas, testables |
+
+**Convención de contrato actual**: requests camelCase (frontend) → API las convierte a snake_case (pipe). Responses snake_case (API) → frontend las lee directo (tipos snake_case). Los tipos `Investigador`/`InvestigadorDetalle` están alineados a snake_case.
+
 ## 3. Tabla maestra función → endpoint HTTP
 
 ### auth.ts
