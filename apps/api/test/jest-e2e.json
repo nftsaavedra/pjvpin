@@ -1,0 +1,16 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/../src/$1",
+    "^@nestjs/event-emitter$": "<rootDir>/__mocks__/event-emitter.ts",
+    "^@nestjs/websockets$": "<rootDir>/__mocks__/websockets.ts",
+    "^@nestjs/platform-socket.io$": "<rootDir>/__mocks__/platform-socket.io.ts",
+    "^socket\\.io$": "<rootDir>/__mocks__/socket.io.ts"
+  },
+  "testEnvironment": "node"
+}
