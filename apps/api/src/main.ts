@@ -1,9 +1,10 @@
-import { NestFactory } from "@nestjs/core";
+import { NestFactory, Reflector } from "@nestjs/core";
 import { ValidationPipe, Logger } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { AppErrorFilter } from "./infra/errors/app-error.filter";
+import { CamelToSnakePipe, SnakeToCamelInterceptor } from "./infra/serialization";
 import { DEFAULT_GLOBAL_PREFIX, DEFAULT_PORT, DEFAULT_CORS_ORIGINS } from "./config/defaults";
 
 async function bootstrap(): Promise<void> {
@@ -19,6 +20,7 @@ async function bootstrap(): Promise<void> {
     .filter(Boolean);
   app.enableCors({ origin: corsOrigins, credentials: true });
   app.useGlobalPipes(
+    new CamelToSnakePipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -26,6 +28,7 @@ async function bootstrap(): Promise<void> {
       transformOptions: { enableImplicitConversion: false },
     }),
   );
+  app.useGlobalInterceptors(new SnakeToCamelInterceptor(app.get(Reflector)));
   app.useGlobalFilters(new AppErrorFilter());
   const port = Number(process.env.PORT ?? DEFAULT_PORT);
   await app.listen(port);
