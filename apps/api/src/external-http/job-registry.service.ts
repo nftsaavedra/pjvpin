@@ -19,8 +19,8 @@ export interface JobSnapshot<T = unknown> {
   id_usuario: string;
   estado: JobEstado;
   progreso: number;
-  fechaInicio: number;
-  fechaFin: number | null;
+  fecha_inicio: number;
+  fecha_fin: number | null;
   totalUnidades: number;
   unidadesProcesadas: number;
   resultado: T | null;
@@ -39,8 +39,8 @@ export class JobRegistry {
       id_usuario,
       estado: "enqueued",
       progreso: 0,
-      fechaInicio: Date.now(),
-      fechaFin: null,
+      fecha_inicio: Date.now(),
+      fecha_fin: null,
       totalUnidades,
       unidadesProcesadas: 0,
       resultado: null,
@@ -72,7 +72,7 @@ export class JobRegistry {
     if (!job) return;
     job.estado = "completed";
     job.progreso = 1;
-    job.fechaFin = Date.now();
+    job.fecha_fin = Date.now();
     job.resultado = resultado as unknown as JobSnapshot["resultado"];
     this.emit("job.completed", job);
   }
@@ -81,7 +81,7 @@ export class JobRegistry {
     const job = this.jobs.get(jobId);
     if (!job) return;
     job.estado = "failed";
-    job.fechaFin = Date.now();
+    job.fecha_fin = Date.now();
     job.error = error;
     this.emit("job.failed", job);
   }

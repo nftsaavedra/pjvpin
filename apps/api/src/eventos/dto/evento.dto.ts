@@ -27,7 +27,7 @@ export const MAX_PARTICIPANTES = 200;
 export class ParticipanteEventoDto {
   @IsString()
   @MinLength(1)
-  investigadorId!: string;
+  investigador_id!: string;
 
   @IsString()
   @MaxLength(MAX_PARTICIPANTE_ROL_LENGTH)
@@ -48,12 +48,12 @@ export class CreateEventoDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  fechaInicio?: number;
+  fecha_inicio?: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
-  fechaFin?: number;
+  fecha_fin?: number;
 
   @IsOptional()
   @IsString()
@@ -89,12 +89,12 @@ export class UpdateEventoDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  fechaInicio?: number;
+  fecha_inicio?: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
-  fechaFin?: number;
+  fecha_fin?: number;
 
   @IsOptional()
   @IsString()

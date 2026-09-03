@@ -76,7 +76,7 @@ Claves: `pjvpin.auth.access`, `pjvpin.auth.refresh`. Funciones: `getAccessToken`
 
 ### Serialización camelCase ↔ snake_case (`apps/api/src/infra/serialization/`)
 
-**Estado actual**: el `CamelToSnakePipe` está ACTIVO (convierte requests camelCase → snake_case antes de `ValidationPipe`). El `SnakeToCamelInterceptor` existe pero está DESACTIVADO (el frontend espera snake_case en responses). La normalización completa a camelCase en el wire es deuda diferida.
+**Estado actual**: el `CamelToSnakePipe` está ACTIVO (convierte requests camelCase → snake_case antes de `ValidationPipe`). El `SnakeToCamelInterceptor` existe pero está DESACTIVADO (el frontend espera snake_case en responses). **Todos los DTOs de request están unificados a snake_case** (2026-09-03): el pipe permite al frontend seguir enviando camelCase mientras los DTOs validan snake_case.
 
 | Componente | Estado | Propósito |
 |---|---|---|
@@ -85,7 +85,7 @@ Claves: `pjvpin.auth.access`, `pjvpin.auth.refresh`. Funciones: `getAccessToken`
 | `@SkipSerialization()` | ✅ Disponible | Opt-out para endpoints con schema de dominio (CERIF) |
 | `camelToSnakeKeys` / `snakeToCamelKeys` | ✅ Disponibles | Utilidades puras, recursivas, testables |
 
-**Convención de contrato actual**: requests camelCase (frontend) → API las convierte a snake_case (pipe). Responses snake_case (API) → frontend las lee directo (tipos snake_case). Los tipos `Investigador`/`InvestigadorDetalle` están alineados a snake_case.
+**Convención de contrato actual**: requests camelCase (frontend) → API las convierte a snake_case (pipe) → DTOs snake_case validan. Responses snake_case (API) → frontend las lee directo (tipos snake_case). Todos los DTOs de request (auth, catalogos, proyectos, recursos, publicaciones, eventos) usan snake_case. El e2e incluye `CamelToSnakePipe` para paridad con producción.
 
 ## 3. Tabla maestra función → endpoint HTTP
 
@@ -271,7 +271,7 @@ Claves: `pjvpin.auth.access`, `pjvpin.auth.refresh`. Funciones: `getAccessToken`
 | **Evento** | `EventoAcademico`, `ParticipanteEvento` | eventos.ts |
 | **Genérico** | `PaginatedResult<T>` — definido pero sin uso actual | — |
 
-**Convención**: respuestas snake_case (mirror DTO Rust), requests camelCase.
+**Convención**: respuestas snake_case (mirror DTO Rust), requests snake_case (DTOs unificados 2026-09-03; frontend envía camelCase, pipe normaliza).
 
 ## 5. Matriz RBAC del frontend (`src/shared/auth/permissions.ts`)
 
@@ -303,7 +303,7 @@ Re-exportan desde `shared/api/*` + `getErrorMessage` de `shared/http/error`: aut
 
 ## 8. Hallazgos (solo constatación)
 
-- **Contratos HTTP**: respuestas snake_case (mirror DTO Rust), requests camelCase. Sin cambio respecto al contrato IPC original.
+- **Contratos HTTP**: respuestas snake_case (mirror DTO Rust), requests snake_case (DTOs unificados 2026-09-03; frontend envía camelCase, `CamelToSnakePipe` normaliza). Sin cambio en el contrato IPC original del desktop.
 - **Duplicación de endpoints**: `crear_publicacion`/`actualizar_publicacion`/`eliminar_publicacion` invocados desde2+módulos (`recursos.ts`, `publicaciones.ts`).
 - **`PaginatedResult<T>`** definido y re-exportado pero sin consumer actual.
 - **Binarios**: `descargarConstanciaRenacytInvestigador` usa fetch directo (no `apiFetch`) para obtener `Uint8Array`. `saveDesktopFile` usa `@tauri-apps/plugin-fs`.

@@ -9,18 +9,18 @@ import { IsBoolean, IsOptional, IsString, Min } from "class-validator";
 
 export class VincularAutorDto {
   @IsString()
-  idPersona!: string;
+  id_persona!: string;
 
   @IsOptional()
   @IsString()
-  idOrgUnitAfiliacion?: string;
+  id_org_unit_afiliacion?: string;
 
   @Min(1, { message: "El orden del autor debe ser >= 1." })
   orden!: number;
 
   @IsOptional()
   @IsBoolean()
-  esAutorCorrespondiente?: boolean;
+  es_autor_correspondiente?: boolean;
 }
 
 export class PublicacionAutorDto {

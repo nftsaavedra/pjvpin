@@ -52,7 +52,7 @@ export class RecursosService {
     input: CreatePatenteDto,
     actor: AuthenticatedUser,
   ): Promise<PatenteDto> {
-    const proyectoId = this.trimOrNull(input.proyectoId);
+    const proyectoId = this.trimOrNull(input.proyecto_id);
     await this.assertManageOrResponsable(actor, proyectoId);
 
     const titulo = this.trimOrFail(input.titulo, "El titulo de la patente es obligatorio.");
@@ -60,11 +60,11 @@ export class RecursosService {
       throw AppError.validation("El titulo de la patente es obligatorio.");
     }
     const tipo = validarPatenteTipo(input.tipo);
-    const numero = this.trimOrNull(input.numeroPatente);
+    const numero = this.trimOrNull(input.numero_patente);
 
     if (proyectoId) await this.repo.ensureProyectoExists(proyectoId);
-    if (input.idOrgUnitConcedente) {
-      await this.ensureEntityExists("org_units", input.idOrgUnitConcedente, "Unidad organizativa");
+    if (input.id_org_unit_concedente) {
+      await this.ensureEntityExists("org_units", input.id_org_unit_concedente, "Unidad organizativa");
     }
     if (numero) {
       const dup = await this.repo.findPatenteByNumero(numero);
@@ -82,13 +82,13 @@ export class RecursosService {
       numero_patente: numero,
       tipo,
       estado: this.trimOrNull(input.estado),
-      fecha_solicitud: input.fechaSolicitud ?? null,
-      fecha_concesion: input.fechaConcesion ?? null,
+      fecha_solicitud: input.fecha_solicitud ?? null,
+      fecha_concesion: input.fecha_concesion ?? null,
       pais: this.trimOrNull(input.pais),
-      entidad_concedente: this.trimOrNull(input.entidadConcedente),
+      entidad_concedente: this.trimOrNull(input.entidad_concedente),
       descripcion: this.trimOrNull(input.descripcion),
-      clasificacion_ipc: this.trimOrNull(input.clasificacionIpc),
-      id_org_unit_concedente: this.trimOrNull(input.idOrgUnitConcedente),
+      clasificacion_ipc: this.trimOrNull(input.clasificacion_ipc),
+      id_org_unit_concedente: this.trimOrNull(input.id_org_unit_concedente),
       created_at: now,
       updated_at: now,
       activo: 1,
@@ -123,10 +123,10 @@ export class RecursosService {
     await this.assertManageOrResponsable(actor, existing.proyecto_id);
 
     const tipo = validarPatenteTipo(input.tipo);
-    const numero = this.trimOrNull(input.numeroPatente);
+    const numero = this.trimOrNull(input.numero_patente);
 
-    if (input.idOrgUnitConcedente) {
-      await this.ensureEntityExists("org_units", input.idOrgUnitConcedente, "Unidad organizativa");
+    if (input.id_org_unit_concedente) {
+      await this.ensureEntityExists("org_units", input.id_org_unit_concedente, "Unidad organizativa");
     }
     if (numero && numero !== existing.numero_patente) {
       const dup = await this.repo.findPatenteByNumero(numero);
@@ -140,21 +140,21 @@ export class RecursosService {
     if (tipo !== existing.tipo) set.tipo = tipo;
     const estado = this.trimOrNull(input.estado);
     if (estado !== existing.estado) set.estado = estado;
-    if (input.fechaSolicitud !== undefined && input.fechaSolicitud !== existing.fecha_solicitud) {
-      set.fecha_solicitud = input.fechaSolicitud;
+    if (input.fecha_solicitud !== undefined && input.fecha_solicitud !== existing.fecha_solicitud) {
+      set.fecha_solicitud = input.fecha_solicitud;
     }
-    if (input.fechaConcesion !== undefined && input.fechaConcesion !== existing.fecha_concesion) {
-      set.fecha_concesion = input.fechaConcesion;
+    if (input.fecha_concesion !== undefined && input.fecha_concesion !== existing.fecha_concesion) {
+      set.fecha_concesion = input.fecha_concesion;
     }
     const pais = this.trimOrNull(input.pais);
     if (pais !== existing.pais) set.pais = pais;
-    const entidad = this.trimOrNull(input.entidadConcedente);
+    const entidad = this.trimOrNull(input.entidad_concedente);
     if (entidad !== existing.entidad_concedente) set.entidad_concedente = entidad;
     const descripcion = this.trimOrNull(input.descripcion);
     if (descripcion !== existing.descripcion) set.descripcion = descripcion;
-    const clasificacion = this.trimOrNull(input.clasificacionIpc);
+    const clasificacion = this.trimOrNull(input.clasificacion_ipc);
     if (clasificacion !== existing.clasificacion_ipc) set.clasificacion_ipc = clasificacion;
-    const orgUnit = this.trimOrNull(input.idOrgUnitConcedente);
+    const orgUnit = this.trimOrNull(input.id_org_unit_concedente);
     if (orgUnit !== existing.id_org_unit_concedente) set.id_org_unit_concedente = orgUnit;
 
     if (Object.keys(set).length > 0) {
@@ -243,16 +243,16 @@ export class RecursosService {
       throw AppError.validation("El nombre del equipamiento es obligatorio.");
     }
     const moneda = validarMonedaODefault(input.moneda ?? null);
-    const valor = validarMontoFinito(input.valorEstimado ?? null);
+    const valor = validarMontoFinito(input.valor_estimado ?? null);
 
-    if (input.idOrgUnitPropietaria) {
-      await this.ensureEntityExists("org_units", input.idOrgUnitPropietaria, "Unidad organizativa");
+    if (input.id_org_unit_propietaria) {
+      await this.ensureEntityExists("org_units", input.id_org_unit_propietaria, "Unidad organizativa");
     }
-    if (input.idFinanciamiento) {
-      await this.ensureEntityExists("financiamientos", input.idFinanciamiento, "Financiamiento");
+    if (input.id_financiamiento) {
+      await this.ensureEntityExists("financiamientos", input.id_financiamiento, "Financiamiento");
     }
-    if (input.codigoInstitucional) {
-      const dup = await this.repo.findEquipamientoByCodigo(input.codigoInstitucional);
+    if (input.codigo_institucional) {
+      const dup = await this.repo.findEquipamientoByCodigo(input.codigo_institucional);
       if (dup) {
         throw AppError.unique("Ya existe un equipamiento con ese codigo institucional.");
       }
@@ -268,12 +268,12 @@ export class RecursosService {
       proveedor: this.trimOrNull(input.proveedor),
       moneda,
       valor_estimado: valor,
-      fecha_adquisicion: input.fechaAdquisicion ?? null,
-      codigo_institucional: this.trimOrNull(input.codigoInstitucional),
-      tipo_equipamiento: this.trimOrNull(input.tipoEquipamiento),
-      uso_equipamiento: this.trimOrNull(input.usoEquipamiento),
-      id_org_unit_propietaria: this.trimOrNull(input.idOrgUnitPropietaria),
-      id_financiamiento: this.trimOrNull(input.idFinanciamiento),
+      fecha_adquisicion: input.fecha_adquisicion ?? null,
+      codigo_institucional: this.trimOrNull(input.codigo_institucional),
+      tipo_equipamiento: this.trimOrNull(input.tipo_equipamiento),
+      uso_equipamiento: this.trimOrNull(input.uso_equipamiento),
+      id_org_unit_propietaria: this.trimOrNull(input.id_org_unit_propietaria),
+      id_financiamiento: this.trimOrNull(input.id_financiamiento),
       created_at: now,
       updated_at: now,
       activo: 1,
@@ -314,24 +314,24 @@ export class RecursosService {
       const m = validarMonedaODefault(input.moneda);
       if (m !== existing.moneda) set.moneda = m;
     }
-    if (input.valorEstimado !== undefined) {
-      const v = validarMontoFinito(input.valorEstimado);
+    if (input.valor_estimado !== undefined) {
+      const v = validarMontoFinito(input.valor_estimado);
       if (v !== existing.valor_estimado) set.valor_estimado = v;
     }
-    if (input.idOrgUnitPropietaria) {
-      await this.ensureEntityExists("org_units", input.idOrgUnitPropietaria, "Unidad organizativa");
-      set.id_org_unit_propietaria = this.trimOrNull(input.idOrgUnitPropietaria);
-    } else if (input.idOrgUnitPropietaria === null) {
+    if (input.id_org_unit_propietaria) {
+      await this.ensureEntityExists("org_units", input.id_org_unit_propietaria, "Unidad organizativa");
+      set.id_org_unit_propietaria = this.trimOrNull(input.id_org_unit_propietaria);
+    } else if (input.id_org_unit_propietaria === null) {
       set.id_org_unit_propietaria = null;
     }
-    if (input.idFinanciamiento) {
-      await this.ensureEntityExists("financiamientos", input.idFinanciamiento, "Financiamiento");
-      set.id_financiamiento = this.trimOrNull(input.idFinanciamiento);
-    } else if (input.idFinanciamiento === null) {
+    if (input.id_financiamiento) {
+      await this.ensureEntityExists("financiamientos", input.id_financiamiento, "Financiamiento");
+      set.id_financiamiento = this.trimOrNull(input.id_financiamiento);
+    } else if (input.id_financiamiento === null) {
       set.id_financiamiento = null;
     }
-    if (input.codigoInstitucional !== undefined) {
-      const cod = this.trimOrNull(input.codigoInstitucional);
+    if (input.codigo_institucional !== undefined) {
+      const cod = this.trimOrNull(input.codigo_institucional);
       if (cod !== existing.codigo_institucional) {
         if (cod) {
           const dup = await this.repo.findEquipamientoByCodigo(cod);
@@ -346,12 +346,12 @@ export class RecursosService {
     if (especificaciones !== undefined && especificaciones !== existing.especificaciones) set.especificaciones = especificaciones;
     const proveedor = input.proveedor !== undefined ? this.trimOrNull(input.proveedor) : undefined;
     if (proveedor !== undefined && proveedor !== existing.proveedor) set.proveedor = proveedor;
-    if (input.fechaAdquisicion !== undefined && input.fechaAdquisicion !== existing.fecha_adquisicion) {
-      set.fecha_adquisicion = input.fechaAdquisicion;
+    if (input.fecha_adquisicion !== undefined && input.fecha_adquisicion !== existing.fecha_adquisicion) {
+      set.fecha_adquisicion = input.fecha_adquisicion;
     }
-    const tipoEq = input.tipoEquipamiento !== undefined ? this.trimOrNull(input.tipoEquipamiento) : undefined;
+    const tipoEq = input.tipo_equipamiento !== undefined ? this.trimOrNull(input.tipo_equipamiento) : undefined;
     if (tipoEq !== undefined && tipoEq !== existing.tipo_equipamiento) set.tipo_equipamiento = tipoEq;
-    const usoEq = input.usoEquipamiento !== undefined ? this.trimOrNull(input.usoEquipamiento) : undefined;
+    const usoEq = input.uso_equipamiento !== undefined ? this.trimOrNull(input.uso_equipamiento) : undefined;
     if (usoEq !== undefined && usoEq !== existing.uso_equipamiento) set.uso_equipamiento = usoEq;
 
     if (Object.keys(set).length > 0) {
@@ -432,13 +432,13 @@ export class RecursosService {
     }
     const moneda = validarMonedaODefault(input.moneda ?? null);
     const monto = validarMontoFinito(input.monto ?? null);
-    validarFechasFinanciamiento(input.fechaInicio ?? null, input.fechaFin ?? null);
+    validarFechasFinanciamiento(input.fecha_inicio ?? null, input.fecha_fin ?? null);
 
-    if (input.idOrgUnitFinanciadora) {
-      await this.ensureEntityExists("org_units", input.idOrgUnitFinanciadora, "Unidad organizativa");
+    if (input.id_org_unit_financiadora) {
+      await this.ensureEntityExists("org_units", input.id_org_unit_financiadora, "Unidad organizativa");
     }
-    if (input.parentId) {
-      await this.ensureEntityExists("financiamientos", input.parentId, "Financiamiento padre");
+    if (input.parent_id) {
+      await this.ensureEntityExists("financiamientos", input.parent_id, "Financiamiento padre");
     }
 
     const now = Date.now();
@@ -448,15 +448,15 @@ export class RecursosService {
       codigo,
       nombre: this.trimOrNull(input.nombre),
       modalidad: this.trimOrNull(input.modalidad),
-      id_org_unit_financiadora: this.trimOrNull(input.idOrgUnitFinanciadora),
-      parent_id: this.trimOrNull(input.parentId),
+      id_org_unit_financiadora: this.trimOrNull(input.id_org_unit_financiadora),
+      parent_id: this.trimOrNull(input.parent_id),
       tipo: this.trimOrNull(input.tipo),
       monto,
       moneda,
-      fecha_inicio: input.fechaInicio ?? null,
-      fecha_fin: input.fechaFin ?? null,
+      fecha_inicio: input.fecha_inicio ?? null,
+      fecha_fin: input.fecha_fin ?? null,
       descripcion: this.trimOrNull(input.descripcion),
-      estado_financiero: this.trimOrNull(input.estadoFinanciero),
+      estado_financiero: this.trimOrNull(input.estado_financiero),
       created_at: now,
       updated_at: now,
       activo: 1,
@@ -497,26 +497,26 @@ export class RecursosService {
       const v = validarMontoFinito(input.monto);
       if (v !== existing.monto) set.monto = v;
     }
-    const fechaInicio = input.fechaInicio !== undefined ? input.fechaInicio : existing.fecha_inicio;
-    const fechaFin = input.fechaFin !== undefined ? input.fechaFin : existing.fecha_fin;
+    const fechaInicio = input.fecha_inicio !== undefined ? input.fecha_inicio : existing.fecha_inicio;
+    const fechaFin = input.fecha_fin !== undefined ? input.fecha_fin : existing.fecha_fin;
     validarFechasFinanciamiento(fechaInicio, fechaFin);
-    if (input.fechaInicio !== undefined && input.fechaInicio !== existing.fecha_inicio) {
-      set.fecha_inicio = input.fechaInicio;
+    if (input.fecha_inicio !== undefined && input.fecha_inicio !== existing.fecha_inicio) {
+      set.fecha_inicio = input.fecha_inicio;
     }
-    if (input.fechaFin !== undefined && input.fechaFin !== existing.fecha_fin) {
-      set.fecha_fin = input.fechaFin;
+    if (input.fecha_fin !== undefined && input.fecha_fin !== existing.fecha_fin) {
+      set.fecha_fin = input.fecha_fin;
     }
-    if (input.idOrgUnitFinanciadora) {
-      await this.ensureEntityExists("org_units", input.idOrgUnitFinanciadora, "Unidad organizativa");
-      set.id_org_unit_financiadora = this.trimOrNull(input.idOrgUnitFinanciadora);
-    } else if (input.idOrgUnitFinanciadora === null) {
+    if (input.id_org_unit_financiadora) {
+      await this.ensureEntityExists("org_units", input.id_org_unit_financiadora, "Unidad organizativa");
+      set.id_org_unit_financiadora = this.trimOrNull(input.id_org_unit_financiadora);
+    } else if (input.id_org_unit_financiadora === null) {
       set.id_org_unit_financiadora = null;
     }
-    if (input.parentId) {
-      validarFinanciamientoNoSelfParent(id, input.parentId);
-      await this.ensureEntityExists("financiamientos", input.parentId, "Financiamiento padre");
-      set.parent_id = this.trimOrNull(input.parentId);
-    } else if (input.parentId === null) {
+    if (input.parent_id) {
+      validarFinanciamientoNoSelfParent(id, input.parent_id);
+      await this.ensureEntityExists("financiamientos", input.parent_id, "Financiamiento padre");
+      set.parent_id = this.trimOrNull(input.parent_id);
+    } else if (input.parent_id === null) {
       set.parent_id = null;
     }
     const nombre = input.nombre !== undefined ? this.trimOrNull(input.nombre) : undefined;
@@ -527,7 +527,7 @@ export class RecursosService {
     if (tipo !== undefined && tipo !== existing.tipo) set.tipo = tipo;
     const descripcion = input.descripcion !== undefined ? this.trimOrNull(input.descripcion) : undefined;
     if (descripcion !== undefined && descripcion !== existing.descripcion) set.descripcion = descripcion;
-    const estadoFin = input.estadoFinanciero !== undefined ? this.trimOrNull(input.estadoFinanciero) : undefined;
+    const estadoFin = input.estado_financiero !== undefined ? this.trimOrNull(input.estado_financiero) : undefined;
     if (estadoFin !== undefined && estadoFin !== existing.estado_financiero) set.estado_financiero = estadoFin;
 
     if (Object.keys(set).length > 0) {
@@ -599,14 +599,14 @@ export class RecursosService {
     await this.assertManageOrResponsableForPatente(actor, patente.proyecto_id);
 
     const orden = validarOrdenPivot(dto.orden);
-    await this.ensureEntityExists("personas", dto.idPersona, "Persona");
+    await this.ensureEntityExists("personas", dto.id_persona, "Persona");
 
     const id = randomUUID();
     try {
       await this.repo.insertPatenteInventor({
         _id: id,
         id_patente: idPatente,
-        id_persona: dto.idPersona,
+        id_persona: dto.id_persona,
         orden,
       });
     } catch (err) {
@@ -620,9 +620,9 @@ export class RecursosService {
       "patente.vincular_inventor",
       "patente_inventor",
       id,
-      JSON.stringify({ id_patente: idPatente, id_persona: dto.idPersona, orden }),
+      JSON.stringify({ id_patente: idPatente, id_persona: dto.id_persona, orden }),
     );
-    return { id, id_patente: idPatente, id_persona: dto.idPersona, orden };
+    return { id, id_patente: idPatente, id_persona: dto.id_persona, orden };
   }
 
   async detachInventor(
@@ -668,12 +668,12 @@ export class RecursosService {
 
     const orden = validarOrdenPivot(dto.orden);
     validarTitularHolderExactlyOne(
-      dto.holderType,
-      dto.idOrgUnit,
-      dto.idPersona,
+      dto.holder_type,
+      dto.id_org_unit,
+      dto.id_persona,
     );
-    const idOrgUnit = this.trimOrNull(dto.idOrgUnit);
-    const idPersona = this.trimOrNull(dto.idPersona);
+    const idOrgUnit = this.trimOrNull(dto.id_org_unit);
+    const idPersona = this.trimOrNull(dto.id_persona);
     if (idOrgUnit) {
       await this.ensureEntityExists("org_units", idOrgUnit, "Unidad organizativa");
     }
@@ -686,7 +686,7 @@ export class RecursosService {
       await this.repo.insertPatenteTitular({
         _id: id,
         id_patente: idPatente,
-        holder_type: dto.holderType,
+        holder_type: dto.holder_type,
         id_org_unit: idOrgUnit,
         id_persona: idPersona,
         orden,
@@ -704,14 +704,14 @@ export class RecursosService {
       id,
       JSON.stringify({
         id_patente: idPatente,
-        holder_type: dto.holderType,
+        holder_type: dto.holder_type,
         orden,
       }),
     );
     return {
       id,
       id_patente: idPatente,
-      holder_type: dto.holderType,
+      holder_type: dto.holder_type,
       id_org_unit: idOrgUnit,
       id_persona: idPersona,
       orden,

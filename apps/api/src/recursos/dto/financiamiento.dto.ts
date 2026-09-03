@@ -44,11 +44,11 @@ export class CreateFinanciamientoDto {
 
   @IsOptional()
   @IsString()
-  idOrgUnitFinanciadora?: string;
+  id_org_unit_financiadora?: string;
 
   @IsOptional()
   @IsString()
-  parentId?: string;
+  parent_id?: string;
 
   @IsOptional()
   @IsString()
@@ -68,12 +68,12 @@ export class CreateFinanciamientoDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaInicio?: number;
+  fecha_inicio?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaFin?: number;
+  fecha_fin?: number;
 
   @IsOptional()
   @IsString()
@@ -83,7 +83,7 @@ export class CreateFinanciamientoDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_ESTADO_LENGTH)
-  estadoFinanciero?: string;
+  estado_financiero?: string;
 }
 
 export class UpdateFinanciamientoDto {
@@ -105,11 +105,11 @@ export class UpdateFinanciamientoDto {
 
   @IsOptional()
   @IsString()
-  idOrgUnitFinanciadora?: string;
+  id_org_unit_financiadora?: string;
 
   @IsOptional()
   @IsString()
-  parentId?: string;
+  parent_id?: string;
 
   @IsOptional()
   @IsString()
@@ -129,12 +129,12 @@ export class UpdateFinanciamientoDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaInicio?: number;
+  fecha_inicio?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaFin?: number;
+  fecha_fin?: number;
 
   @IsOptional()
   @IsString()
@@ -144,7 +144,7 @@ export class UpdateFinanciamientoDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_ESTADO_LENGTH)
-  estadoFinanciero?: string;
+  estado_financiero?: string;
 }
 
 export interface FinanciamientoDto {

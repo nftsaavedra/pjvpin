@@ -51,7 +51,7 @@ export class EventosService {
       lugar: doc.lugar,
       descripcion: doc.descripcion,
       participantes: (doc.participantes ?? []).map((p): ParticipanteEventoDto => ({
-        investigadorId: p.investigador_id,
+        investigador_id: p.investigador_id,
         rol: p.rol,
       })),
       created_at: doc.created_at,
@@ -62,7 +62,7 @@ export class EventosService {
 
   private toParticipanteDoc(p: ParticipanteEventoDto): ParticipanteEvento {
     return {
-      investigador_id: p.investigadorId.trim(),
+      investigador_id: p.investigador_id.trim(),
       rol: p.rol.trim(),
     };
   }
@@ -74,8 +74,8 @@ export class EventosService {
       id_evento: idEvento,
       nombre: input.nombre.trim(),
       tipo: input.tipo.trim(),
-      fecha_inicio: input.fechaInicio ?? null,
-      fecha_fin: input.fechaFin ?? null,
+      fecha_inicio: input.fecha_inicio ?? null,
+      fecha_fin: input.fecha_fin ?? null,
       lugar: input.lugar?.trim() ?? null,
       descripcion: input.descripcion?.trim() ?? null,
       participantes: (input.participantes ?? []).map((p) => this.toParticipanteDoc(p)),
@@ -116,8 +116,8 @@ export class EventosService {
     const set: Partial<EventoAcademicoDoc> = {};
     if (input.nombre !== undefined) set.nombre = input.nombre.trim();
     if (input.tipo !== undefined) set.tipo = input.tipo.trim();
-    if (input.fechaInicio !== undefined) set.fecha_inicio = input.fechaInicio ?? null;
-    if (input.fechaFin !== undefined) set.fecha_fin = input.fechaFin ?? null;
+    if (input.fecha_inicio !== undefined) set.fecha_inicio = input.fecha_inicio ?? null;
+    if (input.fecha_fin !== undefined) set.fecha_fin = input.fecha_fin ?? null;
     if (input.lugar !== undefined) set.lugar = input.lugar?.trim() ?? null;
     if (input.descripcion !== undefined) set.descripcion = input.descripcion?.trim() ?? null;
     if (input.participantes !== undefined) {

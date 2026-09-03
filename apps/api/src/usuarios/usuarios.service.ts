@@ -51,8 +51,8 @@ export class UsuariosService {
     rol: string;
     dni: string;
     nombres?: string;
-    apellidoPaterno?: string;
-    apellidoMaterno?: string;
+    apellido_paterno?: string;
+    apellido_materno?: string;
     actor: AuthenticatedUser;
   }): Promise<UsuarioDto> {
     await ensureSoloUnicoSuperuser(
@@ -64,8 +64,8 @@ export class UsuariosService {
     const password_hash = await argon2.hash(input.password, { type: argon2.argon2id });
     const persona = await this.repo.ensurePersonaByDni(input.dni, {
       nombres: input.nombres ?? "",
-      apellidoPaterno: input.apellidoPaterno ?? "",
-      apellidoMaterno: input.apellidoMaterno ?? "",
+      apellido_paterno: input.apellido_paterno ?? "",
+      apellido_materno: input.apellido_materno ?? "",
     });
     const doc: UsuarioDoc = {
       id_usuario: `usuario-${input.username.toLowerCase()}`,

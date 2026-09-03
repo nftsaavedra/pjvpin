@@ -22,9 +22,9 @@ export class VocabularioController {
   @RequirePermission(AppPermission.VocabulariosRead)
   async items(
     @Param("esquema") esquema: string,
-    @Query("padreCodigo") padreCodigo?: string,
+    @Query("padre_codigo") padre_codigo?: string,
   ): Promise<CatalogoItemDto[]> {
-    return this.service.listarItems(esquema, padreCodigo);
+    return this.service.listarItems(esquema, padre_codigo);
   }
 
   @Post(":esquema/reimportar")

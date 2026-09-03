@@ -33,7 +33,7 @@ export class CreatePatenteDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_NUMERO_PATENTE_LENGTH)
-  numeroPatente?: string;
+  numero_patente?: string;
 
   @IsOptional()
   @IsString()
@@ -48,12 +48,12 @@ export class CreatePatenteDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaSolicitud?: number;
+  fecha_solicitud?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaConcesion?: number;
+  fecha_concesion?: number;
 
   @IsOptional()
   @IsString()
@@ -63,7 +63,7 @@ export class CreatePatenteDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_ENTIDAD_LENGTH)
-  entidadConcedente?: string;
+  entidad_concedente?: string;
 
   @IsOptional()
   @IsString()
@@ -73,15 +73,15 @@ export class CreatePatenteDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_CLASIFICACION_LENGTH)
-  clasificacionIpc?: string;
+  clasificacion_ipc?: string;
 
   @IsOptional()
   @IsString()
-  idOrgUnitConcedente?: string;
+  id_org_unit_concedente?: string;
 
   @IsOptional()
   @IsString()
-  proyectoId?: string;
+  proyecto_id?: string;
 }
 
 /**
@@ -93,7 +93,7 @@ export class UpdatePatenteDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_NUMERO_PATENTE_LENGTH)
-  numeroPatente?: string;
+  numero_patente?: string;
 
   @IsOptional()
   @IsString()
@@ -108,12 +108,12 @@ export class UpdatePatenteDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaSolicitud?: number;
+  fecha_solicitud?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaConcesion?: number;
+  fecha_concesion?: number;
 
   @IsOptional()
   @IsString()
@@ -123,7 +123,7 @@ export class UpdatePatenteDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_ENTIDAD_LENGTH)
-  entidadConcedente?: string;
+  entidad_concedente?: string;
 
   @IsOptional()
   @IsString()
@@ -133,11 +133,11 @@ export class UpdatePatenteDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_CLASIFICACION_LENGTH)
-  clasificacionIpc?: string;
+  clasificacion_ipc?: string;
 
   @IsOptional()
   @IsString()
-  idOrgUnitConcedente?: string;
+  id_org_unit_concedente?: string;
 }
 
 export interface PatenteDto {

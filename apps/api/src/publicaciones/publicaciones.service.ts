@@ -137,13 +137,13 @@ export class PublicacionesService {
     const tipo = validarTipoPublicacion(input.tipo);
     const doi = validarDoi(input.doi ?? null);
     const idioma = validarIdioma(input.idioma ?? null);
-    const scimagoCuartil = validarCuartil(input.scimagoCuartil ?? null);
-    const wosCuartil = validarCuartil(input.wosCuartil ?? null);
-    const accesoAbierto = validarAccesoAbierto(input.accesoAbierto ?? null);
-    const dominioOrigen = (validarDominioOrigen(input.dominioOrigen ?? null) ??
+    const scimagoCuartil = validarCuartil(input.scimago_cuartil ?? null);
+    const wosCuartil = validarCuartil(input.wos_cuartil ?? null);
+    const accesoAbierto = validarAccesoAbierto(input.acceso_abierto ?? null);
+    const dominioOrigen = (validarDominioOrigen(input.dominio_origen ?? null) ??
       DEFAULT_DOMINIO_ORIGEN) as PublicacionDominioOrigen;
 
-    const idProyecto = trimOrNull(input.idProyecto);
+    const idProyecto = trimOrNull(input.id_proyecto);
     if (idProyecto) await this.repo.ensureProyectoExists(idProyecto);
 
     const idPublicacion = randomUUID();
@@ -157,29 +157,29 @@ export class PublicacionesService {
       cuartil: trimOrNull(input.cuartil),
       tipo,
       resumen: trimOrNull(input.resumen),
-      palabras_clave: input.palabrasClave ?? [],
+      palabras_clave: input.palabras_clave ?? [],
       created_at: now,
       updated_at: now,
       activo: 1,
-      handle_url: trimOrNull(input.handleUrl),
-      fecha_publicacion: trimOrNull(input.fechaPublicacion),
+      handle_url: trimOrNull(input.handle_url),
+      fecha_publicacion: trimOrNull(input.fecha_publicacion),
       editorial: trimOrNull(input.editorial),
-      id_org_unit_editora: trimOrNull(input.idOrgUnitEditora),
-      revista_titulo: trimOrNull(input.revistaTitulo),
+      id_org_unit_editora: trimOrNull(input.id_org_unit_editora),
+      revista_titulo: trimOrNull(input.revista_titulo),
       isbn: trimOrNull(input.isbn),
       scimago_cuartil: scimagoCuartil,
       wos_cuartil: wosCuartil,
-      es_revisado_por_pares: input.esRevisadoPorPares ?? true,
+      es_revisado_por_pares: input.es_revisado_por_pares ?? true,
       acceso_abierto: accesoAbierto,
       idioma,
       volumen: trimOrNull(input.volumen),
-      numero_issue: trimOrNull(input.numeroIssue),
+      numero_issue: trimOrNull(input.numero_issue),
       paginas: trimOrNull(input.paginas),
       dominio_origen: dominioOrigen,
-      pure_uuid: trimOrNull(input.pureUuid),
-      estado_publicacion: trimOrNull(input.estadoPublicacion),
+      pure_uuid: trimOrNull(input.pure_uuid),
+      estado_publicacion: trimOrNull(input.estado_publicacion),
       id_proyecto: idProyecto,
-      perucris_uuid: trimOrNull(input.perucrisUuid),
+      perucris_uuid: trimOrNull(input.perucris_uuid),
     };
 
     try {
@@ -232,29 +232,29 @@ export class PublicacionesService {
     if (input.anio !== undefined) set.anio = input.anio ?? null;
     if (input.cuartil !== undefined) set.cuartil = trimOrNull(input.cuartil);
     if (input.resumen !== undefined) set.resumen = trimOrNull(input.resumen);
-    if (input.palabrasClave !== undefined) set.palabras_clave = input.palabrasClave ?? [];
-    if (input.revistaTitulo !== undefined) set.revista_titulo = trimOrNull(input.revistaTitulo);
-    if (input.handleUrl !== undefined) set.handle_url = trimOrNull(input.handleUrl);
-    if (input.fechaPublicacion !== undefined) set.fecha_publicacion = trimOrNull(input.fechaPublicacion);
+    if (input.palabras_clave !== undefined) set.palabras_clave = input.palabras_clave ?? [];
+    if (input.revista_titulo !== undefined) set.revista_titulo = trimOrNull(input.revista_titulo);
+    if (input.handle_url !== undefined) set.handle_url = trimOrNull(input.handle_url);
+    if (input.fecha_publicacion !== undefined) set.fecha_publicacion = trimOrNull(input.fecha_publicacion);
     if (input.editorial !== undefined) set.editorial = trimOrNull(input.editorial);
-    if (input.idOrgUnitEditora !== undefined) set.id_org_unit_editora = trimOrNull(input.idOrgUnitEditora);
-    if (input.scimagoCuartil !== undefined) set.scimago_cuartil = validarCuartil(input.scimagoCuartil ?? null);
-    if (input.wosCuartil !== undefined) set.wos_cuartil = validarCuartil(input.wosCuartil ?? null);
-    if (input.esRevisadoPorPares !== undefined) set.es_revisado_por_pares = input.esRevisadoPorPares ?? true;
-    if (input.accesoAbierto !== undefined) set.acceso_abierto = validarAccesoAbierto(input.accesoAbierto ?? null);
+    if (input.id_org_unit_editora !== undefined) set.id_org_unit_editora = trimOrNull(input.id_org_unit_editora);
+    if (input.scimago_cuartil !== undefined) set.scimago_cuartil = validarCuartil(input.scimago_cuartil ?? null);
+    if (input.wos_cuartil !== undefined) set.wos_cuartil = validarCuartil(input.wos_cuartil ?? null);
+    if (input.es_revisado_por_pares !== undefined) set.es_revisado_por_pares = input.es_revisado_por_pares ?? true;
+    if (input.acceso_abierto !== undefined) set.acceso_abierto = validarAccesoAbierto(input.acceso_abierto ?? null);
     if (input.idioma !== undefined) set.idioma = validarIdioma(input.idioma ?? null);
     if (input.volumen !== undefined) set.volumen = trimOrNull(input.volumen);
-    if (input.numeroIssue !== undefined) set.numero_issue = trimOrNull(input.numeroIssue);
+    if (input.numero_issue !== undefined) set.numero_issue = trimOrNull(input.numero_issue);
     if (input.paginas !== undefined) set.paginas = trimOrNull(input.paginas);
-    if (input.dominioOrigen !== undefined) {
-      const v = validarDominioOrigen(input.dominioOrigen ?? null);
+    if (input.dominio_origen !== undefined) {
+      const v = validarDominioOrigen(input.dominio_origen ?? null);
       set.dominio_origen = (v ?? DEFAULT_DOMINIO_ORIGEN) as PublicacionDominioOrigen;
     }
-    if (input.pureUuid !== undefined) set.pure_uuid = trimOrNull(input.pureUuid);
-    if (input.estadoPublicacion !== undefined) set.estado_publicacion = trimOrNull(input.estadoPublicacion);
-    if (input.perucrisUuid !== undefined) set.perucris_uuid = trimOrNull(input.perucrisUuid);
-    if (input.idProyecto !== undefined) {
-      const newId = trimOrNull(input.idProyecto);
+    if (input.pure_uuid !== undefined) set.pure_uuid = trimOrNull(input.pure_uuid);
+    if (input.estado_publicacion !== undefined) set.estado_publicacion = trimOrNull(input.estado_publicacion);
+    if (input.perucris_uuid !== undefined) set.perucris_uuid = trimOrNull(input.perucris_uuid);
+    if (input.id_proyecto !== undefined) {
+      const newId = trimOrNull(input.id_proyecto);
       if (newId !== existing.id_proyecto) {
         if (newId) await this.repo.ensureProyectoExists(newId);
         set.id_proyecto = newId;
@@ -323,18 +323,18 @@ export class PublicacionesService {
     actor: AuthenticatedUser,
   ): Promise<PublicacionAutorDto> {
     await this.repo.ensurePublicacionExists(idPublicacion);
-    await this.repo.ensurePersonaExists(input.idPersona);
-    if (input.idOrgUnitAfiliacion) {
-      await this.repo.ensureOrgUnitExists(input.idOrgUnitAfiliacion);
+    await this.repo.ensurePersonaExists(input.id_persona);
+    if (input.id_org_unit_afiliacion) {
+      await this.repo.ensureOrgUnitExists(input.id_org_unit_afiliacion);
     }
     const orden = validarOrdenAutor(input.orden);
     const doc: PublicacionAutorDoc = {
       id: randomUUID(),
       id_publicacion: idPublicacion,
-      id_persona: input.idPersona,
-      id_org_unit_afiliacion: input.idOrgUnitAfiliacion ?? null,
+      id_persona: input.id_persona,
+      id_org_unit_afiliacion: input.id_org_unit_afiliacion ?? null,
       orden,
-      es_autor_correspondiente: input.esAutorCorrespondiente ?? false,
+      es_autor_correspondiente: input.es_autor_correspondiente ?? false,
     };
     try {
       await this.repo.insertPublicacionAutor(doc);
@@ -349,7 +349,7 @@ export class PublicacionesService {
       "publicacion.vincular_autor",
       "publicacion",
       idPublicacion,
-      JSON.stringify({ id_persona: input.idPersona, orden }),
+      JSON.stringify({ id_persona: input.id_persona, orden }),
     );
     return this.toPublicacionAutorDto(doc);
   }

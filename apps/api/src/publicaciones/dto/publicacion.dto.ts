@@ -99,22 +99,22 @@ export class BasePublicacionDto {
   @ArrayMaxSize(MAX_PALABRAS_CLAVE)
   @IsString({ each: true })
   @MaxLength(MAX_PALABRA_CLAVE_LENGTH, { each: true })
-  palabrasClave?: string[];
+  palabras_clave?: string[];
 
   @IsOptional()
   @IsString()
   @MaxLength(MAX_REVISTA_TITULO_LENGTH)
-  revistaTitulo?: string;
+  revista_titulo?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(MAX_HANDLE_URL_LENGTH)
-  @IsUrl({ require_protocol: true }, { message: "handleUrl debe ser una URL absoluta con protocolo." })
-  handleUrl?: string;
+  @IsUrl({ require_protocol: true }, { message: "handle_url debe ser una URL absoluta con protocolo." })
+  handle_url?: string;
 
   @IsOptional()
   @IsISO8601()
-  fechaPublicacion?: string;
+  fecha_publicacion?: string;
 
   @IsOptional()
   @IsString()
@@ -123,26 +123,26 @@ export class BasePublicacionDto {
 
   @IsOptional()
   @IsString()
-  idOrgUnitEditora?: string;
+  id_org_unit_editora?: string;
 
   @IsOptional()
   @IsString()
   @IsIn(CUARTILES_VALIDOS as unknown as string[])
-  scimagoCuartil?: string;
+  scimago_cuartil?: string;
 
   @IsOptional()
   @IsString()
   @IsIn(CUARTILES_VALIDOS as unknown as string[])
-  wosCuartil?: string;
+  wos_cuartil?: string;
 
   @IsOptional()
   @IsBoolean()
-  esRevisadoPorPares?: boolean;
+  es_revisado_por_pares?: boolean;
 
   @IsOptional()
   @IsString()
   @IsIn(ACCESO_ABIERTO_VALIDOS as unknown as string[])
-  accesoAbierto?: string;
+  acceso_abierto?: string;
 
   @IsOptional()
   @IsString()
@@ -157,7 +157,7 @@ export class BasePublicacionDto {
   @IsOptional()
   @IsString()
   @MaxLength(MAX_NUMERO_ISSUE_LENGTH)
-  numeroIssue?: string;
+  numero_issue?: string;
 
   @IsOptional()
   @IsString()
@@ -167,23 +167,23 @@ export class BasePublicacionDto {
   @IsOptional()
   @IsString()
   @IsIn(DOMINIOS_ORIGEN_VALIDOS as unknown as string[])
-  dominioOrigen?: string;
+  dominio_origen?: string;
 
   @IsOptional()
   @IsString()
-  pureUuid?: string;
+  pure_uuid?: string;
 
   @IsOptional()
   @IsString()
-  estadoPublicacion?: string;
+  estado_publicacion?: string;
 
   @IsOptional()
   @IsString()
-  idProyecto?: string;
+  id_proyecto?: string;
 
   @IsOptional()
   @IsString()
-  perucrisUuid?: string;
+  perucris_uuid?: string;
 }
 
 export class CreatePublicacionDto extends BasePublicacionDto {

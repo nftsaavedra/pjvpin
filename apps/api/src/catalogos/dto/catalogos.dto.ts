@@ -28,7 +28,7 @@ export class CatalogoItemDto {
   descripcion?: string;
   editable!: number;
   esquema?: string;
-  padreCodigo?: string;
+  padre_codigo?: string;
 }
 
 export class CreateCatalogoRequest {
@@ -60,7 +60,7 @@ export class CreateCatalogoRequest {
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  padreCodigo?: string;
+  padre_codigo?: string;
 }
 
 export class UpdateCatalogoRequest {
@@ -87,7 +87,7 @@ export class ListarVocabItemsQuery {
 
   @IsOptional()
   @IsString()
-  padreCodigo?: string;
+  padre_codigo?: string;
 }
 
 export class ReimportarVocabResult {

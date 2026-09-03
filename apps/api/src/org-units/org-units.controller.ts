@@ -24,8 +24,8 @@ export class OrgUnitsController {
 
   @Get()
   @RequirePermission(AppPermission.OrgUnitsView)
-  async list(@Query("parentId") parentId?: string): Promise<OrgUnitDto[]> {
-    return this.service.list(parentId);
+  async list(@Query("parent_id") parent_id?: string): Promise<OrgUnitDto[]> {
+    return this.service.list(parent_id);
   }
 
   @Get(":id")

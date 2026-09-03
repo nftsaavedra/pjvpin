@@ -123,8 +123,8 @@ export class AuthService {
     password: string,
     dni: string,
     nombres?: string,
-    apellidoPaterno?: string,
-    apellidoMaterno?: string,
+    apellido_paterno?: string,
+    apellido_materno?: string,
   ): Promise<UsuarioDto> {
     const count = await this.usuarios.countDocuments({});
     if (count > 0) {
@@ -133,7 +133,7 @@ export class AuthService {
     const password_hash = await argon2.hash(password, { type: argon2.argon2id });
     const id_persona = `persona-${dni}`;
     const nombreCompleto =
-      `${nombres ?? ""} ${apellidoPaterno ?? ""} ${apellidoMaterno ?? ""}`.trim();
+      `${nombres ?? ""} ${apellido_paterno ?? ""} ${apellido_materno ?? ""}`.trim();
     await this.personas.updateOne(
       { id_persona },
       {
@@ -141,8 +141,8 @@ export class AuthService {
           id_persona,
           dni,
           nombres: nombres ?? "",
-          apellido_paterno: apellidoPaterno ?? "",
-          apellido_materno: apellidoMaterno ?? "",
+          apellido_paterno: apellido_paterno ?? "",
+          apellido_materno: apellido_materno ?? "",
           nombre_completo: nombreCompleto,
         },
       },

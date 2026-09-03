@@ -25,12 +25,12 @@ export class BootstrapUsuarioRequest {
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  apellidoPaterno?: string;
+  apellido_paterno?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  apellidoMaterno?: string;
+  apellido_materno?: string;
 }
 
 export class BootstrapReniecDniRequest {
@@ -39,8 +39,4 @@ export class BootstrapReniecDniRequest {
   @Length(8, 8)
   @Matches(/^\d{8}$/)
   numero!: string;
-}
-
-export class BootstrapStatusDto {
-  bootstrapRequired!: boolean;
 }

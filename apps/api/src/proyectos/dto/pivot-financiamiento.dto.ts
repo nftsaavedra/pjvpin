@@ -12,12 +12,12 @@ export class VincularFinanciamientoDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
-  idFinanciamiento!: string;
+  id_financiamiento!: string;
 
   @IsOptional()
   @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 })
   @Min(0)
-  montoAsignado?: number;
+  monto_asignado?: number;
 
   @IsOptional()
   @IsString()

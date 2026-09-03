@@ -25,7 +25,7 @@ function toDto(doc: CatalogoDoc): CatalogoItemDto {
     descripcion: doc.descripcion,
     editable: doc.editable ?? 1,
     esquema: doc.esquema,
-    padreCodigo: doc.padre_codigo,
+    padre_codigo: doc.padre_codigo,
   };
 }
 
@@ -64,7 +64,7 @@ export class CatalogosService {
       descripcion: req.descripcion,
       editable: 1,
       esquema: req.esquema,
-      padre_codigo: req.padreCodigo,
+      padre_codigo: req.padre_codigo,
     };
     await this.repo.insert(doc);
     await this.audit.writeGenericAudit(

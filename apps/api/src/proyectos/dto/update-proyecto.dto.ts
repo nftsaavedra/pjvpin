@@ -20,16 +20,16 @@ export class UpdateProyectoConParticipantesDto {
   @IsString()
   @MinLength(3)
   @MaxLength(MAX_TITULO_LENGTH)
-  tituloProyecto!: string;
+  titulo_proyecto!: string;
 
   @IsArray()
   @ArrayMaxSize(100)
   @ArrayUnique()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
-  investigadoresIds!: string[];
+  investigadores_ids!: string[];
 
   @IsOptional()
   @IsString()
-  investigadorResponsableId?: string;
+  investigador_responsable_id?: string;
 }

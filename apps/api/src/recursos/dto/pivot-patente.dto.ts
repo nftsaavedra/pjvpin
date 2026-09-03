@@ -19,7 +19,7 @@ import {
  */
 export class VincularInventorDto {
   @IsString()
-  idPersona!: string;
+  id_persona!: string;
 
   @IsInt()
   @Min(1)
@@ -29,17 +29,17 @@ export class VincularInventorDto {
 export class VincularTitularDto {
   @IsString()
   @IsIn(TITULAR_HOLDER_TYPES_VALIDOS as unknown as string[])
-  holderType!: TitularHolderType;
+  holder_type!: TitularHolderType;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  idOrgUnit?: string;
+  id_org_unit?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  idPersona?: string;
+  id_persona?: string;
 
   @IsInt()
   @Min(1)

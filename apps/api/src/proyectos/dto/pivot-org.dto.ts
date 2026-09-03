@@ -5,7 +5,7 @@ export class VincularOrgDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(64)
-  idOrgUnit!: string;
+  id_org_unit!: string;
 
   @IsString()
   @IsIn(ORG_ROLES_VALIDOS as unknown as string[])

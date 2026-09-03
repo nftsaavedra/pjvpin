@@ -43,35 +43,35 @@ export class CreateEquipamientoDto {
   @IsOptional()
   @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 })
   @Min(0)
-  valorEstimado?: number;
+  valor_estimado?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaAdquisicion?: number;
+  fecha_adquisicion?: number;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  codigoInstitucional?: string;
+  codigo_institucional?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  tipoEquipamiento?: string;
+  tipo_equipamiento?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  usoEquipamiento?: string;
+  uso_equipamiento?: string;
 
   @IsOptional()
   @IsString()
-  idOrgUnitPropietaria?: string;
+  id_org_unit_propietaria?: string;
 
   @IsOptional()
   @IsString()
-  idFinanciamiento?: string;
+  id_financiamiento?: string;
 }
 
 export class UpdateEquipamientoDto {
@@ -103,35 +103,35 @@ export class UpdateEquipamientoDto {
   @IsOptional()
   @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 2 })
   @Min(0)
-  valorEstimado?: number;
+  valor_estimado?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  fechaAdquisicion?: number;
+  fecha_adquisicion?: number;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  codigoInstitucional?: string;
+  codigo_institucional?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  tipoEquipamiento?: string;
+  tipo_equipamiento?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(64)
-  usoEquipamiento?: string;
+  uso_equipamiento?: string;
 
   @IsOptional()
   @IsString()
-  idOrgUnitPropietaria?: string;
+  id_org_unit_propietaria?: string;
 
   @IsOptional()
   @IsString()
-  idFinanciamiento?: string;
+  id_financiamiento?: string;
 }
 
 export interface EquipamientoDto {

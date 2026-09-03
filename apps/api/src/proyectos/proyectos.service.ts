@@ -64,13 +64,13 @@ export class ProyectosService {
     actor: AuthenticatedUser,
   ): Promise<ProyectoDto> {
     const prepared = prepararParticipantes(
-      input.investigadoresIds,
-      input.investigadorResponsableId,
+      input.investigadores_ids,
+      input.investigador_responsable_id,
     );
     await this.assertInvestigadoresActivos(prepared.ids);
 
     const inserted = await this.intentarInsertProyecto(
-      input.tituloProyecto,
+      input.titulo_proyecto,
       prepared,
     );
     if (!inserted) {
@@ -172,15 +172,15 @@ export class ProyectosService {
       throw AppError.notFound("Proyecto no encontrado.");
     }
     const prepared = prepararParticipantes(
-      input.investigadoresIds,
-      input.investigadorResponsableId,
+      input.investigadores_ids,
+      input.investigador_responsable_id,
       { permitirListaVacia: true },
     );
     if (prepared.ids.length > 0) {
       await this.assertInvestigadoresActivos(prepared.ids);
     }
     await this.withTransaction(async (session) => {
-      await this.repo.setProyectoTitulo(id, input.tituloProyecto, session);
+      await this.repo.setProyectoTitulo(id, input.titulo_proyecto, session);
       await this.repo.deleteParticipacionesByProyecto(id, session);
       if (prepared.ids.length > 0) {
         const participaciones: ParticipacionDoc[] = prepared.ids.map((idInv) => ({
@@ -208,7 +208,7 @@ export class ProyectosService {
       "proyecto",
       id,
       JSON.stringify({
-        titulo: input.tituloProyecto,
+        titulo: input.titulo_proyecto,
         participantes: prepared.ids.length,
       }),
     );
@@ -370,12 +370,12 @@ export class ProyectosService {
   ): Promise<void> {
     validarRolOrg(dto.rol);
     await this.repo.ensureProyectoExists(idProyecto);
-    await this.ensureEntityExists("org_units", dto.idOrgUnit, "Unidad organizativa");
+    await this.ensureEntityExists("org_units", dto.id_org_unit, "Unidad organizativa");
     try {
       await this.repo.insertProyectoOrganizacion({
         _id: randomUUID(),
         id_proyecto: idProyecto,
-        id_org_unit: dto.idOrgUnit,
+        id_org_unit: dto.id_org_unit,
         rol: dto.rol,
       });
     } catch (err) {
@@ -391,7 +391,7 @@ export class ProyectosService {
       "proyecto.vincular_org",
       "proyecto",
       idProyecto,
-      JSON.stringify({ id_org_unit: dto.idOrgUnit, rol: dto.rol }),
+      JSON.stringify({ id_org_unit: dto.id_org_unit, rol: dto.rol }),
     );
   }
 
@@ -434,19 +434,19 @@ export class ProyectosService {
     dto: VincularFinanciamientoDto,
     actor: AuthenticatedUser,
   ): Promise<void> {
-    const monto = validarMontoAsignado(dto.montoAsignado);
+    const monto = validarMontoAsignado(dto.monto_asignado);
     const moneda = validarMonedaODefault(dto.moneda);
     await this.repo.ensureProyectoExists(idProyecto);
     await this.ensureEntityExists(
       "financiamientos",
-      dto.idFinanciamiento,
+      dto.id_financiamiento,
       "Financiamiento",
     );
     try {
       await this.repo.insertProyectoFinanciamiento({
         _id: randomUUID(),
         id_proyecto: idProyecto,
-        id_financiamiento: dto.idFinanciamiento,
+        id_financiamiento: dto.id_financiamiento,
         monto_asignado: monto,
         moneda,
       });
@@ -464,7 +464,7 @@ export class ProyectosService {
       "proyecto",
       idProyecto,
       JSON.stringify({
-        id_financiamiento: dto.idFinanciamiento,
+        id_financiamiento: dto.id_financiamiento,
         monto_asignado: monto,
         moneda,
       }),

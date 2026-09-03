@@ -4,6 +4,7 @@ import * as supertest from "supertest";
 const request = supertest.default ?? supertest;
 import { AppModule } from "../src/app.module";
 import { AppErrorFilter } from "../src/infra/errors/app-error.filter";
+import { CamelToSnakePipe } from "../src/infra/serialization";
 import { MONGO_DB } from "../src/infra/mongo/mongo.module";
 import type { Db } from "mongodb";
 
@@ -93,6 +94,7 @@ beforeAll(async () => {
   app = moduleFixture.createNestApplication();
   app.setGlobalPrefix("api/v1");
   app.useGlobalPipes(
+    new CamelToSnakePipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,

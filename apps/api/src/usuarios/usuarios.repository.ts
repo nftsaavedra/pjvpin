@@ -86,19 +86,19 @@ export class UsuariosRepository {
 
   async ensurePersonaByDni(
     dni: string,
-    fallback: { nombres: string; apellidoPaterno: string; apellidoMaterno: string },
+    fallback: { nombres: string; apellido_paterno: string; apellido_materno: string },
   ): Promise<PersonaDoc> {
     const id_persona = `persona-${dni}`;
     const existing = await this.personas.findOne({ id_persona });
     if (existing) return existing;
     const nombreCompleto =
-      `${fallback.nombres} ${fallback.apellidoPaterno} ${fallback.apellidoMaterno}`.trim();
+      `${fallback.nombres} ${fallback.apellido_paterno} ${fallback.apellido_materno}`.trim();
     const doc: PersonaDoc = {
       id_persona,
       dni,
       nombres: fallback.nombres,
-      apellido_paterno: fallback.apellidoPaterno,
-      apellido_materno: fallback.apellidoMaterno,
+      apellido_paterno: fallback.apellido_paterno,
+      apellido_materno: fallback.apellido_materno,
       nombre_completo: nombreCompleto,
     };
     await this.personas.insertOne(doc);

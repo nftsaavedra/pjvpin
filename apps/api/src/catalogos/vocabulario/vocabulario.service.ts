@@ -70,7 +70,7 @@ export class VocabularioService {
       descripcion: doc.descripcion,
       editable: doc.editable ?? 1,
       esquema: doc.esquema,
-      padreCodigo: doc.padre_codigo,
+      padre_codigo: doc.padre_codigo,
     };
   }
 }

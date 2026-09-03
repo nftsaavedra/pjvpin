@@ -52,8 +52,8 @@ export class AuthController {
       body.password,
       body.dni,
       body.nombres,
-      body.apellidoPaterno,
-      body.apellidoMaterno,
+      body.apellido_paterno,
+      body.apellido_materno,
     );
   }
 

@@ -82,8 +82,8 @@ interface RenacytCriteriosResponse {
         id?: number;
         descCentroEstudios?: string;
         descGradoAcademico?: string;
-        fechaInicio?: number | null;
-        fechaFin?: number | null;
+        fecha_inicio?: number | null;
+        fecha_fin?: number | null;
         indicadorImportado?: boolean;
         titulo?: string;
         puntajeObtenido?: number | null;
@@ -434,8 +434,8 @@ export class RenacytClient {
           centro_estudios: nonEmpty(pojo.descCentroEstudios),
           grado_academico: nonEmpty(pojo.descGradoAcademico),
           titulo: nonEmpty(pojo.titulo),
-          fecha_inicio: pojo.fechaInicio ?? null,
-          fecha_fin: pojo.fechaFin ?? null,
+          fecha_inicio: pojo.fecha_inicio ?? null,
+          fecha_fin: pojo.fecha_fin ?? null,
           indicador_importado: pojo.indicadorImportado ?? false,
           puntaje_obtenido: pojo.puntajeObtenido ?? null,
           considerado_para_cc: entry.consideradoParaCC ?? false,
