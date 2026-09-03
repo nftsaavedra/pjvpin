@@ -50,18 +50,18 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
   const [formacionesExpanded, setFormacionesExpanded] = useState(false);
 
   const tieneRenacyt = Boolean(
-    investigador.renacytCodigoRegistro || investigador.renacytIdInvestigador,
+    investigador.renacyt_codigo_registro || investigador.renacyt_id_investigador,
   );
   const formacionesAcademicas = parseFormacionesAcademicas(
-    investigador.renacytFormacionesAcademicasJson,
+    investigador.renacyt_formaciones_academicas_json,
   );
-  const renacytDesactualizado = estaDesactualizado(investigador.renacytFechaUltimaSincronizacion);
+  const renacytDesactualizado = estaDesactualizado(investigador.renacyt_fecha_ultima_sincronizacion);
 
-  const scopusUrl = investigador.renacytScopusAuthorId
-    ? `https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(investigador.renacytScopusAuthorId)}`
+  const scopusUrl = investigador.renacyt_scopus_author_id
+    ? `https://www.scopus.com/authid/detail.uri?authorId=${encodeURIComponent(investigador.renacyt_scopus_author_id)}`
     : null;
-  const orcidUrl = investigador.renacytOrcid
-    ? `https://orcid.org/${encodeURIComponent(investigador.renacytOrcid)}`
+  const orcidUrl = investigador.renacyt_orcid
+    ? `https://orcid.org/${encodeURIComponent(investigador.renacyt_orcid)}`
     : null;
 
   const renderBrandLabel = (
@@ -148,12 +148,12 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
               <div className="renacyt-detail-grid">
                 <div className="renacyt-detail-item">
                   {renderBrandLabel(messages.investigadores.renacytSection.codigo, "renacyt")}
-                  <strong>{investigador.renacytCodigoRegistro ?? messages.ui.noDisponible}</strong>
+                  <strong>{investigador.renacyt_codigo_registro ?? messages.ui.noDisponible}</strong>
                 </div>
                 {renderLinkedIdentifier(
                   messages.investigadores.renacytSection.idInvestigador,
-                  investigador.renacytIdInvestigador,
-                  investigador.renacytFichaUrl ?? null,
+                  investigador.renacyt_id_investigador,
+                  investigador.renacyt_ficha_url ?? null,
                   messages.investigadores.renacytActions.abrirFichaRenacyt,
                   messages.investigadores.renacytActions.fichaRenacytError,
                   "renacyt",
@@ -163,45 +163,45 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
                     {messages.investigadores.renacytSection.nivel}
                   </span>
                   <strong>
-                    {formatRenacytNivel(investigador.renacytNivel) ?? messages.ui.noDisponible}
+                    {formatRenacytNivel(investigador.renacyt_nivel) ?? messages.ui.noDisponible}
                   </strong>
                 </div>
                 <div className="renacyt-detail-item">
                   <span className="renacyt-detail-label">
                     {messages.investigadores.renacytSection.grupo}
                   </span>
-                  <strong>{investigador.renacytGrupo ?? messages.ui.noDisponible}</strong>
+                  <strong>{investigador.renacyt_grupo ?? messages.ui.noDisponible}</strong>
                 </div>
                 <div className="renacyt-detail-item">
                   <span className="renacyt-detail-label">
                     {messages.investigadores.renacytSection.condicion}
                   </span>
-                  <strong>{investigador.renacytCondicion ?? messages.ui.noDisponible}</strong>
+                  <strong>{investigador.renacyt_condicion ?? messages.ui.noDisponible}</strong>
                 </div>
                 <div className="renacyt-detail-item">
                   <span className="renacyt-detail-label">
                     {messages.investigadores.renacytSection.registro}
                   </span>
-                  <strong>{formatDate(investigador.renacytFechaRegistro)}</strong>
+                  <strong>{formatDate(investigador.renacyt_fecha_registro)}</strong>
                 </div>
                 <div className="renacyt-detail-item">
                   <span className="renacyt-detail-label">
                     {messages.investigadores.renacytSection.informe}
                   </span>
-                  <strong>{formatDate(investigador.renacytFechaInformeCalificacion)}</strong>
+                  <strong>{formatDate(investigador.renacyt_fecha_informe_calificacion)}</strong>
                 </div>
                 <div className="renacyt-detail-item">
                   <span className="renacyt-detail-label">
                     {messages.investigadores.renacytSection.ultimaRevision}
                   </span>
-                  <strong>{formatDate(investigador.renacytFechaUltimaRevision)}</strong>
+                  <strong>{formatDate(investigador.renacyt_fecha_ultima_revision)}</strong>
                 </div>
                 <div className="renacyt-detail-item">
                   <span className="renacyt-detail-label">
                     {messages.investigadores.renacytSection.ultimaSincronizacion}
                   </span>
                   <strong className="inline-flex items-center gap-2">
-                    <span>{formatDate(investigador.renacytFechaUltimaSincronizacion)}</span>
+                    <span>{formatDate(investigador.renacyt_fecha_ultima_sincronizacion)}</span>
                     {renacytDesactualizado && (
                       <Badge variant="warning">
                         {messages.investigadores.kardex.desactualizado}
@@ -211,7 +211,7 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
                 </div>
                 {renderLinkedIdentifier(
                   messages.investigadores.renacytSection.orcid,
-                  investigador.renacytOrcid,
+                  investigador.renacyt_orcid,
                   orcidUrl,
                   messages.investigadores.renacytActions.abrirOrcid,
                   messages.investigadores.renacytActions.orcidError,
@@ -219,7 +219,7 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
                 )}
                 {renderLinkedIdentifier(
                   messages.investigadores.renacytSection.scopusAuthorId,
-                  investigador.renacytScopusAuthorId,
+                  investigador.renacyt_scopus_author_id,
                   scopusUrl,
                   messages.investigadores.renacytActions.abrirScopus,
                   messages.investigadores.renacytActions.scopusError,
@@ -229,17 +229,17 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
 
               {canRefreshRenacyt && (
                 <div className="renacyt-detail-actions">
-                  {investigador.renacytCodigoRegistro && (
+                  {investigador.renacyt_codigo_registro && (
                     <button
                       type="button"
                       className="btn-secondary"
                       onClick={() => {
-                        const codigoRegistro = investigador.renacytCodigoRegistro;
+                        const codigoRegistro = investigador.renacyt_codigo_registro;
                         if (!codigoRegistro) return;
                         onDescargarConstancia({
-                          idInvestigador: investigador.idInvestigador,
+                          idInvestigador: investigador.id_investigador,
                           codigoRegistro,
-                          nombresApellidos: investigador.nombresApellidos,
+                          nombresApellidos: investigador.nombres_apellidos,
                         });
                       }}
                       disabled={isDownloadingConstancia || isRefreshingRenacyt}
@@ -258,7 +258,7 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
                     type="button"
                     className="btn-secondary"
                     onClick={() => {
-                      onRefreshRenacytFormaciones(investigador.idInvestigador);
+                      onRefreshRenacytFormaciones(investigador.id_investigador);
                     }}
                     disabled={isRefreshingRenacyt}
                   >
@@ -315,8 +315,8 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
                               {formacion.titulo ??
                                 messages.investigadores.fallbacks.formacionSinTitulo}
                             </strong>
-                            <Badge variant={formacion.consideradoParaCc ? "success" : "warning"}>
-                              {formacion.consideradoParaCc
+                            <Badge variant={formacion.considerado_para_cc ? "success" : "warning"}>
+                              {formacion.considerado_para_cc
                                 ? messages.investigadores.formaciones.badges.consideradoCC
                                 : messages.investigadores.formaciones.badges.informativo}
                             </Badge>
@@ -324,27 +324,27 @@ export const InvestigadorDetailRenacytSection: React.FC<InvestigadorDetailRenacy
                           <div className="renacyt-formacion-grid">
                             <span>
                               <strong>{messages.investigadores.formaciones.fields.grado}</strong>{" "}
-                              {formacion.gradoAcademico ?? messages.ui.noDisponible}
+                              {formacion.grado_academico ?? messages.ui.noDisponible}
                             </span>
                             <span>
                               <strong>{messages.investigadores.formaciones.fields.centro}</strong>{" "}
-                              {formacion.centroEstudios ?? messages.ui.noDisponible}
+                              {formacion.centro_estudios ?? messages.ui.noDisponible}
                             </span>
                             <span>
                               <strong>{messages.investigadores.formaciones.fields.inicio}</strong>{" "}
-                              {formatDate(formacion.fechaInicio)}
+                              {formatDate(formacion.fecha_inicio)}
                             </span>
                             <span>
                               <strong>{messages.investigadores.formaciones.fields.fin}</strong>{" "}
-                              {formatDate(formacion.fechaFin)}
+                              {formatDate(formacion.fecha_fin)}
                             </span>
                             <span>
                               <strong>{messages.investigadores.formaciones.fields.puntaje}</strong>{" "}
-                              {formacion.puntajeObtenido ?? messages.ui.noDisponible}
+                              {formacion.puntaje_obtenido ?? messages.ui.noDisponible}
                             </span>
                             <span>
                               <strong>{messages.investigadores.formaciones.fields.origen}</strong>{" "}
-                              {formacion.indicadorImportado
+                              {formacion.indicador_importado
                                 ? messages.investigadores.formaciones.origenImportado
                                 : messages.investigadores.formaciones.origenManual}
                             </span>

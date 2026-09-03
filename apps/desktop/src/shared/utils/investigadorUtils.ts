@@ -41,16 +41,16 @@ export const esCambioKardexClasificatorio = (campo: string): boolean =>
   CAMPOS_CLASIFICATORIOS_KARDEX.has(campo);
 
 /// Determina si un investigador tiene cambios RENACYT recientes (en
-/// `cambiosRenacytRecientes`) que aun no fueron revisados por el usuario.
+/// `cambios_renacyt_recientes`) que aun no fueron revisados por el usuario.
 ///
 /// Logica KISS: el DTO proyecta los cambios clasificadorios sin
 /// `fecha_evento` per-cambio, asi que no podemos comparar contra
-/// `renacytCambiosRevisadosEn` con precision. Mostramos alerta si hay
+/// `renacyt_cambios_revisados_en` con precision. Mostramos alerta si hay
 /// cambios clasificadorios. La alerta se silencia abriendo la ficha
 /// (que llama `marcarCambiosRenacytRevisados`); un eventual cross-cutting
 /// para filtrar por fecha en backend queda como deuda menor.
 export const tieneCambiosSinRevisar = (investigador: InvestigadorDetalle): boolean => {
-  const cambios = investigador.cambiosRenacytRecientes ?? [];
+  const cambios = investigador.cambios_renacyt_recientes ?? [];
   return cambios.some((c: CambioKardex) => esCambioKardexClasificatorio(c.campo));
 };
 

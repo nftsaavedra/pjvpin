@@ -30,8 +30,8 @@ export const InvestigadorDetailKardexSection: React.FC<InvestigadorDetailKardexS
             const clasificatorio = esCambioKardexClasificatorio(cambio.campo);
             const linea = messages.investigadores.kardex.cambioLinea(
               cambio.campo,
-              cambio.valorAnterior,
-              cambio.valorNuevo,
+              cambio.valor_anterior,
+              cambio.valor_nuevo,
             );
             const itemKey = `${cambio.campo}-${index}`;
             return (

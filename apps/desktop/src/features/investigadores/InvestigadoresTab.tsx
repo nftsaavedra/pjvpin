@@ -118,7 +118,7 @@ export const InvestigadoresTab: React.FC<InvestigadoresTabProps> = ({
           table.handleRefreshRenacytFormaciones(id).catch(() => {});
         }}
         isRefreshingRenacyt={
-          table.refreshingRenacytInvestigadorId === selectedInvestigador.idInvestigador
+          table.refreshingRenacytInvestigadorId === selectedInvestigador.id_investigador
         }
         isDownloadingConstancia={constancia.isDownloadingConstancia}
         onDescargarConstancia={(args) => {

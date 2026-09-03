@@ -49,9 +49,9 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
-    void getKardexInvestigador(investigador.idInvestigador).catch(() => {});
-    void marcarCambiosRenacytRevisados(investigador.idInvestigador).catch(() => {});
-  }, [investigador.idInvestigador]);
+    void getKardexInvestigador(investigador.id_investigador).catch(() => {});
+    void marcarCambiosRenacytRevisados(investigador.id_investigador).catch(() => {});
+  }, [investigador.id_investigador]);
 
   return (
     <div className="screen-layout">
@@ -68,7 +68,7 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
             </button>
             <span>{messages.investigadores.breadcrumb}</span>
             <span className="screen-breadcrumb-sep">/</span>
-            <span className="screen-breadcrumb-current">{investigador.nombresApellidos}</span>
+            <span className="screen-breadcrumb-current">{investigador.nombres_apellidos}</span>
           </div>
         </div>
         <div className="screen-header-right">
@@ -92,15 +92,15 @@ export const InvestigadorDetailScreen: React.FC<InvestigadorDetailScreenProps> =
           onRefreshRenacytFormaciones={onRefreshRenacytFormaciones}
           onDescargarConstancia={onDescargarConstancia}
         />
-        <InvestigadorDetailKardexSection cambios={investigador.cambiosRenacytRecientes ?? []} />
+        <InvestigadorDetailKardexSection cambios={investigador.cambios_renacyt_recientes ?? []} />
         <InvestigadorEventosSection
-          investigadorId={investigador.idInvestigador}
+          investigadorId={investigador.id_investigador}
           currentRol={currentRol}
-          nombreCompleto={investigador.nombresApellidos}
+          nombreCompleto={investigador.nombres_apellidos}
         />
         <InvestigadorPublicacionesSection
-          investigadorId={investigador.idInvestigador}
-          scopusAuthorId={investigador.renacytScopusAuthorId}
+          investigadorId={investigador.id_investigador}
+          scopusAuthorId={investigador.renacyt_scopus_author_id}
           canSyncPure={canSyncPure}
         />
         <InvestigadorDetailProyectosSection investigador={investigador} />

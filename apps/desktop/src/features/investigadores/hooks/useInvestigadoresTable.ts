@@ -51,7 +51,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
   const handleEliminarInvestigador = async () => {
     if (!investigadorToDelete) return;
     try {
-      const resultado = await eliminarInvestigador(investigadorToDelete.idInvestigador);
+      const resultado = await eliminarInvestigador(investigadorToDelete.id_investigador);
       toast.info(resultado.mensaje);
       setInvestigadorToDelete(null);
       await cargarInvestigadores();
@@ -132,7 +132,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
       Array.from(
         new Set(
           investigadores.map(
-            (investigador) => formatRenacytNivel(investigador.renacytNivel) ?? "Sin nivel RENACYT",
+            (investigador) => formatRenacytNivel(investigador.renacyt_nivel) ?? "Sin nivel RENACYT",
           ),
         ),
       ).sort((a, b) => a.localeCompare(b, "es")),
@@ -156,7 +156,7 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
         .filter((investigador) => {
           if (renacytNivelFiltro === "todos") return true;
           return (
-            (formatRenacytNivel(investigador.renacytNivel) ?? "Sin nivel RENACYT") ===
+            (formatRenacytNivel(investigador.renacyt_nivel) ?? "Sin nivel RENACYT") ===
             renacytNivelFiltro
           );
         })
@@ -164,10 +164,10 @@ export const useInvestigadoresTable = (refreshTrigger = 0) => {
           const texto = normalizeText(busqueda);
           if (!texto) return true;
           return (
-            normalizeText(investigador.nombresApellidos).includes(texto) ||
+            normalizeText(investigador.nombres_apellidos).includes(texto) ||
             normalizeText(investigador.dni).includes(texto) ||
             normalizeText(investigador.grado).includes(texto) ||
-            normalizeRenacytNivelSearch(investigador.renacytNivel).includes(texto)
+            normalizeRenacytNivelSearch(investigador.renacyt_nivel).includes(texto)
           );
         }),
     [busqueda, investigadores, estadoFiltro, gradoFiltro, renacytNivelFiltro],

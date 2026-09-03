@@ -98,8 +98,8 @@ export const PureVerificationPanel: React.FC<PureVerificationPanelProps> = ({
   const opciones = [
     { value: "", label: messages.reportes.todosLosInvestigadores },
     ...investigadores.map((inv) => ({
-      value: inv.idInvestigador,
-      label: inv.nombresApellidos,
+      value: inv.id_investigador,
+      label: inv.nombres_apellidos,
     })),
   ];
   const ocupado = verificando || adoptando;

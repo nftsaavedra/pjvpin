@@ -1,88 +1,88 @@
 /// Cambio atómico detectado por el kardex RENACYT entre dos snapshots.
-/// Proyectado al frontend por `InvestigadorDetalle.cambiosRenacytRecientes`
+/// Proyectado al frontend por `InvestigadorDetalle.cambios_renacyt_recientes`
 /// (entradas recientes con cambios clasificadorios).
 export interface CambioKardex {
   campo: string;
-  valorAnterior: string | null;
-  valorNuevo: string | null;
+  valor_anterior: string | null;
+  valor_nuevo: string | null;
 }
 
 export interface Investigador {
-  idInvestigador: string;
+  id_investigador: string;
   dni: string;
-  idGrado: string;
-  nombresApellidos: string;
+  id_grado: string;
+  nombres_apellidos: string;
   nombres?: string | null;
-  apellidoPaterno?: string | null;
-  apellidoMaterno?: string | null;
+  apellido_paterno?: string | null;
+  apellido_materno?: string | null;
   activo?: number;
   perfil?: string;
-  renacytCodigoRegistro?: string | null;
-  renacytIdInvestigador?: string | null;
-  renacytNivel?: string | null;
-  renacytGrupo?: string | null;
-  renacytCondicion?: string | null;
-  renacytFechaInformeCalificacion?: number | null;
-  renacytFechaRegistro?: number | null;
-  renacytFechaUltimaRevision?: number | null;
-  renacytOrcid?: string | null;
-  renacytScopusAuthorId?: string | null;
-  renacytFechaUltimaSincronizacion?: number | null;
-  renacytFichaUrl?: string | null;
-  renacytFormacionesAcademicasJson?: string | null;
-  grupoInvestigacionId?: string | null;
-  updatedAt?: number | null;
-  personaId?: string;
+  renacyt_codigo_registro?: string | null;
+  renacyt_id_investigador?: string | null;
+  renacyt_nivel?: string | null;
+  renacyt_grupo?: string | null;
+  renacyt_condicion?: string | null;
+  renacyt_fecha_informe_calificacion?: number | null;
+  renacyt_fecha_registro?: number | null;
+  renacyt_fecha_ultima_revision?: number | null;
+  renacyt_orcid?: string | null;
+  renacyt_scopus_author_id?: string | null;
+  renacyt_fecha_ultima_sincronizacion?: number | null;
+  renacyt_ficha_url?: string | null;
+  renacyt_formaciones_academicas_json?: string | null;
+  grupo_investigacion_id?: string | null;
+  updated_at?: number | null;
+  persona_id?: string;
   /// PersonID del Master List de Pure (PER000X). Sincronizado por
   /// `sincronizar_pure_person_ids` desde la API de pure.unf.edu.pe.
-  purePersonId?: string | null;
+  pure_person_id?: string | null;
   /// UUID canonico PeruCRIS (alineamiento N2-G). Permite dedupe en el
   /// importador inicial y ancla el match persona↔PeruCRIS.
-  perucrisUuid?: string | null;
+  perucris_uuid?: string | null;
   /// Marca temporal (ms epoch) de la ultima revision del kardex RENACYT.
   /// `null` = nunca revisado. Lo setea el handler `marcar_cambios_renacyt_revisados`.
-  renacytCambiosRevisadosEn?: number | null;
+  renacyt_cambios_revisados_en?: number | null;
 }
 
 export interface InvestigadorDetalle {
-  idInvestigador: string;
-  personaId: string;
+  id_investigador: string;
+  persona_id: string;
   dni: string;
-  nombresApellidos: string;
+  nombres_apellidos: string;
   nombres?: string | null;
-  apellidoPaterno?: string | null;
-  apellidoMaterno?: string | null;
+  apellido_paterno?: string | null;
+  apellido_materno?: string | null;
   correo?: string | null;
   telefono?: string | null;
   direccion?: string | null;
   grado: string;
-  cantidadProyectos: number;
+  cantidad_proyectos: number;
   proyectos: string | null;
   activo: number;
   perfil?: string;
-  renacytCodigoRegistro?: string | null;
-  renacytIdInvestigador?: string | null;
-  renacytNivel?: string | null;
-  renacytGrupo?: string | null;
-  renacytCondicion?: string | null;
-  renacytFechaInformeCalificacion?: number | null;
-  renacytFechaRegistro?: number | null;
-  renacytFechaUltimaRevision?: number | null;
-  renacytOrcid?: string | null;
-  renacytScopusAuthorId?: string | null;
-  renacytFechaUltimaSincronizacion?: number | null;
-  renacytFichaUrl?: string | null;
-  renacytFormacionesAcademicasJson?: string | null;
+  renacyt_codigo_registro?: string | null;
+  renacyt_id_investigador?: string | null;
+  renacyt_nivel?: string | null;
+  renacyt_grupo?: string | null;
+  renacyt_condicion?: string | null;
+  renacyt_fecha_informe_calificacion?: number | null;
+  renacyt_fecha_registro?: number | null;
+  renacyt_fecha_ultima_revision?: number | null;
+  renacyt_orcid?: string | null;
+  renacyt_scopus_author_id?: string | null;
+  renacyt_fecha_ultima_sincronizacion?: number | null;
+  renacyt_ficha_url?: string | null;
+  renacyt_formaciones_academicas_json?: string | null;
   /// Marca temporal (ms epoch) de la ultima revision del kardex RENACYT.
   /// `null` = nunca revisado.
-  renacytCambiosRevisadosEn?: number | null;
+  renacyt_cambios_revisados_en?: number | null;
   /// Cambios RENACYT recientes (ultimas 5 entradas del kardex, filtrados a
   /// campos clasificadorios: nivel, grupo, condicion,
   /// fecha_informe_calificacion, fecha_ultima_revision).
   /// Alimenta el panel de kardex en la ficha y el badge de alerta en la
   /// tabla. Plana, sin `fecha_evento` por entrada; ver
   /// `getKardexInvestigador` para el timeline completo con fecha.
-  cambiosRenacytRecientes?: CambioKardex[];
+  cambios_renacyt_recientes?: CambioKardex[];
 }
 
 /// Resultado agregado del comando `refrescar_renacyt_todos` (RBAC
@@ -97,15 +97,15 @@ export interface RefreshMasivoRenacytResultado {
 
 export interface RenacytFormacionAcademicaResumen {
   id: number;
-  centroEstudios?: string | null;
-  gradoAcademico?: string | null;
+  centro_estudios?: string | null;
+  grado_academico?: string | null;
   titulo?: string | null;
-  fechaInicio?: number | null;
-  fechaFin?: number | null;
-  indicadorImportado: boolean;
-  puntajeObtenido?: number | null;
-  consideradoParaCc: boolean;
-  esCalificado: boolean;
+  fecha_inicio?: number | null;
+  fecha_fin?: number | null;
+  indicador_importado: boolean;
+  puntaje_obtenido?: number | null;
+  considerado_para_cc: boolean;
+  es_calificado: boolean;
 }
 
 export interface RenacytLookupResult {
