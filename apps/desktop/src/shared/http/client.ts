@@ -35,11 +35,11 @@ export async function refreshSession(): Promise<boolean> {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
     if (!res.ok) return false;
-    const data = (await res.json()) as { accessToken: string; refreshToken: string };
-    setTokens(data.accessToken, data.refreshToken);
+    const data = (await res.json()) as { access_token: string; refresh_token: string };
+    setTokens(data.access_token, data.refresh_token);
     return true;
   } catch {
     return false;

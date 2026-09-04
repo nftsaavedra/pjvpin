@@ -9,54 +9,54 @@ import type {
 // ── Patentes ────────────────────────────────────────────────────────────────
 
 export interface CreatePatentePayload {
-  proyectoId?: string;
+  proyecto_id?: string;
   titulo: string;
-  numeroPatente?: string;
+  numero_patente?: string;
   tipo?: string;
   estado?: string;
-  fechaSolicitud?: number;
-  fechaConcesion?: number;
+  fecha_solicitud?: number;
+  fecha_concesion?: number;
   pais?: string;
-  entidadConcedente?: string;
+  entidad_concedente?: string;
   descripcion?: string;
-  clasificacionIpc?: string;
-  idOrgUnitConcedente?: string;
+  clasificacion_ipc?: string;
+  id_org_unit_concedente?: string;
 }
 
 export interface UpdatePatentePayload {
   titulo?: string;
-  numeroPatente?: string;
+  numero_patente?: string;
   tipo?: string;
   estado?: string;
-  fechaSolicitud?: number;
-  fechaConcesion?: number;
+  fecha_solicitud?: number;
+  fecha_concesion?: number;
   pais?: string;
-  entidadConcedente?: string;
+  entidad_concedente?: string;
   descripcion?: string;
-  clasificacionIpc?: string;
-  idOrgUnitConcedente?: string;
+  clasificacion_ipc?: string;
+  id_org_unit_concedente?: string;
 }
 
 export const crearPatente = async (request: CreatePatentePayload): Promise<Patente> => {
   return apiFetch("/patentes", { method: "POST", body: request });
 };
 
-export const getPatentesProyecto = async (proyectoId: string): Promise<Patente[]> => {
-  return apiFetch(`/proyectos/${encodeURIComponent(proyectoId)}/patentes`);
+export const getPatentesProyecto = async (proyecto_id: string): Promise<Patente[]> => {
+  return apiFetch(`/proyectos/${encodeURIComponent(proyecto_id)}/patentes`);
 };
 
 export const actualizarPatente = async (
-  idPatente: string,
+  id_patente: string,
   request: UpdatePatentePayload,
 ): Promise<Patente> => {
-  return apiFetch(`/patentes/${encodeURIComponent(idPatente)}`, {
+  return apiFetch(`/patentes/${encodeURIComponent(id_patente)}`, {
     method: "PATCH",
     body: request,
   });
 };
 
-export const eliminarPatente = async (idPatente: string): Promise<void> => {
-  await apiFetch(`/patentes/${encodeURIComponent(idPatente)}`, { method: "DELETE" });
+export const eliminarPatente = async (id_patente: string): Promise<void> => {
+  await apiFetch(`/patentes/${encodeURIComponent(id_patente)}`, { method: "DELETE" });
 };
 
 // ── Software ────────────────────────────────────────────────────────────────
@@ -64,25 +64,25 @@ export const eliminarPatente = async (idPatente: string): Promise<void> => {
 export interface CreateSoftwarePayload {
   titulo: string;
   tipo?: string;
-  idProyecto?: string;
+  id_proyecto?: string;
   resumen?: string;
   doi?: string;
-  fechaPublicacion?: number;
+  fecha_publicacion?: number;
   idioma?: string;
-  accesoAbierto?: string;
-  palabrasClave?: string[];
+  acceso_abierto?: string;
+  palabras_clave?: string[];
 }
 
 export interface UpdateSoftwarePayload {
   titulo?: string;
   tipo?: string;
-  idProyecto?: string;
+  id_proyecto?: string;
   resumen?: string;
   doi?: string;
-  fechaPublicacion?: number;
+  fecha_publicacion?: number;
   idioma?: string;
-  accesoAbierto?: string;
-  palabrasClave?: string[];
+  acceso_abierto?: string;
+  palabras_clave?: string[];
 }
 
 export const crearSoftware = async (
@@ -92,23 +92,23 @@ export const crearSoftware = async (
 };
 
 export const getSoftwareProyecto = async (
-  idProyecto: string,
+  id_proyecto: string,
 ): Promise<PublicacionCientifica[]> => {
-  return apiFetch(`/proyectos/${encodeURIComponent(idProyecto)}/software`);
+  return apiFetch(`/proyectos/${encodeURIComponent(id_proyecto)}/software`);
 };
 
 export const actualizarSoftware = async (
-  idPublicacion: string,
+  id_publicacion: string,
   request: UpdateSoftwarePayload,
 ): Promise<PublicacionCientifica> => {
-  return apiFetch(`/publicaciones/${encodeURIComponent(idPublicacion)}`, {
+  return apiFetch(`/publicaciones/${encodeURIComponent(id_publicacion)}`, {
     method: "PATCH",
     body: request,
   });
 };
 
-export const eliminarSoftware = async (idPublicacion: string): Promise<void> => {
-  await apiFetch(`/publicaciones/${encodeURIComponent(idPublicacion)}`, { method: "DELETE" });
+export const eliminarSoftware = async (id_publicacion: string): Promise<void> => {
+  await apiFetch(`/publicaciones/${encodeURIComponent(id_publicacion)}`, { method: "DELETE" });
 };
 
 // ── Equipamientos ────────────────────────────────────────────────────────────
@@ -117,30 +117,30 @@ export interface CreateEquipamientoPayload {
   nombre: string;
   descripcion?: string;
   especificaciones?: string;
-  valorEstimado?: number;
+  valor_estimado?: number;
   moneda?: string;
   proveedor?: string;
-  fechaAdquisicion?: number;
-  codigoInstitucional?: string;
-  tipoEquipamiento?: string;
-  usoEquipamiento?: string;
-  idOrgUnitPropietaria?: string;
-  idFinanciamiento?: string;
+  fecha_adquisicion?: number;
+  codigo_institucional?: string;
+  tipo_equipamiento?: string;
+  uso_equipamiento?: string;
+  id_org_unit_propietaria?: string;
+  id_financiamiento?: string;
 }
 
 export interface UpdateEquipamientoPayload {
   nombre?: string;
   descripcion?: string;
   especificaciones?: string;
-  valorEstimado?: number;
+  valor_estimado?: number;
   moneda?: string;
   proveedor?: string;
-  fechaAdquisicion?: number;
-  codigoInstitucional?: string;
-  tipoEquipamiento?: string;
-  usoEquipamiento?: string;
-  idOrgUnitPropietaria?: string;
-  idFinanciamiento?: string;
+  fecha_adquisicion?: number;
+  codigo_institucional?: string;
+  tipo_equipamiento?: string;
+  uso_equipamiento?: string;
+  id_org_unit_propietaria?: string;
+  id_financiamiento?: string;
 }
 
 export const crearEquipamiento = async (
@@ -149,22 +149,22 @@ export const crearEquipamiento = async (
   return apiFetch("/equipamientos", { method: "POST", body: request });
 };
 
-export const getEquipamientosProyecto = async (proyectoId: string): Promise<Equipamiento[]> => {
-  return apiFetch(`/proyectos/${encodeURIComponent(proyectoId)}/equipamientos`);
+export const getEquipamientosProyecto = async (proyecto_id: string): Promise<Equipamiento[]> => {
+  return apiFetch(`/proyectos/${encodeURIComponent(proyecto_id)}/equipamientos`);
 };
 
 export const actualizarEquipamiento = async (
-  idEquipamiento: string,
+  id_equipamiento: string,
   request: UpdateEquipamientoPayload,
 ): Promise<Equipamiento> => {
-  return apiFetch(`/equipamientos/${encodeURIComponent(idEquipamiento)}`, {
+  return apiFetch(`/equipamientos/${encodeURIComponent(id_equipamiento)}`, {
     method: "PATCH",
     body: request,
   });
 };
 
-export const eliminarEquipamiento = async (idEquipamiento: string): Promise<void> => {
-  await apiFetch(`/equipamientos/${encodeURIComponent(idEquipamiento)}`, { method: "DELETE" });
+export const eliminarEquipamiento = async (id_equipamiento: string): Promise<void> => {
+  await apiFetch(`/equipamientos/${encodeURIComponent(id_equipamiento)}`, { method: "DELETE" });
 };
 
 // ── Financiamientos ──────────────────────────────────────────────────────────
@@ -173,30 +173,30 @@ export interface CreateFinanciamientoPayload {
   codigo: string;
   nombre?: string;
   modalidad?: string;
-  idOrgUnitFinanciadora?: string;
-  parentId?: string;
+  id_org_unit_financiadora?: string;
+  parent_id?: string;
   tipo?: string;
   monto?: number;
   moneda?: string;
-  fechaInicio?: number;
-  fechaFin?: number;
+  fecha_inicio?: number;
+  fecha_fin?: number;
   descripcion?: string;
-  estadoFinanciero?: string;
+  estado_financiero?: string;
 }
 
 export interface UpdateFinanciamientoPayload {
   codigo?: string;
   nombre?: string;
   modalidad?: string;
-  idOrgUnitFinanciadora?: string;
-  parentId?: string;
+  id_org_unit_financiadora?: string;
+  parent_id?: string;
   tipo?: string;
   monto?: number;
   moneda?: string;
-  fechaInicio?: number;
-  fechaFin?: number;
+  fecha_inicio?: number;
+  fecha_fin?: number;
   descripcion?: string;
-  estadoFinanciero?: string;
+  estado_financiero?: string;
 }
 
 export const crearFinanciamiento = async (
@@ -206,21 +206,21 @@ export const crearFinanciamiento = async (
 };
 
 export const getFinanciamientosProyecto = async (
-  proyectoId: string,
+  proyecto_id: string,
 ): Promise<Financiamiento[]> => {
-  return apiFetch(`/proyectos/${encodeURIComponent(proyectoId)}/financiamientos-recursos`);
+  return apiFetch(`/proyectos/${encodeURIComponent(proyecto_id)}/financiamientos-recursos`);
 };
 
 export const actualizarFinanciamiento = async (
-  idFinanciamiento: string,
+  id_financiamiento: string,
   request: UpdateFinanciamientoPayload,
 ): Promise<Financiamiento> => {
-  return apiFetch(`/financiamientos/${encodeURIComponent(idFinanciamiento)}`, {
+  return apiFetch(`/financiamientos/${encodeURIComponent(id_financiamiento)}`, {
     method: "PATCH",
     body: request,
   });
 };
 
-export const eliminarFinanciamiento = async (idFinanciamiento: string): Promise<void> => {
-  await apiFetch(`/financiamientos/${encodeURIComponent(idFinanciamiento)}`, { method: "DELETE" });
+export const eliminarFinanciamiento = async (id_financiamiento: string): Promise<void> => {
+  await apiFetch(`/financiamientos/${encodeURIComponent(id_financiamiento)}`, { method: "DELETE" });
 };

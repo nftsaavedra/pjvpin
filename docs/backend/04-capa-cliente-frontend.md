@@ -74,18 +74,15 @@ Orden: `localStorage['pjvpin.apiUrl']` → `import.meta.env.PJVPIN_API_URL` → 
 
 Claves: `pjvpin.auth.access`, `pjvpin.auth.refresh`. Funciones: `getAccessToken`, `getRefreshToken`, `setTokens`, `clearTokens`.
 
-### Serialización camelCase ↔ snake_case (`apps/api/src/infra/serialization/`)
+### Serialización snake_case (estándar del wire)
 
-**Estado actual**: el `CamelToSnakePipe` está ACTIVO (convierte requests camelCase → snake_case antes de `ValidationPipe`). El `SnakeToCamelInterceptor` existe pero está DESACTIVADO (el frontend espera snake_case en responses). **Todos los DTOs de request están unificados a snake_case** (2026-09-03): el pipe permite al frontend seguir enviando camelCase mientras los DTOs validan snake_case.
+**Estado actual (2026-09-04)**: wire 100% snake_case. Sin capas de transformación en runtime.
 
-| Componente | Estado | Propósito |
-|---|---|---|
-| `CamelToSnakePipe` | ✅ Activo | Transforma body/query camelCase → snake_case antes de validación |
-| `SnakeToCamelInterceptor` | ⏸️ Desactivado | Transforma response snake_case → camelCase (listo para activar) |
-| `@SkipSerialization()` | ✅ Disponible | Opt-out para endpoints con schema de dominio (CERIF) |
-| `camelToSnakeKeys` / `snakeToCamelKeys` | ✅ Disponibles | Utilidades puras, recursivas, testables |
+El frontend envía y recibe snake_case directamente. No hay pipes, interceptores ni
+decoradores de serialización. El módulo `apps/api/src/infra/serialization/` fue eliminado.
 
-**Convención de contrato actual**: requests camelCase (frontend) → API las convierte a snake_case (pipe) → DTOs snake_case validan. Responses snake_case (API) → frontend las lee directo (tipos snake_case). Todos los DTOs de request (auth, catalogos, proyectos, recursos, publicaciones, eventos) usan snake_case. El e2e incluye `CamelToSnakePipe` para paridad con producción.
+**Convención de contrato**: requests snake_case (frontend → API) → DTOs snake_case validan.
+Responses snake_case (API → frontend) → tipos TS snake_case leen directo. Cero transformación.
 
 ## 3. Tabla maestra función → endpoint HTTP
 
@@ -303,7 +300,7 @@ Re-exportan desde `shared/api/*` + `getErrorMessage` de `shared/http/error`: aut
 
 ## 8. Hallazgos (solo constatación)
 
-- **Contratos HTTP**: respuestas snake_case (mirror DTO Rust), requests snake_case (DTOs unificados 2026-09-03; frontend envía camelCase, `CamelToSnakePipe` normaliza). Sin cambio en el contrato IPC original del desktop.
+- **Contratos HTTP**: wire 100% snake_case (requests y responses). Sin capas de transformación. Tipos TS alineados a snake_case.
 - **Duplicación de endpoints**: `crear_publicacion`/`actualizar_publicacion`/`eliminar_publicacion` invocados desde2+módulos (`recursos.ts`, `publicaciones.ts`).
 - **`PaginatedResult<T>`** definido y re-exportado pero sin consumer actual.
 - **Binarios**: `descargarConstanciaRenacytInvestigador` usa fetch directo (no `apiFetch`) para obtener `Uint8Array`. `saveDesktopFile` usa `@tauri-apps/plugin-fs`.

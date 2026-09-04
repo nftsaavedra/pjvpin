@@ -106,8 +106,8 @@ export const InvestigadorEventosSection: React.FC<InvestigadorEventosSectionProp
       await crearEvento({
         nombre: form.nombre.trim(),
         tipo: form.tipo,
-        fechaInicio: fechaInicioMs,
-        fechaFin: fechaFinMs,
+        fecha_inicio: fechaInicioMs,
+        fecha_fin: fechaFinMs,
         lugar: form.lugar.trim() || undefined,
         descripcion: form.descripcion.trim() || undefined,
       });

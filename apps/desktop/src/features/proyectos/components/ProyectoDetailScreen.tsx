@@ -43,8 +43,8 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
   onEdit,
 }) => {
   const participantes = React.useMemo(
-    () => parseParticipantesProyecto(proyecto.participantesJson),
-    [proyecto.participantesJson],
+    () => parseParticipantesProyecto(proyecto.participantes_json),
+    [proyecto.participantes_json],
   );
   const responsable = React.useMemo(() => getResponsableProyecto(participantes), [participantes]);
   const [activeResourceTab, setActiveResourceTab] = useState<ResourceTab>("patentes");
@@ -101,7 +101,7 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
             </button>
             <span>{messages.proyectos.breadcrumb}</span>
             <span className="screen-breadcrumb-sep">/</span>
-            <span className="screen-breadcrumb-current">{proyecto.tituloProyecto}</span>
+            <span className="screen-breadcrumb-current">{proyecto.titulo_proyecto}</span>
           </div>
         </div>
         <div className="screen-header-right">
@@ -197,17 +197,17 @@ export const ProyectoDetailScreen: React.FC<ProyectoDetailScreenProps> = ({
           ) : (
             <div className="screen-readonly-list">
               {participantes.map((participante) => (
-                <div key={participante.idInvestigador} className="screen-readonly-item">
+                <div key={participante.id_investigador} className="screen-readonly-item">
                   <span>
                     <strong>{participante.nombre}</strong>
                     {participante.grado && <span> &mdash; {participante.grado}</span>}
                   </span>
                   <div className="screen-readonly-item-meta">
-                    {participante.esResponsable && (
+                    {participante.es_responsable && (
                       <Badge variant="info">{messages.proyectos.detail.responsableBadge}</Badge>
                     )}
                     <Badge variant="info">
-                      {formatRenacytNivel(participante.renacytNivel) ??
+                      {formatRenacytNivel(participante.renacyt_nivel) ??
                         messages.proyectos.detail.fallbacks.sinRenacyt}
                     </Badge>
                   </div>

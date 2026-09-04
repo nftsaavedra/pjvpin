@@ -1,7 +1,7 @@
 # Mapa de Endpoints REST — API NestJS (`apps/api`)
 
 > Artefacto maestro de construcción. Traduce los 155 comandos IPC del censo ([01-endpoints-ipc.md](./01-endpoints-ipc.md)) a endpoints REST idiomáticos NestJS. Fuente única de verdad para controllers, guards y el adapter del desktop.
-> Los **shapes de request/response NO cambian** en esta fase (respuestas snake_case, requests camelCase — ver README §Contratos). Solo cambia el transporte.
+> Los **shapes de request/response son snake_case** (wire = DTOs = tipos TS). Solo cambia el transporte.
 
 ## 1. Convención de diseño
 

@@ -65,14 +65,14 @@ export const InvestigadorPublicacionesSection: React.FC<InvestigadorPublicacione
     try {
       const result: SyncPublicacionesResult = await sincronizarPublicacionesPure(investigadorId);
       setPureNoConfigurado(false);
-      if (result.totalEncontradas === 0) {
+      if (result.total_encontradas === 0) {
         toast.warning(messages.investigadores.publicaciones.pureSinResultados);
       } else {
         toast.success(
           messages.investigadores.publicaciones.pureSyncSuccess(
             result.nuevas,
             result.actualizadas,
-            result.totalEncontradas,
+            result.total_encontradas,
           ),
         );
       }

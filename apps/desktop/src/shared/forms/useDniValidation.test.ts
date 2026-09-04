@@ -4,11 +4,11 @@ import { useDniValidation } from "./useDniValidation";
 import type { ReniecDniLookupResult } from "@/shared/api/types";
 
 const reniecMock: ReniecDniLookupResult = {
-  firstName: "juan carlos",
-  firstLastName: "lopez gonzalez",
-  secondLastName: "ramirez diaz",
-  fullName: "Juan Carlos Lopez Ramirez",
-  documentNumber: "45678912",
+  first_name: "juan carlos",
+  first_last_name: "lopez gonzalez",
+  second_last_name: "ramirez diaz",
+  full_name: "Juan Carlos Lopez Ramirez",
+  document_number: "45678912",
 };
 
 describe("useDniValidation", () => {

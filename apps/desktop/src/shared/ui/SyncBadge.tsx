@@ -140,21 +140,21 @@ const PeruCrisTooltipContent: React.FC<{
   item: import("@/shared/api/types/perucris.types").PeruCrisValidationItem;
 }> = ({ item }) => (
   <div className="space-y-1 max-w-xs">
-    <strong>PeruCRIS · {item.encontradoEnPeruCris ? "Sincronizado" : "No encontrado"}</strong>
-    {item.peruCrisUuid && (
+    <strong>PeruCRIS · {item.encontrado_en_perucris ? "Sincronizado" : "No encontrado"}</strong>
+    {item.perucris_uuid && (
       <p className="text-xs">
         <span className="font-medium">UUID:</span>{" "}
-        <code className="text-xs">{item.peruCrisUuid}</code>
+        <code className="text-xs">{item.perucris_uuid}</code>
       </p>
     )}
-    {item.peruCrisHandle && (
+    {item.perucris_handle && (
       <p className="text-xs">
-        <span className="font-medium">Handle:</span> {item.peruCrisHandle}
+        <span className="font-medium">Handle:</span> {item.perucris_handle}
       </p>
     )}
-    {item.lastModifiedPeruCris && (
+    {item.last_modified_perucris && (
       <p className="text-xs">
-        <span className="font-medium">Ultima modificacion:</span> {item.lastModifiedPeruCris}
+        <span className="font-medium">Ultima modificacion:</span> {item.last_modified_perucris}
       </p>
     )}
     {item.diferencias.length > 0 && (

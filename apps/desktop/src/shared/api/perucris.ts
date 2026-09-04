@@ -18,15 +18,15 @@ export const validarAPeruCris = async (
 };
 
 export const validarOrgUnitPeruCris = async (
-  idOrgUnit: string,
+  id_org_unit: string,
 ): Promise<PeruCrisValidationItem> => {
-  return apiFetch(`/perucris/validacion/org-unit/${encodeURIComponent(idOrgUnit)}`);
+  return apiFetch(`/perucris/validacion/org-unit/${encodeURIComponent(id_org_unit)}`);
 };
 
 export const validarPublicacionPeruCris = async (
-  idPublicacion: string,
+  id_publicacion: string,
 ): Promise<PeruCrisValidationItem> => {
-  return apiFetch(`/perucris/validacion/publicacion/${encodeURIComponent(idPublicacion)}`);
+  return apiFetch(`/perucris/validacion/publicacion/${encodeURIComponent(id_publicacion)}`);
 };
 
 export const importarInicialesPeruCris = async (): Promise<PeruCrisImportResult> => {

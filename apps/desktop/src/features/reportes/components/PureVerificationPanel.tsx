@@ -123,7 +123,7 @@ export const PureVerificationPanel: React.FC<PureVerificationPanelProps> = ({
         {report ? (
           <Badge variant="default">
             {messages.reportes.pureVerification.ejecutadoEn(
-              new Date(report.ejecutadoAt).toLocaleString(),
+              new Date(report.ejecutado_at).toLocaleString(),
             )}
           </Badge>
         ) : null}
@@ -166,7 +166,7 @@ export const PureVerificationPanel: React.FC<PureVerificationPanelProps> = ({
               onClick={() => {
                 void adoptar();
               }}
-              disabled={ocupado || !report?.items.some((it) => it.idPure)}
+              disabled={ocupado || !report?.items.some((it) => it.id_pure)}
               aria-busy={adoptando}
               data-testid="pure-verification-adoptar"
             >
@@ -210,10 +210,10 @@ const ReporteDetalle: React.FC<{ report: SyncReport }> = ({ report }) => (
         {messages.reportes.pureVerification.resumen.total(report.resumen.total)}
       </Badge>
       <Badge variant="warning">
-        {messages.reportes.pureVerification.resumen.soloLocal(report.resumen.soloLocal)}
+        {messages.reportes.pureVerification.resumen.soloLocal(report.resumen.solo_local)}
       </Badge>
       <Badge variant="info">
-        {messages.reportes.pureVerification.resumen.soloPure(report.resumen.soloPure)}
+        {messages.reportes.pureVerification.resumen.soloPure(report.resumen.solo_pure)}
       </Badge>
       <Badge variant="info">
         {messages.reportes.pureVerification.resumen.diferentes(report.resumen.diferentes)}
@@ -241,7 +241,7 @@ const ItemsTabla: React.FC<{ items: SyncReportItem[] }> = ({ items }) => (
       </thead>
       <tbody className="divide-y divide-gray-100 bg-white">
         {items.map((it, idx) => (
-          <tr key={`${it.idLocal ?? it.idPure ?? "item"}-${idx}`}>
+          <tr key={`${it.id_local ?? it.id_pure ?? "item"}-${idx}`}>
             <Td>
               <Badge variant={CLASIFICACION_VARIANT[it.clasificacion]}>
                 {CLASIFICACION_LABEL[it.clasificacion]}

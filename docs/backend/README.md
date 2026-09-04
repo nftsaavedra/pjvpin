@@ -46,7 +46,7 @@
 
 1. **Desync RBAC frontend/backend**: la matriz TS (21 permisos dotted) difiere de la matriz Rust (23 permisos PascalCase) en al menos 3 puntos: `proyectos.manage` y `reportes.export` otorgados a `responsable_proyecto` en frontend pero NO en backend (backend compensa con ownership-check y filtrado por rol); `grupos.view` denegado a `consulta` en frontend pero `GruposView` concedido en backend. La tabla RBAC de AGENTS.md tampoco coincide al 100%.
 2. **`PaginatedResult<T>` definido pero sin uso**: existe en backend (3 comandos paginados lo retornan) y en `types/pagination.types.ts`, pero ningún wrapper frontend actual lo consume.
-3. **Contratos mixtos**: respuestas IPC en snake_case (mirror DTO Rust), requests en camelCase (`#[serde(rename_all = "camelCase")]`). `ImportInvestigadoresResult` y `SyncPurePersonIdsResultDto` son camelCase en ambos sentidos.
+3. **Contratos mixtos** (RESUELTO 2026-09-04): respuestas IPC en snake_case (mirror DTO Rust), requests en camelCase (`#[serde(rename_all = "camelCase")]`). Migrado a wire 100% snake_case en el API NestJS; capa de serialización eliminada.
 4. **AGENTS.md desactualizado en 2 puntos**: la capa API vive en `src/shared/tauri/` (no `src/services/tauri/`); no existe barrel `src/hooks/` (hooks en `src/shared/hooks/` + `src/features/*/hooks/`).
 5. **Circuit breaker y timeouts**: solo RENIEC lo tiene (en `investigadores/import.rs`, no en shared); timeouts explícitos solo en constancia RENACYT (30 s) y PeruCRIS público (15 s).
 6. **Wizard/bootstrap**: 15 comandos sin sesión (pre-auth), config persistida en `pjvpin.config.json` plaintext — en una arquitectura cliente-servidor este flujo cambia de dueño (el wizard configuraría el servidor, no el cliente).

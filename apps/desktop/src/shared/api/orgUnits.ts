@@ -19,8 +19,8 @@ export const obtenerOrgUnit = async (id: string): Promise<OrgUnit> => {
   return apiFetch(`/org-units/${encodeURIComponent(id)}`);
 };
 
-export const listarOrgUnits = async (parentId?: string | null): Promise<OrgUnit[]> => {
-  return apiFetch("/org-units", { query: parentId ? { parentId } : undefined });
+export const listarOrgUnits = async (parent_id?: string | null): Promise<OrgUnit[]> => {
+  return apiFetch("/org-units", { query: parent_id ? { parent_id } : undefined });
 };
 
 export const eliminarOrgUnit = async (id: string): Promise<void> => {

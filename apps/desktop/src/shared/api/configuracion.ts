@@ -40,8 +40,8 @@ export interface CrearUsuarioArgs {
   username: string;
   dni: string;
   nombres: string;
-  apellidoPaterno: string;
-  apellidoMaterno?: string;
+  apellido_paterno: string;
+  apellido_materno?: string;
   rol: string;
   password: string;
 }
@@ -53,8 +53,8 @@ export const crearUsuario = async (args: CrearUsuarioArgs): Promise<Usuario> => 
       username: args.username,
       dni: args.dni,
       nombres: args.nombres,
-      apellidoPaterno: args.apellidoPaterno,
-      apellidoMaterno: args.apellidoMaterno ?? null,
+      apellido_paterno: args.apellido_paterno,
+      apellido_materno: args.apellido_materno ?? null,
       rol: args.rol,
       password: args.password,
     },
@@ -73,8 +73,8 @@ export const getAllUsuarios = async (): Promise<Usuario[]> => {
 
 export interface ActualizarUsuarioIdentidad {
   nombres?: string;
-  apellidoPaterno?: string;
-  apellidoMaterno?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
 }
 
 export const consultarPersonaDeUsuario = async (id_usuario: string): Promise<Persona> => {
@@ -95,8 +95,8 @@ export const actualizarUsuario = async (
       rol,
       password: password?.trim() ? password : null,
       nombres: identidad?.nombres ?? null,
-      apellidoPaterno: identidad?.apellidoPaterno ?? null,
-      apellidoMaterno: identidad?.apellidoMaterno ?? null,
+      apellido_paterno: identidad?.apellido_paterno ?? null,
+      apellido_materno: identidad?.apellido_materno ?? null,
     },
   });
 };

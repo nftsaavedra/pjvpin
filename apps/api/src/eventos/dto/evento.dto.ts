@@ -1,7 +1,7 @@
 /**
  * DTOs del dominio `eventos` (coleccion `eventos_academicos`).
  *
- * Convenciones: requests camelCase, respuestas snake_case 1:1 con doc 07 §3.2.
+ * Convenciones: wire 100% snake_case (requests y responses). 1:1 con doc 07 §3.2.
  * Participantes EMBEBIDOS (no pivot); `tipo` sin vocabulario (free string).
  */
 import {

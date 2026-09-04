@@ -248,7 +248,7 @@ lugar?, descripcion?, participantes: [{ investigador_id, rol }], created_at?, up
 
 ## 6. Notas de implementación NestJS
 
-- Requests camelCase + class-validator en TODO endpoint; respuestas snake_case 1:1 con DTOs Rust.
+- Wire 100% snake_case (requests y responses); class-validator en TODO endpoint.
 - Guards: `JwtAuth` + `Permissions` + `RequirePermission` como en los módulos B-D.
 - Audit JSONL interceptor en cada mutación (eventos §1.1/§2.1/§3.1).
 - Transacciones MongoDB (driver nativo `startSession`/`withTransaction`) en: crear/actualizar/eliminar proyecto.

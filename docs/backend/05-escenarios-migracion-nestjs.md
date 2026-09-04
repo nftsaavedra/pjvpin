@@ -155,7 +155,7 @@ total → F9 Dokploy + retirada del backend Rust
 
 ### 6.4 Contratos
 
-- Fase 1 de migración: los DTOs del API replican los shapes actuales (respuestas snake_case, requests camelCase). El frontend solo cambia transporte. Normalización camelCase unificada: deuda post-migración (documentada).
+- Fase 1 de migración: los DTOs del API replican los shapes actuales (wire 100% snake_case). El frontend envía y recibe snake_case directamente. Sin capas de transformación.
 - `packages/shared` contiene los tipos TS únicos (hoy duplicados implícitos entre Rust serde y `src/shared/tauri/types/`).
 
 ## 7. Matriz de riesgos

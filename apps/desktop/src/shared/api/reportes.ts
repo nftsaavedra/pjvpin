@@ -30,8 +30,8 @@ export const getReportesInvestigadoresIntegral = async (): Promise<
 > => apiFetch("/reportes/integral/investigadores");
 
 export const getDataPureMasterlist = async (
-  pureRemoteTotal?: number,
+  pure_remote_total?: number,
 ): Promise<PureMasterlistData> =>
   apiFetch("/reportes/pure/masterlist", {
-    query: pureRemoteTotal ? { pureRemoteTotal } : undefined,
+    query: pure_remote_total ? { pure_remote_total } : undefined,
   });

@@ -23,7 +23,7 @@ export const getPublicacionesInvestigador = async (
 export const verificarDiferenciasPure = async (investigador_id?: string): Promise<SyncReport> => {
   return apiFetch("/pure/verificar-diferencias", {
     method: "POST",
-    body: investigador_id ? { investigadorId: investigador_id } : {},
+    body: investigador_id ? { investigador_id } : {},
   });
 };
 

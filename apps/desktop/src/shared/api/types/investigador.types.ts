@@ -127,11 +127,11 @@ export interface RenacytLookupResult {
 }
 
 export interface ReniecDniLookupResult {
-  firstName: string;
-  firstLastName: string;
-  secondLastName: string;
-  fullName: string;
-  documentNumber: string;
+  first_name: string;
+  first_last_name: string;
+  second_last_name: string;
+  full_name: string;
+  document_number: string;
 }
 
 export interface EliminarInvestigadorResultado {

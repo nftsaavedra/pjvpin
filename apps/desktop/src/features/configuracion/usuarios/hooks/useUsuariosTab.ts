@@ -88,8 +88,8 @@ export const useUsuariosTab = (
         const identidad = identidadValida
           ? {
               nombres: nombresTrim,
-              apellidoPaterno: apellidoPaternoTrim,
-              apellidoMaterno: dni.apellidoMaterno.trim() || undefined,
+              apellido_paterno: apellidoPaternoTrim,
+              apellido_materno: dni.apellidoMaterno.trim() || undefined,
             }
           : undefined;
 
@@ -106,8 +106,8 @@ export const useUsuariosTab = (
           username,
           dni: dni.dniLimpio,
           nombres: dni.nombres,
-          apellidoPaterno: dni.apellidoPaterno,
-          apellidoMaterno: dni.apellidoMaterno,
+          apellido_paterno: dni.apellidoPaterno,
+          apellido_materno: dni.apellidoMaterno,
           rol,
           password,
         });

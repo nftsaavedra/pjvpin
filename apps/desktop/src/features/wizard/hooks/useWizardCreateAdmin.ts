@@ -55,8 +55,8 @@ export const useWizardCreateAdmin = (options: UseWizardCreateAdminOptions) => {
         password,
         dni: dni.dniLimpio,
         nombres: dni.nombres,
-        apellidoPaterno: dni.apellidoPaterno,
-        apellidoMaterno: dni.apellidoMaterno,
+        apellido_paterno: dni.apellidoPaterno,
+        apellido_materno: dni.apellidoMaterno,
       });
       toast.success("Usuario superuser creado correctamente");
       onCreated(usuario);

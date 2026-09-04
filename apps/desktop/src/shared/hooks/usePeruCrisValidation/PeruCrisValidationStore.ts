@@ -71,7 +71,7 @@ export class PeruCrisValidationStore {
   /** Insercion batch desde un PeruCrisValidationReport. */
   setAll(items: PeruCrisValidationItem[]): void {
     for (const item of items) {
-      this.set(item.idLocal, item);
+      this.set(item.id_local, item);
     }
   }
 

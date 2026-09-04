@@ -4,7 +4,6 @@ import { NestExpressApplication } from "@nestjs/platform-express";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { AppErrorFilter } from "./infra/errors/app-error.filter";
-import { CamelToSnakePipe } from "./infra/serialization";
 import { DEFAULT_GLOBAL_PREFIX, DEFAULT_PORT, DEFAULT_CORS_ORIGINS } from "./config/defaults";
 
 async function bootstrap(): Promise<void> {
@@ -20,7 +19,6 @@ async function bootstrap(): Promise<void> {
     .filter(Boolean);
   app.enableCors({ origin: corsOrigins, credentials: true });
   app.useGlobalPipes(
-    new CamelToSnakePipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,

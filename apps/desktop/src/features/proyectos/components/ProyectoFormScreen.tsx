@@ -60,20 +60,20 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   onFinanciamientosChange,
 }) => {
   const participantesIniciales = useMemo(
-    () => (mode === "edit" ? parseParticipantesProyecto(proyecto?.participantesJson) : []),
-    [mode, proyecto?.participantesJson],
+    () => (mode === "edit" ? parseParticipantesProyecto(proyecto?.participantes_json) : []),
+    [mode, proyecto?.participantes_json],
   );
 
-  const initialSelectedIds = participantesIniciales.map((p) => p.idInvestigador);
+  const initialSelectedIds = participantesIniciales.map((p) => p.id_investigador);
   const initialResponsableId =
     mode === "edit"
-      ? (getResponsableProyecto(participantesIniciales)?.idInvestigador ?? null)
+      ? (getResponsableProyecto(participantesIniciales)?.id_investigador ?? null)
       : null;
 
   const form = useProyectoFormState(
     mode === "edit"
       ? {
-          titulo: proyecto?.tituloProyecto ?? "",
+          titulo: proyecto?.titulo_proyecto ?? "",
           investigadoresSeleccionados: initialSelectedIds,
           investigadorResponsableId: initialResponsableId,
         }
@@ -91,7 +91,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   }, [mode, resetForm]);
 
   const participantesPorId = useMemo(
-    () => new Map(participantesIniciales.map((p) => [p.idInvestigador, p])),
+    () => new Map(participantesIniciales.map((p) => [p.id_investigador, p])),
     [participantesIniciales],
   );
 
@@ -125,7 +125,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
     [investigadoresSeleccionados],
   );
 
-  const tituloOriginal = proyecto?.tituloProyecto ?? "";
+  const tituloOriginal = proyecto?.titulo_proyecto ?? "";
   const responsableOriginalNombre =
     mode === "edit" && initialResponsableId
       ? (participantesPorId.get(initialResponsableId)?.nombre ?? null)
@@ -150,7 +150,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
         title: messages.proyectos.changeRequest.agregarInvestigador.title,
         message: messages.proyectos.changeRequest.agregarInvestigador.message(
           investigador.nombres_apellidos,
-          form.titulo.trim() || proyecto?.tituloProyecto || "",
+          form.titulo.trim() || proyecto?.titulo_proyecto || "",
         ),
         confirmText: messages.proyectos.changeRequest.agregarInvestigador.confirmText,
         onConfirm: () => {
@@ -176,9 +176,9 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       title: messages.proyectos.changeRequest.quitarInvestigador.title,
       message: messages.proyectos.changeRequest.quitarInvestigador.message(
         investigador.nombres_apellidos,
-        form.titulo.trim() || proyecto?.tituloProyecto || "",
-      ),
-      confirmText: messages.proyectos.changeRequest.quitarInvestigador.confirmText,
+        form.titulo.trim() || proyecto?.titulo_proyecto || "",
+        ),
+        confirmText: messages.proyectos.changeRequest.quitarInvestigador.confirmText,
       onConfirm: () => {
         form.setInvestigadoresSeleccionados((current) =>
           current.filter((id) => id !== investigador.id_investigador),
@@ -232,10 +232,10 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
       );
     } else {
       if (!proyecto) return;
-      await onUpdate(proyecto.idProyecto, {
-        tituloProyecto: form.titulo.trim(),
-        investigadoresIds: form.investigadoresSeleccionados,
-        investigadorResponsableId: form.investigadorResponsableId,
+      await onUpdate(proyecto.id_proyecto, {
+        titulo_proyecto: form.titulo.trim(),
+        investigadores_ids: form.investigadoresSeleccionados,
+        investigador_responsable_id: form.investigadorResponsableId,
       });
     }
   };
@@ -243,7 +243,7 @@ export const ProyectoFormScreen: React.FC<ProyectoFormScreenProps> = ({
   const breadcrumbCurrent =
     mode === "create"
       ? messages.proyectos.breadcrumbNuevoProyecto
-      : messages.proyectos.breadcrumbEditar(proyecto?.tituloProyecto ?? "");
+      : messages.proyectos.breadcrumbEditar(proyecto?.titulo_proyecto ?? "");
 
   return (
     <>

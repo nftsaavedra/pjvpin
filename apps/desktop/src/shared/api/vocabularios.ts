@@ -7,10 +7,10 @@ export const listarVocabulariosConcytec = async (): Promise<string[]> => {
 
 export const listarVocabItems = async (
   esquema: string,
-  padreCodigo?: string | null,
+  padre_codigo?: string | null,
 ): Promise<CatalogoItem[]> => {
   return apiFetch(`/vocabularios/${encodeURIComponent(esquema)}/items`, {
-    query: padreCodigo ? { padreCodigo } : undefined,
+    query: padre_codigo ? { padre_codigo } : undefined,
   });
 };
 

@@ -44,7 +44,7 @@ export const PeruCrisPanel: React.FC<PeruCrisPanelProps> = ({ canExport = false 
       const result = await importarInicialesPeruCris();
       setImportResult(result);
       toast.success(
-        `PeruCRIS: ${result.proyectos.importados} proyectos, ${result.publicaciones.importados} publicaciones, ${result.publicaciones.autoresVinculados} autores`,
+        `PeruCRIS: ${result.proyectos.importados} proyectos, ${result.publicaciones.importados} publicaciones, ${result.publicaciones.autores_vinculados} autores`,
       );
     } catch (err) {
       toast.error(messages.perucris.importar.error(getErrorMessage(err)));
@@ -188,10 +188,10 @@ export const PeruCrisPanel: React.FC<PeruCrisPanelProps> = ({ canExport = false 
 
 const ResumenValidation: React.FC<{ validation: PeruCrisValidationReport }> = ({ validation }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <KpiChip label="Encontrados" value={validation.totalEncontrados} variant="success" />
-    <KpiChip label="Faltantes" value={validation.totalFaltantes} variant="warning" />
-    <KpiChip label="Con diferencias" value={validation.totalConDiferencias} variant="info" />
-    <KpiChip label="Tiempo" value={`${validation.tiempoTotalMs} ms`} variant="default" />
+    <KpiChip label="Encontrados" value={validation.total_encontrados} variant="success" />
+    <KpiChip label="Faltantes" value={validation.total_faltantes} variant="warning" />
+    <KpiChip label="Con diferencias" value={validation.total_con_diferencias} variant="info" />
+    <KpiChip label="Tiempo" value={`${validation.tiempo_total_ms} ms`} variant="default" />
   </div>
 );
 
@@ -208,7 +208,7 @@ const ResumenImportacion: React.FC<{ result: PeruCrisImportResult }> = ({ result
       />
       <KpiChip
         label={`${messages.perucris.importar.resumen.proyectos} — ${messages.perucris.importar.resumen.omitidosDuplicado}`}
-        value={result.proyectos.omitidosDuplicado}
+        value={result.proyectos.omitidos_duplicado}
         variant="warning"
       />
       <KpiChip
@@ -218,13 +218,13 @@ const ResumenImportacion: React.FC<{ result: PeruCrisImportResult }> = ({ result
       />
       <KpiChip
         label={messages.perucris.importar.resumen.autoresVinculados}
-        value={result.publicaciones.autoresVinculados}
+        value={result.publicaciones.autores_vinculados}
         variant="info"
       />
     </div>
-    {result.publicaciones.sinAutorVinculado > 0 ? (
+    {result.publicaciones.sin_autor_vinculado > 0 ? (
       <p className="text-xs text-amber-800">
-        {result.publicaciones.sinAutorVinculado}{" "}
+        {result.publicaciones.sin_autor_vinculado}{" "}
         {messages.perucris.importar.resumen.sinAutorVinculado}.
       </p>
     ) : null}
@@ -309,21 +309,21 @@ const DetalleTabla: React.FC<{ items: PeruCrisValidationItem[] }> = ({ items }) 
         </thead>
         <tbody className="divide-y divide-gray-100 bg-white">
           {items.map((it) => (
-            <tr key={`${it.tipo}:${it.idLocal}`}>
+            <tr key={`${it.tipo}:${it.id_local}`}>
               <Td>
                 <Badge variant="default">{labelTipo(it.tipo)}</Badge>
               </Td>
               <Td>
-                <code className="text-xs">{it.idLocal}</code>
+                <code className="text-xs">{it.id_local}</code>
               </Td>
               <Td>
                 <EstadoBadge item={it} />
               </Td>
               <Td>
-                <code className="text-xs text-gray-600">{it.peruCrisUuid ?? "-"}</code>
+                <code className="text-xs text-gray-600">{it.perucris_uuid ?? "-"}</code>
               </Td>
               <Td>
-                <code className="text-xs text-gray-600">{it.peruCrisHandle ?? "-"}</code>
+                <code className="text-xs text-gray-600">{it.perucris_handle ?? "-"}</code>
               </Td>
               <Td>
                 {it.diferencias.length === 0 ? (
@@ -357,7 +357,7 @@ const Td: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 const EstadoBadge: React.FC<{ item: PeruCrisValidationItem }> = ({ item }) => {
-  if (!item.encontradoEnPeruCris) {
+  if (!item.encontrado_en_perucris) {
     return <Badge variant="warning">{messages.perucris.detalle.estado.noEncontrado}</Badge>;
   }
   if (item.diferencias.length > 0) {

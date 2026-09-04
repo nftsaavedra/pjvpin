@@ -19,14 +19,14 @@ interface PureMasterListPanelProps {
 
 const EMPTY_DATA: PureMasterlistData = {
   persons: [],
-  staffRelations: [],
+  staff_relations: [],
   summary: {
     total: 0,
-    actualizacionesPure: 0,
-    altasNuevas: 0,
-    sinCorreo: 0,
-    sinOrcid: 0,
-    pureRemotoTotal: 0,
+    actualizaciones_pure: 0,
+    altas_nuevas: 0,
+    sin_correo: 0,
+    sin_orcid: 0,
+    pure_remoto_total: 0,
   },
 };
 
@@ -54,7 +54,7 @@ export const PureMasterListPanel: React.FC<PureMasterListPanelProps> = ({
     try {
       const r = await sincronizarPurePersonIds();
       toast.success(
-        messages.reportes.pureMasterList.sincronizarOk(r.matched, r.assigned, r.totalPure),
+        messages.reportes.pureMasterList.sincronizarOk(r.matched, r.assigned, r.total_pure),
       );
       await recargarDatos();
     } catch (err: unknown) {
@@ -117,24 +117,24 @@ export const PureMasterListPanel: React.FC<PureMasterListPanelProps> = ({
               {messages.reportes.pureMasterList.totalChip(summary.total)}
             </Badge>
             <Badge variant="info">
-              {messages.reportes.pureMasterList.actualizacionesChip(summary.actualizacionesPure)}
+              {messages.reportes.pureMasterList.actualizacionesChip(summary.actualizaciones_pure)}
             </Badge>
             <Badge variant="info">
-              {messages.reportes.pureMasterList.altasChip(summary.altasNuevas)}
+              {messages.reportes.pureMasterList.altasChip(summary.altas_nuevas)}
             </Badge>
-            {summary.sinCorreo > 0 && (
+            {summary.sin_correo > 0 && (
               <Badge variant="warning">
-                {messages.reportes.pureMasterList.sinCorreoChip(summary.sinCorreo)}
+                {messages.reportes.pureMasterList.sinCorreoChip(summary.sin_correo)}
               </Badge>
             )}
-            {summary.sinOrcid > 0 && (
+            {summary.sin_orcid > 0 && (
               <Badge variant="warning">
-                {messages.reportes.pureMasterList.sinOrcidChip(summary.sinOrcid)}
+                {messages.reportes.pureMasterList.sinOrcidChip(summary.sin_orcid)}
               </Badge>
             )}
             <Badge variant="default">
-              {summary.pureRemotoTotal > 0
-                ? messages.reportes.pureMasterList.pureRemotoChip(summary.pureRemotoTotal)
+              {summary.pure_remoto_total > 0
+                ? messages.reportes.pureMasterList.pureRemotoChip(summary.pure_remoto_total)
                 : messages.reportes.pureMasterList.pureRemotoSinDato}
             </Badge>
           </div>

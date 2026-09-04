@@ -6,8 +6,8 @@ export { type EventoAcademico, type ParticipanteEvento };
 export const crearEvento = async (request: {
   nombre: string;
   tipo: string;
-  fechaInicio?: number;
-  fechaFin?: number;
+  fecha_inicio?: number;
+  fecha_fin?: number;
   lugar?: string;
   descripcion?: string;
   participantes?: ParticipanteEvento[];
@@ -24,9 +24,9 @@ export const getEventoById = async (id: string): Promise<EventoAcademico> => {
 };
 
 export const getEventosByInvestigador = async (
-  investigadorId: string,
+  investigador_id: string,
 ): Promise<EventoAcademico[]> => {
-  return apiFetch(`/investigadores/${encodeURIComponent(investigadorId)}/eventos`);
+  return apiFetch(`/investigadores/${encodeURIComponent(investigador_id)}/eventos`);
 };
 
 export const actualizarEvento = async (
@@ -34,8 +34,8 @@ export const actualizarEvento = async (
   request: {
     nombre?: string;
     tipo?: string;
-    fechaInicio?: number;
-    fechaFin?: number;
+    fecha_inicio?: number;
+    fecha_fin?: number;
     lugar?: string;
     descripcion?: string;
     participantes?: ParticipanteEvento[];

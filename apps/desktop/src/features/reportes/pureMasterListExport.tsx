@@ -83,7 +83,7 @@ type StaffCellKey = keyof PureMasterlistStaffRow;
 // Mapa de header V8 -> propiedad camelCase del DTO. `null` = columna
 // intencionalmente vacia en esta fila (no existe mapeo en BD).
 const PERSON_KEY_MAP: Record<(typeof PERSONS_COLUMNS)[number], PersonCellKey | null> = {
-  PersonID: "personId",
+  PersonID: "person_id",
   Profiled: "profiled",
   Username: "username",
   Email: "email",
@@ -106,21 +106,21 @@ const PERSON_KEY_MAP: Record<(typeof PERSONS_COLUMNS)[number], PersonCellKey | n
   ORCID: "orcid",
   ProfilePhoto: null,
   ClientID_1: null,
-  ClientID_2: "clientId2",
-  ClientID_3: "clientId3",
-  ExternallyAuthenticated: "externallyAuthenticated",
+  ClientID_2: "client_id2",
+  ClientID_3: "client_id3",
+  ExternallyAuthenticated: "externally_authenticated",
 };
 
 const STAFF_KEY_MAP: Record<(typeof STAFF_RELATIONS_COLUMNS)[number], StaffCellKey | null> = {
-  PersonID: "personId",
-  OrganisationID: "organisationId",
+  PersonID: "person_id",
+  OrganisationID: "organisation_id",
   ContractType: null,
   JobTitle: null,
   JobDescription: null,
   JobDescription_translated: null,
-  EmployedAs: "employedAs",
+  EmployedAs: "employed_as",
   FTE: null,
-  StartDate: "startDate",
+  StartDate: "start_date",
   EndDate: null,
   DirectPhoneNr: null,
   MobilePhoneNr: null,
@@ -129,7 +129,7 @@ const STAFF_KEY_MAP: Record<(typeof STAFF_RELATIONS_COLUMNS)[number], StaffCellK
   WebsiteURL_en: null,
   WebsiteURL_translated: null,
   Primary: "primary",
-  StaffType: "staffType",
+  StaffType: "staff_type",
 };
 
 const cellValue = (value: string | null | undefined): string | null => {
@@ -176,7 +176,7 @@ export const buildPureMasterListExcel = async (
     key: header,
     width: 22,
   }));
-  for (const s of data.staffRelations) {
+  for (const s of data.staff_relations) {
     staffWs.addRow(buildStaffCells(s));
   }
 

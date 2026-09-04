@@ -30,7 +30,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
     setIsLoading(true);
     try {
       const auth = await loginUsuario(username, password);
-      setTokens(auth.accessToken, auth.refreshToken);
+      setTokens(auth.access_token, auth.refresh_token);
       toast.success(
         messages.auth.bienvenido(auth.user.nombre_completo ?? messages.auth.fallbackUsuario),
       );

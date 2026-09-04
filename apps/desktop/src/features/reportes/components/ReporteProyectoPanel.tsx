@@ -232,8 +232,8 @@ export const ReporteProyectoPanel: React.FC<ReporteProyectoPanelProps> = ({
                   : messages.reportes.seleccionarPlaceholder}
               </option>
               {proyectos.map((p) => (
-                <option key={p.idProyecto} value={p.idProyecto}>
-                  {p.tituloProyecto}
+                <option key={p.id_proyecto} value={p.id_proyecto}>
+                  {p.titulo_proyecto}
                 </option>
               ))}
             </select>

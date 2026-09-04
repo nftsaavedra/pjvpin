@@ -11,13 +11,13 @@
 /** Resultado de un push a PeruCRIS (POST /cerif/ingest). */
 export type PeruCrisPushResult = {
   success: boolean;
-  httpStatus: number | null;
-  enviadoAt: number;
-  totalOrganizaciones: number;
-  totalPersonas: number;
-  totalProyectos: number;
-  totalPublicaciones: number;
-  totalPatentes: number;
+  http_status: number | null;
+  enviado_at: number;
+  total_organizaciones: number;
+  total_personas: number;
+  total_proyectos: number;
+  total_publicaciones: number;
+  total_patentes: number;
 };
 
 /** Tipo de entidad validada contra PeruCRIS. */
@@ -26,24 +26,24 @@ export type ValidationTipo = "orgunit" | "person" | "project" | "publication" | 
 /** Item de validacion: una entidad local cruzada con PeruCRIS. */
 export type PeruCrisValidationItem = {
   tipo: ValidationTipo;
-  idLocal: string;
-  identificadoresEsperados: Record<string, string | null>;
-  encontradoEnPeruCris: boolean;
-  peruCrisUuid?: string;
-  peruCrisHandle?: string;
-  lastModifiedPeruCris?: string;
+  id_local: string;
+  identificadores_esperados: Record<string, string | null>;
+  encontrado_en_perucris: boolean;
+  perucris_uuid?: string;
+  perucris_handle?: string;
+  last_modified_perucris?: string;
   diferencias: string[];
 };
 
 /** Reporte agregado de validacion. */
 export type PeruCrisValidationReport = {
-  ejecutadoAt: number;
-  totalEvaluados: number;
-  totalEncontrados: number;
-  totalFaltantes: number;
-  totalConDiferencias: number;
-  tiempoTotalMs: number;
-  fuentePeruCris: string;
+  ejecutado_at: number;
+  total_evaluados: number;
+  total_encontrados: number;
+  total_faltantes: number;
+  total_con_diferencias: number;
+  tiempo_total_ms: number;
+  fuente_perucris: string;
   items: PeruCrisValidationItem[];
 };
 
@@ -58,18 +58,18 @@ export type PeruCrisImportResult = {
 };
 
 export type PeruCrisProyectosImportResult = {
-  totalEvaluados: number;
+  total_evaluados: number;
   importados: number;
-  omitidosDuplicado: number;
+  omitidos_duplicado: number;
   errores: string[];
 };
 
 export type PeruCrisPublicacionesImportResult = {
-  totalEvaluados: number;
+  total_evaluados: number;
   importados: number;
-  omitidosDuplicado: number;
-  autoresVinculados: number;
-  sinAutorVinculado: number;
+  omitidos_duplicado: number;
+  autores_vinculados: number;
+  sin_autor_vinculado: number;
   errores: string[];
   avisos: string[];
 };

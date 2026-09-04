@@ -1,9 +1,9 @@
 // Mirror de SyncPublicacionesResult (investigadores/dto.rs).
 export interface SyncPublicacionesResult {
-  personaId: string;
-  scopusAuthorId: string;
-  purePersonUuid?: string | null;
-  totalEncontradas: number;
+  persona_id: string;
+  scopus_author_id: string;
+  pure_person_uuid?: string | null;
+  total_encontradas: number;
   nuevas: number;
   actualizadas: number;
 }

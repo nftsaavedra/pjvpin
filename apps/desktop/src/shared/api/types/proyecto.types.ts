@@ -1,24 +1,24 @@
 export interface Proyecto {
-  idProyecto: string;
-  tituloProyecto: string;
+  id_proyecto: string;
+  titulo_proyecto: string;
 }
 
 export interface ProyectoDetalle {
-  idProyecto: string;
-  tituloProyecto: string;
-  cantidadInvestigadores: number;
-  investigadorResponsable?: string | null;
+  id_proyecto: string;
+  titulo_proyecto: string;
+  cantidad_investigadores: number;
+  investigador_responsable?: string | null;
   investigadores: string | null;
-  participantesJson?: string | null;
+  participantes_json?: string | null;
   activo: boolean;
 }
 
 export interface ProyectoParticipanteResumen {
-  idInvestigador: string;
+  id_investigador: string;
   nombre: string;
   grado: string;
-  renacytNivel: string;
-  esResponsable: boolean;
+  renacyt_nivel: string;
+  es_responsable: boolean;
 }
 
 export interface EliminarProyectoResultado {
@@ -27,15 +27,15 @@ export interface EliminarProyectoResultado {
 }
 
 export interface CreateProyectoConParticipantesArgs {
-  tituloProyecto: string;
-  investigadoresIds: string[];
-  investigadorResponsableId?: string | null;
+  titulo_proyecto: string;
+  investigadores_ids: string[];
+  investigador_responsable_id?: string | null;
 }
 
 export interface UpdateProyectoConParticipantesArgs {
-  tituloProyecto: string;
-  investigadoresIds: string[];
-  investigadorResponsableId?: string | null;
+  titulo_proyecto: string;
+  investigadores_ids: string[];
+  investigador_responsable_id?: string | null;
 }
 
 export interface InvestigadorProyectosCount {
@@ -51,32 +51,32 @@ export interface ProyectosTrendItem {
 
 export interface RenacytDistribucionItem {
   nivel: string;
-  cantidadInvestigadores: number;
-  conProyectos: number;
-  sinProyectos: number;
+  cantidad_investigadores: number;
+  con_proyectos: number;
+  sin_proyectos: number;
 }
 
 export interface KpisDashboard {
-  totalProyectos: number;
-  totalInvestigadores: number;
-  investigadoresCon1Proyecto: number;
-  investigadoresMultiplesProyectos: number;
+  total_proyectos: number;
+  total_investigadores: number;
+  investigadores_con_1_proyecto: number;
+  investigadores_multiples_proyectos: number;
 }
 
 export interface ExportDataConProyectos {
   investigador: string;
   dni: string;
   grado: string;
-  renacytNivel: string;
-  grupoInvestigacion?: string | null;
-  cantidadProyectos: number;
+  renacyt_nivel: string;
+  grupo_investigacion?: string | null;
+  cantidad_proyectos: number;
   proyectos?: string | null;
 }
 
 export interface ExportDataPlana {
   proyecto: string;
   grado: string;
-  renacytNivel: string;
+  renacyt_nivel: string;
   investigador: string;
   dni: string;
 }
@@ -85,16 +85,16 @@ export interface ExportDataGrupo {
   grupo: string;
   descripcion?: string | null;
   coordinador?: string | null;
-  cantidadMiembros: number;
+  cantidad_miembros: number;
   miembros?: string | null;
-  lineasInvestigacion: string[];
-  cantidadProyectos: number;
+  lineas_investigacion: string[];
+  cantidad_proyectos: number;
   proyectos?: string | null;
 }
 
 export interface ExportDataRecurso {
-  tipoRecurso: string;
-  tituloONombre: string;
+  tipo_recurso: string;
+  titulo_o_nombre: string;
   proyecto?: string | null;
   investigador?: string | null;
   tipo?: string | null;
@@ -105,22 +105,22 @@ export interface ExportDataRecurso {
 
 export interface ExportDataInvestigadorPerfil {
   dni: string;
-  nombresApellidos: string;
+  nombres_apellidos: string;
   grado: string;
-  renacytNivel?: string | null;
-  renacytGrupo?: string | null;
-  renacytCondicion?: string | null;
-  renacytOrcid?: string | null;
-  grupoInvestigacion?: string | null;
-  cantidadProyectos: number;
-  cantidadPublicaciones: number;
+  renacyt_nivel?: string | null;
+  renacyt_grupo?: string | null;
+  renacyt_condicion?: string | null;
+  renacyt_orcid?: string | null;
+  grupo_investigacion?: string | null;
+  cantidad_proyectos: number;
+  cantidad_publicaciones: number;
   proyectos?: string | null;
   activo: boolean;
 }
 
 export interface ExportDataProyectoArea {
   area: string;
-  cantidadProyectos: number;
+  cantidad_proyectos: number;
   proyectos?: string | null;
-  cantidadInvestigadores: number;
+  cantidad_investigadores: number;
 }

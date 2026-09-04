@@ -2,36 +2,36 @@ import { apiFetch } from "../http/client";
 import type { EliminarProyectoResultado, Proyecto, ProyectoDetalle } from "./types";
 
 export interface ProyectoParticipantesPayload {
-  tituloProyecto: string;
-  investigadoresIds: string[];
-  investigadorResponsableId?: string | null;
+  titulo_proyecto: string;
+  investigadores_ids: string[];
+  investigador_responsable_id?: string | null;
 }
 
 export const crearProyectoConParticipantes = async (
-  tituloProyecto: string,
-  investigadoresIds: string[],
-  investigadorResponsableId?: string | null,
+  titulo_proyecto: string,
+  investigadores_ids: string[],
+  investigador_responsable_id?: string | null,
 ): Promise<Proyecto> => {
   return apiFetch("/proyectos", {
     method: "POST",
-    body: { tituloProyecto, investigadoresIds, investigadorResponsableId },
+    body: { titulo_proyecto, investigadores_ids, investigador_responsable_id },
   });
 };
 
 export const actualizarProyectoConParticipantes = async (
-  idProyecto: string,
+  id_proyecto: string,
   payload: ProyectoParticipantesPayload,
 ): Promise<Proyecto> => {
-  return apiFetch(`/proyectos/${encodeURIComponent(idProyecto)}`, {
+  return apiFetch(`/proyectos/${encodeURIComponent(id_proyecto)}`, {
     method: "PATCH",
     body: payload,
   });
 };
 
 export const buscarProyectosPorInvestigador = async (
-  idInvestigador: string,
+  id_investigador: string,
 ): Promise<Proyecto[]> => {
-  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}/proyectos`);
+  return apiFetch(`/investigadores/${encodeURIComponent(id_investigador)}/proyectos`);
 };
 
 export const getAllProyectosDetalle = async (): Promise<ProyectoDetalle[]> => {
@@ -39,27 +39,27 @@ export const getAllProyectosDetalle = async (): Promise<ProyectoDetalle[]> => {
 };
 
 export const eliminarRelacionProyectoInvestigador = async (
-  idProyecto: string,
-  idInvestigador: string,
+  id_proyecto: string,
+  id_investigador: string,
 ): Promise<void> => {
   await apiFetch(
-    `/proyectos/${encodeURIComponent(idProyecto)}/participaciones/${encodeURIComponent(idInvestigador)}`,
+    `/proyectos/${encodeURIComponent(id_proyecto)}/participaciones/${encodeURIComponent(id_investigador)}`,
     { method: "DELETE" },
   );
 };
 
-export const eliminarRelacionesProyecto = async (idProyecto: string): Promise<void> => {
-  await apiFetch(`/proyectos/${encodeURIComponent(idProyecto)}/participaciones`, {
+export const eliminarRelacionesProyecto = async (id_proyecto: string): Promise<void> => {
+  await apiFetch(`/proyectos/${encodeURIComponent(id_proyecto)}/participaciones`, {
     method: "DELETE",
   });
 };
 
 export const eliminarProyecto = async (
-  idProyecto: string,
+  id_proyecto: string,
 ): Promise<EliminarProyectoResultado> => {
-  return apiFetch(`/proyectos/${encodeURIComponent(idProyecto)}`, { method: "DELETE" });
+  return apiFetch(`/proyectos/${encodeURIComponent(id_proyecto)}`, { method: "DELETE" });
 };
 
-export const reactivarProyecto = async (idProyecto: string): Promise<Proyecto> => {
-  return apiFetch(`/proyectos/${encodeURIComponent(idProyecto)}/reactivar`, { method: "PATCH" });
+export const reactivarProyecto = async (id_proyecto: string): Promise<Proyecto> => {
+  return apiFetch(`/proyectos/${encodeURIComponent(id_proyecto)}/reactivar`, { method: "PATCH" });
 };

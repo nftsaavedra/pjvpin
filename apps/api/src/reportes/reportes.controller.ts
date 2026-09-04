@@ -5,7 +5,6 @@ import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
-import { SkipSerialization } from "../infra/serialization";
 import {
   ExportDataConProjectosDto,
   ExportDataDto,
@@ -85,7 +84,6 @@ export class ReportesController {
    * Port de `exportar_cerif` (Rust). Sin `file_path`: devuelve bytes.
    */
   @Get("cerif")
-  @SkipSerialization()
   @RequirePermission(AppPermission.ReportesExport)
   async getCerif(
     @Query("entidad") entidad: string | undefined,

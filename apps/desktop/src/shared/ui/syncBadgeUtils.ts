@@ -20,7 +20,7 @@ export function peruCrisBadgeVariant(
   if (!peruCrisItem) {
     return cacheValid ? "unknown" : "pending";
   }
-  if (!peruCrisItem.encontradoEnPeruCris) return "not_found";
+  if (!peruCrisItem.encontrado_en_perucris) return "not_found";
   if (peruCrisItem.diferencias.length > 0) return "differences";
   return "synced";
 }

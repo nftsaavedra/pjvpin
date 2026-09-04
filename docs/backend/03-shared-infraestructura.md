@@ -262,4 +262,4 @@ Commands Tauri de Pure (3) y PeruCRIS (5) — ver [01-endpoints-ipc.md](./01-end
 
 - **Circuit breaker**: solo RENIEC (en `investigadores/import.rs`, fuera de shared). Timeouts explícitos solo en constancia RENACYT (30 s) y PeruCRIS público (15 s).
 - **Persistencia transversal**: sesiones/rate limiter/cache RENIEC 100% memoria; auditoría JSONL; config `pjvpin.config.json` plaintext + env; sync reports en `sync_reportes`.
-- **Serde/IPC**: requests camelCase (`rename_all`); VOs sin serde; DTOs salida mayormente snake_case.
+- **Serde/IPC**: wire 100% snake_case (requests y responses); VOs sin serde; DTOs salida snake_case.

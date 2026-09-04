@@ -18,10 +18,10 @@ import type {
 
 export interface CrearInvestigadorArgs {
   dni: string;
-  idGrado: string;
+  id_grado: string;
   nombres: string;
-  apellidoPaterno: string;
-  apellidoMaterno?: string | null;
+  apellido_paterno: string;
+  apellido_materno?: string | null;
   perfil?: "docente" | "tesista" | "alumno_egresado";
   renacyt?: CreateInvestigadorRenacytPayload | null;
 }
@@ -31,10 +31,10 @@ export const crearInvestigador = async (args: CrearInvestigadorArgs): Promise<In
     method: "POST",
     body: {
       dni: args.dni,
-      idGrado: args.idGrado,
+      id_grado: args.id_grado,
       nombres: args.nombres,
-      apellidoPaterno: args.apellidoPaterno,
-      apellidoMaterno: args.apellidoMaterno ?? null,
+      apellido_paterno: args.apellido_paterno,
+      apellido_materno: args.apellido_materno ?? null,
       perfil: args.perfil ?? "docente",
       renacyt: args.renacyt ?? null,
     },
@@ -70,48 +70,48 @@ export const getAllInvestigadoresConProyectos = async (): Promise<InvestigadorDe
 };
 
 export const eliminarInvestigador = async (
-  idInvestigador: string,
+  id_investigador: string,
 ): Promise<EliminarInvestigadorResultado> => {
-  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}`, {
+  return apiFetch(`/investigadores/${encodeURIComponent(id_investigador)}`, {
     method: "DELETE",
   });
 };
 
-export const reactivarInvestigador = async (idInvestigador: string): Promise<Investigador> => {
-  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}/reactivar`, {
+export const reactivarInvestigador = async (id_investigador: string): Promise<Investigador> => {
+  return apiFetch(`/investigadores/${encodeURIComponent(id_investigador)}/reactivar`, {
     method: "PATCH",
   });
 };
 
 export const refrescarFormacionAcademicaRenacytInvestigador = async (
-  idInvestigador: string,
+  id_investigador: string,
 ): Promise<RefreshInvestigadorRenacytFormacionResultado> => {
   return apiFetch(
-    `/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/formacion/refrescar`,
+    `/investigadores/${encodeURIComponent(id_investigador)}/renacyt/formacion/refrescar`,
     { method: "POST" },
   );
 };
 
 export const actualizarInvestigador = async (
-  idInvestigador: string,
+  id_investigador: string,
   request: {
     nombres?: string;
-    apellidoPaterno?: string;
-    apellidoMaterno?: string;
-    idGrado?: string;
-    grupoInvestigacionId?: string;
+    apellido_paterno?: string;
+    apellido_materno?: string;
+    id_grado?: string;
+    grupo_investigacion_id?: string;
   },
 ): Promise<Investigador> => {
-  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}`, {
+  return apiFetch(`/investigadores/${encodeURIComponent(id_investigador)}`, {
     method: "PATCH",
     body: request,
   });
 };
 
 export const descargarConstanciaRenacytInvestigador = async (
-  idInvestigador: string,
+  id_investigador: string,
 ): Promise<Uint8Array> => {
-  const url = `${getApiBaseUrl()}/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/constancia`;
+  const url = `${getApiBaseUrl()}/investigadores/${encodeURIComponent(id_investigador)}/renacyt/constancia`;
   const token = getAccessToken();
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -139,26 +139,26 @@ export const getPlantillaInvestigadoresDefault = async (): Promise<string[]> => 
 
 export interface KardexEntry {
   id: string;
-  investigadorId: string;
-  personaId: string;
-  fechaEvento: number;
+  investigador_id: string;
+  persona_id: string;
+  fecha_evento: number;
   cambios: CambioKardex[];
-  formacionesDiff?: {
+  formaciones_diff?: {
     agregadas: unknown[];
     retiradas: unknown[];
-    sinDetalle: boolean;
+    sin_detalle: boolean;
   } | null;
 }
 
-export const getKardexInvestigador = async (idInvestigador: string): Promise<KardexEntry[]> => {
-  return apiFetch(`/investigadores/${encodeURIComponent(idInvestigador)}/kardex`);
+export const getKardexInvestigador = async (id_investigador: string): Promise<KardexEntry[]> => {
+  return apiFetch(`/investigadores/${encodeURIComponent(id_investigador)}/kardex`);
 };
 
 export const marcarCambiosRenacytRevisados = async (
-  idInvestigador: string,
+  id_investigador: string,
 ): Promise<Investigador> => {
   return apiFetch(
-    `/investigadores/${encodeURIComponent(idInvestigador)}/renacyt/cambios-revisados`,
+    `/investigadores/${encodeURIComponent(id_investigador)}/renacyt/cambios-revisados`,
     { method: "PATCH" },
   );
 };

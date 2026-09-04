@@ -4,7 +4,6 @@ import * as supertest from "supertest";
 const request = supertest.default ?? supertest;
 import { AppModule } from "../src/app.module";
 import { AppErrorFilter } from "../src/infra/errors/app-error.filter";
-import { CamelToSnakePipe } from "../src/infra/serialization";
 import { MONGO_DB } from "../src/infra/mongo/mongo.module";
 import type { Db } from "mongodb";
 
@@ -94,7 +93,6 @@ beforeAll(async () => {
   app = moduleFixture.createNestApplication();
   app.setGlobalPrefix("api/v1");
   app.useGlobalPipes(
-    new CamelToSnakePipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -139,7 +137,7 @@ describe("Auth flow", () => {
         password: "Admin123!",
         dni: "12345678",
         nombres: "Admin",
-        apellidoPaterno: "Test",
+        apellido_paterno: "Test",
       })
       .expect(201)
       .expect((res) => {
@@ -156,9 +154,9 @@ describe("Auth flow", () => {
       .expect(200)
       .expect((res) => {
         expect(res.body).toHaveProperty("user");
-        expect(res.body).toHaveProperty("accessToken");
-        expect(res.body).toHaveProperty("refreshToken");
-        accessToken = res.body.accessToken;
+        expect(res.body).toHaveProperty("access_token");
+        expect(res.body).toHaveProperty("refresh_token");
+        accessToken = res.body.access_token;
       });
   });
 
@@ -188,6 +186,19 @@ describe("Contract: responses use snake_case keys", () => {
     accessToken = res.body.accessToken;
   });
 
+  it("POST /auth/login → keys snake_case (access_token, refresh_token)", () => {
+    return request(app.getHttpServer())
+      .post("/api/v1/auth/login")
+      .send({ username: "admin", password: "Admin123!" })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toHaveProperty("access_token");
+        expect(res.body).toHaveProperty("refresh_token");
+        expect(res.body).not.toHaveProperty("accessToken");
+        expect(res.body).not.toHaveProperty("refreshToken");
+      });
+  });
+
   it("GET /auth/session → keys snake_case (id_usuario, nombre_completo)", () => {
     return request(app.getHttpServer())
       .get("/api/v1/auth/session")
@@ -214,14 +225,14 @@ describe("Contract: responses use snake_case keys", () => {
   });
 });
 
-describe("Contract: requests accept camelCase (pipe transforms)", () => {
+describe("Contract: requests requieren snake_case", () => {
   let accessToken: string;
 
   beforeAll(async () => {
     const res = await request(app.getHttpServer())
       .post("/api/v1/auth/login")
       .send({ username: "admin", password: "Admin123!" });
-    accessToken = res.body.accessToken;
+    accessToken = res.body.access_token;
   });
 
   it("POST /grados con nombre → 201", () => {

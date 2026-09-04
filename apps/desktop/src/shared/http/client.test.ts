@@ -130,7 +130,7 @@ describe("apiFetch", () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({}, 401));
     // Refresh call: success
     mockFetch.mockResolvedValueOnce(
-      jsonResponse({ accessToken: "new-access", refreshToken: "new-refresh" }),
+      jsonResponse({ access_token: "new-access", refresh_token: "new-refresh" }),
     );
     // Retry call: success
     mockFetch.mockResolvedValueOnce(jsonResponse({ data: "ok" }));
@@ -160,7 +160,7 @@ describe("refreshSession", () => {
   it("returns true and sets tokens on success", async () => {
     mockLocalStorage["pjvpin.auth.refresh"] = "old-refresh";
     mockFetch.mockResolvedValueOnce(
-      jsonResponse({ accessToken: "new-access", refreshToken: "new-refresh" }),
+      jsonResponse({ access_token: "new-access", refresh_token: "new-refresh" }),
     );
     const result = await refreshSession();
     expect(result).toBe(true);

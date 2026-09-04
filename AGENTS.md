@@ -177,7 +177,8 @@ cargo clippy             # Linter Rust
 - **Módulos**: Un `mod.rs` por feature, exports públicos explícitos
 - **Errores**: Siempre `Result<T, AppError>`, nunca `unwrap()` en producción
 - **Nombres**: snake_case para funciones, CamelCase para tipos
-- **Inter-systema serde con frontend**: Todo struct Rust usado como argumento de `#[tauri::command]` que reciba JSON desde el frontend DEBE llevar `#[serde(rename_all = "camelCase")]` cuando sus fields sean multi-word en snake_case. El frontend TS SIEMPRE envía keys en camelCase (idiomático). Sin este atributo, la deserialización falla con `missing field X` (o silenciosamente pierde datos si el field es `Option<T>` con `#[serde(default)]`). Ejemplos correctos: `WizardConfigRequest`, `BootstrapUsuarioRequest`, `CreateUsuarioRequest`. Excepciones (no requieren rename): structs con fields single-word (`nombre`, `descripcion`) o que el frontend ya envía en snake por convención interna.
+- **Wire del API NestJS: 100% snake_case** (estándar desde 2026-09-04). Todo campo que cruce el wire entre el desktop y el API NestJS DEBE ser snake_case. Sin capas de transformación (pipes/interceptors eliminados). Ver sección dedicada más abajo.
+- **Inter-systema serde con frontend (legado Rust IPC)**: Todo struct Rust usado como argumento de `#[tauri::command]` que reciba JSON desde el frontend DEBE llevar `#[serde(rename_all = "camelCase")]` cuando sus fields sean multi-word en snake_case. El frontend TS SIEMPRE envía keys en camelCase (idiomático). Sin este atributo, la deserialización falla con `missing field X` (o silenciosamente pierde datos si el field es `Option<T>` con `#[serde(default)]`). Ejemplos correctos: `WizardConfigRequest`, `BootstrapUsuarioRequest`, `CreateUsuarioRequest`. Excepciones (no requieren rename): structs con fields single-word (`nombre`, `descripcion`) o que el frontend ya envía en snake por convención interna.
 - **Formato**: `rustfmt.toml` (100 chars, edition 2021, group_imports)
 - **Dependencias**: Mínimas, evitar crates innecesarios
 - **Timestamps**: Usar `shared::time::now_ms()` (unificado, basado en `std::time`)
@@ -334,7 +335,7 @@ pjvpin/
 - **Secretos se mueven al servidor**: `PJVPIN_MONGODB_URI`, `PJVPIN_MONGODB_DB`, `PJVPIN_RENIEC_TOKEN`, `PJVPIN_PURE_API_KEY`, `PJVPIN_PERUCRIS_*`, `PJVPIN_RENACYT_*` viven SOLO como env vars del API (Dokploy). El desktop NO almacena credenciales de BD ni de servicios externos → su `.env` se reduce a `PJVPIN_API_URL`. Los clientes HTTP externos (RENIEC/RENACYT/Pure/PeruCRIS) se reimplementan en NestJS.
 - **Wizard de configuración del desktop se simplifica**: se limita a (1) establecer/validar la **URL del API REST** (test `GET /health`) y (2) login del primer superuser contra el endpoint de bootstrap del API (que solo opera con colección `usuarios` vacía). La configuración de BD/tokens/URLs externas del servidor se gestiona por env vars en Dokploy, NO desde el desktop. La sección "Asistente de configuración (wizard)" de este documento describe el comportamiento legacy (Rust embebido) y queda vigente solo hasta el switch final del desktop.
 - **Disciplina hexagonal preservada**: `commands.rs` → `*.controller.ts`; `handlers.rs` → `*.service.ts`; `repository.rs` + `*Doc` → repositorios TS sobre driver MongoDB (sin Mongoose ODM completo si replica índices distintos — mantener opciones de índice EXACTAS, incl. `partial_filter_expression`); `AppError` → excepciones + exception filter global; RBAC (`AppPermission` + matriz) → guards/decoradores; auditoría JSONL → interceptor (misma salida); sesiones en memoria Rust → **JWT access/refresh** (stateless, multi-usuario); `write_export_file` → descarga HTTP (bytes/stream).
-- **Contratos IPC actuales como base**: en la fase 1 los DTOs conservan sus shapes (respuestas snake_case, requests camelCase) para que el frontend solo cambie el transporte (`invoke` → `fetch`); normalización a camelCase unificado queda como deuda controlada posterior.
+- **Contratos IPC actuales como base**: en la fase 1 los DTOs del API replican los shapes actuales (wire 100% snake_case para requests y responses). El frontend envía y recibe snake_case directamente, sin capas de transformación.
 - **Transición sin escritura dual**: mientras un módulo convive, el desktop en modo API NO usa el backend Rust para ese módulo. Nunca corren seeds/`ensure_indexes` dos backends contra la misma BD a la vez (los índices son idempotentes, pero se evita por higiene).
 
 ### Documentación de soporte
@@ -592,6 +593,10 @@ rg -n 'className="form-input"' src/ --glob "*.tsx"                    # debe est
 
 # Auditoria de cross-module debt: service.rs pasamanos ya no debe existir
 rg -n 'pub mod service' src-tauri/src/  # debe estar vacio (eliminado en I.8 + J.3)
+
+# Auditoria de wire snake_case (cero camelCase en el contrato del API NestJS)
+rg -n "tituloProyecto|participantesJson|idProyecto|cantidadInvestigadores|apellidoPaterno|apellidoMaterno|accessToken|refreshToken|firstName|firstLastName|secondLastName|fullName|documentNumber|totalEncontradas|soloLocal|soloPure|investigadoresIds|investigadorResponsableId" apps/desktop/src/ --glob "*.{ts,tsx}"  # debe estar vacio
+rg -n "CamelToSnakePipe|SnakeToCamelInterceptor|SkipSerialization|camelToSnakeKeys|snakeToCamelKeys" apps/api/src/  # debe estar vacio (modulo eliminado)
 ```
 
 Si typecheck/lint/build falla o la auditoria detecta literales no migrados al

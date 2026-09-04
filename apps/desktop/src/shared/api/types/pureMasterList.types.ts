@@ -1,71 +1,71 @@
 export interface PureMasterlistPersonRow {
-  personId: string;
+  person_id: string;
   profiled: string;
   username?: string | null;
   email?: string | null;
   title?: string | null;
-  titleTranslated?: string | null;
-  postNominals?: string | null;
+  title_translated?: string | null;
+  post_nominals?: string | null;
   firstname?: string | null;
   lastname?: string | null;
-  firstnameTranslated?: string | null;
-  lastnameTranslated?: string | null;
-  firstNameKnownAs?: string | null;
-  lastNameKnownAs?: string | null;
-  firstNameSorting?: string | null;
-  lastNameSorting?: string | null;
-  formerLastName?: string | null;
-  priorAffiliations?: string | null;
+  firstname_translated?: string | null;
+  lastname_translated?: string | null;
+  first_name_known_as?: string | null;
+  last_name_known_as?: string | null;
+  first_name_sorting?: string | null;
+  last_name_sorting?: string | null;
+  former_last_name?: string | null;
+  prior_affiliations?: string | null;
   nationality?: string | null;
   gender: string;
   visibility: string;
   orcid?: string | null;
-  profilePhoto?: string | null;
-  clientId1?: string | null;
-  clientId2?: string | null;
-  clientId3?: string | null;
-  externallyAuthenticated: string;
+  profile_photo?: string | null;
+  client_id1?: string | null;
+  client_id2?: string | null;
+  client_id3?: string | null;
+  externally_authenticated: string;
 }
 
 export interface PureMasterlistStaffRow {
-  personId: string;
-  organisationId: string;
-  contractType?: string | null;
-  jobTitle?: string | null;
-  jobDescription?: string | null;
-  jobDescriptionTranslated?: string | null;
-  employedAs: string;
+  person_id: string;
+  organisation_id: string;
+  contract_type?: string | null;
+  job_title?: string | null;
+  job_description?: string | null;
+  job_description_translated?: string | null;
+  employed_as: string;
   fte?: string | null;
-  startDate: string;
-  endDate?: string | null;
-  directPhoneNr?: string | null;
-  mobilePhoneNr?: string | null;
-  faxNr?: string | null;
+  start_date: string;
+  end_date?: string | null;
+  direct_phone_nr?: string | null;
+  mobile_phone_nr?: string | null;
+  fax_nr?: string | null;
   email?: string | null;
-  websiteUrlEn?: string | null;
-  websiteUrlTranslated?: string | null;
+  website_url_en?: string | null;
+  website_url_translated?: string | null;
   primary: string;
-  staffType: string;
+  staff_type: string;
 }
 
 export interface PureMasterlistSummary {
   total: number;
-  actualizacionesPure: number;
-  altasNuevas: number;
-  sinCorreo: number;
-  sinOrcid: number;
-  pureRemotoTotal: number;
+  actualizaciones_pure: number;
+  altas_nuevas: number;
+  sin_correo: number;
+  sin_orcid: number;
+  pure_remoto_total: number;
 }
 
 export interface PureMasterlistData {
   persons: PureMasterlistPersonRow[];
-  staffRelations: PureMasterlistStaffRow[];
+  staff_relations: PureMasterlistStaffRow[];
   summary: PureMasterlistSummary;
 }
 
 export interface SyncPurePersonIdsResult {
-  totalPure: number;
+  total_pure: number;
   matched: number;
   assigned: number;
-  unmatchedDnis: string[];
+  unmatched_dnis: string[];
 }

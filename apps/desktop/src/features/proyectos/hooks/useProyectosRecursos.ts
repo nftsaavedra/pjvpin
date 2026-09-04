@@ -30,9 +30,9 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     crearPatente,
     eliminarPatente,
     (raw, pid) => ({
-      proyectoId: pid,
+      proyecto_id: pid,
       titulo: (raw.titulo_patente as string) || (raw.titulo as string) || "",
-      numeroPatente: raw.numero_patente as string,
+      numero_patente: raw.numero_patente as string,
       estado: raw.estado as string,
     }),
     (p) => p.id_patente,
@@ -47,12 +47,12 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     crearSoftware,
     eliminarSoftware,
     (raw, pid) => ({
-      idProyecto: pid,
+      id_proyecto: pid,
       titulo: (raw.titulo as string) || "",
       tipo: "software",
       resumen: raw.descripcion as string,
       doi: raw.doi as string,
-      fechaPublicacion: raw.fecha_registro as number,
+      fecha_publicacion: raw.fecha_registro as number,
     }),
     (s) => s.id_publicacion,
     proyectoId,
@@ -66,7 +66,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
       nombre: (raw.nombre_equipo as string) || (raw.nombre as string) || "",
       descripcion: raw.descripcion as string,
       especificaciones: raw.especificaciones as string,
-      valorEstimado: raw.costo as number,
+      valor_estimado: raw.costo as number,
     }),
     (e) => e.id_equipamiento,
     proyectoId,
@@ -81,7 +81,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
       nombre: (raw.fuente as string) || (raw.entidad_financiadora as string) || "",
       tipo: raw.tipo as string,
       monto: raw.monto as number,
-      estadoFinanciero: raw.estadoFinanciero as string,
+      estado_financiero: raw.estado_financiero as string,
     }),
     (f) => f.id_financiamiento,
     proyectoId,
@@ -108,9 +108,9 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     for (const item of patentesCrud.items as unknown as Array<Record<string, unknown>>) {
       promesas.push(
         crearPatente({
-          proyectoId: pid,
+          proyecto_id: pid,
           titulo: (item.titulo_patente as string) || (item.titulo as string) || "",
-          numeroPatente: item.numero_patente as string,
+          numero_patente: item.numero_patente as string,
           estado: item.estado as string,
         }).catch(() => null),
       );
@@ -118,7 +118,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
     for (const item of softwareCrud.items as unknown as Array<Record<string, unknown>>) {
       promesas.push(
         crearSoftware({
-          idProyecto: pid,
+          id_proyecto: pid,
           titulo: (item.titulo as string) || (item.nombre as string) || "",
           tipo: "software",
           resumen: item.descripcion as string,
@@ -132,7 +132,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
           nombre: (item.nombre_equipo as string) || (item.nombre as string) || "",
           descripcion: item.descripcion as string,
           especificaciones: item.especificaciones as string,
-          valorEstimado: item.costo as number,
+          valor_estimado: item.costo as number,
         }).catch(() => null),
       );
     }
@@ -143,7 +143,7 @@ export const useProyectosRecursos = (proyectoId: string | undefined) => {
           nombre: (item.fuente as string) || (item.entidad_financiadora as string) || "",
           tipo: item.tipo as string,
           monto: item.monto as number,
-          estadoFinanciero: item.estadoFinanciero as string,
+          estado_financiero: item.estado_financiero as string,
         }).catch(() => null),
       );
     }

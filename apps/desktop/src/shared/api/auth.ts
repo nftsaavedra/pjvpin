@@ -3,8 +3,8 @@ import type { Usuario, AuthStatus } from "./types";
 
 export interface AuthResponse {
   user: Usuario;
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
 }
 
 export interface HealthStatus {
@@ -19,16 +19,16 @@ export interface BootstrapArgs {
   password: string;
   dni: string;
   nombres?: string;
-  apellidoPaterno?: string;
-  apellidoMaterno?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
 }
 
 export interface ReniecDniLookupResult {
-  firstName: string;
-  firstLastName: string;
-  secondLastName: string;
-  fullName: string;
-  documentNumber: string;
+  first_name: string;
+  first_last_name: string;
+  second_last_name: string;
+  full_name: string;
+  document_number: string;
 }
 
 export async function checkHealth(): Promise<HealthStatus> {

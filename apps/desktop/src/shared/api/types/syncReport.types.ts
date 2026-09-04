@@ -9,15 +9,15 @@ export type ItemClasificacion = "solo_local" | "solo_pure" | "diferente";
 
 export interface SyncReportResumen {
   total: number;
-  soloLocal: number;
-  soloPure: number;
+  solo_local: number;
+  solo_pure: number;
   diferentes: number;
-  tiempoTotalMs: number;
+  tiempo_total_ms: number;
 }
 
 export interface SyncReportItem {
-  idLocal?: string | null;
-  idPure?: string | null;
+  id_local?: string | null;
+  id_pure?: string | null;
   doi?: string | null;
   titulo?: string | null;
   anio?: number | null;
@@ -29,7 +29,7 @@ export interface SyncReportItem {
 export interface SyncReport {
   id: string;
   tipo: SyncReportTipo;
-  ejecutadoAt: number;
+  ejecutado_at: number;
   resumen: SyncReportResumen;
   items: SyncReportItem[];
 }
