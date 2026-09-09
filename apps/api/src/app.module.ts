@@ -8,6 +8,7 @@ import { AppErrorFilter } from "./infra/errors/app-error.filter";
 import { RbacModule } from "./rbac/rbac.module";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
+import { JwtCoreModule } from "./auth/jwt-core.module";
 import { UsuariosModule } from "./usuarios/usuarios.module";
 import { PersonasModule } from "./personas/personas.module";
 import { HealthModule } from "./health/health.module";
@@ -51,6 +52,7 @@ import { WsModule } from "./ws/ws.module";
     MongoModule,
     RbacModule,
     AuditModule,
+    JwtCoreModule,
     AuthModule,
     UsuariosModule,
     PersonasModule,

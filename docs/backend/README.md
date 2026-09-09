@@ -69,3 +69,15 @@
 | `shared/audit.rs` (JSONL) | Interceptor de auditoría (misma salida o colección Mongo) |
 | `write_export_file` | Endpoint de descarga (`StreamableFile`) |
 | Wizard (`wizard_*`) | Bootstrap endpoint + setup UI web |
+
+---
+
+## Stack NestJS v12 (apps/api) — activado 2026-09-09
+
+El backend `apps/api` opera sobre NestJS v12 (`@nestjs/*@^12.x`, salvo throttler en 6.5.0).
+Decisiones operativas vigentes (ver `AGENTS.md` §"Stack NestJS v12" para detalle):
+
+- `tsconfig.json`: `module/moduleResolution: nodenext`, `resolvePackageJsonExports`, `target: ES2023` (resolver ESM-only de v12; sigue emitiendo CJS).
+- `JwtCoreModule` (`@Global()`) provee `JwtModule` + `JwtAuthGuard` globalmente; `JwtAuthGuard` valida bearer directo con `JwtService` (sin `AuthGuard("jwt")` de passport).
+- Jest: `ts-jest` (.ts) + `@swc/jest` (.js); `transformIgnorePatterns` ampliado a `@nestjs/`.
+- Deuda tracked: TypeScript 6, Jest 30, y eliminación de `JwtStrategy` + `@nestjs/passport` (ya no se invocan en runtime). Prohibido diferir sin fecha/plan.

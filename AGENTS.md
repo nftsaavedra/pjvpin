@@ -19,11 +19,12 @@ académicos, grupos de investigación, reportes). Construido con Tauri v2 + Reac
 | Shell | Tauri v2 | 2.10.x |
 | Frontend | React + TypeScript | 19.1 / 6.0 |
 | Bundler | Vite (Rolldown) | 8.2 |
-| Backend | Rust (edition 2021) | 1.85+ |
-| Base de datos | MongoDB Atlas | Driver 3.5 |
+| Backend (apps/api) | NestJS | 12.x |
+| Runtime API | Node.js | 24.x (≥24.9 requerido por Jest 30 + ESM) |
+| Base de datos | MongoDB Atlas | Driver 6.x |
 | Diseño | DESIGN.md (Google format) | alpha |
-| Auth | Argon2 (password hashing) | 0.5.3 |
-| HTTP | reqwest (rustls-tls) | 0.12 |
+| Auth API | @nestjs/jwt (Argon2 password hashing) | 12.x |
+| HTTP | @nestjs/platform-express (apps/api), reqwest (src-tauri legacy) | 12.x / 0.12 |
 | Gráficos | recharts | 3.8 |
 | PDF | @react-pdf/renderer | 4.4 |
 | Excel | exceljs | 4.4 |
@@ -348,6 +349,19 @@ pjvpin/
 - `docs/backend/05-escenarios-migracion-nestjs.md` — análisis de escenarios de backend, despliegue y operación.
 
 Lección consolidada (vigente): los errores de índices MongoDB (E11000 null, IndexKeySpecsConflict) son bugs de **modelado de datos**, independientes del stack. NestJS/Mongoose los reproduciría idénticos — por eso el modelo y sus índices se migran tal cual, sin rediseño.
+
+### Stack NestJS v12 (apps/api) — activado 2026-09-09
+
+Upgrade completo del backend NestJS a v12.x (revierte el downgrade a v11 del commit `24d3996`). Decisiones operativas vigentes:
+
+- **`@nestjs/*` todo en `^12.x`** salvo `@nestjs/throttler` (mantenido en `^6.5.0`; pnpm tolera el peer mismatch contra `common@12` con warning).
+- **Resolución ESM**: `tsconfig.json` usa `module: "nodenext"`, `moduleResolution: "nodenext"`, `resolvePackageJsonExports: true`, `target: "ES2023"` para resolver los packages ESM-only de v12 sin cambiar la emisión CJS (el `package.json` NO tiene `"type": "module"`). `tsconfig.build.json` declara `rootDir: "./src"` (rootDir explícito requerido por TS 5.9+).
+- **Transform de Jest**: `ts-jest` para `.ts` + `@swc/jest` para `.js` (paquetes ESM de NestJS); `transformIgnorePatterns` ampliado a `node_modules/(?!\.pnpm/[^/]+/node_modules/)?@nestjs/)`. Requiere Node ≥24.9.
+- **`JwtCoreModule` (`@Global()`)** en `apps/api/src/auth/`: registra `JwtModule` (con `JWT_ACCESS_SECRET`/`JWT_ACCESS_TTL`) y provee `JwtAuthGuard` + `JwtService` globalmente. Importado UNA vez en `AppModule`. Patrón para evitar instanciar `AuthGuard` de passport (en v12 exige `AuthModuleOptions` por módulo, no resuelve cross-module). `AuthModule` consume `JwtService` del global.
+- **`JwtAuthGuard` implementa `CanActivate` directo con `JwtService`** (verifica el bearer token, adjunta `req.user = { id_usuario, username, rol }`), sin extender `AuthGuard("jwt")` de `@nestjs/passport`. Elimina la dependencia de passport y `AuthModuleOptions` en cada módulo.
+- **`@nestjs/config` v12** valida con Standard Schema; `validateEnv` (class-validator) sigue operando vía `validate:` como función (verificado en boot). Migración a zod/valibot queda como follow-up si la firma cambia.
+- **Cambios mecánicos del `nest upgrade --dry-run`**: `TypeScript 6` y `Jest 30` quedan como **deuda diferida tracked** (no se aplicaron en este commit para minimizar blast radius; requieren verificar 322 tests con TS6/Jest30; registrar fecha y plan cuando se ejecute). `baseUrl`/`esModuleInterop` defaults de TS6 deprecados — ajustar cuando se suba.
+- **Deuda tracked**: `JwtStrategy` (`apps/api/src/auth/jwt.strategy.ts`) y `@nestjs/passport` + `passport` + `passport-jwt` ya NO se invocan en runtime (`JwtAuthGuard` valida directo con `JwtService`). Se conservan transitoriamente; eliminar en follow-up (quitar deps + provider). Prohibido diferir sin fecha/plan.
 
 ---
 

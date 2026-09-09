@@ -14,6 +14,7 @@ import type { PeruCrisClient } from "../infra/http/perucris.client";
 import type { CerifService } from "../cerif/cerif.service";
 import type { AuditService } from "../audit/audit.service";
 import type { JobRegistry } from "../external-http/job-registry.service";
+import { AppError } from "../infra/errors/app-error";
 import { PeruCrisService } from "./perucris.service";
 
 describe("PeruCrisService.pushCerif", () => {
@@ -89,7 +90,6 @@ describe("PeruCrisService.pushCerif", () => {
 
   it("propaga AppError del client (config/external)", async () => {
     const { sut, perucrisClient } = buildSut();
-    const { AppError } = await import("../infra/errors/app-error");
     (perucrisClient.pushCerif as jest.Mock).mockRejectedValueOnce(
       AppError.config("key invalida"),
     );
