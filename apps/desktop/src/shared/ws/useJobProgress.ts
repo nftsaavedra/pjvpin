@@ -18,6 +18,14 @@ const INITIAL_STATE: JobProgressState = {
 
 export function useJobProgress(jobId: string | null): JobProgressState {
   const [state, setState] = useState<JobProgressState>(INITIAL_STATE);
+  const [prevJobId, setPrevJobId] = useState(jobId);
+
+  if (prevJobId !== jobId) {
+    setPrevJobId(jobId);
+    if (jobId === null) {
+      setState(INITIAL_STATE);
+    }
+  }
 
   const handleEvent = useCallback(
     (event: JobProgressEvent) => {
@@ -34,10 +42,7 @@ export function useJobProgress(jobId: string | null): JobProgressState {
   );
 
   useEffect(() => {
-    if (!jobId) {
-      setState(INITIAL_STATE);
-      return;
-    }
+    if (!jobId) return;
 
     const unsubscribe = subscribeJobEvents(handleEvent, handleEvent, handleEvent);
     return unsubscribe;

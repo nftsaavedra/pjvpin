@@ -32,15 +32,15 @@ function getSocket(): Socket {
   });
 
   socket.on("job.progress", (event: JobProgressEvent) => {
-    listeners.get("job.progress")?.forEach((fn) => fn(event));
+    listeners.get("job.progress")?.forEach((fn) => { fn(event); });
   });
 
   socket.on("job.completed", (event: JobProgressEvent) => {
-    listeners.get("job.completed")?.forEach((fn) => fn(event));
+    listeners.get("job.completed")?.forEach((fn) => { fn(event); });
   });
 
   socket.on("job.failed", (event: JobProgressEvent) => {
-    listeners.get("job.failed")?.forEach((fn) => fn(event));
+    listeners.get("job.failed")?.forEach((fn) => { fn(event); });
   });
 
   socket.on("disconnect", () => {
@@ -61,9 +61,9 @@ export function subscribeJobEvents(
   if (!listeners.has("job.completed")) listeners.set("job.completed", new Set());
   if (!listeners.has("job.failed")) listeners.set("job.failed", new Set());
 
-  listeners.get("job.progress")!.add(onProgress);
-  listeners.get("job.completed")!.add(onCompleted);
-  listeners.get("job.failed")!.add(onFailed);
+  listeners.get("job.progress")?.add(onProgress);
+  listeners.get("job.completed")?.add(onCompleted);
+  listeners.get("job.failed")?.add(onFailed);
 
   return () => {
     listeners.get("job.progress")?.delete(onProgress);
