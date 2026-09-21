@@ -9,6 +9,7 @@ import type { Db } from "mongodb";
 import { AppError } from "../infra/errors/app-error";
 import { AuditService } from "../audit/audit.service";
 import { ReniecClient, type ReniecDniLookupResult } from "../infra/http/reniec.client";
+import { LoginRateLimiterService } from "./login-rate-limiter.service";
 import { JWT_ACCESS_TTL_DEFAULT, JWT_REFRESH_TTL_DEFAULT } from "../config/defaults";
 import type { AuthResponse, AuthStatusDto, UsuarioDto } from "./dto/auth.response";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
@@ -49,6 +50,7 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly reniec: ReniecClient,
     private readonly audit: AuditService,
+    private readonly loginLimiter: LoginRateLimiterService,
     @Inject(MONGO_DB) private readonly db: Db,
   ) {
     this.accessTtl = config.get<string>("JWT_ACCESS_TTL") ?? JWT_ACCESS_TTL_DEFAULT;
@@ -68,6 +70,7 @@ export class AuthService {
   }
 
   async login(username: string, password: string): Promise<AuthResponse> {
+    this.loginLimiter.checkAndRecord(username);
     const user = await this.usuarios.findOne({ username });
     if (!user) {
       throw new UnauthorizedException("Credenciales invalidas.");
@@ -79,6 +82,7 @@ export class AuthService {
     if (!ok) {
       throw new UnauthorizedException("Credenciales invalidas.");
     }
+    this.loginLimiter.clear(username);
     return this.buildAuthResponse(user);
   }
 
