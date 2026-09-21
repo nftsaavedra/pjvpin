@@ -2,6 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { ClientSession, Collection, Db } from "mongodb";
 import { MONGO_DB } from "../infra/mongo/mongo.module";
 import { AppError } from "../infra/errors/app-error";
+import { entityTypeVariants, ENTITY_TYPE } from "../infra/transition/legacy-forms";
 
 /**
  * Tipos de documento del dominio `proyectos`. 1:1 con los structs Rust
@@ -350,13 +351,9 @@ export class ProyectosRepository {
     idProyecto: string,
     session?: ClientSession,
   ): Promise<number> {
+    const types = entityTypeVariants(ENTITY_TYPE.PROJECT);
     const res = await this.entityOcdeFields.deleteMany(
-      {
-        $or: [
-          { entity_type: "proyecto", entity_id: idProyecto },
-          { entity_type: "PROJECT", entity_id: idProyecto },
-        ],
-      },
+      { entity_type: { $in: types }, entity_id: idProyecto },
       session ? { session } : undefined,
     );
     return res.deletedCount ?? 0;
