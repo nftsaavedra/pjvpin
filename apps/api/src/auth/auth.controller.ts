@@ -26,9 +26,9 @@ export class AuthController {
   @Post("refresh")
   @HttpCode(200)
   async refresh(
-    @Body() body: { refreshToken: string },
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    return this.auth.refresh(body.refreshToken);
+    @Body() body: { refresh_token: string },
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    return this.auth.refresh(body.refresh_token);
   }
 
   @Post("logout")

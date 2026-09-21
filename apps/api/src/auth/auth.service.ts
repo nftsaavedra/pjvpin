@@ -82,7 +82,7 @@ export class AuthService {
     return this.buildAuthResponse(user);
   }
 
-  async refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async refresh(refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
     let payload: JwtPayload;
     try {
       payload = await this.jwt.verifyAsync<JwtPayload>(refreshToken, {
@@ -105,7 +105,7 @@ export class AuthService {
       rol: user.rol,
       username: user.username,
     });
-    return { accessToken: access, refreshToken: refresh };
+    return { access_token: access, refresh_token: refresh };
   }
 
   async logout(): Promise<{ ok: true }> {
@@ -226,8 +226,8 @@ export class AuthService {
     const payload = { sub: user.id_usuario, rol: user.rol, username: user.username };
     return {
       user: this.toUsuarioDto(user),
-      accessToken: await this.signAccess(payload),
-      refreshToken: await this.signRefresh(payload),
+      access_token: await this.signAccess(payload),
+      refresh_token: await this.signRefresh(payload),
     };
   }
 

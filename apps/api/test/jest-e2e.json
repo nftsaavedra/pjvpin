@@ -3,7 +3,23 @@
   "rootDir": ".",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.ts$": "ts-jest",
+    "^.+\\.js$": [
+      "@swc/jest",
+      {
+        "jsc": {
+          "parser": {
+            "syntax": "ecmascript",
+            "dynamicImport": true,
+            "importMeta": true
+          },
+          "target": "es2022"
+        },
+        "module": {
+          "type": "commonjs"
+        }
+      }
+    ]
   },
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/../src/$1",
@@ -12,5 +28,8 @@
     "^@nestjs/platform-socket.io$": "<rootDir>/__mocks__/platform-socket.io.ts",
     "^socket\\.io$": "<rootDir>/__mocks__/socket.io.ts"
   },
+  "transformIgnorePatterns": [
+    "node_modules/(?!(\\.pnpm/[^/]+/node_modules/)?@nestjs/)"
+  ],
   "testEnvironment": "node"
 }

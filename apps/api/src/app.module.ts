@@ -45,8 +45,8 @@ import { WsModule } from "./ws/ws.module";
     ThrottlerModule.forRoot([
       {
         name: "default",
-        ttl: 900_000,
-        limit: 5,
+        ttl: 60_000,
+        limit: 100,
       },
     ]),
     MongoModule,

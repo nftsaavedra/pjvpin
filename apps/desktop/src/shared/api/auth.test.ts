@@ -30,7 +30,7 @@ describe("auth endpoints", () => {
   });
 
   it("loginUsuario POSTs credentials with noAuth", async () => {
-    mockApiFetch.mockResolvedValueOnce({ user: { id: "1" }, accessToken: "a", refreshToken: "r" });
+    mockApiFetch.mockResolvedValueOnce({ user: { id: "1" }, access_token: "a", refresh_token: "r" });
     await loginUsuario("admin", "pass123");
     expect(mockApiFetch).toHaveBeenCalledWith("/auth/login", {
       method: "POST",
@@ -63,7 +63,7 @@ describe("auth endpoints", () => {
   });
 
   it("bootstrapReniecDni POSTs numero with noAuth", async () => {
-    mockApiFetch.mockResolvedValueOnce({ firstName: "Juan" });
+    mockApiFetch.mockResolvedValueOnce({ first_name: "Juan", first_last_name: "Perez", second_last_name: "Lopez", full_name: "Juan Perez Lopez", document_number: "12345678" });
     await bootstrapReniecDni("12345678");
     expect(mockApiFetch).toHaveBeenCalledWith("/auth/bootstrap/reniec-dni", {
       method: "POST",

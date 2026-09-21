@@ -183,7 +183,7 @@ describe("Contract: responses use snake_case keys", () => {
     const res = await request(app.getHttpServer())
       .post("/api/v1/auth/login")
       .send({ username: "admin", password: "Admin123!" });
-    accessToken = res.body.accessToken;
+    accessToken = res.body.access_token;
   });
 
   it("POST /auth/login → keys snake_case (access_token, refresh_token)", () => {
@@ -253,5 +253,33 @@ describe("RBAC", () => {
       .post("/api/v1/grados")
       .send({ nombre: "Test" })
       .expect(401);
+  });
+});
+
+describe("Rate limiting (regresion global)", () => {
+  it("GET /health/ping admite mas de 5 req/15min (default global permisivo)", async () => {
+    for (let i = 0; i < 8; i++) {
+      const res = await request(app.getHttpServer()).get("/api/v1/health/ping");
+      expect(res.status).toBe(200);
+      // El default global es 100/min, no 5/15min. Si volviera a 5, este header seria <= 5.
+      const limit = Number(res.headers["x-ratelimit-limit"]);
+      expect(limit).toBeGreaterThanOrEqual(100);
+    }
+  });
+
+  it("POST /auth/login mantiene el limite estricto (5/15min) y devuelve 429 al saturarlo", async () => {
+    // Los describes previos ya consumieron slots de login (4 intentos validos). El contador
+    // es por (ruta, ip) y vive en memoria: aqui comprobamos que el limite estricto sigue
+    // bloqueando con 429 una vez agotada la ventana, sin necesidad de contar exactamente.
+    const statuses: number[] = [];
+    for (let i = 0; i < 8; i++) {
+      const res = await request(app.getHttpServer())
+        .post("/api/v1/auth/login")
+        .send({ username: "noexiste", password: "wrong" });
+      statuses.push(res.status);
+    }
+    // Debe haber al menos un 429 (rate-limited) y, por consistencia, ninguno 200.
+    expect(statuses).toContain(429);
+    expect(statuses.every((s) => s !== 200)).toBe(true);
   });
 });
