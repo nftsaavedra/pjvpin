@@ -37,6 +37,9 @@ importers:
       '@nestjs/websockets':
         specifier: ^12.0.1
         version: 12.0.1(@nestjs/common@12.0.1(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.0.1)(@nestjs/platform-socket.io@12.0.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@pjvpin/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       argon2:
         specifier: ^0.41.1
         version: 0.41.1
@@ -119,6 +122,9 @@ importers:
       '@floating-ui/react':
         specifier: ^0.27.19
         version: 0.27.20(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@pjvpin/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@react-pdf/renderer':
         specifier: ^4.4.0
         version: 4.8.1(react@19.2.8)

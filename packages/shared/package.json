@@ -4,18 +4,18 @@
   "private": true,
   "type": "module",
   "description": "Contratos TS compartidos api↔desktop (DTOs request/response, enum de permisos RBAC, tipos de auth, tipos de paginación).",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "echo \"(lint no configurado aún para @pjvpin/shared)\"",
     "test": "echo \"(test no configurado aún para @pjvpin/shared)\"",
-    "build": "echo \"(build no configurado aún para @pjvpin/shared)\""
+    "build": "tsc -p tsconfig.json"
   }
 }

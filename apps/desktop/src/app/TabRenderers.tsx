@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { hasPermission } from "@/shared/auth/permissions";
+import { AppPermission, hasPermission } from "@/shared/auth/permissions";
 import {
   DashboardFallback,
   FormAndTableFallback,
@@ -50,7 +50,7 @@ export function TabRenderers({
         <ErrorBoundary fallbackTitle="Error en Proyectos">
           <Suspense fallback={<FormAndTableFallback columns={5} />}>
             <ProyectosTab
-              canManage={hasPermission(currentRole, "proyectos.manage")}
+              canManage={hasPermission(currentRole, AppPermission.ProyectosManage)}
               onProyectoCreated={onDataModified}
               refreshTrigger={refreshTrigger}
             />
@@ -62,7 +62,7 @@ export function TabRenderers({
         <ErrorBoundary fallbackTitle="Error en Investigadores">
           <Suspense fallback={<FormAndTableFallback columns={6} />}>
             <InvestigadoresTab
-              canManage={hasPermission(currentRole, "investigadores.manage")}
+              canManage={hasPermission(currentRole, AppPermission.InvestigadoresManage)}
               currentRol={currentRole}
               refreshTrigger={refreshTrigger}
               onDataModified={onDataModified}
@@ -74,7 +74,7 @@ export function TabRenderers({
       return (
         <ErrorBoundary fallbackTitle="Error en Grupos">
           <Suspense fallback={<FormAndTableFallback columns={4} />}>
-            <GruposTab canManage={hasPermission(currentRole, "grupos.manage")} />
+            <GruposTab canManage={hasPermission(currentRole, AppPermission.GruposManage)} />
           </Suspense>
         </ErrorBoundary>
       );
@@ -87,7 +87,7 @@ export function TabRenderers({
         </ErrorBoundary>
       );
     case "configuracion":
-      if (!hasPermission(currentRole, "configuracion.view")) {
+      if (!hasPermission(currentRole, AppPermission.UsuariosManage)) {
         return null;
       }
 
@@ -98,7 +98,7 @@ export function TabRenderers({
               currentUser={currentUser}
               onDataModified={onDataModified}
               refreshTrigger={refreshTrigger}
-              isAdmin={hasPermission(currentRole, "usuarios.manage")}
+              isAdmin={hasPermission(currentRole, AppPermission.UsuariosManage)}
             />
           </Suspense>
         </ErrorBoundary>
@@ -108,9 +108,9 @@ export function TabRenderers({
         <ErrorBoundary fallbackTitle="Error en Reportes">
           <Suspense fallback={<TableOnlyFallback columns={5} />}>
             <ReportesTab
-              canExport={hasPermission(currentRole, "reportes.export")}
-              canVerificarPure={hasPermission(currentRole, "investigadores.view")}
-              canAdoptarPure={hasPermission(currentRole, "investigadores.manage")}
+              canExport={hasPermission(currentRole, AppPermission.ReportesExport)}
+              canVerificarPure={hasPermission(currentRole, AppPermission.InvestigadoresView)}
+              canAdoptarPure={hasPermission(currentRole, AppPermission.InvestigadoresManage)}
               refreshTrigger={refreshTrigger}
             />
           </Suspense>

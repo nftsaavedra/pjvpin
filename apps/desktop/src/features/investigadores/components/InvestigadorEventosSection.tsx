@@ -14,7 +14,7 @@ import { messages } from "@/shared/feedback/messages";
 import { crearEvento, eliminarEvento, getErrorMessage } from "../api";
 import type { EventoAcademico } from "@/shared/api/types";
 import { useEventosInvestigador } from "../hooks/useEventosInvestigador";
-import { hasPermission } from "@/shared/auth/permissions";
+import { AppPermission, hasPermission } from "@/shared/auth/permissions";
 
 interface InvestigadorEventosSectionProps {
   investigadorId: string;
@@ -77,7 +77,7 @@ export const InvestigadorEventosSection: React.FC<InvestigadorEventosSectionProp
   const [eventoAEliminar, setEventoAEliminar] = useState<EventoAcademico | null>(null);
   const [form, setForm] = useState<FormState>(FORM_INICIAL);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const canManage = hasPermission(currentRol, "investigadores.manage");
+  const canManage = hasPermission(currentRol, AppPermission.InvestigadoresManage);
 
   const handleToggle = async (): Promise<void> => {
     const next = !expanded;

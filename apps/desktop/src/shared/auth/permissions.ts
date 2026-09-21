@@ -1,27 +1,10 @@
-export type AppRole = "superuser" | "admin" | "operador" | "consulta" | "responsable_proyecto";
-
-export type AppPermission =
-  | "dashboard.view"
-  | "investigadores.view"
-  | "investigadores.manage"
-  | "proyectos.view"
-  | "proyectos.manage"
-  | "publicaciones.view"
-  | "publicaciones.manage"
-  | "grupos.view"
-  | "grupos.manage"
-  | "reportes.view"
-  | "reportes.export"
-  | "configuracion.view"
-  | "grados.manage"
-  | "catalogos.view"
-  | "catalogos.manage"
-  | "geo.view"
-  | "usuarios.manage"
-  | "vocabularios.view"
-  | "vocabularios.manage"
-  | "org_units.view"
-  | "org_units.manage";
+/**
+ * Permisos y matriz de roles consumidos por la UI (menu, botones, etc).
+ * Re-export de `@pjvpin/shared` (fuente unica de verdad) y traduccion
+ * a la forma que la UI espera (etiquetas, modulos).
+ */
+export { AppPermission, APP_PERMISSIONS, type AppRole } from "@pjvpin/shared";
+import { AppPermission, type AppRole, permissionsForRole } from "@pjvpin/shared";
 
 interface RoleDefinition {
   label: string;
@@ -30,32 +13,31 @@ interface RoleDefinition {
   modules: string[];
 }
 
-export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
+const ROLE_DEFINITIONS_DATA: Record<AppRole, RoleDefinition> = {
   superuser: {
     label: "Superusuario",
     summary: "Control total del sistema.",
     permissions: [
-      "dashboard.view",
-      "investigadores.view",
-      "investigadores.manage",
-      "proyectos.view",
-      "proyectos.manage",
-      "publicaciones.view",
-      "publicaciones.manage",
-      "grupos.view",
-      "grupos.manage",
-      "reportes.view",
-      "reportes.export",
-      "configuracion.view",
-      "grados.manage",
-      "catalogos.view",
-      "catalogos.manage",
-      "geo.view",
-      "usuarios.manage",
-      "vocabularios.view",
-      "vocabularios.manage",
-      "org_units.view",
-      "org_units.manage",
+      AppPermission.DashboardView,
+      AppPermission.InvestigadoresView,
+      AppPermission.InvestigadoresManage,
+      AppPermission.ProyectosView,
+      AppPermission.ProyectosManage,
+      AppPermission.PublicacionesView,
+      AppPermission.PublicacionesManage,
+      AppPermission.GruposView,
+      AppPermission.GruposManage,
+      AppPermission.ReportesView,
+      AppPermission.ReportesExport,
+      AppPermission.GradosManage,
+      AppPermission.CatalogosRead,
+      AppPermission.CatalogosManage,
+      AppPermission.GeoRead,
+      AppPermission.UsuariosManage,
+      AppPermission.VocabulariosRead,
+      AppPermission.VocabulariosManage,
+      AppPermission.OrgUnitsView,
+      AppPermission.OrgUnitsManage,
     ],
     modules: [
       "Panel",
@@ -76,27 +58,26 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
     label: "Administrador",
     summary: "Gestión total del sistema y usuarios.",
     permissions: [
-      "dashboard.view",
-      "investigadores.view",
-      "investigadores.manage",
-      "proyectos.view",
-      "proyectos.manage",
-      "publicaciones.view",
-      "publicaciones.manage",
-      "grupos.view",
-      "grupos.manage",
-      "reportes.view",
-      "reportes.export",
-      "configuracion.view",
-      "grados.manage",
-      "catalogos.view",
-      "catalogos.manage",
-      "geo.view",
-      "usuarios.manage",
-      "vocabularios.view",
-      "vocabularios.manage",
-      "org_units.view",
-      "org_units.manage",
+      AppPermission.DashboardView,
+      AppPermission.InvestigadoresView,
+      AppPermission.InvestigadoresManage,
+      AppPermission.ProyectosView,
+      AppPermission.ProyectosManage,
+      AppPermission.PublicacionesView,
+      AppPermission.PublicacionesManage,
+      AppPermission.GruposView,
+      AppPermission.GruposManage,
+      AppPermission.ReportesView,
+      AppPermission.ReportesExport,
+      AppPermission.GradosManage,
+      AppPermission.CatalogosRead,
+      AppPermission.CatalogosManage,
+      AppPermission.GeoRead,
+      AppPermission.UsuariosManage,
+      AppPermission.VocabulariosRead,
+      AppPermission.VocabulariosManage,
+      AppPermission.OrgUnitsView,
+      AppPermission.OrgUnitsManage,
     ],
     modules: [
       "Panel",
@@ -116,22 +97,22 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
     label: "Operador",
     summary: "Gestión operativa diaria.",
     permissions: [
-      "dashboard.view",
-      "investigadores.view",
-      "investigadores.manage",
-      "proyectos.view",
-      "proyectos.manage",
-      "publicaciones.view",
-      "publicaciones.manage",
-      "grupos.view",
-      "grupos.manage",
-      "reportes.view",
-      "reportes.export",
-      "catalogos.view",
-      "geo.view",
-      "org_units.view",
-      "org_units.manage",
-      "vocabularios.view",
+      AppPermission.DashboardView,
+      AppPermission.InvestigadoresView,
+      AppPermission.InvestigadoresManage,
+      AppPermission.ProyectosView,
+      AppPermission.ProyectosManage,
+      AppPermission.PublicacionesView,
+      AppPermission.PublicacionesManage,
+      AppPermission.GruposView,
+      AppPermission.GruposManage,
+      AppPermission.ReportesView,
+      AppPermission.ReportesExport,
+      AppPermission.CatalogosRead,
+      AppPermission.GeoRead,
+      AppPermission.OrgUnitsView,
+      AppPermission.OrgUnitsManage,
+      AppPermission.VocabulariosRead,
     ],
     modules: [
       "Panel",
@@ -148,15 +129,15 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
     label: "Consulta",
     summary: "Solo lectura de la información operativa.",
     permissions: [
-      "dashboard.view",
-      "investigadores.view",
-      "proyectos.view",
-      "publicaciones.view",
-      "grupos.view",
-      "reportes.view",
-      "geo.view",
-      "org_units.view",
-      "vocabularios.view",
+      AppPermission.DashboardView,
+      AppPermission.InvestigadoresView,
+      AppPermission.ProyectosView,
+      AppPermission.PublicacionesView,
+      AppPermission.GruposView,
+      AppPermission.ReportesView,
+      AppPermission.GeoRead,
+      AppPermission.OrgUnitsView,
+      AppPermission.VocabulariosRead,
     ],
     modules: [
       "Panel",
@@ -172,19 +153,30 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
     label: "Resp. Proyecto",
     summary: "Acceso a sus proyectos como responsable.",
     permissions: [
-      "dashboard.view",
-      "investigadores.view",
-      "proyectos.view",
-      "proyectos.manage",
-      "publicaciones.view",
-      "reportes.view",
-      "reportes.export",
-      "org_units.view",
-      "vocabularios.view",
+      AppPermission.DashboardView,
+      AppPermission.InvestigadoresView,
+      AppPermission.ProyectosView,
+      AppPermission.PublicacionesView,
+      AppPermission.GruposView,
+      AppPermission.ReportesView,
+      AppPermission.GeoRead,
+      AppPermission.OrgUnitsView,
+      AppPermission.VocabulariosRead,
     ],
-    modules: ["Panel", "Investigadores", "Proyectos", "Publicaciones", "Reportes", "Unidades Org."],
+    modules: ["Panel", "Investigadores", "Proyectos", "Publicaciones", "Grupos", "Reportes", "Unidades Org."],
   },
 };
+
+/** Reconstruye ROLE_DEFINITIONS derivando de la matriz canonica de shared. */
+export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = Object.fromEntries(
+  (Object.keys(ROLE_DEFINITIONS_DATA) as AppRole[]).map((role) => [
+    role,
+    {
+      ...ROLE_DEFINITIONS_DATA[role],
+      permissions: [...permissionsForRole(role)],
+    },
+  ]),
+) as Record<AppRole, RoleDefinition>;
 
 const isAppRole = (value: string): value is AppRole => value in ROLE_DEFINITIONS;
 

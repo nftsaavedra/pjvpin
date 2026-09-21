@@ -23,6 +23,7 @@
   },
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/../src/$1",
+    "^@pjvpin/shared$": "<rootDir>/../../../packages/shared/dist/index.js",
     "^@nestjs/event-emitter$": "<rootDir>/__mocks__/event-emitter.ts",
     "^@nestjs/websockets$": "<rootDir>/__mocks__/websockets.ts",
     "^@nestjs/platform-socket.io$": "<rootDir>/__mocks__/platform-socket.io.ts",

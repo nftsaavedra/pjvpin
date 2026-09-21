@@ -5,7 +5,7 @@ import { StatusChip } from "./shared/ui/StatusChip";
 import { type Usuario } from "./features/auth/api";
 import { ToastContainer } from "./shared/feedback/ToastContainer";
 import { TabNavigation, type Tab } from "./shared/navigation/TabNavigation";
-import { getRoleLabel, hasPermission, type AppPermission } from "./shared/auth/permissions";
+import { getRoleLabel, hasPermission } from "./shared/auth/permissions";
 import { AuthShell } from "./app/AuthShell";
 import { TabRenderers } from "./app/TabRenderers";
 import { AppLoadingScreen } from "./app/components/AppLoadingScreen";
@@ -77,7 +77,7 @@ function App() {
   const tabs: Tab[] = useMemo(
     () =>
       TAB_DEFINITIONS.filter((def) =>
-        hasPermission(currentRole, def.permission as AppPermission),
+        hasPermission(currentRole, def.permission),
       ).map((def) => ({
         id: def.id,
         label: def.label,

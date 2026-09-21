@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useMemo, useState } from "react";
 import { Building2, GraduationCap, LibraryBig, Users } from "lucide-react";
 import type { Usuario } from "../auth/api";
-import { hasPermission } from "@/shared/auth/permissions";
+import { AppPermission, hasPermission } from "@/shared/auth/permissions";
 import { EmptyState } from "@/shared/ui/EmptyState";
 import { SkeletonBlock, SkeletonTable } from "@/shared/ui/Skeleton";
 import { TabNavigation, type Tab } from "@/shared/navigation/TabNavigation";
@@ -51,10 +51,10 @@ export const ConfiguracionTab: React.FC<ConfiguracionTabProps> = ({
   isAdmin,
   onDataModified,
 }) => {
-  const canManageCatalogos = hasPermission(currentUser?.rol, "catalogos.manage");
+  const canManageCatalogos = hasPermission(currentUser?.rol, AppPermission.CatalogosManage);
   const canViewCatalogos = canManageCatalogos;
-  const canViewOrgUnits = hasPermission(currentUser?.rol, "org_units.view");
-  const canManageOrgUnits = hasPermission(currentUser?.rol, "org_units.manage");
+  const canViewOrgUnits = hasPermission(currentUser?.rol, AppPermission.OrgUnitsView);
+  const canManageOrgUnits = hasPermission(currentUser?.rol, AppPermission.OrgUnitsManage);
 
   const [activeSection, setActiveSection] = useState<ConfigSection>(
     isAdmin ? "usuarios" : "grados",

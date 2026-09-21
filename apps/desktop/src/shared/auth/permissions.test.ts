@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hasPermission, normalizeAppRole, getRoleLabel } from "./permissions";
+import { hasPermission, normalizeAppRole, getRoleLabel, AppPermission } from "./permissions";
 
 describe("normalizeAppRole", () => {
   it("returns admin for admin string", () => {
@@ -28,29 +28,49 @@ describe("normalizeAppRole", () => {
   });
 });
 
-describe("hasPermission", () => {
-  it("admin has all permissions", () => {
-    expect(hasPermission("admin", "dashboard.view")).toBe(true);
-    expect(hasPermission("admin", "usuarios.manage")).toBe(true);
-    expect(hasPermission("admin", "configuracion.view")).toBe(true);
-    expect(hasPermission("admin", "publicaciones.manage")).toBe(true);
+describe("hasPermission (canonical matrix, fuente unica shared)", () => {
+  it("superuser and admin have all permissions", () => {
+    for (const role of ["superuser", "admin"]) {
+      expect(hasPermission(role, AppPermission.DashboardView)).toBe(true);
+      expect(hasPermission(role, AppPermission.UsuariosManage)).toBe(true);
+      expect(hasPermission(role, AppPermission.InvestigadoresManage)).toBe(true);
+      expect(hasPermission(role, AppPermission.ReportesExport)).toBe(true);
+    }
   });
 
-  it("operador has operational permissions but not config", () => {
-    expect(hasPermission("operador", "investigadores.manage")).toBe(true);
-    expect(hasPermission("operador", "reportes.export")).toBe(true);
-    expect(hasPermission("operador", "publicaciones.manage")).toBe(true);
-    expect(hasPermission("operador", "usuarios.manage")).toBe(false);
-    expect(hasPermission("operador", "configuracion.view")).toBe(false);
+  it("operador has operational permissions but not usuarios.manage", () => {
+    expect(hasPermission("operador", AppPermission.InvestigadoresManage)).toBe(true);
+    expect(hasPermission("operador", AppPermission.ReportesExport)).toBe(true);
+    expect(hasPermission("operador", AppPermission.PublicacionesManage)).toBe(true);
+    expect(hasPermission("operador", AppPermission.UsuariosManage)).toBe(false);
   });
 
   it("consulta has only view permissions", () => {
-    expect(hasPermission("consulta", "dashboard.view")).toBe(true);
-    expect(hasPermission("consulta", "investigadores.view")).toBe(true);
-    expect(hasPermission("consulta", "investigadores.manage")).toBe(false);
-    expect(hasPermission("consulta", "reportes.export")).toBe(false);
-    expect(hasPermission("consulta", "publicaciones.view")).toBe(true);
-    expect(hasPermission("consulta", "publicaciones.manage")).toBe(false);
+    expect(hasPermission("consulta", AppPermission.DashboardView)).toBe(true);
+    expect(hasPermission("consulta", AppPermission.InvestigadoresView)).toBe(true);
+    expect(hasPermission("consulta", AppPermission.InvestigadoresManage)).toBe(false);
+    expect(hasPermission("consulta", AppPermission.ReportesExport)).toBe(false);
+    expect(hasPermission("consulta", AppPermission.PublicacionesManage)).toBe(false);
+  });
+
+  it("responsable_proyecto: read-only (sin proyectos.manage, sin reportes.export)", () => {
+    expect(hasPermission("responsable_proyecto", AppPermission.ProyectosView)).toBe(true);
+    expect(hasPermission("responsable_proyecto", AppPermission.ProyectosManage)).toBe(false);
+    expect(hasPermission("responsable_proyecto", AppPermission.ReportesExport)).toBe(false);
+    expect(hasPermission("responsable_proyecto", AppPermission.UsuariosManage)).toBe(false);
+    expect(hasPermission("responsable_proyecto", AppPermission.InvestigadoresView)).toBe(true);
+  });
+
+  it("desync resuelto: frontend y backend comparten la misma matriz canonica", () => {
+    // Antes: frontend daba proyectos.manage y reportes.export a responsable_proyecto;
+    // backend los denegaba (el guard rechazaba con 500 -> ahora 403 tras W1).
+    // Ahora: ambos consumen @pjvpin/shared, mismo resultado.
+    expect(hasPermission("responsable_proyecto", AppPermission.ProyectosManage)).toBe(
+      hasPermission("consulta", AppPermission.ProyectosManage),
+    );
+    expect(hasPermission("responsable_proyecto", AppPermission.ReportesExport)).toBe(
+      hasPermission("consulta", AppPermission.ReportesExport),
+    );
   });
 });
 
@@ -61,27 +81,5 @@ describe("getRoleLabel", () => {
     expect(getRoleLabel("operador")).toBe("Operador");
     expect(getRoleLabel("consulta")).toBe("Consulta");
     expect(getRoleLabel("responsable_proyecto")).toBe("Resp. Proyecto");
-  });
-});
-
-describe("new roles: superuser and responsable_proyecto", () => {
-  it("superuser has all permissions", () => {
-    expect(hasPermission("superuser", "dashboard.view")).toBe(true);
-    expect(hasPermission("superuser", "investigadores.manage")).toBe(true);
-    expect(hasPermission("superuser", "usuarios.manage")).toBe(true);
-    expect(hasPermission("superuser", "configuracion.view")).toBe(true);
-  });
-
-  it("responsable_proyecto cannot manage usuarios", () => {
-    expect(hasPermission("responsable_proyecto", "usuarios.manage")).toBe(false);
-    expect(hasPermission("responsable_proyecto", "configuracion.view")).toBe(false);
-  });
-
-  it("responsable_proyecto can view and manage proyectos", () => {
-    expect(hasPermission("responsable_proyecto", "proyectos.view")).toBe(true);
-    expect(hasPermission("responsable_proyecto", "proyectos.manage")).toBe(true);
-    expect(hasPermission("responsable_proyecto", "reportes.export")).toBe(true);
-    expect(hasPermission("responsable_proyecto", "publicaciones.view")).toBe(true);
-    expect(hasPermission("responsable_proyecto", "publicaciones.manage")).toBe(false);
   });
 });

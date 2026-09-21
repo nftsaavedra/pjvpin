@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { AppPermission } from "@/shared/auth/permissions";
 
 export type TabGroup = "operativa" | "sistema";
 
@@ -16,7 +17,7 @@ export interface TabDef {
   label: string;
   icon: LucideIcon;
   description: string;
-  permission: string;
+  permission: AppPermission;
   group?: TabGroup;
 }
 
@@ -26,7 +27,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     label: "Panel",
     icon: LayoutDashboard,
     description: "Indicadores clave",
-    permission: "dashboard.view",
+    permission: AppPermission.DashboardView,
     group: "operativa",
   },
   {
@@ -34,7 +35,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     label: "Proyectos",
     icon: FolderOpen,
     description: "Alta y seguimiento",
-    permission: "proyectos.view",
+    permission: AppPermission.ProyectosView,
     group: "operativa",
   },
   {
@@ -42,7 +43,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     label: "Investigadores",
     icon: GraduationCap,
     description: "Registro y estado",
-    permission: "investigadores.view",
+    permission: AppPermission.InvestigadoresView,
     group: "operativa",
   },
   {
@@ -50,7 +51,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     label: "Publicaciones",
     icon: BookText,
     description: "Publicaciones científicas (Pure)",
-    permission: "publicaciones.view",
+    permission: AppPermission.PublicacionesView,
     group: "operativa",
   },
   {
@@ -58,7 +59,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     label: "Grupos",
     icon: Users,
     description: "Investigación coordinada",
-    permission: "grupos.view",
+    permission: AppPermission.GruposView,
     group: "operativa",
   },
   {
@@ -66,7 +67,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     label: "Reportes",
     icon: FileSpreadsheet,
     description: "Vista previa y exportación",
-    permission: "reportes.view",
+    permission: AppPermission.ReportesView,
     group: "operativa",
   },
   {
@@ -74,7 +75,7 @@ export const TAB_DEFINITIONS: TabDef[] = [
     label: "Configuración",
     icon: Settings2,
     description: "Accesos y catálogos",
-    permission: "configuracion.view",
+    permission: AppPermission.UsuariosManage,
     group: "sistema",
   },
 ];
