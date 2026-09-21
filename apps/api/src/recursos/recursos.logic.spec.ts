@@ -1,4 +1,4 @@
-import { AppError } from "../infra/errors/app-error";
+import { ForbiddenException } from "@nestjs/common";
 import {
   RecursosRbacActor,
   RecursosRbacDeps,
@@ -94,7 +94,7 @@ describe("recursos.logic", () => {
           null,
           deps,
         ),
-      ).rejects.toBeInstanceOf(AppError);
+      ).rejects.toBeInstanceOf(ForbiddenException);
       // No se llega a llamar al resolver
       expect(deps.calls.resolver).toHaveLength(0);
     });
@@ -107,7 +107,7 @@ describe("recursos.logic", () => {
           "   ",
           deps,
         ),
-      ).rejects.toBeInstanceOf(AppError);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it("D2: responsable_proyecto sin proyectoId aunque sea responsable de OTRO proyecto → 403", async () => {
@@ -118,7 +118,7 @@ describe("recursos.logic", () => {
           undefined,
           deps,
         ),
-      ).rejects.toBeInstanceOf(AppError);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it("responsable_proyecto con proyectoId pero NO es responsable → 403", async () => {
@@ -129,7 +129,7 @@ describe("recursos.logic", () => {
           "p-1",
           deps,
         ),
-      ).rejects.toBeInstanceOf(AppError);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it("responsable_proyecto sin investigador asociado → 403", async () => {
@@ -140,7 +140,7 @@ describe("recursos.logic", () => {
           "p-1",
           deps,
         ),
-      ).rejects.toBeInstanceOf(AppError);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it("rol consulta sin RecursosManage → 403", async () => {
@@ -151,7 +151,7 @@ describe("recursos.logic", () => {
           "p-1",
           deps,
         ),
-      ).rejects.toBeInstanceOf(AppError);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 
@@ -186,7 +186,7 @@ describe("recursos.logic", () => {
           null,
           deps,
         ),
-      ).rejects.toBeInstanceOf(AppError);
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it("responsable_proyecto sobre patente con proyectoId + es_responsable=true → OK", async () => {

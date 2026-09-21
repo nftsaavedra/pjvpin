@@ -95,7 +95,7 @@ describe("apiFetch", () => {
 
   it("throws AppError with formatted message on non-2xx", async () => {
     mockFetch.mockResolvedValueOnce(
-      jsonResponse({ NotFound: "Investigador no encontrado." }, 404),
+      jsonResponse({ statusCode: 404, message: "Investigador no encontrado.", error: "NotFound" }, 404),
     );
     await expect(apiFetch("/endpoint")).rejects.toThrow("Investigador no encontrado.");
   });

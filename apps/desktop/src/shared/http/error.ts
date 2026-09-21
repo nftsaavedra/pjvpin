@@ -1,32 +1,23 @@
-const API_ERROR_VARIANTS = [
-  "ValidationError",
-  "NotFound",
-  "UniqueConstraintViolation",
-  "ConfigurationError",
-  "ExternalServiceError",
-  "ReferentialIntegrity",
-  "DatabaseError",
-  "InternalError",
-  "DataInconsistency",
-] as const;
-
 const STATUS_MESSAGES: Record<number, string> = {
   400: "Solicitud incorrecta",
   401: "Sesion expirada o credenciales invalidas",
   403: "No tiene permisos para esta accion",
   404: "Recurso no encontrado",
   409: "Conflicto con datos existentes",
+  429: "Demasiadas solicitudes. Intente mas tarde.",
   500: "Error interno del servidor",
   502: "Servicio externo no disponible",
   503: "Servicio no configurado",
 };
 
-function extractVariantMessage(body: unknown): string | null {
+function extractMessage(body: unknown): string | null {
   if (!body || typeof body !== "object") return null;
   const obj = body as Record<string, unknown>;
-  for (const variant of API_ERROR_VARIANTS) {
-    const value = obj[variant];
-    if (typeof value === "string" && value.trim()) return value;
+  const msg = obj.message;
+  if (typeof msg === "string" && msg.trim()) return msg;
+  if (Array.isArray(msg)) {
+    const joined = msg.filter((m): m is string => typeof m === "string").join("; ").trim();
+    if (joined) return joined;
   }
   return null;
 }
@@ -39,8 +30,8 @@ export class AppError extends Error {
 }
 
 export function getApiErrorMessage(status: number, body: unknown): string {
-  const variantMsg = extractVariantMessage(body);
-  if (variantMsg) return variantMsg;
+  const message = extractMessage(body);
+  if (message) return message;
 
   if (typeof body === "string" && body.trim()) return body;
 
@@ -60,9 +51,6 @@ export const getErrorMessage = (error: unknown): string => {
     if (typeof maybe.message === "string" && maybe.message.trim()) {
       return maybe.message;
     }
-
-    const variantMsg = extractVariantMessage(maybe);
-    if (variantMsg) return variantMsg;
 
     try {
       return JSON.stringify(error);

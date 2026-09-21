@@ -1,4 +1,4 @@
-import { AppError } from "../infra/errors/app-error";
+import { ConflictException, ForbiddenException } from "@nestjs/common";
 
 export type AppRole = "superuser" | "admin" | "operador" | "consulta" | "responsable_proyecto";
 
@@ -12,7 +12,7 @@ const SUPERUSER_ROLE = "superuser";
 
 /**
  * Invariantes superuser 1:1 con src-tauri/src/usuarios/validations.rs del backend Rust.
- * Lanza AppError.internal con mensaje user-facing si viola alguna invariante.
+ * Las violaciones son o de estado (409 Conflict) o de autorizacion (403 Forbidden).
  */
 
 export async function ensureSoloUnicoSuperuser(
@@ -23,7 +23,7 @@ export async function ensureSoloUnicoSuperuser(
   if (nextRol !== SUPERUSER_ROLE) return;
   const existing = await countSuperusersFn();
   if (existing > 0) {
-    throw AppError.internal("Ya existe un superusuario. Solo puede haber uno en el sistema.");
+    throw new ConflictException("Ya existe un superusuario. Solo puede haber uno en el sistema.");
   }
 }
 
@@ -35,7 +35,7 @@ export async function noDegradarSuperuser(
   if (nextRol !== SUPERUSER_ROLE) {
     const target = await findUsuarioFn(targetId);
     if (target && target.rol === SUPERUSER_ROLE) {
-      throw AppError.internal("El unico superusuario no puede ser degradado a otro rol.");
+      throw new ForbiddenException("El unico superusuario no puede ser degradado a otro rol.");
     }
   }
 }
@@ -48,7 +48,7 @@ export async function noEscalableASuperuser(
   if (nextRol === SUPERUSER_ROLE) {
     const target = await findUsuarioFn(targetId);
     if (target && target.rol !== SUPERUSER_ROLE) {
-      throw AppError.internal(
+      throw new ForbiddenException(
         "No se puede escalar un usuario a superusuario. Solo el bootstrap lo crea.",
       );
     }
@@ -63,7 +63,7 @@ export async function noDesactivarSuperuser(
   if (nextActivo === 0) {
     const target = await findUsuarioFn(targetId);
     if (target && target.rol === SUPERUSER_ROLE) {
-      throw AppError.internal("El unico superusuario no puede ser desactivado.");
+      throw new ForbiddenException("El unico superusuario no puede ser desactivado.");
     }
   }
 }
@@ -74,6 +74,6 @@ export async function noAutoDegradarse(
   nextRol: string,
 ): Promise<void> {
   if (actorId === targetId && nextRol !== SUPERUSER_ROLE) {
-    throw AppError.internal("Un usuario no puede cambiar su propio rol.");
+    throw new ForbiddenException("Un usuario no puede cambiar su propio rol.");
   }
 }

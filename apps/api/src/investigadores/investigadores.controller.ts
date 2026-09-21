@@ -26,6 +26,7 @@ import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { AppError } from "../infra/errors/app-error";
 import type { KardexEntry } from "../kardex/kardex.logic";
 
 @Controller("investigadores")
@@ -57,7 +58,7 @@ export class InvestigadoresController {
   @RequirePermission(AppPermission.InvestigadoresManage)
   async byDni(@Param("dni") dni: string): Promise<InvestigadorDto> {
     const inv = await this.service.findByDni(dni);
-    if (!inv) throw new Error("Not found");
+    if (!inv) throw AppError.notFound("Investigador no encontrado.");
     return inv;
   }
 
@@ -72,7 +73,7 @@ export class InvestigadoresController {
   async byId(@Param("id") id: string): Promise<InvestigadorDto> {
     const docs = await this.service.listAll();
     const found = docs.find((d) => d.id_investigador === id);
-    if (!found) throw new Error("Not found");
+    if (!found) throw AppError.notFound("Investigador no encontrado.");
     return found;
   }
 

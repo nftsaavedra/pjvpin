@@ -19,9 +19,9 @@ export class OcdeService {
 
   async assign(req: AsignarOcdeRequest, actor: AuthenticatedUser): Promise<EntityOcdeFieldDto> {
     const valid = await this.repo.validateOcdeCodigo(req.ocde_codigo);
-    if (!valid) throw AppError.internal("Codigo OCDE no existe en catalogos.");
+    if (!valid) throw AppError.notFound("Codigo OCDE no existe en catalogos.");
     const existing = await this.repo.findOne(req.entity_type, req.entity_id, req.ocde_codigo);
-    if (existing) throw AppError.internal("Ese campo OCDE ya esta asignado.");
+    if (existing) throw AppError.unique("Ese campo OCDE ya esta asignado.");
     const doc: EntityOcdeFieldDoc = {
       entity_type: req.entity_type,
       entity_id: req.entity_id,

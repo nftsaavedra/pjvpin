@@ -35,7 +35,7 @@ export class GruposService {
 
   async create(req: CreateGrupoRequest, actor: AuthenticatedUser): Promise<GrupoDto> {
     const existing = await this.repo.findByNombre(req.nombre);
-    if (existing) throw AppError.internal("Ya existe un grupo con ese nombre.");
+    if (existing) throw AppError.unique("Ya existe un grupo con ese nombre.");
     const id_grupo = `grupo-${Date.now()}`;
     const doc: GrupoDoc = {
       id_grupo,

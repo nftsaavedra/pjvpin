@@ -1,9 +1,8 @@
 import { NestFactory } from "@nestjs/core";
-import { ValidationPipe, Logger } from "@nestjs/common";
+import { BadRequestException, Logger, ValidationPipe } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
-import { AppErrorFilter } from "./infra/errors/app-error.filter";
 import { DEFAULT_GLOBAL_PREFIX, DEFAULT_PORT, DEFAULT_CORS_ORIGINS } from "./config/defaults";
 
 async function bootstrap(): Promise<void> {
@@ -24,9 +23,15 @@ async function bootstrap(): Promise<void> {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: false },
+      exceptionFactory: (errors) => {
+        Logger.warn(
+          `Validacion fallida: ${JSON.stringify(errors)}`,
+          "ValidationPipe",
+        );
+        return new BadRequestException("Datos invalidos en la solicitud.");
+      },
     }),
   );
-  app.useGlobalFilters(new AppErrorFilter());
   const port = Number(process.env.PORT ?? DEFAULT_PORT);
   await app.listen(port);
   logger.log(`PJVPIN API escuchando en http://localhost:${port}/${DEFAULT_GLOBAL_PREFIX}`);

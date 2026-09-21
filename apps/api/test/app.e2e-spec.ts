@@ -3,7 +3,6 @@ import { INestApplication, ValidationPipe, Module } from "@nestjs/common";
 import * as supertest from "supertest";
 const request = supertest.default ?? supertest;
 import { AppModule } from "../src/app.module";
-import { AppErrorFilter } from "../src/infra/errors/app-error.filter";
 import { MONGO_DB } from "../src/infra/mongo/mongo.module";
 import type { Db } from "mongodb";
 
@@ -100,7 +99,6 @@ beforeAll(async () => {
       transformOptions: { enableImplicitConversion: false },
     }),
   );
-  app.useGlobalFilters(new AppErrorFilter());
   await app.init();
 
   db = app.get<Db>(MONGO_DB);

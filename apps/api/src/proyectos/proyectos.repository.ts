@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { ClientSession, Collection, Db } from "mongodb";
 import { MONGO_DB } from "../infra/mongo/mongo.module";
+import { AppError } from "../infra/errors/app-error";
 
 /**
  * Tipos de documento del dominio `proyectos`. 1:1 con los structs Rust
@@ -199,7 +200,7 @@ export class ProyectosRepository {
       { projection: { _id: 1 } },
     );
     if (!doc) {
-      throw new Error(`Proyecto ${id} no encontrado.`);
+      throw AppError.notFound(`Proyecto ${id} no encontrado.`);
     }
   }
 

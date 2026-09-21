@@ -42,12 +42,12 @@ export class OrgUnitsService {
   async create(req: CreateOrgUnitRequest, actor: AuthenticatedUser): Promise<OrgUnitDto> {
     if (req.ruc) {
       const existing = await this.repo.findByRuc(req.ruc);
-      if (existing) throw AppError.internal("Ya existe un OrgUnit con ese RUC.");
+      if (existing) throw AppError.unique("Ya existe un OrgUnit con ese RUC.");
     }
-    if (req.parent_id === req.tipo) throw AppError.internal("parent_id invalido.");
+    if (req.parent_id === req.tipo) throw AppError.validation("parent_id invalido.");
     if (req.parent_id) {
       const parent = await this.repo.findById(req.parent_id);
-      if (!parent) throw AppError.internal("parent_id no existe.");
+      if (!parent) throw AppError.notFound("parent_id no existe.");
     }
     const id_org_unit = `org-${Date.now()}`;
     const doc: OrgUnitDoc = {
@@ -83,9 +83,9 @@ export class OrgUnitsService {
     if (!existing) throw AppError.notFound("OrgUnit no encontrada.");
     if (req.parent_id !== undefined && req.parent_id !== null) {
       if (req.parent_id === id)
-        throw AppError.internal("Una org unit no puede ser su propio padre.");
+        throw AppError.validation("Una org unit no puede ser su propio padre.");
       const cycle = await this.repo.hasCycle(req.parent_id, id);
-      if (cycle) throw AppError.internal("La operacion crearia un ciclo en la jerarquia.");
+      if (cycle) throw AppError.validation("La operacion crearia un ciclo en la jerarquia.");
     }
     const set: Partial<OrgUnitDoc> = {};
     if (req.nombre !== undefined) set.nombre = req.nombre;
@@ -109,7 +109,7 @@ export class OrgUnitsService {
 
   async delete(id: string, actor: AuthenticatedUser): Promise<{ ok: true }> {
     const children = await this.repo.countChildReferences(id);
-    if (children > 0) throw AppError.internal("OrgUnit tiene hijos en la jerarquia.");
+    if (children > 0) throw AppError.referential("OrgUnit tiene hijos en la jerarquia.");
     await this.repo.delete(id);
     await this.audit.writeGenericAudit(
       { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },

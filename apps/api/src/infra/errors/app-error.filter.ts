@@ -1,4 +1,5 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Logger } from "@nestjs/common";
+import { ArgumentsHost, Catch, HttpException, Logger } from "@nestjs/common";
+import { BaseExceptionFilter, HttpAdapterHost } from "@nestjs/core";
 import { MongoServerError } from "mongodb";
 import { AppError } from "./app-error";
 import { E11000_FIELDS_USER_FRIENDLY } from "../../config/defaults";
@@ -17,44 +18,41 @@ const STATUS_BY_VARIANT: Record<string, number> = {
 };
 
 @Catch()
-export class AppErrorFilter implements ExceptionFilter {
+export class AppErrorFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(AppErrorFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost): void {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
+  constructor(adapterHost: HttpAdapterHost) {
+    // BaseExceptionFilter accepts the http adapter directly; we delegate
+    // HttpException handling to NestJS native response shape via super.catch().
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    super(adapterHost.httpAdapter as any);
+  }
 
+  catch(exception: unknown, host: ArgumentsHost): void {
     if (exception instanceof AppError) {
       const status = STATUS_BY_VARIANT[exception.variant] ?? 500;
-      const body: Record<string, string> = { [exception.variant]: exception.message };
-      response.status(status).json(body);
-      return;
-    }
-
-    if (exception instanceof HttpException) {
-      const status = exception.getStatus();
-      const resp = exception.getResponse();
-      const message =
-        typeof resp === "string"
-          ? resp
-          : (resp as { message?: unknown }).message
-            ? String((resp as { message: unknown }).message)
-            : exception.message;
-      const body: Record<string, string> = { InternalError: sanitizeExternalDetail(message) };
-      response.status(status).json(body);
+      this.respond(host, status, exception.message, exception.variant);
       return;
     }
 
     const mongoErr = exception as Partial<MongoServerError> | null;
     if (mongoErr && (mongoErr.code === 11000 || mongoErr.code === "11000")) {
-      const friendly = this.mapE11000ToFriendlyMessage(mongoErr);
-      response.status(409).json({ UniqueConstraintViolation: friendly });
+      this.respond(host, 409, this.mapE11000ToFriendlyMessage(mongoErr), "UniqueConstraintViolation");
+      return;
+    }
+
+    if (exception instanceof HttpException) {
+      super.catch(exception, host);
       return;
     }
 
     const fallback = exception instanceof Error ? exception.message : String(exception);
     this.logger.error(`Unhandled exception: ${sanitizeExternalDetail(fallback)}`);
-    response.status(500).json({ InternalError: "Error interno del servidor." });
+    this.respond(host, 500, "Error interno del servidor.", "InternalError");
+  }
+
+  private respond(host: ArgumentsHost, status: number, message: string, error: string): void {
+    host.switchToHttp().getResponse().status(status).json({ statusCode: status, message, error });
   }
 
   private mapE11000ToFriendlyMessage(err: Partial<MongoServerError>): string {

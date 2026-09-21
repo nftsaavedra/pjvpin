@@ -82,7 +82,7 @@ export class UsuariosService {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("E11000") || msg.includes("duplicate")) {
-        throw AppError.internal("Ya existe un usuario o DNI registrado.");
+        throw AppError.unique("Ya existe un usuario o DNI registrado.");
       }
       throw err;
     }

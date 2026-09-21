@@ -2,29 +2,25 @@ import { describe, it, expect } from "vitest";
 import { getApiErrorMessage, getErrorMessage, AppError } from "./error";
 
 describe("getApiErrorMessage", () => {
-  it("extracts variant message from body", () => {
-    expect(getApiErrorMessage(404, { NotFound: "Investigador no encontrado." })).toBe(
-      "Investigador no encontrado.",
-    );
-    expect(getApiErrorMessage(409, { UniqueConstraintViolation: "DNI duplicado." })).toBe(
-      "DNI duplicado.",
-    );
-    expect(getApiErrorMessage(400, { ValidationError: "Campo requerido" })).toBe("Campo requerido");
-    expect(getApiErrorMessage(500, { DatabaseError: "Connection refused" })).toBe(
-      "Connection refused",
-    );
-    expect(getApiErrorMessage(503, { ConfigurationError: "RENIEC no configurado" })).toBe(
-      "RENIEC no configurado",
-    );
-    expect(getApiErrorMessage(502, { ExternalServiceError: "Timeout" })).toBe("Timeout");
-    expect(getApiErrorMessage(409, { ReferentialIntegrity: "Grado en uso" })).toBe("Grado en uso");
-    expect(getApiErrorMessage(500, { InternalError: "Error interno" })).toBe("Error interno");
-    expect(getApiErrorMessage(409, { DataInconsistency: "Dato inconsistente" })).toBe(
-      "Dato inconsistente",
-    );
+  it("reads body.message (standard NestJS shape)", () => {
+    expect(
+      getApiErrorMessage(404, { statusCode: 404, message: "Investigador no encontrado.", error: "NotFound" }),
+    ).toBe("Investigador no encontrado.");
+    expect(
+      getApiErrorMessage(401, { statusCode: 401, message: "Credenciales invalidas.", error: "Unauthorized" }),
+    ).toBe("Credenciales invalidas.");
+    expect(
+      getApiErrorMessage(403, { statusCode: 403, message: "No tiene permisos.", error: "Forbidden" }),
+    ).toBe("No tiene permisos.");
   });
 
-  it("falls back to status message when no variant", () => {
+  it("joins body.message when it is an array (validation errors)", () => {
+    expect(
+      getApiErrorMessage(400, { statusCode: 400, message: ["campo a es requerido", "campo b invalido"] }),
+    ).toBe("campo a es requerido; campo b invalido");
+  });
+
+  it("falls back to status message when body has no message", () => {
     expect(getApiErrorMessage(401, null)).toBe("Sesion expirada o credenciales invalidas");
     expect(getApiErrorMessage(403, {})).toBe("No tiene permisos para esta accion");
     expect(getApiErrorMessage(404, undefined)).toBe("Recurso no encontrado");
@@ -32,6 +28,7 @@ describe("getApiErrorMessage", () => {
     expect(getApiErrorMessage(500, {})).toBe("Error interno del servidor");
     expect(getApiErrorMessage(502, {})).toBe("Servicio externo no disponible");
     expect(getApiErrorMessage(503, {})).toBe("Servicio no configurado");
+    expect(getApiErrorMessage(429, {})).toBe("Demasiadas solicitudes. Intente mas tarde.");
   });
 
   it("falls back to string body", () => {
@@ -42,10 +39,8 @@ describe("getApiErrorMessage", () => {
     expect(getApiErrorMessage(418, {})).toBe("Error HTTP 418");
   });
 
-  it("ignores empty variant strings", () => {
-    expect(getApiErrorMessage(400, { ValidationError: "  " })).toBe(
-      "Solicitud incorrecta",
-    );
+  it("ignores empty message strings", () => {
+    expect(getApiErrorMessage(400, { message: "  " })).toBe("Solicitud incorrecta");
   });
 });
 
@@ -69,16 +64,7 @@ describe("getErrorMessage", () => {
     expect(getErrorMessage(new AppError("API error"))).toBe("API error");
   });
 
-  it("extracts variant message from object body", () => {
-    expect(getErrorMessage({ NotFound: "No existe" })).toBe("No existe");
-    expect(getErrorMessage({ ValidationError: "campo requerido" })).toBe("campo requerido");
-  });
-
-  it("prefers .message over variant when both present", () => {
-    expect(getErrorMessage({ message: "direct msg", NotFound: "variant msg" })).toBe("direct msg");
-  });
-
-  it("falls back to JSON.stringify for objects without message/variant", () => {
+  it("falls back to JSON.stringify for objects without message", () => {
     expect(getErrorMessage({ code: 42, detail: "unknown" })).toBe('{"code":42,"detail":"unknown"}');
   });
 

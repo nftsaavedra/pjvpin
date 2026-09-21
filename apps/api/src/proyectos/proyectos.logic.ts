@@ -24,6 +24,7 @@ import {
   esRolParticipacionValido,
   isIso4217,
 } from "./vocab";
+import { AppError } from "../infra/errors/app-error";
 
 export interface ParticipantesPreparados {
   ids: string[];
@@ -49,22 +50,22 @@ export function prepararParticipantes(
   const responsable = responsableInput?.trim() || null;
 
   if (ids.length === 0 && responsable !== null) {
-    throw new Error(
+    throw AppError.validation(
       "Seleccione al menos un investigador para crear el proyecto.",
     );
   }
   if (ids.length === 0 && !opts.permitirListaVacia) {
-    throw new Error(
+    throw AppError.validation(
       "Seleccione al menos un investigador para crear el proyecto.",
     );
   }
   if (ids.length > 0 && responsable === null) {
-    throw new Error(
+    throw AppError.validation(
       "Seleccione un investigador responsable para el proyecto.",
     );
   }
   if (responsable !== null && !ids.includes(responsable)) {
-    throw new Error(
+    throw AppError.validation(
       "El investigador responsable debe estar entre los participantes del proyecto.",
     );
   }
@@ -114,7 +115,7 @@ export function normalizarCodigoManual(codigo: string | null | undefined): strin
   const trimmed = codigo.trim();
   if (trimmed.length === 0) return null;
   if (trimmed.length > MAX_CODIGO_LENGTH) {
-    throw new Error(`El codigo no debe exceder ${MAX_CODIGO_LENGTH} caracteres.`);
+    throw AppError.validation(`El codigo no debe exceder ${MAX_CODIGO_LENGTH} caracteres.`);
   }
   return trimmed;
 }
@@ -135,13 +136,13 @@ export function resolverCodigoParaCreate(
 
 export function validarRolOrg(rol: string): void {
   if (!esOrgRolValido(rol)) {
-    throw new Error(`Rol de organizacion invalido: ${rol}.`);
+    throw AppError.validation(`Rol de organizacion invalido: ${rol}.`);
   }
 }
 
 export function validarRolParticipacion(rol: string): void {
   if (!esRolParticipacionValido(rol)) {
-    throw new Error(`Rol de participacion invalido: ${rol}.`);
+    throw AppError.validation(`Rol de participacion invalido: ${rol}.`);
   }
 }
 
@@ -149,7 +150,7 @@ export function validarMonedaODefault(moneda: string | null | undefined): string
   if (moneda == null || moneda.trim().length === 0) return DEFAULT_MONEDA;
   const up = moneda.trim().toUpperCase();
   if (!isIso4217(up)) {
-    throw new Error("La moneda debe cumplir ISO 4217 (3 letras ASCII uppercase).");
+    throw AppError.validation("La moneda debe cumplir ISO 4217 (3 letras ASCII uppercase).");
   }
   return up;
 }
@@ -157,7 +158,7 @@ export function validarMonedaODefault(moneda: string | null | undefined): string
 export function validarMontoAsignado(monto: number | undefined): number | null {
   if (monto === undefined || monto === null) return null;
   if (!Number.isFinite(monto) || monto < 0) {
-    throw new Error("El monto asignado debe ser un numero finito >= 0.");
+    throw AppError.validation("El monto asignado debe ser un numero finito >= 0.");
   }
   return monto;
 }

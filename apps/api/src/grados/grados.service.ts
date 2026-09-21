@@ -56,7 +56,7 @@ export class GradosService {
 
   async create(req: CreateGradoRequest, actor: AuthenticatedUser): Promise<GradoDto> {
     const existing = await this.repo.findByNombre(req.nombre);
-    if (existing) throw AppError.internal("Ya existe un grado con ese nombre.");
+    if (existing) throw AppError.unique("Ya existe un grado con ese nombre.");
     const id_grado = `grado-${Date.now()}`;
     const doc: GradoDoc = {
       id_grado,
@@ -97,7 +97,7 @@ export class GradosService {
     const existing = await this.repo.findById(id);
     if (!existing) throw AppError.notFound("Grado no encontrado.");
     const refs = await this.repo.countReferencias(id);
-    if (refs > 0) throw AppError.internal("Grado referenciado por investigadores activos.");
+    if (refs > 0) throw AppError.referential("Grado referenciado por investigadores activos.");
     await this.repo.setActivo(id, 0);
     await this.audit.writeGenericAudit(
       { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },

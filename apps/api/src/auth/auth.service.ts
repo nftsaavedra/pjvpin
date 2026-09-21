@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as argon2 from "argon2";
@@ -70,14 +70,14 @@ export class AuthService {
   async login(username: string, password: string): Promise<AuthResponse> {
     const user = await this.usuarios.findOne({ username });
     if (!user) {
-      throw AppError.internal("Credenciales invalidas.");
+      throw new UnauthorizedException("Credenciales invalidas.");
     }
     if (user.activo !== 1) {
-      throw AppError.internal("Credenciales invalidas.");
+      throw new UnauthorizedException("Credenciales invalidas.");
     }
     const ok = await argon2.verify(user.password_hash, password);
     if (!ok) {
-      throw AppError.internal("Credenciales invalidas.");
+      throw new UnauthorizedException("Credenciales invalidas.");
     }
     return this.buildAuthResponse(user);
   }
@@ -89,11 +89,11 @@ export class AuthService {
         secret: this.config.getOrThrow<string>("JWT_REFRESH_SECRET"),
       });
     } catch {
-      throw AppError.internal("Refresh token invalido o expirado.");
+      throw new UnauthorizedException("Refresh token invalido o expirado.");
     }
     const user = await this.usuarios.findOne({ id_usuario: payload.sub });
     if (!user || user.activo !== 1) {
-      throw AppError.internal("Sesion invalidada.");
+      throw new UnauthorizedException("Sesion invalidada.");
     }
     const access = await this.signAccess({
       sub: user.id_usuario,
@@ -128,7 +128,7 @@ export class AuthService {
   ): Promise<UsuarioDto> {
     const count = await this.usuarios.countDocuments({});
     if (count > 0) {
-      throw AppError.internal("El bootstrap solo esta disponible sin usuarios.");
+      throw new ConflictException("El bootstrap solo esta disponible sin usuarios.");
     }
     const password_hash = await argon2.hash(password, { type: argon2.argon2id });
     const id_persona = `persona-${dni}`;
@@ -172,7 +172,7 @@ export class AuthService {
   async bootstrapReniecDni(numero: string): Promise<ReniecDniLookupResult> {
     const count = await this.usuarios.countDocuments({});
     if (count > 0) {
-      throw AppError.internal("El bootstrap solo esta disponible sin usuarios.");
+      throw new ConflictException("El bootstrap solo esta disponible sin usuarios.");
     }
     return this.reniec.consultar(numero);
   }

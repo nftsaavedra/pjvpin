@@ -51,7 +51,7 @@ export class CatalogosService {
       ? await this.repo.findByTipoEsquemaCodigo(req.tipo, req.esquema, req.codigo)
       : await this.repo.findByTipoCodigo(req.tipo, req.codigo);
     if (existing) {
-      throw AppError.internal("Ya existe un item con ese codigo para ese tipo.");
+      throw AppError.unique("Ya existe un item con ese codigo para ese tipo.");
     }
     const id = `catalogo-${req.tipo}-${req.esquema ?? ""}-${req.codigo}`
       .toLowerCase()
@@ -85,7 +85,7 @@ export class CatalogosService {
     const existing = await this.repo.findById(id);
     if (!existing) throw AppError.notFound("Item de catalogo no encontrado.");
     if ((existing.editable ?? 1) === 0) {
-      throw AppError.internal("Este item no es editable.");
+      throw AppError.validation("Este item no es editable.");
     }
     const set: Partial<CatalogoDoc> = {};
     if (changes.nombre !== undefined) set.nombre = changes.nombre;
@@ -105,11 +105,11 @@ export class CatalogosService {
     const existing = await this.repo.findById(id);
     if (!existing) throw AppError.notFound("Item de catalogo no encontrado.");
     if ((existing.editable ?? 1) === 0) {
-      throw AppError.internal("Este item no se puede eliminar.");
+      throw AppError.validation("Este item no se puede eliminar.");
     }
     const refs = await this.repo.countReferences(id, REFERENCING_COLLECTIONS);
     if (refs > 0) {
-      throw AppError.internal("El item esta referenciado y no se puede eliminar.");
+      throw AppError.referential("El item esta referenciado y no se puede eliminar.");
     }
     await this.repo.setActivo(id, 0);
     await this.audit.writeGenericAudit(

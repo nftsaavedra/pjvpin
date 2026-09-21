@@ -15,7 +15,7 @@ export class JwtAuthGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<{ headers: Record<string, string | undefined>; user?: unknown }>();
     const header = req.headers["authorization"] ?? req.headers["Authorization"];
     const token = typeof header === "string" ? header.replace(/^Bearer\s+/i, "") : null;
-    if (!token) throw new UnauthorizedException("Missing bearer token");
+    if (!token) throw new UnauthorizedException("Token de acceso ausente.");
     try {
       const payload = this.jwt.verify<JwtPayload>(token);
       req.user = {
@@ -25,7 +25,7 @@ export class JwtAuthGuard implements CanActivate {
       };
       return true;
     } catch {
-      throw new UnauthorizedException("Invalid token");
+      throw new UnauthorizedException("Token de acceso invalido o expirado.");
     }
   }
 }

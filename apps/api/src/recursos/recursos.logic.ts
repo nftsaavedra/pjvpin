@@ -14,6 +14,7 @@
  * Ver `docs/backend/07-inventario-rust-bloque-e.md` §2.2-2.3 y §5 D2/D6.
  */
 
+import { ForbiddenException } from "@nestjs/common";
 import { AppError } from "../infra/errors/app-error";
 import { roleHasPermission } from "../rbac/role-matrix";
 import { AppPermission } from "../rbac/permissions.enum";
@@ -30,7 +31,7 @@ export function validarMonedaODefault(moneda: string | null | undefined): string
   if (moneda == null || moneda.trim().length === 0) return "PEN";
   const up = moneda.trim().toUpperCase();
   if (!ISO_4217_REGEX.test(up)) {
-    throw new Error("La moneda debe cumplir ISO 4217 (3 letras ASCII uppercase).");
+    throw AppError.validation("La moneda debe cumplir ISO 4217 (3 letras ASCII uppercase).");
   }
   return up;
 }
@@ -39,7 +40,7 @@ export function validarMonedaODefault(moneda: string | null | undefined): string
 export function validarMontoFinito(monto: number | undefined | null): number | null {
   if (monto === undefined || monto === null) return null;
   if (!Number.isFinite(monto) || monto < 0) {
-    throw new Error("El monto debe ser un numero finito >= 0.");
+    throw AppError.validation("El monto debe ser un numero finito >= 0.");
   }
   return monto;
 }
@@ -49,7 +50,7 @@ export function validarPatenteTipo(tipo: string | null | undefined): string | nu
   if (tipo == null || tipo.trim().length === 0) return null;
   const t = tipo.trim();
   if (!esPatenteTipoValido(t)) {
-    throw new Error(
+    throw AppError.validation(
       `Tipo de patente invalido: ${t}. Valores validos: invencion, modelo_utilidad, diseno_industrial.`,
     );
   }
@@ -68,7 +69,7 @@ export function validarFechasFinanciamiento(
     Number.isFinite(fechaFin) &&
     fechaFin < fechaInicio
   ) {
-    throw new Error("La fecha de fin debe ser >= fecha de inicio.");
+    throw AppError.validation("La fecha de fin debe ser >= fecha de inicio.");
   }
 }
 
@@ -79,28 +80,28 @@ export function validarTitularHolderExactlyOne(
   idPersona: string | null | undefined,
 ): void {
   if (!esTitularHolderTypeValido(holderType)) {
-    throw new Error(`Holder type invalido: ${holderType}.`);
+    throw AppError.validation(`Holder type invalido: ${holderType}.`);
   }
   const hasOrg = !!(idOrgUnit && idOrgUnit.trim().length > 0);
   const hasPer = !!(idPersona && idPersona.trim().length > 0);
   if (hasOrg && hasPer) {
-    throw new Error("El titular debe tener exactamente un identificador (org_unit o persona), no ambos.");
+    throw AppError.validation("El titular debe tener exactamente un identificador (org_unit o persona), no ambos.");
   }
   if (!hasOrg && !hasPer) {
-    throw new Error("El titular debe tener exactamente un identificador (org_unit o persona).");
+    throw AppError.validation("El titular debe tener exactamente un identificador (org_unit o persona).");
   }
   if (holderType === "ORG_UNIT" && !hasOrg) {
-    throw new Error("Holder type ORG_UNIT requiere id_org_unit.");
+    throw AppError.validation("Holder type ORG_UNIT requiere id_org_unit.");
   }
   if (holderType === "PERSON" && !hasPer) {
-    throw new Error("Holder type PERSON requiere id_persona.");
+    throw AppError.validation("Holder type PERSON requiere id_persona.");
   }
 }
 
 /** Orden de pivots (inventor / titular) >= 1. */
 export function validarOrdenPivot(orden: number | null | undefined): number {
   if (orden == null || !Number.isInteger(orden) || orden < 1) {
-    throw new Error("El orden del pivote debe ser un entero >= 1.");
+    throw AppError.validation("El orden del pivote debe ser un entero >= 1.");
   }
   return orden;
 }
@@ -114,7 +115,7 @@ export function validarFinanciamientoNoSelfParent(
   const p = parentId.trim();
   if (p.length === 0) return;
   if (idFinanciamiento != null && p === idFinanciamiento) {
-    throw new Error("Un financiamiento no puede ser su propio padre.");
+    throw AppError.validation("Un financiamiento no puede ser su propio padre.");
   }
 }
 
@@ -164,26 +165,26 @@ export async function requireRecursosManageOrResponsable(
     return;
   }
   if (actor.rol !== ROL_RECURSOS_RESPONSABLE) {
-    throw AppError.internal("No tiene permisos para realizar esta operacion sobre recursos.");
+    throw new ForbiddenException("No tiene permisos para realizar esta operacion sobre recursos.");
   }
   const proyectoIdTrim =
     typeof proyectoId === "string" && proyectoId.trim().length > 0
       ? proyectoId.trim()
       : null;
   if (proyectoIdTrim === null) {
-    throw AppError.internal(
+    throw new ForbiddenException(
       "Responsable de proyecto requiere un proyectoId verificable para crear/editar recursos.",
     );
   }
   const investigadorId = await deps.resolverInvestigadorIdDelActor(actor);
   if (investigadorId === null) {
-    throw AppError.internal(
+    throw new ForbiddenException(
       "Usuario responsable_proyecto no tiene un investigador asociado.",
     );
   }
   const esResp = await deps.esResponsableDelProyecto(investigadorId, proyectoIdTrim);
   if (!esResp) {
-    throw AppError.internal(
+    throw new ForbiddenException(
       "No es responsable del proyecto indicado para crear/editar recursos.",
     );
   }
@@ -204,24 +205,24 @@ export async function requireRecursosManageOrResponsableForPatente(
     return;
   }
   if (actor.rol !== ROL_RECURSOS_RESPONSABLE) {
-    throw AppError.internal("No tiene permisos para realizar esta operacion sobre pivotes de patentes.");
+    throw new ForbiddenException("No tiene permisos para realizar esta operacion sobre pivotes de patentes.");
   }
   const proyectoIdTrim =
     typeof proyectoIdDePatente === "string" && proyectoIdDePatente.trim().length > 0
       ? proyectoIdDePatente.trim()
       : null;
   if (proyectoIdTrim === null) {
-    throw AppError.internal(
+    throw new ForbiddenException(
       "Responsable de proyecto requiere una patente vinculada a un proyecto para manipular pivotes.",
     );
   }
   const investigadorId = await deps.resolverInvestigadorIdDelActor(actor);
   if (investigadorId === null) {
-    throw AppError.internal("Usuario responsable_proyecto no tiene un investigador asociado.");
+    throw new ForbiddenException("Usuario responsable_proyecto no tiene un investigador asociado.");
   }
   const esResp = await deps.esResponsableDelProyecto(investigadorId, proyectoIdTrim);
   if (!esResp) {
-    throw AppError.internal(
+    throw new ForbiddenException(
       "No es responsable del proyecto vinculado a la patente para manipular pivotes.",
     );
   }
