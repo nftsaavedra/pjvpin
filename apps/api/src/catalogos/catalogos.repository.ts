@@ -12,6 +12,7 @@ export interface CatalogoDoc {
   editable: number;
   esquema?: string;
   padre_codigo?: string;
+  nivel?: number;
   activo?: number;
 }
 
@@ -53,6 +54,11 @@ export class CatalogosRepository {
     await this.col.insertOne({ ...doc, activo: 1 } as unknown as Parameters<
       typeof this.col.insertOne
     >[0]);
+  }
+
+  async deleteByEsquema(esquema: string): Promise<number> {
+    const res = await this.col.deleteMany({ esquema });
+    return res.deletedCount ?? 0;
   }
 
   async updateById(id: string, set: Partial<CatalogoDoc>): Promise<void> {

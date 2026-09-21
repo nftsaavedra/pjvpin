@@ -1,33 +1,16 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { CatalogosRepository, type CatalogoDoc } from "../catalogos.repository";
 import { AuditService } from "../../audit/audit.service";
 import type { AuthenticatedUser } from "../../rbac/current-user.decorator";
 import type { CatalogoItemDto, ReimportarVocabResult } from "../dto/catalogos.dto";
+import { VOCAB_SEED, VOCAB_SEED_ESQUEMAS } from "./vocab-seed";
 
-const ESQUEMAS_CONOCIDOS = [
-  "ocde_ford",
-  "tipo_organizacion_concytec",
-  "moneda_concytec",
-  "idioma_iso_639_1",
-  "estado_publicacion",
-  "cuartil_jcr",
-  "cuartil_scopus",
-  "acceso_abierto",
-  "tipo_patente_invencion",
-  "tipo_software",
-  "pais_iso_3166",
-  "disciplina_concytec",
-  "subdisciplina_concytec",
-  "area_conocimiento_ocde",
-  "estado_proyecto_sincyt",
-] as const;
+const ESQUEMAS_CONOCIDOS = VOCAB_SEED_ESQUEMAS as unknown as string[];
 
 /**
- * Re-importacion de vocabularios SKOS.
- * En fase actual el API no carga el JSON embebido (Rust es dueno de BD);
- * el endpoint queda cableado con contrato y conteo; los items se obtendran
- * del backend Rust via sync cuando se cierre la transicion (fase H).
- * Para pruebas, usa una lista vacia y reporta 0 recargados.
+ * Re-importacion de vocabularios SKOS: borra los items del esquema en la
+ * BD y reinserta el set embebido (`VOCAB_SEED`). Idempotente para un
+ * esquema; los catalogos internos legacy (sin `esquema`) no se tocan.
  */
 @Injectable()
 export class VocabularioService {
@@ -40,8 +23,7 @@ export class VocabularioService {
 
   async listarEsquemas(): Promise<string[]> {
     const esquemas = await this.repo.listEsquemasVocabulario();
-    const known = ESQUEMAS_CONOCIDOS as unknown as string[];
-    return Array.from(new Set([...known, ...esquemas])).sort();
+    return Array.from(new Set([...ESQUEMAS_CONOCIDOS, ...esquemas])).sort();
   }
 
   async listarItems(esquema: string, padreCodigo: string | undefined): Promise<CatalogoItemDto[]> {
@@ -50,15 +32,39 @@ export class VocabularioService {
   }
 
   async reimportar(esquema: string, actor: AuthenticatedUser): Promise<ReimportarVocabResult> {
-    this.logger.warn(`reimportar vocabulario ${esquema}: no-op en fase de transicion`);
+    const entries = VOCAB_SEED.filter((e) => e.esquema === esquema);
+    if (entries.length === 0) {
+      throw new BadRequestException(`Esquema de vocabulario no soportado: ${esquema}`);
+    }
+
+    await this.repo.deleteByEsquema(esquema);
+    let recargados = 0;
+    for (const e of entries) {
+      const doc: CatalogoDoc = {
+        id: `catalogo-${e.esquema}-${e.codigo_interno}`,
+        tipo: e.esquema,
+        codigo: e.codigo_interno,
+        codigo_skos: e.codigo_skos,
+        nombre: e.nombre,
+        esquema: e.esquema,
+        padre_codigo: e.padre_codigo ?? undefined,
+        nivel: e.nivel,
+        editable: 0,
+        activo: 1,
+      };
+      await this.repo.insert(doc);
+      recargados += 1;
+    }
+
     await this.audit.writeGenericAudit(
       { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
       "vocabulario.reimport",
       "vocabulario",
       esquema,
-      JSON.stringify({ source: "api", note: "no-op fase transicion" }),
+      JSON.stringify({ recargados }),
     );
-    return { ok: true, esquema, recargados: 0 };
+    this.logger.log(`reimportar vocabulario ${esquema}: ${recargados} items`);
+    return { ok: true, esquema, recargados };
   }
 
   private toDto(doc: CatalogoDoc): CatalogoItemDto {
