@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { InvestigadoresModule } from "../investigadores/investigadores.module";
+import { EntityRefsModule } from "../infra/refs/entity-refs.module";
 import { MongoModule } from "../infra/mongo/mongo.module";
 import { UsuariosModule } from "../usuarios/usuarios.module";
 import { EquipamientosController } from "./equipamientos.controller";
@@ -10,7 +11,7 @@ import { RecursosRepository } from "./recursos.repository";
 import { RecursosService } from "./recursos.service";
 
 @Module({
-  imports: [MongoModule, UsuariosModule, InvestigadoresModule],
+  imports: [MongoModule, EntityRefsModule, UsuariosModule, InvestigadoresModule],
   controllers: [
     PatentesController,
     EquipamientosController,

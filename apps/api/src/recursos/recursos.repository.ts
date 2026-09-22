@@ -328,33 +328,11 @@ export class RecursosRepository {
   // ----- FK checks -----
 
   /**
-   * Busca el id en la coleccion externa correspondiente por su PK publica
-   * (`id_<entidad>`) o por `_id` (PK interna Mongo). Devuelve true si existe.
-   */
-  async entityExists(collection: string, id: string): Promise<boolean> {
-    const camposId = [
-      "id_proyecto",
-      "id_org_unit",
-      "id_financiamiento",
-      "id_patente",
-      "id_equipamiento",
-      "id_grupo",
-      "id_evento",
-      "id_grado",
-      "id_catalogo",
-      "id_persona",
-      "id_publicacion",
-    ];
-    const probe = await this.db
-      .collection(collection)
-      .findOne({ $or: camposId.map((c) => ({ [c]: id })) });
-    return probe != null;
-  }
-
-  /**
    * Variante con tipo explicito: si se conoce la PK publica de la coleccion,
-   * se busca solo por ese campo (mas eficiente y preciso). Se conserva
-   * `entityExists` como fallback polimorfico para casos donde la PK varia.
+   * se busca solo por ese campo (mas eficiente y preciso). El probe
+   * polimorfico (sin nombre de campo) vive ahora en
+   * `EntityRefsService.assertExists` y se consume desde los servicios que
+   * necesitan validar FK cruzadas sin acoplarse a cada repositorio.
    */
   async entityExistsByPublicId(
     collection: string,

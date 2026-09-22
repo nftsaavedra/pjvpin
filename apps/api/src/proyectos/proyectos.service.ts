@@ -6,6 +6,7 @@ import { AuditContextService } from "../audit/audit-context.service";
 import { AppError } from "../infra/errors/app-error";
 import { InvestigadoresRepository } from "../investigadores/investigadores.repository";
 import { MONGO_CLIENT } from "../infra/mongo/mongo.module";
+import { EntityRefsService } from "../infra/refs/entity-refs.service";
 import { UsuariosRepository } from "../usuarios/usuarios.repository";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import { ROLE_CO_INVESTIGADOR, ROLE_INVESTIGADOR_PRINCIPAL } from "./vocab";
@@ -53,6 +54,7 @@ export class ProyectosService {
     private readonly repo: ProyectosRepository,
     private readonly usuariosRepo: UsuariosRepository,
     private readonly investigadoresRepo: InvestigadoresRepository,
+    private readonly refs: EntityRefsService,
     private readonly auditContext: AuditContextService,
   ) {}
 
@@ -344,7 +346,7 @@ export class ProyectosService {
     void actor;
     validarRolOrg(dto.rol);
     await this.repo.ensureProyectoExists(idProyecto);
-    await this.ensureEntityExists("org_units", dto.id_org_unit, "Unidad organizativa");
+    await this.refs.assertExists("org_units", dto.id_org_unit, "Unidad organizativa");
     try {
       await this.repo.insertProyectoOrganizacion({
         _id: randomUUID(),
@@ -400,7 +402,7 @@ export class ProyectosService {
     const monto = validarMontoAsignado(dto.monto_asignado);
     const moneda = validarMonedaODefault(dto.moneda);
     await this.repo.ensureProyectoExists(idProyecto);
-    await this.ensureEntityExists(
+    await this.refs.assertExists(
       "financiamientos",
       dto.id_financiamiento,
       "Financiamiento",
@@ -495,41 +497,6 @@ export class ProyectosService {
       throw AppError.validation(
         "Uno o mas investigadores seleccionados no existen o estan inactivos.",
       );
-    }
-  }
-
-  /**
-   * FK check contra la coleccion externa correspondiente. Cada coleccion
-   * persiste su PK como `id_<entidad>` (id_proyecto, id_org_unit, etc).
-   * Buscamos especificamente en la coleccion indicada para evitar falsos
-   * positivos (un mismo string podria no existir como id de proyecto pero
-   * si como id de financiamiento). Se itera sobre los nombres de PK mas
-   * comunes para tolerar la inconsistencia Rust (PK en `id_*` vs `_id`).
-   */
-  private async ensureEntityExists(
-    collection: string,
-    id: string,
-    label: string,
-  ): Promise<void> {
-    const db = await this.investigadoresRepo.getDb();
-    const camposId = [
-      "id_proyecto",
-      "id_org_unit",
-      "id_financiamiento",
-      "id_patente",
-      "id_equipamiento",
-      "id_grupo",
-      "id_evento",
-      "id_grado",
-      "id_catalogo",
-      "id_persona",
-      "id_publicacion",
-    ];
-    const probe = await db
-      .collection(collection)
-      .findOne({ $or: camposId.map((c) => ({ [c]: id })) });
-    if (!probe) {
-      throw AppError.notFound(`${label} no encontrado.`);
     }
   }
 

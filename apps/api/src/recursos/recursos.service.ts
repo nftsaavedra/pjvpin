@@ -6,6 +6,7 @@ import { AuditContextService } from "../audit/audit-context.service";
 import { AppError } from "../infra/errors/app-error";
 import { InvestigadoresRepository } from "../investigadores/investigadores.repository";
 import { MONGO_CLIENT } from "../infra/mongo/mongo.module";
+import { EntityRefsService } from "../infra/refs/entity-refs.service";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import { UsuariosRepository } from "../usuarios/usuarios.repository";
 import { CreateEquipamientoDto, UpdateEquipamientoDto, EquipamientoDto } from "./dto/equipamiento.dto";
@@ -41,6 +42,7 @@ export class RecursosService {
     private readonly repo: RecursosRepository,
     private readonly usuariosRepo: UsuariosRepository,
     private readonly investigadoresRepo: InvestigadoresRepository,
+    private readonly refs: EntityRefsService,
     private readonly auditContext: AuditContextService,
   ) {}
 
@@ -64,7 +66,7 @@ export class RecursosService {
 
     if (proyectoId) await this.repo.ensureProyectoExists(proyectoId);
     if (input.id_org_unit_concedente) {
-      await this.ensureEntityExists("org_units", input.id_org_unit_concedente, "Unidad organizativa");
+      await this.refs.assertExists("org_units", input.id_org_unit_concedente, "Unidad organizativa");
     }
     if (numero) {
       const dup = await this.repo.findPatenteByNumero(numero);
@@ -119,7 +121,7 @@ export class RecursosService {
     const numero = this.trimOrNull(input.numero_patente);
 
     if (input.id_org_unit_concedente) {
-      await this.ensureEntityExists("org_units", input.id_org_unit_concedente, "Unidad organizativa");
+      await this.refs.assertExists("org_units", input.id_org_unit_concedente, "Unidad organizativa");
     }
     if (numero && numero !== existing.numero_patente) {
       const dup = await this.repo.findPatenteByNumero(numero);
@@ -224,10 +226,10 @@ export class RecursosService {
     const valor = validarMontoFinito(input.valor_estimado ?? null);
 
     if (input.id_org_unit_propietaria) {
-      await this.ensureEntityExists("org_units", input.id_org_unit_propietaria, "Unidad organizativa");
+      await this.refs.assertExists("org_units", input.id_org_unit_propietaria, "Unidad organizativa");
     }
     if (input.id_financiamiento) {
-      await this.ensureEntityExists("financiamientos", input.id_financiamiento, "Financiamiento");
+      await this.refs.assertExists("financiamientos", input.id_financiamiento, "Financiamiento");
     }
     if (input.codigo_institucional) {
       const dup = await this.repo.findEquipamientoByCodigo(input.codigo_institucional);
@@ -290,13 +292,13 @@ export class RecursosService {
       if (v !== existing.valor_estimado) set.valor_estimado = v;
     }
     if (input.id_org_unit_propietaria) {
-      await this.ensureEntityExists("org_units", input.id_org_unit_propietaria, "Unidad organizativa");
+      await this.refs.assertExists("org_units", input.id_org_unit_propietaria, "Unidad organizativa");
       set.id_org_unit_propietaria = this.trimOrNull(input.id_org_unit_propietaria);
     } else if (input.id_org_unit_propietaria === null) {
       set.id_org_unit_propietaria = null;
     }
     if (input.id_financiamiento) {
-      await this.ensureEntityExists("financiamientos", input.id_financiamiento, "Financiamiento");
+      await this.refs.assertExists("financiamientos", input.id_financiamiento, "Financiamiento");
       set.id_financiamiento = this.trimOrNull(input.id_financiamiento);
     } else if (input.id_financiamiento === null) {
       set.id_financiamiento = null;
@@ -391,10 +393,10 @@ export class RecursosService {
     validarFechasFinanciamiento(input.fecha_inicio ?? null, input.fecha_fin ?? null);
 
     if (input.id_org_unit_financiadora) {
-      await this.ensureEntityExists("org_units", input.id_org_unit_financiadora, "Unidad organizativa");
+      await this.refs.assertExists("org_units", input.id_org_unit_financiadora, "Unidad organizativa");
     }
     if (input.parent_id) {
-      await this.ensureEntityExists("financiamientos", input.parent_id, "Financiamiento padre");
+      await this.refs.assertExists("financiamientos", input.parent_id, "Financiamiento padre");
     }
 
     const now = Date.now();
@@ -457,14 +459,14 @@ export class RecursosService {
       set.fecha_fin = input.fecha_fin;
     }
     if (input.id_org_unit_financiadora) {
-      await this.ensureEntityExists("org_units", input.id_org_unit_financiadora, "Unidad organizativa");
+      await this.refs.assertExists("org_units", input.id_org_unit_financiadora, "Unidad organizativa");
       set.id_org_unit_financiadora = this.trimOrNull(input.id_org_unit_financiadora);
     } else if (input.id_org_unit_financiadora === null) {
       set.id_org_unit_financiadora = null;
     }
     if (input.parent_id) {
       validarFinanciamientoNoSelfParent(id, input.parent_id);
-      await this.ensureEntityExists("financiamientos", input.parent_id, "Financiamiento padre");
+      await this.refs.assertExists("financiamientos", input.parent_id, "Financiamiento padre");
       set.parent_id = this.trimOrNull(input.parent_id);
     } else if (input.parent_id === null) {
       set.parent_id = null;
@@ -533,7 +535,7 @@ export class RecursosService {
     await this.assertManageOrResponsableForPatente(actor, patente.proyecto_id);
 
     const orden = validarOrdenPivot(dto.orden);
-    await this.ensureEntityExists("personas", dto.id_persona, "Persona");
+    await this.refs.assertExists("personas", dto.id_persona, "Persona");
 
     const id = randomUUID();
     try {
@@ -597,10 +599,10 @@ export class RecursosService {
     const idOrgUnit = this.trimOrNull(dto.id_org_unit);
     const idPersona = this.trimOrNull(dto.id_persona);
     if (idOrgUnit) {
-      await this.ensureEntityExists("org_units", idOrgUnit, "Unidad organizativa");
+      await this.refs.assertExists("org_units", idOrgUnit, "Unidad organizativa");
     }
     if (idPersona) {
-      await this.ensureEntityExists("personas", idPersona, "Persona");
+      await this.refs.assertExists("personas", idPersona, "Persona");
     }
 
     const id = randomUUID();
@@ -704,17 +706,6 @@ export class RecursosService {
         return investigador?.id_investigador ?? null;
       },
     };
-  }
-
-  private async ensureEntityExists(
-    collection: string,
-    id: string,
-    label: string,
-  ): Promise<void> {
-    const ok = await this.repo.entityExists(collection, id);
-    if (!ok) {
-      throw AppError.notFound(`${label} no encontrado.`);
-    }
   }
 
   private toPatenteDto(doc: { id_patente: string; proyecto_id: string | null; titulo: string; numero_patente: string | null; tipo: string | null; estado: string | null; fecha_solicitud: number | null; fecha_concesion: number | null; pais: string | null; entidad_concedente: string | null; descripcion: string | null; clasificacion_ipc: string | null; id_org_unit_concedente: string | null; created_at: number | null; updated_at: number | null; activo: number }): PatenteDto {
