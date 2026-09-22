@@ -4,7 +4,7 @@ import { JwtAuthGuard } from "../../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../../rbac/permissions.guard";
 import { RequirePermission } from "../../rbac/require-permission.decorator";
 import { AppPermission } from "../../rbac/permissions.enum";
-import { CurrentUser, type AuthenticatedUser } from "../../rbac/current-user.decorator";
+import { Audit } from "../../audit/audit.decorator";
 import type { CatalogoItemDto, ReimportarVocabResult } from "../dto/catalogos.dto";
 
 @Controller("vocabularios")
@@ -29,10 +29,18 @@ export class VocabularioController {
 
   @Post(":esquema/reimportar")
   @RequirePermission(AppPermission.VocabulariosManage)
-  async reimportar(
-    @Param("esquema") esquema: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<ReimportarVocabResult> {
-    return this.service.reimportar(esquema, actor);
+  @Audit({
+    action: "vocabulario.reimport",
+    targetType: "vocabulario",
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as { recargados?: number } | null;
+        return r ? { recargados: r.recargados } : undefined;
+      },
+    },
+  })
+  async reimportar(@Param("esquema") esquema: string): Promise<ReimportarVocabResult> {
+    return this.service.reimportar(esquema);
   }
 }

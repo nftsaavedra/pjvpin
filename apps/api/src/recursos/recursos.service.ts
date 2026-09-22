@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { ClientSession, MongoClient } from "mongodb";
 import { MongoServerError } from "mongodb";
 import { randomUUID } from "node:crypto";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 import { AppError } from "../infra/errors/app-error";
 import { InvestigadoresRepository } from "../investigadores/investigadores.repository";
 import { MONGO_CLIENT } from "../infra/mongo/mongo.module";
@@ -41,7 +41,7 @@ export class RecursosService {
     private readonly repo: RecursosRepository,
     private readonly usuariosRepo: UsuariosRepository,
     private readonly investigadoresRepo: InvestigadoresRepository,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
   ) {}
 
   // ============================================================
@@ -101,13 +101,6 @@ export class RecursosService {
       }
       throw err;
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.create",
-      "patente",
-      id_patente,
-      JSON.stringify({ titulo, tipo, proyecto_id: proyectoId }),
-    );
     return this.toPatenteDto(doc);
   }
 
@@ -167,15 +160,9 @@ export class RecursosService {
         throw err;
       }
     }
+    this.auditContext.setDetails(JSON.stringify({ campos: Object.keys(set) }));
     const updated = await this.repo.findPatenteById(id);
     if (!updated) throw AppError.notFound("Patente no encontrada.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.update",
-      "patente",
-      id,
-      JSON.stringify({ campos: Object.keys(set) }),
-    );
     return this.toPatenteDto(updated);
   }
 
@@ -184,32 +171,22 @@ export class RecursosService {
     if (!existing) throw AppError.notFound("Patente no encontrada.");
     // Permiso: delete es RecursosManage-only (doc 07 §2.1).
     // El controller ya aplica el guard RecursosManage; aqui no se revalida.
+    void actor;
     await this.withTransaction(async (session) => {
       await this.repo.setPatenteActivo(id, 0, session);
       await this.repo.deletePatenteInventoresByPatente(id, session);
       await this.repo.deletePatenteTitularesByPatente(id, session);
       await this.repo.deleteEntityOcdeFieldsByPatente(id, session);
     });
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.delete",
-      "patente",
-      id,
-    );
   }
 
   async reactivatePatente(id: string, actor: AuthenticatedUser): Promise<PatenteDto> {
     const existing = await this.repo.findPatenteById(id);
     if (!existing) throw AppError.notFound("Patente no encontrada.");
+    void actor;
     await this.repo.setPatenteActivo(id, 1);
     const updated = await this.repo.findPatenteById(id);
     if (!updated) throw AppError.notFound("Patente no encontrada.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.reactivate",
-      "patente",
-      id,
-    );
     return this.toPatenteDto(updated);
   }
 
@@ -238,6 +215,7 @@ export class RecursosService {
     input: CreateEquipamientoDto,
     actor: AuthenticatedUser,
   ): Promise<EquipamientoDto> {
+    void actor;
     const nombre = this.trimOrFail(input.nombre, "El nombre del equipamiento es obligatorio.");
     if (nombre.length === 0) {
       throw AppError.validation("El nombre del equipamiento es obligatorio.");
@@ -286,13 +264,6 @@ export class RecursosService {
       }
       throw err;
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "equipamiento.create",
-      "equipamiento",
-      id_equipamiento,
-      JSON.stringify({ nombre, id_financiamiento: doc.id_financiamiento }),
-    );
     return this.toEquipamientoDto(doc);
   }
 
@@ -364,42 +335,26 @@ export class RecursosService {
         throw err;
       }
     }
+    this.auditContext.setDetails(JSON.stringify({ campos: Object.keys(set) }));
     const updated = await this.repo.findEquipamientoById(id);
     if (!updated) throw AppError.notFound("Equipamiento no encontrado.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "equipamiento.update",
-      "equipamiento",
-      id,
-      JSON.stringify({ campos: Object.keys(set) }),
-    );
     return this.toEquipamientoDto(updated);
   }
 
   async deleteEquipamiento(id: string, actor: AuthenticatedUser): Promise<void> {
     const existing = await this.repo.findEquipamientoById(id);
     if (!existing) throw AppError.notFound("Equipamiento no encontrado.");
+    void actor;
     await this.repo.setEquipamientoActivo(id, 0);
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "equipamiento.delete",
-      "equipamiento",
-      id,
-    );
   }
 
   async reactivateEquipamiento(id: string, actor: AuthenticatedUser): Promise<EquipamientoDto> {
     const existing = await this.repo.findEquipamientoById(id);
     if (!existing) throw AppError.notFound("Equipamiento no encontrado.");
+    void actor;
     await this.repo.setEquipamientoActivo(id, 1);
     const updated = await this.repo.findEquipamientoById(id);
     if (!updated) throw AppError.notFound("Equipamiento no encontrado.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "equipamiento.reactivate",
-      "equipamiento",
-      id,
-    );
     return this.toEquipamientoDto(updated);
   }
 
@@ -423,6 +378,7 @@ export class RecursosService {
     input: CreateFinanciamientoDto,
     actor: AuthenticatedUser,
   ): Promise<FinanciamientoDto> {
+    void actor;
     const codigo = this.trimOrFail(input.codigo, "El codigo del financiamiento es obligatorio.");
     if (codigo.length === 0) {
       throw AppError.validation("El codigo del financiamiento es obligatorio.");
@@ -462,13 +418,6 @@ export class RecursosService {
       activo: 1,
     };
     await this.repo.insertFinanciamiento(doc);
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "financiamiento.create",
-      "financiamiento",
-      id_financiamiento,
-      JSON.stringify({ codigo }),
-    );
     return this.toFinanciamientoDto(doc);
   }
 
@@ -479,6 +428,7 @@ export class RecursosService {
   ): Promise<FinanciamientoDto> {
     const existing = await this.repo.findFinanciamientoById(id);
     if (!existing) throw AppError.notFound("Financiamiento no encontrado.");
+    void actor;
 
     const set: Partial<FinanciamientoDocLocal> = {};
     if (input.codigo !== undefined) {
@@ -533,42 +483,26 @@ export class RecursosService {
     if (Object.keys(set).length > 0) {
       await this.repo.updateFinanciamiento(id, set);
     }
+    this.auditContext.setDetails(JSON.stringify({ campos: Object.keys(set) }));
     const updated = await this.repo.findFinanciamientoById(id);
     if (!updated) throw AppError.notFound("Financiamiento no encontrado.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "financiamiento.update",
-      "financiamiento",
-      id,
-      JSON.stringify({ campos: Object.keys(set) }),
-    );
     return this.toFinanciamientoDto(updated);
   }
 
   async deleteFinanciamiento(id: string, actor: AuthenticatedUser): Promise<void> {
     const existing = await this.repo.findFinanciamientoById(id);
     if (!existing) throw AppError.notFound("Financiamiento no encontrado.");
+    void actor;
     await this.repo.setFinanciamientoActivo(id, 0);
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "financiamiento.delete",
-      "financiamiento",
-      id,
-    );
   }
 
   async reactivateFinanciamiento(id: string, actor: AuthenticatedUser): Promise<FinanciamientoDto> {
     const existing = await this.repo.findFinanciamientoById(id);
     if (!existing) throw AppError.notFound("Financiamiento no encontrado.");
+    void actor;
     await this.repo.setFinanciamientoActivo(id, 1);
     const updated = await this.repo.findFinanciamientoById(id);
     if (!updated) throw AppError.notFound("Financiamiento no encontrado.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "financiamiento.reactivate",
-      "financiamiento",
-      id,
-    );
     return this.toFinanciamientoDto(updated);
   }
 
@@ -615,13 +549,6 @@ export class RecursosService {
       }
       throw err;
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.vincular_inventor",
-      "patente_inventor",
-      id,
-      JSON.stringify({ id_patente: idPatente, id_persona: dto.id_persona, orden }),
-    );
     return { id, id_patente: idPatente, id_persona: dto.id_persona, orden };
   }
 
@@ -630,16 +557,11 @@ export class RecursosService {
     idPivot: string,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     const deleted = await this.repo.deletePatenteInventorById(idPivot, idPatente);
     if (deleted === 0) {
       throw AppError.notFound("Vinculo inventor-patente no encontrado.");
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.desvincular_inventor",
-      "patente_inventor",
-      idPivot,
-    );
   }
 
   async listInventores(idPatente: string): Promise<PatenteInventorDocLocal[]> {
@@ -697,17 +619,6 @@ export class RecursosService {
       }
       throw err;
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.vincular_titular",
-      "patente_titular",
-      id,
-      JSON.stringify({
-        id_patente: idPatente,
-        holder_type: dto.holder_type,
-        orden,
-      }),
-    );
     return {
       id,
       id_patente: idPatente,
@@ -723,16 +634,11 @@ export class RecursosService {
     idPivot: string,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     const deleted = await this.repo.deletePatenteTitularById(idPivot, idPatente);
     if (deleted === 0) {
       throw AppError.notFound("Vinculo titular-patente no encontrado.");
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "patente.desvincular_titular",
-      "patente_titular",
-      idPivot,
-    );
   }
 
   async listTitulares(idPatente: string): Promise<PatenteTitularDocLocal[]> {
@@ -871,18 +777,6 @@ export class RecursosService {
       created_at: doc.created_at,
       updated_at: doc.updated_at,
       activo: doc.activo === 1,
-    };
-  }
-
-  private toAuditActor(actor: AuthenticatedUser): {
-    id_usuario: string;
-    username: string;
-    rol: string;
-  } {
-    return {
-      id_usuario: actor.id_usuario,
-      username: actor.username,
-      rol: actor.rol,
     };
   }
 

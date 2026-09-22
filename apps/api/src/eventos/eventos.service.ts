@@ -6,9 +6,8 @@
  */
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 import { AppError } from "../infra/errors/app-error";
-import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import {
   CreateEventoDto,
   EventoDto,
@@ -25,20 +24,8 @@ import {
 export class EventosService {
   constructor(
     private readonly repo: EventosRepository,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
   ) {}
-
-  private toAuditActor(actor: AuthenticatedUser): {
-    id_usuario: string;
-    username: string;
-    rol: string;
-  } {
-    return {
-      id_usuario: actor.id_usuario,
-      username: actor.username,
-      rol: actor.rol,
-    };
-  }
 
   private toDto(doc: EventoAcademicoDoc): EventoDto {
     return {
@@ -67,7 +54,7 @@ export class EventosService {
     };
   }
 
-  async create(input: CreateEventoDto, actor: AuthenticatedUser): Promise<EventoDto> {
+  async create(input: CreateEventoDto): Promise<EventoDto> {
     const idEvento = randomUUID();
     const now = Date.now();
     const doc: EventoAcademicoDoc = {
@@ -84,13 +71,6 @@ export class EventosService {
       activo: 1,
     };
     await this.repo.insertEvento(doc);
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "evento.create",
-      "evento",
-      idEvento,
-      JSON.stringify({ nombre: doc.nombre, tipo: doc.tipo }),
-    );
     return this.toDto(doc);
   }
 
@@ -105,11 +85,7 @@ export class EventosService {
     return this.toDto(doc);
   }
 
-  async update(
-    id: string,
-    input: UpdateEventoDto,
-    actor: AuthenticatedUser,
-  ): Promise<EventoDto> {
+  async update(id: string, input: UpdateEventoDto): Promise<EventoDto> {
     const existing = await this.repo.findEventoById(id);
     if (!existing) throw AppError.notFound("Evento no encontrado.");
 
@@ -126,42 +102,24 @@ export class EventosService {
     if (Object.keys(set).length > 0) {
       await this.repo.updateEvento(id, set);
     }
+    this.auditContext.setDetails(JSON.stringify({ campos: Object.keys(set) }));
     const updated = await this.repo.findEventoById(id);
     if (!updated) throw AppError.notFound("Evento no encontrado.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "evento.update",
-      "evento",
-      id,
-      JSON.stringify({ campos: Object.keys(set) }),
-    );
     return this.toDto(updated);
   }
 
-  async delete(id: string, actor: AuthenticatedUser): Promise<void> {
+  async delete(id: string): Promise<void> {
     const existing = await this.repo.findEventoById(id);
     if (!existing) throw AppError.notFound("Evento no encontrado.");
     await this.repo.setEventoActivo(id, 0);
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "evento.delete",
-      "evento",
-      id,
-    );
   }
 
-  async reactivate(id: string, actor: AuthenticatedUser): Promise<EventoDto> {
+  async reactivate(id: string): Promise<EventoDto> {
     const existing = await this.repo.findEventoById(id);
     if (!existing) throw AppError.notFound("Evento no encontrado.");
     await this.repo.setEventoActivo(id, 1);
     const updated = await this.repo.findEventoById(id);
     if (!updated) throw AppError.notFound("Evento no encontrado.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "evento.reactivate",
-      "evento",
-      id,
-    );
     return this.toDto(updated);
   }
 

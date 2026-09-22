@@ -13,6 +13,7 @@ import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 import { CreateEquipamientoDto, EquipamientoDto, UpdateEquipamientoDto } from "./dto/equipamiento.dto";
 import { RecursosService } from "./recursos.service";
 
@@ -28,6 +29,20 @@ export class EquipamientosController {
 
   @Post()
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "equipamiento.create",
+    targetType: "equipamiento",
+    targetId: { from: "response", field: "id_equipamiento" },
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as EquipamientoDto | null;
+        return r
+          ? { nombre: r.nombre, id_financiamiento: r.id_financiamiento }
+          : undefined;
+      },
+    },
+  })
   async create(
     @Body() body: CreateEquipamientoDto,
     @CurrentUser() actor: AuthenticatedUser,
@@ -37,6 +52,11 @@ export class EquipamientosController {
 
   @Patch(":id")
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "equipamiento.update",
+    targetType: "equipamiento",
+    details: { from: "context" },
+  })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateEquipamientoDto,
@@ -48,6 +68,7 @@ export class EquipamientosController {
   @Delete(":id")
   @HttpCode(204)
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({ action: "equipamiento.delete", targetType: "equipamiento" })
   async delete(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -57,6 +78,7 @@ export class EquipamientosController {
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({ action: "equipamiento.reactivate", targetType: "equipamiento" })
   async reactivate(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,

@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import type { ClientSession, MongoClient } from "mongodb";
 import { MongoServerError } from "mongodb";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 import { AppError } from "../infra/errors/app-error";
 import { InvestigadoresRepository } from "../investigadores/investigadores.repository";
 import { MONGO_CLIENT } from "../infra/mongo/mongo.module";
@@ -53,7 +53,7 @@ export class ProyectosService {
     private readonly repo: ProyectosRepository,
     private readonly usuariosRepo: UsuariosRepository,
     private readonly investigadoresRepo: InvestigadoresRepository,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
   ) {}
 
   // ============================================================
@@ -63,6 +63,7 @@ export class ProyectosService {
     input: CreateProyectoConParticipantesDto,
     actor: AuthenticatedUser,
   ): Promise<ProyectoDto> {
+    void actor;
     const prepared = prepararParticipantes(
       input.investigadores_ids,
       input.investigador_responsable_id,
@@ -78,11 +79,7 @@ export class ProyectosService {
         "No se pudo generar un codigo unico para el proyecto tras varios intentos.",
       );
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.create",
-      "proyecto",
-      inserted.id_proyecto,
+    this.auditContext.setDetails(
       JSON.stringify({
         titulo: inserted.titulo_proyecto,
         codigo: inserted.codigo,
@@ -167,6 +164,7 @@ export class ProyectosService {
     input: UpdateProyectoConParticipantesDto,
     actor: AuthenticatedUser,
   ): Promise<ProyectoDto> {
+    void actor;
     const existing = await this.repo.findProyectoById(id);
     if (!existing) {
       throw AppError.notFound("Proyecto no encontrado.");
@@ -198,20 +196,16 @@ export class ProyectosService {
         await this.repo.insertParticipaciones(participaciones, session);
       }
     });
-    const updated = await this.repo.findProyectoById(id);
-    if (!updated) {
-      throw AppError.notFound("Proyecto no encontrado.");
-    }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.update",
-      "proyecto",
-      id,
+    this.auditContext.setDetails(
       JSON.stringify({
         titulo: input.titulo_proyecto,
         participantes: prepared.ids.length,
       }),
     );
+    const updated = await this.repo.findProyectoById(id);
+    if (!updated) {
+      throw AppError.notFound("Proyecto no encontrado.");
+    }
     return this.toProyectoDto(updated);
   }
 
@@ -222,6 +216,7 @@ export class ProyectosService {
     id: string,
     actor: AuthenticatedUser,
   ): Promise<EliminarProyectoResultadoDto> {
+    void actor;
     const existing = await this.repo.findProyectoById(id);
     if (!existing) {
       throw AppError.notFound("Proyecto no encontrado.");
@@ -244,17 +239,11 @@ export class ProyectosService {
       if (ocde > 0) recursos.push("campos OCDE");
       await this.repo.setProyectoActivo(id, 0, session);
     });
+    this.auditContext.setDetails(JSON.stringify({ recursos }));
     const mensaje =
       recursos.length === 0
         ? "Proyecto desactivado."
         : `Proyecto desactivado. Recursos relacionados desactivados: ${recursos.join(", ")}.`;
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.delete",
-      "proyecto",
-      id,
-      JSON.stringify({ recursos }),
-    );
     return { accion: "desactivado", mensaje };
   }
 
@@ -265,6 +254,7 @@ export class ProyectosService {
     id: string,
     actor: AuthenticatedUser,
   ): Promise<ProyectoDto> {
+    void actor;
     const existing = await this.repo.findProyectoById(id);
     if (!existing) {
       throw AppError.notFound("Proyecto no encontrado.");
@@ -274,12 +264,6 @@ export class ProyectosService {
     if (!updated) {
       throw AppError.notFound("Proyecto no encontrado.");
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.reactivate",
-      "proyecto",
-      id,
-    );
     return this.toProyectoDto(updated);
   }
 
@@ -328,6 +312,7 @@ export class ProyectosService {
     idInvestigador: string,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     await this.repo.ensureProyectoExists(idProyecto);
     const deleted = await this.repo.deleteParticipacionByIds(
       idProyecto,
@@ -336,28 +321,16 @@ export class ProyectosService {
     if (deleted === 0) {
       throw AppError.notFound("Relacion proyecto-investigador no encontrada.");
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.delete_relation",
-      "proyecto",
-      idProyecto,
-      JSON.stringify({ id_investigador: idInvestigador }),
-    );
   }
 
   async eliminarRelaciones(
     idProyecto: string,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     await this.repo.ensureProyectoExists(idProyecto);
     const deleted = await this.repo.deleteParticipacionesByProyecto(idProyecto);
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.delete_relations",
-      "proyecto",
-      idProyecto,
-      JSON.stringify({ deleted }),
-    );
+    this.auditContext.setDetails(JSON.stringify({ deleted }));
   }
 
   // ============================================================
@@ -368,6 +341,7 @@ export class ProyectosService {
     dto: VincularOrgDto,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     validarRolOrg(dto.rol);
     await this.repo.ensureProyectoExists(idProyecto);
     await this.ensureEntityExists("org_units", dto.id_org_unit, "Unidad organizativa");
@@ -386,13 +360,6 @@ export class ProyectosService {
       }
       throw err;
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.vincular_org",
-      "proyecto",
-      idProyecto,
-      JSON.stringify({ id_org_unit: dto.id_org_unit, rol: dto.rol }),
-    );
   }
 
   async detachOrg(
@@ -400,6 +367,7 @@ export class ProyectosService {
     idPivot: string,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     const deleted = await this.repo.deleteProyectoOrganizacionById(
       idPivot,
       idProyecto,
@@ -407,12 +375,6 @@ export class ProyectosService {
     if (deleted === 0) {
       throw AppError.notFound("Vinculo organizacion-proyecto no encontrado.");
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.desvincular_org",
-      "proyecto_org",
-      idPivot,
-    );
   }
 
   async listOrgs(idProyecto: string): Promise<ProyectoOrganizacionDto[]> {
@@ -434,6 +396,7 @@ export class ProyectosService {
     dto: VincularFinanciamientoDto,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     const monto = validarMontoAsignado(dto.monto_asignado);
     const moneda = validarMonedaODefault(dto.moneda);
     await this.repo.ensureProyectoExists(idProyecto);
@@ -458,11 +421,7 @@ export class ProyectosService {
       }
       throw err;
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.vincular_fin",
-      "proyecto",
-      idProyecto,
+    this.auditContext.setDetails(
       JSON.stringify({
         id_financiamiento: dto.id_financiamiento,
         monto_asignado: monto,
@@ -476,6 +435,7 @@ export class ProyectosService {
     idPivot: string,
     actor: AuthenticatedUser,
   ): Promise<void> {
+    void actor;
     const deleted = await this.repo.deleteProyectoFinanciamientoById(
       idPivot,
       idProyecto,
@@ -483,12 +443,6 @@ export class ProyectosService {
     if (deleted === 0) {
       throw AppError.notFound("Vinculo financiamiento-proyecto no encontrado.");
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "proyecto.desvincular_fin",
-      "proyecto_fin",
-      idPivot,
-    );
   }
 
   async listFins(idProyecto: string): Promise<ProyectoFinanciamientoDto[]> {
@@ -557,7 +511,7 @@ export class ProyectosService {
     id: string,
     label: string,
   ): Promise<void> {
-    const db = this.investigadoresRepo.getDb();
+    const db = await this.investigadoresRepo.getDb();
     const camposId = [
       "id_proyecto",
       "id_org_unit",
@@ -584,7 +538,7 @@ export class ProyectosService {
   ): Promise<ProyectoDetalleDto[]> {
     if (proyectos.length === 0) return [];
     const proyectoIds = proyectos.map((p) => p.id_proyecto);
-    const db = this.investigadoresRepo.getDb();
+    const db = await this.investigadoresRepo.getDb();
 
     const participaciones = await db
       .collection<ParticipacionDoc>("participaciones")
@@ -735,18 +689,6 @@ export class ProyectosService {
       tematica_ambiental: doc.tematica_ambiental ?? null,
       tematica_salud: doc.tematica_salud ?? null,
       perucris_uuid: doc.perucris_uuid ?? null,
-    };
-  }
-
-  private toAuditActor(actor: AuthenticatedUser): {
-    id_usuario: string;
-    username: string;
-    rol: string;
-  } {
-    return {
-      id_usuario: actor.id_usuario,
-      username: actor.username,
-      rol: actor.rol,
     };
   }
 

@@ -26,6 +26,7 @@ import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 import { AppError } from "../infra/errors/app-error";
 import type { KardexEntry } from "../kardex/kardex.logic";
 
@@ -85,54 +86,55 @@ export class InvestigadoresController {
 
   @Post()
   @RequirePermission(AppPermission.InvestigadoresManage)
-  async create(
-    @Body() body: CreateInvestigadorRequest,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<InvestigadorDto> {
-    return this.service.create(body, actor);
+  @Audit({
+    action: "investigador.create",
+    targetType: "investigador",
+    targetId: { from: "response", field: "id_investigador" },
+  })
+  async create(@Body() body: CreateInvestigadorRequest): Promise<InvestigadorDto> {
+    return this.service.create(body);
   }
 
   @Patch(":id")
   @RequirePermission(AppPermission.InvestigadoresManage)
+  @Audit({ action: "investigador.update", targetType: "investigador" })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateInvestigadorRequest,
-    @CurrentUser() actor: AuthenticatedUser,
   ): Promise<InvestigadorDto> {
-    return this.service.update(id, body, actor);
+    return this.service.update(id, body);
   }
 
   @Delete(":id")
   @RequirePermission(AppPermission.InvestigadoresManage)
-  async delete(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<InvestigadorDto> {
-    return this.service.deactivate(id, actor);
+  @Audit({ action: "investigador.deactivate", targetType: "investigador" })
+  async delete(@Param("id") id: string): Promise<InvestigadorDto> {
+    return this.service.deactivate(id);
   }
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.InvestigadoresManage)
-  async reactivate(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<InvestigadorDto> {
-    return this.service.reactivate(id, actor);
+  @Audit({ action: "investigador.reactivate", targetType: "investigador" })
+  async reactivate(@Param("id") id: string): Promise<InvestigadorDto> {
+    return this.service.reactivate(id);
   }
 
   @Patch(":id/renacyt/cambios-revisados")
   @RequirePermission(AppPermission.InvestigadoresView)
-  async markReview(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<InvestigadorDto> {
-    return this.service.marcarCambiosRenacytRevisados(id, actor);
+  @Audit({ action: "investigador.renacyt.reviewed", targetType: "investigador" })
+  async markReview(@Param("id") id: string): Promise<InvestigadorDto> {
+    return this.service.marcarCambiosRenacytRevisados(id);
   }
 
   @Post(":id/renacyt/formacion/refrescar")
   @RequirePermission(AppPermission.InvestigadoresManage)
-  async refreshFormacion(@Param("id") id: string, @CurrentUser() actor: AuthenticatedUser) {
-    return this.service.refrescarFormacionRenacyt(id, actor);
+  @Audit({
+    action: "renacyt.refresh.individual",
+    targetType: "investigador",
+    details: { from: "context" },
+  })
+  async refreshFormacion(@Param("id") id: string) {
+    return this.service.refrescarFormacionRenacyt(id);
   }
 
   @Post("renacyt/refrescar-todos")
@@ -144,12 +146,16 @@ export class InvestigadoresController {
 
   @Get(":id/renacyt/constancia")
   @RequirePermission(AppPermission.InvestigadoresView)
+  @Audit({
+    action: "renacyt.constancia.download",
+    targetType: "investigador",
+    details: { from: "context" },
+  })
   async descargarConstancia(
     @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
     @Res() res: Response,
   ): Promise<void> {
-    const buffer = await this.service.descargarConstanciaRenacyt(id, actor);
+    const buffer = await this.service.descargarConstanciaRenacyt(id);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="constancia-${id}.pdf"`);
     res.send(buffer);
@@ -163,6 +169,17 @@ export class InvestigadoresController {
 
   @Post("import")
   @RequirePermission(AppPermission.InvestigadoresManage)
+  @Audit({
+    action: "investigador.import",
+    targetType: "investigador.import",
+    targetId: { from: "literal", value: "lote" },
+    details: { from: "context" },
+    deferToJob: (response) =>
+      typeof response === "object" &&
+      response !== null &&
+      "jobId" in response &&
+      "message" in response,
+  })
   async importar(
     @Body() body: ImportDniRequest,
     @CurrentUser() actor: AuthenticatedUser,

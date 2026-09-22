@@ -52,7 +52,7 @@ import { ReportesMasterlistRepository } from "./repository-masterlist";
 import { CerifService } from "../cerif/cerif.service";
 import { parseScope } from "../cerif/cerif.logic";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 
 /**
  * Maestros compartidos por los reportes integrales. Se cargan una sola vez
@@ -76,7 +76,7 @@ export class ReportesService {
     private readonly integralRepo: ReportesIntegralRepository,
     private readonly masterlistRepo: ReportesMasterlistRepository,
     private readonly cerif: CerifService,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
   ) {}
 
   // ===============================================================
@@ -236,16 +236,14 @@ export class ReportesService {
     rawEntidad: string | null | undefined,
     actor: AuthenticatedUser,
   ): Promise<{ buffer: Buffer; filename: string; scope: string }> {
+    void actor;
     const scope = parseScope(rawEntidad);
     const doc = await this.cerif.buildCerifDocument(scope);
     const json = JSON.stringify(doc, null, 2);
     const buffer = Buffer.from(json, "utf-8");
     const entidad = scope === "todo" ? "todo" : scope;
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "reportes.export",
-      "cerif",
-      entidad,
+    this.auditContext.setTargetId(entidad);
+    this.auditContext.setDetails(
       JSON.stringify({
         bytes: buffer.length,
         organizaciones: doc.organizaciones.length,

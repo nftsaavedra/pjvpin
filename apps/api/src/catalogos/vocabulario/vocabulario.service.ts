@@ -1,7 +1,5 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { CatalogosRepository, type CatalogoDoc } from "../catalogos.repository";
-import { AuditService } from "../../audit/audit.service";
-import type { AuthenticatedUser } from "../../rbac/current-user.decorator";
 import type { CatalogoItemDto, ReimportarVocabResult } from "../dto/catalogos.dto";
 import { VOCAB_SEED, VOCAB_SEED_ESQUEMAS } from "./vocab-seed";
 
@@ -16,10 +14,7 @@ const ESQUEMAS_CONOCIDOS = VOCAB_SEED_ESQUEMAS as unknown as string[];
 export class VocabularioService {
   private readonly logger = new Logger(VocabularioService.name);
 
-  constructor(
-    private readonly repo: CatalogosRepository,
-    private readonly audit: AuditService,
-  ) {}
+  constructor(private readonly repo: CatalogosRepository) {}
 
   async listarEsquemas(): Promise<string[]> {
     const esquemas = await this.repo.listEsquemasVocabulario();
@@ -31,7 +26,7 @@ export class VocabularioService {
     return docs.map((d) => this.toDto(d));
   }
 
-  async reimportar(esquema: string, actor: AuthenticatedUser): Promise<ReimportarVocabResult> {
+  async reimportar(esquema: string): Promise<ReimportarVocabResult> {
     const entries = VOCAB_SEED.filter((e) => e.esquema === esquema);
     if (entries.length === 0) {
       throw new BadRequestException(`Esquema de vocabulario no soportado: ${esquema}`);
@@ -56,13 +51,6 @@ export class VocabularioService {
       recargados += 1;
     }
 
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "vocabulario.reimport",
-      "vocabulario",
-      esquema,
-      JSON.stringify({ recargados }),
-    );
     this.logger.log(`reimportar vocabulario ${esquema}: ${recargados} items`);
     return { ok: true, esquema, recargados };
   }

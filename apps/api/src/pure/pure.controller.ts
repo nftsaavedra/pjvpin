@@ -5,6 +5,7 @@ import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 import { AppError } from "../infra/errors/app-error";
 import type { SyncReportDto } from "./pure.service";
 
@@ -19,12 +20,29 @@ export class PureController {
 
   @Post("person-ids/sync")
   @RequirePermission(AppPermission.InvestigadoresManage)
+  @Audit({
+    action: "pure.sync.person_ids",
+    targetType: "investigadores",
+    targetId: { from: "literal", value: "lote" },
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as { fetched: number; matched: number; unmatched: number } | null;
+        return r ? { fetched: r.fetched, matched: r.matched, unmatched: r.unmatched } : undefined;
+      },
+    },
+  })
   async sincronizarPersonIds(@CurrentUser() actor: AuthenticatedUser) {
     return this.service.sincronizarPersonIds(actor);
   }
 
   @Post("verificar-diferencias")
   @RequirePermission(AppPermission.InvestigadoresView)
+  @Audit({
+    action: "pure.diff",
+    targetType: "investigador",
+    details: { from: "context" },
+  })
   async verificarDiferencias(
     @Body() body: VerificarDiferenciasRequest,
     @CurrentUser() actor: AuthenticatedUser,
@@ -44,6 +62,19 @@ export class InvestigadoresPureController {
 
   @Post(":id/pure/sync")
   @RequirePermission(AppPermission.InvestigadoresManage)
+  @Audit({
+    action: "pure.sync.publicaciones",
+    targetType: "investigador",
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as { fetched: number; upserted: number; skipped: number } | null;
+        return r
+          ? { fetched: r.fetched, upserted: r.upserted, skipped: r.skipped }
+          : undefined;
+      },
+    },
+  })
   async syncPublicaciones(@Param("id") id: string, @CurrentUser() actor: AuthenticatedUser) {
     return this.service.syncPublicaciones(id, actor);
   }

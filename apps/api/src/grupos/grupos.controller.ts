@@ -5,7 +5,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
-import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 
 @Controller("grupos")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -26,29 +26,29 @@ export class GruposController {
 
   @Post()
   @RequirePermission(AppPermission.GruposManage)
-  async create(
-    @Body() body: CreateGrupoRequest,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<GrupoDto> {
-    return this.service.create(body, actor);
+  @Audit({
+    action: "grupo.create",
+    targetType: "grupo",
+    targetId: { from: "response", field: "id_grupo" },
+  })
+  async create(@Body() body: CreateGrupoRequest): Promise<GrupoDto> {
+    return this.service.create(body);
   }
 
   @Patch(":id")
   @RequirePermission(AppPermission.GruposManage)
+  @Audit({ action: "grupo.update", targetType: "grupo" })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateGrupoRequest,
-    @CurrentUser() actor: AuthenticatedUser,
   ): Promise<GrupoDto> {
-    return this.service.update(id, body, actor);
+    return this.service.update(id, body);
   }
 
   @Delete(":id")
   @RequirePermission(AppPermission.GruposManage)
-  async delete(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<{ ok: true }> {
-    return this.service.delete(id, actor);
+  @Audit({ action: "grupo.delete", targetType: "grupo" })
+  async delete(@Param("id") id: string): Promise<{ ok: true }> {
+    return this.service.delete(id);
   }
 }

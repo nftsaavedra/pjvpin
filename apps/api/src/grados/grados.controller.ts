@@ -20,7 +20,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
-import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 
 @Controller("grados")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -52,38 +52,36 @@ export class GradosController {
 
   @Post()
   @RequirePermission(AppPermission.GradosManage)
-  async create(
-    @Body() body: CreateGradoRequest,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<GradoDto> {
-    return this.service.create(body, actor);
+  @Audit({
+    action: "grado.create",
+    targetType: "grado",
+    targetId: { from: "response", field: "id_grado" },
+  })
+  async create(@Body() body: CreateGradoRequest): Promise<GradoDto> {
+    return this.service.create(body);
   }
 
   @Patch(":id")
   @RequirePermission(AppPermission.GradosManage)
+  @Audit({ action: "grado.update", targetType: "grado" })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateGradoRequest,
-    @CurrentUser() actor: AuthenticatedUser,
   ): Promise<GradoDto> {
-    return this.service.update(id, body, actor);
+    return this.service.update(id, body);
   }
 
   @Delete(":id")
   @RequirePermission(AppPermission.GradosManage)
-  async delete(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<EliminarGradoResultadoDto> {
-    return this.service.softDelete(id, actor);
+  @Audit({ action: "grado.delete", targetType: "grado" })
+  async delete(@Param("id") id: string): Promise<EliminarGradoResultadoDto> {
+    return this.service.softDelete(id);
   }
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.GradosManage)
-  async reactivate(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<GradoDto> {
-    return this.service.reactivate(id, actor);
+  @Audit({ action: "grado.reactivate", targetType: "grado" })
+  async reactivate(@Param("id") id: string): Promise<GradoDto> {
+    return this.service.reactivate(id);
   }
 }

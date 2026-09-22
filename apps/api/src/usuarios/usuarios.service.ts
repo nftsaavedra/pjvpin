@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import * as argon2 from "argon2";
 import { UsuariosRepository, type UsuarioDoc } from "./usuarios.repository";
-import { AuditService } from "../audit/audit.service";
 import { AppError } from "../infra/errors/app-error";
 import type { UsuarioDto } from "../auth/dto/auth.response";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
@@ -16,10 +15,7 @@ import type { PaginatedUsuarios } from "./dto/usuarios.dto";
 
 @Injectable()
 export class UsuariosService {
-  constructor(
-    private readonly repo: UsuariosRepository,
-    private readonly audit: AuditService,
-  ) {}
+  constructor(private readonly repo: UsuariosRepository) {}
 
   async listAll(): Promise<UsuarioDto[]> {
     const docs = await this.repo.listAll();
@@ -53,7 +49,6 @@ export class UsuariosService {
     nombres?: string;
     apellido_paterno?: string;
     apellido_materno?: string;
-    actor: AuthenticatedUser;
   }): Promise<UsuarioDto> {
     await ensureSoloUnicoSuperuser(
       () => this.repo.countSuperusers(),
@@ -86,16 +81,6 @@ export class UsuariosService {
       }
       throw err;
     }
-    const actor = {
-      id_usuario: input.actor.id_usuario,
-      username: input.actor.username,
-      rol: input.actor.rol,
-    };
-    await this.audit.writeUserAudit(actor, "usuario.create", {
-      id_usuario: doc.id_usuario,
-      username: doc.username,
-      rol: doc.rol,
-    });
     return this.repo.toDto(doc);
   }
 
@@ -116,63 +101,23 @@ export class UsuariosService {
     const target = await this.repo.findById(targetId);
     if (!target) throw AppError.notFound("Usuario no encontrado.");
     const targetDto: UsuarioDto = await this.repo.toDto(target);
-    const auditTarget = {
-      id_usuario: targetDto.id_usuario,
-      username: targetDto.username,
-      rol: targetDto.rol,
-    };
-    await this.audit.writeUserAudit(
-      {
-        id_usuario: actor.id_usuario,
-        username: actor.username,
-        rol: actor.rol,
-      },
-      "usuario.update",
-      auditTarget,
-    );
     return targetDto;
   }
 
-  async deactivate(targetId: string, actor: AuthenticatedUser): Promise<UsuarioDto> {
+  async deactivate(targetId: string): Promise<UsuarioDto> {
     await noDesactivarSuperuser((id) => this.repo.findById(id), targetId, 0);
     await this.repo.setActivo(targetId, 0);
     const target = await this.repo.findById(targetId);
     if (!target) throw AppError.notFound("Usuario no encontrado.");
     const targetDto: UsuarioDto = await this.repo.toDto(target);
-    await this.audit.writeUserAudit(
-      {
-        id_usuario: actor.id_usuario,
-        username: actor.username,
-        rol: actor.rol,
-      },
-      "usuario.deactivate",
-      {
-        id_usuario: targetDto.id_usuario,
-        username: targetDto.username,
-        rol: targetDto.rol,
-      },
-    );
     return targetDto;
   }
 
-  async reactivate(targetId: string, actor: AuthenticatedUser): Promise<UsuarioDto> {
+  async reactivate(targetId: string): Promise<UsuarioDto> {
     await this.repo.setActivo(targetId, 1);
     const target = await this.repo.findById(targetId);
     if (!target) throw AppError.notFound("Usuario no encontrado.");
     const targetDto: UsuarioDto = await this.repo.toDto(target);
-    await this.audit.writeUserAudit(
-      {
-        id_usuario: actor.id_usuario,
-        username: actor.username,
-        rol: actor.rol,
-      },
-      "usuario.reactivate",
-      {
-        id_usuario: targetDto.id_usuario,
-        username: targetDto.username,
-        rol: targetDto.rol,
-      },
-    );
     return targetDto;
   }
 }

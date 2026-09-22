@@ -1,7 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { AuditService } from "../audit/audit.service";
 import { AppError } from "../infra/errors/app-error";
-import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import { CatalogosRepository, type CatalogoDoc } from "./catalogos.repository";
 import {
   CreateCatalogoRequest,
@@ -33,7 +31,6 @@ function toDto(doc: CatalogoDoc): CatalogoItemDto {
 export class CatalogosService {
   constructor(
     private readonly repo: CatalogosRepository,
-    private readonly audit: AuditService,
   ) {}
 
   async listByTipo(tipo: string): Promise<CatalogoItemDto[]> {
@@ -46,7 +43,7 @@ export class CatalogosService {
     return docs.map(toDto);
   }
 
-  async create(req: CreateCatalogoRequest, actor: AuthenticatedUser): Promise<CatalogoItemDto> {
+  async create(req: CreateCatalogoRequest): Promise<CatalogoItemDto> {
     const existing = req.esquema
       ? await this.repo.findByTipoEsquemaCodigo(req.tipo, req.esquema, req.codigo)
       : await this.repo.findByTipoCodigo(req.tipo, req.codigo);
@@ -67,20 +64,12 @@ export class CatalogosService {
       padre_codigo: req.padre_codigo,
     };
     await this.repo.insert(doc);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "catalogo.create",
-      "catalogo",
-      id,
-      JSON.stringify({ tipo: req.tipo, codigo: req.codigo }),
-    );
     return toDto(doc);
   }
 
   async update(
     id: string,
     changes: { nombre?: string; descripcion?: string },
-    actor: AuthenticatedUser,
   ): Promise<CatalogoItemDto> {
     const existing = await this.repo.findById(id);
     if (!existing) throw AppError.notFound("Item de catalogo no encontrado.");
@@ -91,17 +80,11 @@ export class CatalogosService {
     if (changes.nombre !== undefined) set.nombre = changes.nombre;
     if (changes.descripcion !== undefined) set.descripcion = changes.descripcion;
     await this.repo.updateById(id, set);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "catalogo.update",
-      "catalogo",
-      id,
-    );
     const updated = await this.repo.findById(id);
     return toDto(updated!);
   }
 
-  async softDelete(id: string, actor: AuthenticatedUser): Promise<EliminarCatalogoResultadoDto> {
+  async softDelete(id: string): Promise<EliminarCatalogoResultadoDto> {
     const existing = await this.repo.findById(id);
     if (!existing) throw AppError.notFound("Item de catalogo no encontrado.");
     if ((existing.editable ?? 1) === 0) {
@@ -112,23 +95,11 @@ export class CatalogosService {
       throw AppError.referential("El item esta referenciado y no se puede eliminar.");
     }
     await this.repo.setActivo(id, 0);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "catalogo.delete",
-      "catalogo",
-      id,
-    );
     return { ok: true, id };
   }
 
-  async reactivate(id: string, actor: AuthenticatedUser): Promise<CatalogoItemDto> {
+  async reactivate(id: string): Promise<CatalogoItemDto> {
     await this.repo.setActivo(id, 1);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "catalogo.reactivate",
-      "catalogo",
-      id,
-    );
     const updated = await this.repo.findById(id);
     if (!updated) throw AppError.notFound("Item de catalogo no encontrado.");
     return toDto(updated);

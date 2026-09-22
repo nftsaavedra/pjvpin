@@ -7,7 +7,6 @@ import { Inject } from "@nestjs/common";
 import { MONGO_DB } from "../infra/mongo/mongo.module";
 import type { Db } from "mongodb";
 import { AppError } from "../infra/errors/app-error";
-import { AuditService } from "../audit/audit.service";
 import { ReniecClient, type ReniecDniLookupResult } from "../infra/http/reniec.client";
 import { LoginRateLimiterService } from "./login-rate-limiter.service";
 import { JWT_ACCESS_TTL_DEFAULT, JWT_REFRESH_TTL_DEFAULT } from "../config/defaults";
@@ -49,7 +48,6 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly reniec: ReniecClient,
-    private readonly audit: AuditService,
     private readonly loginLimiter: LoginRateLimiterService,
     @Inject(MONGO_DB) private readonly db: Db,
   ) {
@@ -168,8 +166,6 @@ export class AuthService {
     if (!created) {
       throw AppError.internal("No se pudo recuperar el usuario creado.");
     }
-    const actor = { id_usuario, username, rol: "superuser" };
-    await this.audit.writeUserAudit(actor, "usuario.create", { ...actor });
     return this.toUsuarioDto(created);
   }
 

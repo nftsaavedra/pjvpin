@@ -5,6 +5,11 @@
  * Emite eventos via `EventEmitter2` para que el `JobEventsGateway`
  * notifique a los clientes WebSocket conectados.
  *
+ * Cada job puede llevar un `JobAuditDescriptor` declarativo: el
+ * `AuditJobListener` del módulo de auditoría lo consume en
+ * `job.completed` para registrar la auditoría sin que el servicio
+ * invoque `AuditService` directamente.
+ *
  * **Limitaciones v1 single-instance**: el estado se pierde al reiniciar
  * el proceso. Para multi-replica migrar a Redis antes de escalar Dokploy.
  */
@@ -13,6 +18,14 @@ import { Injectable } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
 export type JobEstado = "enqueued" | "running" | "completed" | "failed";
+
+export interface JobAuditDescriptor {
+  actor: { id_usuario: string; username: string; rol: string };
+  action: string;
+  targetType: string;
+  targetId: string;
+  details?: string;
+}
 
 export interface JobSnapshot<T = unknown> {
   jobId: string;
@@ -25,6 +38,7 @@ export interface JobSnapshot<T = unknown> {
   unidadesProcesadas: number;
   resultado: T | null;
   error: string | null;
+  audit?: JobAuditDescriptor;
 }
 
 @Injectable()
@@ -33,7 +47,12 @@ export class JobRegistry {
 
   constructor(private readonly events: EventEmitter2) {}
 
-  crear<T>(jobId: string, totalUnidades: number, id_usuario: string): JobSnapshot<T> {
+  crear<T>(
+    jobId: string,
+    totalUnidades: number,
+    id_usuario: string,
+    audit?: JobAuditDescriptor,
+  ): JobSnapshot<T> {
     const snapshot: JobSnapshot<T> = {
       jobId,
       id_usuario,
@@ -45,6 +64,7 @@ export class JobRegistry {
       unidadesProcesadas: 0,
       resultado: null,
       error: null,
+      audit,
     };
     this.jobs.set(jobId, snapshot as unknown as JobSnapshot);
     this.emit("job.progress", snapshot);
@@ -88,6 +108,17 @@ export class JobRegistry {
 
   obtener(jobId: string): JobSnapshot | undefined {
     return this.jobs.get(jobId);
+  }
+
+  /**
+   * Permite al servicio actualizar el `details` del descriptor antes de
+   * `completar`, cuando los totales finales solo se conocen tras el
+   * `Promise.all` del job.
+   */
+  setAuditDetails(jobId: string, detailsJson: string): void {
+    const job = this.jobs.get(jobId);
+    if (!job?.audit) return;
+    job.audit = { ...job.audit, details: detailsJson };
   }
 
   private emit(event: string, job: JobSnapshot): void {

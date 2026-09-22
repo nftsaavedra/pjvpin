@@ -3,7 +3,7 @@ import type { Collection, Db } from "mongodb";
 import { MONGO_DB } from "../infra/mongo/mongo.module";
 import { AppError } from "../infra/errors/app-error";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 import {
   PureClient,
   type FetchedPublication,
@@ -96,7 +96,7 @@ export function mapPureTipo(tipo: string | null): string | null {
 export class PureService {
   constructor(
     private readonly pure: PureClient,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
     @Inject(MONGO_DB) private readonly db: Db,
   ) {}
 
@@ -118,6 +118,7 @@ export class PureService {
     idInvestigador: string,
     actor: AuthenticatedUser,
   ): Promise<{ fetched: number; upserted: number; skipped: number }> {
+    void actor;
     const inv = await this.db
       .collection<InvestigadorPureRef>("investigadores")
       .findOne({ id_investigador: idInvestigador });
@@ -163,13 +164,6 @@ export class PureService {
       await this.poblarPivotAutores(idPublicacion, pub.autores_json);
       upserted++;
     }
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "pure.sync.publicaciones",
-      "investigador",
-      idInvestigador,
-      JSON.stringify({ fetched: fetched.length, upserted, skipped }),
-    );
     return { fetched: fetched.length, upserted, skipped };
   }
 
@@ -179,11 +173,10 @@ export class PureService {
    *
    * Idempotente: re-ejecuciones actualizan el mismo campo sin duplicar.
    */
-  async sincronizarPersonIds(actor: AuthenticatedUser): Promise<{
-    fetched: number;
-    matched: number;
-    unmatched: number;
-  }> {
+  async sincronizarPersonIds(
+    actor: AuthenticatedUser,
+  ): Promise<{ fetched: number; matched: number; unmatched: number }> {
+    void actor;
     const byDni = await this.descargarMapeoMaestroDni();
     let matched = 0;
     let unmatched = 0;
@@ -207,13 +200,6 @@ export class PureService {
         unmatched++;
       }
     }
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "pure.sync.person_ids",
-      "investigadores",
-      "lote",
-      JSON.stringify({ fetched: byDni.size, matched, unmatched }),
-    );
     return { fetched: byDni.size, matched, unmatched };
   }
 
@@ -241,6 +227,7 @@ export class PureService {
     idInvestigador: string,
     actor: AuthenticatedUser,
   ): Promise<SyncReportDto> {
+    void actor;
     const inv = await this.db
       .collection<InvestigadorPureRef>("investigadores")
       .findOne({ id_investigador: idInvestigador });
@@ -324,11 +311,7 @@ export class PureService {
           ? T
           : never,
       );
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "pure.diff",
-      "investigador",
-      idInvestigador,
+    this.auditContext.setDetails(
       JSON.stringify({
         resumen,
         items: items.length,

@@ -14,6 +14,7 @@ import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 import { CreatePatenteDto, PatenteDto, UpdatePatenteDto } from "./dto/patente.dto";
 import {
   PatenteInventorDto,
@@ -32,6 +33,20 @@ export class PatentesController {
 
   @Post()
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "patente.create",
+    targetType: "patente",
+    targetId: { from: "response", field: "id_patente" },
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as PatenteDto | null;
+        return r
+          ? { titulo: r.titulo, tipo: r.tipo, proyecto_id: r.proyecto_id }
+          : undefined;
+      },
+    },
+  })
   async create(
     @Body() body: CreatePatenteDto,
     @CurrentUser() actor: AuthenticatedUser,
@@ -41,6 +56,11 @@ export class PatentesController {
 
   @Patch(":id")
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "patente.update",
+    targetType: "patente",
+    details: { from: "context" },
+  })
   async update(
     @Param("id") id: string,
     @Body() body: UpdatePatenteDto,
@@ -52,6 +72,7 @@ export class PatentesController {
   @Delete(":id")
   @HttpCode(204)
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({ action: "patente.delete", targetType: "patente" })
   async delete(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -61,6 +82,7 @@ export class PatentesController {
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({ action: "patente.reactivate", targetType: "patente" })
   async reactivate(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -73,6 +95,20 @@ export class PatentesController {
   @Post(":id/inventores")
   @HttpCode(201)
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "patente.vincular_inventor",
+    targetType: "patente_inventor",
+    targetId: { from: "response", field: "id" },
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as PatenteInventorDto | null;
+        return r
+          ? { id_patente: r.id_patente, id_persona: r.id_persona, orden: r.orden }
+          : undefined;
+      },
+    },
+  })
   async attachInventor(
     @Param("id") id: string,
     @Body() body: VincularInventorDto,
@@ -84,6 +120,11 @@ export class PatentesController {
   @Delete(":id/inventores/:pivotId")
   @HttpCode(204)
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "patente.desvincular_inventor",
+    targetType: "patente_inventor",
+    targetId: { from: "param", name: "pivotId" },
+  })
   async detachInventor(
     @Param("id") id: string,
     @Param("pivotId") pivotId: string,
@@ -105,6 +146,24 @@ export class PatentesController {
   @Post(":id/titulares")
   @HttpCode(201)
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "patente.vincular_titular",
+    targetType: "patente_titular",
+    targetId: { from: "response", field: "id" },
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as PatenteTitularDto | null;
+        return r
+          ? {
+              id_patente: r.id_patente,
+              holder_type: r.holder_type,
+              orden: r.orden,
+            }
+          : undefined;
+      },
+    },
+  })
   async attachTitular(
     @Param("id") id: string,
     @Body() body: VincularTitularDto,
@@ -116,6 +175,11 @@ export class PatentesController {
   @Delete(":id/titulares/:pivotId")
   @HttpCode(204)
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "patente.desvincular_titular",
+    targetType: "patente_titular",
+    targetId: { from: "param", name: "pivotId" },
+  })
   async detachTitular(
     @Param("id") id: string,
     @Param("pivotId") pivotId: string,

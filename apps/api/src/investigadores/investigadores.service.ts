@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 import { AppError } from "../infra/errors/app-error";
 import { ReniecClient } from "../infra/http/reniec.client";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
@@ -65,7 +65,7 @@ function kardexDocToEntry(doc: KardexDoc): KardexEntry {
 export class InvestigadoresService {
   constructor(
     private readonly repo: InvestigadoresRepository,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
     private readonly reniec: ReniecClient,
     private readonly renacyt: RenacytService,
     private readonly kardex: KardexService,
@@ -133,7 +133,7 @@ export class InvestigadoresService {
     return toDto(inv);
   }
 
-  async create(req: CreateInvestigadorRequest, actor: AuthenticatedUser): Promise<InvestigadorDto> {
+  async create(req: CreateInvestigadorRequest): Promise<InvestigadorDto> {
     const existing = await this.repo.findByDni(req.dni);
     if (existing) throw AppError.unique("Ya existe un investigador con ese DNI.");
     const id_persona = `persona-${req.dni}`;
@@ -172,20 +172,10 @@ export class InvestigadoresService {
       cambios_renacyt_revisados: 0,
     };
     await this.repo.insert(doc);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "investigador.create",
-      "investigador",
-      id_investigador,
-    );
     return toDto(doc);
   }
 
-  async update(
-    id: string,
-    req: UpdateInvestigadorRequest,
-    actor: AuthenticatedUser,
-  ): Promise<InvestigadorDto> {
+  async update(id: string, req: UpdateInvestigadorRequest): Promise<InvestigadorDto> {
     const set: Partial<InvestigadorDoc> = {};
     if (req.nombres !== undefined) set.nombres = req.nombres;
     if (req.apellido_paterno !== undefined) set.apellido_paterno = req.apellido_paterno;
@@ -201,38 +191,20 @@ export class InvestigadoresService {
     }
     const updated = await this.repo.findById(id);
     if (!updated) throw AppError.notFound("Investigador no encontrado.");
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "investigador.update",
-      "investigador",
-      id,
-    );
     return toDto(updated);
   }
 
-  async deactivate(id: string, actor: AuthenticatedUser): Promise<InvestigadorDto> {
+  async deactivate(id: string): Promise<InvestigadorDto> {
     await this.repo.setActivo(id, 0);
     const updated = await this.repo.findById(id);
     if (!updated) throw AppError.notFound("Investigador no encontrado.");
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "investigador.deactivate",
-      "investigador",
-      id,
-    );
     return toDto(updated);
   }
 
-  async reactivate(id: string, actor: AuthenticatedUser): Promise<InvestigadorDto> {
+  async reactivate(id: string): Promise<InvestigadorDto> {
     await this.repo.setActivo(id, 1);
     const updated = await this.repo.findById(id);
     if (!updated) throw AppError.notFound("Investigador no encontrado.");
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "investigador.reactivate",
-      "investigador",
-      id,
-    );
     return toDto(updated);
   }
 
@@ -241,19 +213,10 @@ export class InvestigadoresService {
     return docs.map(kardexDocToEntry);
   }
 
-  async marcarCambiosRenacytRevisados(
-    id: string,
-    actor: AuthenticatedUser,
-  ): Promise<InvestigadorDto> {
+  async marcarCambiosRenacytRevisados(id: string): Promise<InvestigadorDto> {
     await this.repo.updateById(id, { renacyt_cambios_revisados_en: Date.now() });
     const updated = await this.repo.findById(id);
     if (!updated) throw AppError.notFound("Investigador no encontrado.");
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "investigador.renacyt.reviewed",
-      "investigador",
-      id,
-    );
     return toDto(updated);
   }
 
@@ -278,7 +241,12 @@ export class InvestigadoresService {
     const uniqueDnis = Array.from(new Set(dnis.filter((d) => /^\d{8}$/.test(d))));
     if (uniqueDnis.length > IMPORT_BATCH_ASYNC_THRESHOLD) {
       const jobId = `import-${Date.now()}`;
-      this.jobs.crear(jobId, uniqueDnis.length, actor.id_usuario);
+      this.jobs.crear(jobId, uniqueDnis.length, actor.id_usuario, {
+        actor: { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+        action: "investigador.import",
+        targetType: "investigador.import",
+        targetId: "lote",
+      });
       this.jobs.enEjecucion(jobId);
       void this.ejecutarImportMasivo(jobId, uniqueDnis, actor).catch((err) => {
         this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
@@ -288,12 +256,15 @@ export class InvestigadoresService {
         message: `Job enqueued. Procesara ${uniqueDnis.length} DNIs.`,
       };
     }
-    return this.ejecutarImportSecuencial(uniqueDnis, actor);
+    const result = await this.ejecutarImportSecuencial(uniqueDnis);
+    this.auditContext.setDetails(
+      this.buildImportDetailsJson(result, null, uniqueDnis.length),
+    );
+    return result;
   }
 
   private async ejecutarImportSecuencial(
     dnis: string[],
-    actor: AuthenticatedUser,
   ): Promise<ImportInvestigadoresResult> {
     const result = this.nuevoResultadoImport(dnis.length);
     const dniToPureId = await this.descargarMapeoPure(dnis);
@@ -310,7 +281,7 @@ export class InvestigadoresService {
           });
           continue;
         }
-        await this.procesarDni(dni, dniToPureId, result, actor);
+        await this.procesarDni(dni, dniToPureId, result);
         reniecFallos = 0;
       } catch (err) {
         reniecFallos++;
@@ -328,7 +299,6 @@ export class InvestigadoresService {
         });
       }
     }
-    await this.auditImport(result, actor, dnis.length);
     return result;
   }
 
@@ -357,7 +327,7 @@ export class InvestigadoresService {
           continue;
         }
         try {
-          await this.procesarDni(dni, dniToPureId, result, actor);
+          await this.procesarDni(dni, dniToPureId, result);
           reniecFallos = 0;
         } catch (err) {
           reniecFallos++;
@@ -379,14 +349,34 @@ export class InvestigadoresService {
     );
     await Promise.all(pool);
     this.jobs.completar(jobId, { total: result.total, ok: result.creados + result.actualizados });
-    await this.auditImport(result, actor, dnis.length, jobId);
+    this.jobs.setAuditDetails(
+      jobId,
+      this.buildImportDetailsJson(result, jobId, dnis.length),
+    );
+    void actor;
+  }
+
+  private buildImportDetailsJson(
+    result: ImportInvestigadoresResult,
+    jobId: string | null,
+    total: number,
+  ): string {
+    return JSON.stringify({
+      jobId,
+      total,
+      ok: result.creados + result.actualizados,
+      reniec_ok: result.reniec_ok,
+      perucris_ok: result.perucris_ok,
+      pure_ok: result.pure_ok,
+      renacyt_ok: result.renacyt_ok,
+      errores: result.errores.length,
+    });
   }
 
   private async procesarDni(
     dni: string,
     dniToPureId: Map<string, string>,
     result: ImportInvestigadoresResult,
-    actor: AuthenticatedUser,
   ): Promise<void> {
     const r = await this.reniec.consultar(dni);
     if (r.fullName) result.reniec_ok++;
@@ -470,7 +460,7 @@ export class InvestigadoresService {
           renacyt_fecha_ultima_sincronizacion: now,
         });
         try {
-          await this.refrescarFormacionRenacyt(id_investigador, actor);
+          await this.refrescarFormacionRenacyt(id_investigador);
         } catch {
           // kardex falla no aborta
         }
@@ -509,30 +499,6 @@ export class InvestigadoresService {
     };
   }
 
-  private async auditImport(
-    result: ImportInvestigadoresResult,
-    actor: AuthenticatedUser,
-    total: number,
-    jobId?: string,
-  ): Promise<void> {
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "investigador.import",
-      "investigador.import",
-      "lote",
-      JSON.stringify({
-        jobId: jobId ?? null,
-        total,
-        ok: result.creados + result.actualizados,
-        reniec_ok: result.reniec_ok,
-        perucris_ok: result.perucris_ok,
-        pure_ok: result.pure_ok,
-        renacyt_ok: result.renacyt_ok,
-        errores: result.errores.length,
-      }),
-    );
-  }
-
   /**
    * Refresca la formacion RENACYT de un investigador. Usa el codigo RENACYT
    * almacenado; si no hay, consulta RENACYT por DNI para obtenerlo. Persiste
@@ -540,7 +506,6 @@ export class InvestigadoresService {
    */
   async refrescarFormacionRenacyt(
     id: string,
-    actor: AuthenticatedUser,
   ): Promise<{ refreshed: number; kardex: KardexEntry | null }> {
     const inv = await this.repo.findById(id);
     if (!inv) throw AppError.notFound("Investigador no encontrado.");
@@ -576,11 +541,7 @@ export class InvestigadoresService {
       renacyt_formaciones_academicas_json: lookup.formaciones_academicas_json,
     });
     const entry = await this.kardex.registrarCambioSiAplica(id, lookup, "refresh_individual");
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "renacyt.refresh.individual",
-      "investigador",
-      id,
+    this.auditContext.setDetails(
       JSON.stringify({
         codigo,
         cambios: entry ? entry.cambios.length : 0,
@@ -598,9 +559,14 @@ export class InvestigadoresService {
   async refreshRenacytTodos(actor: AuthenticatedUser): Promise<{ jobId: string; message: string }> {
     const candidatos = await this.repo.listAllDnisRenacyt();
     const jobId = `renacyt-refresh-${Date.now()}`;
-    this.jobs.crear(jobId, candidatos.length, actor.id_usuario);
+    this.jobs.crear(jobId, candidatos.length, actor.id_usuario, {
+      actor: { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+      action: "renacyt.refresh.batch",
+      targetType: "investigadores",
+      targetId: "lote",
+    });
     this.jobs.enEjecucion(jobId);
-    void this.ejecutarRefreshMasivo(jobId, candidatos, actor).catch((err) => {
+    void this.ejecutarRefreshMasivo(jobId, candidatos).catch((err) => {
       this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
     });
     return {
@@ -612,7 +578,6 @@ export class InvestigadoresService {
   private async ejecutarRefreshMasivo(
     jobId: string,
     candidatos: Array<{ id_investigador: string }>,
-    actor: AuthenticatedUser,
   ): Promise<void> {
     let ok = 0;
     const errores: Array<{ id: string; error: string }> = [];
@@ -656,26 +621,19 @@ export class InvestigadoresService {
     const pool = Array.from({ length: Math.min(CONCURRENCY, candidatos.length) }, () => worker());
     await Promise.all(pool);
     this.jobs.completar(jobId, { ok, errores });
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "renacyt.refresh.batch",
-      "investigadores",
-      "lote",
+    this.jobs.setAuditDetails(
+      jobId,
       JSON.stringify({ jobId, total: candidatos.length, ok, errores: errores.length }),
     );
   }
 
-  async descargarConstanciaRenacyt(id: string, actor: AuthenticatedUser): Promise<Buffer> {
+  async descargarConstanciaRenacyt(id: string): Promise<Buffer> {
     const inv = await this.repo.findById(id);
     if (!inv?.renacyt_codigo_registro) {
       throw AppError.notFound("El investigador no tiene codigo RENACYT registrado.");
     }
     const bytes = await this.renacyt.descargarConstancia(inv.renacyt_codigo_registro);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "renacyt.constancia.download",
-      "investigador",
-      id,
+    this.auditContext.setDetails(
       JSON.stringify({
         codigo: inv.renacyt_codigo_registro,
         bytes: bytes.length,

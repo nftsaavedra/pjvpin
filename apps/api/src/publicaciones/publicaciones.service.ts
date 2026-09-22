@@ -1,19 +1,17 @@
 /**
  * Servicio del dominio `publicaciones` (12 REST + D7 + D8 + cascade pivot).
  *
- * Patrón audit: cada mutación llama `audit.writeGenericAudit` con event code
- * del doc 07 §3.1. E11000 sobre UNIQUE pivot {id_publicacion, id_persona} →
- * 409 (`AppError.unique`). D7: class-validator estricta en create Y update;
- * el service llama la lógica pura de validación para mensajes canónicos.
+ * E11000 sobre UNIQUE pivot {id_publicacion, id_persona} → 409 (`AppError.unique`).
+ * D7: class-validator estricta en create Y update; el service llama la
+ * lógica pura de validación para mensajes canónicos.
  */
 import { Inject, Injectable } from "@nestjs/common";
 import type { ClientSession, MongoClient } from "mongodb";
 import { MongoServerError } from "mongodb";
 import { randomUUID } from "node:crypto";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 import { AppError } from "../infra/errors/app-error";
 import { MONGO_CLIENT } from "../infra/mongo/mongo.module";
-import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import {
   CreatePublicacionDto,
   PublicacionDto,
@@ -50,20 +48,8 @@ export class PublicacionesService {
   constructor(
     @Inject(MONGO_CLIENT) private readonly client: MongoClient,
     private readonly repo: PublicacionesRepository,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
   ) {}
-
-  private toAuditActor(actor: AuthenticatedUser): {
-    id_usuario: string;
-    username: string;
-    rol: string;
-  } {
-    return {
-      id_usuario: actor.id_usuario,
-      username: actor.username,
-      rol: actor.rol,
-    };
-  }
 
   private toPublicacionDto(doc: PublicacionDoc): PublicacionDto {
     return {
@@ -132,7 +118,7 @@ export class PublicacionesService {
   // CRUD publicaciones
   // ============================================================
 
-  async create(input: CreatePublicacionDto, actor: AuthenticatedUser): Promise<PublicacionDto> {
+  async create(input: CreatePublicacionDto): Promise<PublicacionDto> {
     const titulo = validarTitulo(input.titulo);
     const tipo = validarTipoPublicacion(input.tipo);
     const doi = validarDoi(input.doi ?? null);
@@ -193,13 +179,6 @@ export class PublicacionesService {
       throw err;
     }
 
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "publicacion.create",
-      "publicacion",
-      idPublicacion,
-      JSON.stringify({ titulo, tipo, id_proyecto: idProyecto }),
-    );
     return this.toPublicacionDto(doc);
   }
 
@@ -214,11 +193,7 @@ export class PublicacionesService {
     return this.toPublicacionDto(doc);
   }
 
-  async update(
-    id: string,
-    input: UpdatePublicacionDto,
-    actor: AuthenticatedUser,
-  ): Promise<PublicacionDto> {
+  async update(id: string, input: UpdatePublicacionDto): Promise<PublicacionDto> {
     const existing = await this.repo.findPublicacionById(id);
     if (!existing) throw AppError.notFound("Publicacion no encontrada.");
 
@@ -271,45 +246,27 @@ export class PublicacionesService {
         throw err;
       }
     }
+    this.auditContext.setDetails(JSON.stringify({ campos: Object.keys(set) }));
     const updated = await this.repo.findPublicacionById(id);
     if (!updated) throw AppError.notFound("Publicacion no encontrada.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "publicacion.update",
-      "publicacion",
-      id,
-      JSON.stringify({ campos: Object.keys(set) }),
-    );
     return this.toPublicacionDto(updated);
   }
 
-  async delete(id: string, actor: AuthenticatedUser): Promise<void> {
+  async delete(id: string): Promise<void> {
     const existing = await this.repo.findPublicacionById(id);
     if (!existing) throw AppError.notFound("Publicacion no encontrada.");
     await this.withTransaction(async (session) => {
       await this.repo.setPublicacionActivo(id, 0, session);
       await this.repo.deletePublicacionAutoresByPublicacion(id, session);
     });
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "publicacion.delete",
-      "publicacion",
-      id,
-    );
   }
 
-  async reactivate(id: string, actor: AuthenticatedUser): Promise<PublicacionDto> {
+  async reactivate(id: string): Promise<PublicacionDto> {
     const existing = await this.repo.findPublicacionById(id);
     if (!existing) throw AppError.notFound("Publicacion no encontrada.");
     await this.repo.setPublicacionActivo(id, 1);
     const updated = await this.repo.findPublicacionById(id);
     if (!updated) throw AppError.notFound("Publicacion no encontrada.");
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "publicacion.reactivate",
-      "publicacion",
-      id,
-    );
     return this.toPublicacionDto(updated);
   }
 
@@ -320,7 +277,6 @@ export class PublicacionesService {
   async attachAutor(
     idPublicacion: string,
     input: VincularAutorDto,
-    actor: AuthenticatedUser,
   ): Promise<PublicacionAutorDto> {
     await this.repo.ensurePublicacionExists(idPublicacion);
     await this.repo.ensurePersonaExists(input.id_persona);
@@ -344,33 +300,15 @@ export class PublicacionesService {
       }
       throw err;
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "publicacion.vincular_autor",
-      "publicacion",
-      idPublicacion,
-      JSON.stringify({ id_persona: input.id_persona, orden }),
-    );
     return this.toPublicacionAutorDto(doc);
   }
 
-  async detachAutor(
-    idPublicacion: string,
-    pivotId: string,
-    actor: AuthenticatedUser,
-  ): Promise<void> {
+  async detachAutor(idPublicacion: string, pivotId: string): Promise<void> {
     await this.repo.ensurePublicacionExists(idPublicacion);
     const deleted = await this.repo.deletePublicacionAutorById(pivotId, idPublicacion);
     if (deleted === 0) {
       throw AppError.notFound("Autor vinculado no encontrado.");
     }
-    await this.audit.writeGenericAudit(
-      this.toAuditActor(actor),
-      "publicacion.desvincular_autor",
-      "publicacion",
-      idPublicacion,
-      JSON.stringify({ pivot_id: pivotId }),
-    );
   }
 
   async listAutores(idPublicacion: string): Promise<PublicacionAutorDto[]> {

@@ -1,7 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { AuditService } from "../audit/audit.service";
 import { AppError } from "../infra/errors/app-error";
-import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import { OrgUnitsRepository, type OrgUnitDoc } from "./org-units.repository";
 import type { CreateOrgUnitRequest, OrgUnitDto, UpdateOrgUnitRequest } from "./dto/org-units.dto";
 
@@ -23,10 +21,7 @@ function toDto(doc: OrgUnitDoc): OrgUnitDto {
 
 @Injectable()
 export class OrgUnitsService {
-  constructor(
-    private readonly repo: OrgUnitsRepository,
-    private readonly audit: AuditService,
-  ) {}
+  constructor(private readonly repo: OrgUnitsRepository) {}
 
   async list(parentId: string | undefined): Promise<OrgUnitDto[]> {
     const docs = await this.repo.listByParent(parentId);
@@ -39,7 +34,7 @@ export class OrgUnitsService {
     return toDto(doc);
   }
 
-  async create(req: CreateOrgUnitRequest, actor: AuthenticatedUser): Promise<OrgUnitDto> {
+  async create(req: CreateOrgUnitRequest): Promise<OrgUnitDto> {
     if (req.ruc) {
       const existing = await this.repo.findByRuc(req.ruc);
       if (existing) throw AppError.unique("Ya existe un OrgUnit con ese RUC.");
@@ -65,20 +60,10 @@ export class OrgUnitsService {
       activo: 1,
     };
     await this.repo.insert(doc);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "org_unit.create",
-      "org_unit",
-      id_org_unit,
-    );
     return toDto(doc);
   }
 
-  async update(
-    id: string,
-    req: UpdateOrgUnitRequest,
-    actor: AuthenticatedUser,
-  ): Promise<OrgUnitDto> {
+  async update(id: string, req: UpdateOrgUnitRequest): Promise<OrgUnitDto> {
     const existing = await this.repo.findById(id);
     if (!existing) throw AppError.notFound("OrgUnit no encontrada.");
     if (req.parent_id !== undefined && req.parent_id !== null) {
@@ -97,26 +82,14 @@ export class OrgUnitsService {
     if (req.parent_id !== undefined) set.parent_id = req.parent_id;
     if (req.descripcion !== undefined) set.descripcion = req.descripcion;
     await this.repo.updateById(id, set);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "org_unit.update",
-      "org_unit",
-      id,
-    );
     const updated = await this.repo.findById(id);
     return toDto(updated!);
   }
 
-  async delete(id: string, actor: AuthenticatedUser): Promise<{ ok: true }> {
+  async delete(id: string): Promise<{ ok: true }> {
     const children = await this.repo.countChildReferences(id);
     if (children > 0) throw AppError.referential("OrgUnit tiene hijos en la jerarquia.");
     await this.repo.delete(id);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "org_unit.delete",
-      "org_unit",
-      id,
-    );
     return { ok: true };
   }
 }

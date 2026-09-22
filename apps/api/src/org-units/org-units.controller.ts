@@ -15,7 +15,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
-import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 
 @Controller("org-units")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -36,29 +36,29 @@ export class OrgUnitsController {
 
   @Post()
   @RequirePermission(AppPermission.OrgUnitsManage)
-  async create(
-    @Body() body: CreateOrgUnitRequest,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<OrgUnitDto> {
-    return this.service.create(body, actor);
+  @Audit({
+    action: "org_unit.create",
+    targetType: "org_unit",
+    targetId: { from: "response", field: "id_org_unit" },
+  })
+  async create(@Body() body: CreateOrgUnitRequest): Promise<OrgUnitDto> {
+    return this.service.create(body);
   }
 
   @Patch(":id")
   @RequirePermission(AppPermission.OrgUnitsManage)
+  @Audit({ action: "org_unit.update", targetType: "org_unit" })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateOrgUnitRequest,
-    @CurrentUser() actor: AuthenticatedUser,
   ): Promise<OrgUnitDto> {
-    return this.service.update(id, body, actor);
+    return this.service.update(id, body);
   }
 
   @Delete(":id")
   @RequirePermission(AppPermission.OrgUnitsManage)
-  async delete(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<{ ok: true }> {
-    return this.service.delete(id, actor);
+  @Audit({ action: "org_unit.delete", targetType: "org_unit" })
+  async delete(@Param("id") id: string): Promise<{ ok: true }> {
+    return this.service.delete(id);
   }
 }

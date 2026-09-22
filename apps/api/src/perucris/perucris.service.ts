@@ -3,7 +3,7 @@ import type { Collection, Db } from "mongodb";
 import { MONGO_DB } from "../infra/mongo/mongo.module";
 import { AppError } from "../infra/errors/app-error";
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
-import { AuditService } from "../audit/audit.service";
+import { AuditContextService } from "../audit/audit-context.service";
 import { JobRegistry } from "../external-http/job-registry.service";
 import { PeruCrisClient, type PeruCrisHit } from "../infra/http/perucris.client";
 import { CerifService } from "../cerif/cerif.service";
@@ -75,7 +75,7 @@ function normalizeTitle(title: string): string {
 export class PeruCrisService {
   constructor(
     private readonly perucris: PeruCrisClient,
-    private readonly audit: AuditService,
+    private readonly auditContext: AuditContextService,
     private readonly jobs: JobRegistry,
     private readonly cerif: CerifService,
     @Inject(MONGO_DB) private readonly db: Db,
@@ -89,6 +89,7 @@ export class PeruCrisService {
     scope: "all" | "person" | "org" | "publication" = "all",
     actor: AuthenticatedUser,
   ): Promise<SyncReport> {
+    void actor;
     const start = Date.now();
     const items: SyncReportItem[] = [];
     if (scope === "all" || scope === "person") {
@@ -121,11 +122,7 @@ export class PeruCrisService {
           ? T
           : never,
       );
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "perucris.validate",
-      "validacion",
-      scope,
+    this.auditContext.setDetails(
       JSON.stringify({
         total: resumen.total,
         no_encontrados: resumen.solo_local,
@@ -136,26 +133,14 @@ export class PeruCrisService {
   }
 
   async validarOrgUnit(id: string, actor: AuthenticatedUser): Promise<SyncReportItem> {
+    void actor;
     const item = await this.validarUnaOrganizacion(id);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "perucris.validate.org_unit",
-      "org_unit",
-      id,
-      JSON.stringify({ encontrado: item.clasificacion !== "no_encontrado" }),
-    );
     return item;
   }
 
   async validarPublicacion(id: string, actor: AuthenticatedUser): Promise<SyncReportItem> {
+    void actor;
     const item = await this.validarUnaPublicacion(id);
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "perucris.validate.publication",
-      "publicacion",
-      id,
-      JSON.stringify({ encontrado: item.clasificacion !== "no_encontrado" }),
-    );
     return item;
   }
 
@@ -166,6 +151,7 @@ export class PeruCrisService {
    * Port de `shared/external/perucris_service.rs::enviar_a_perucris`.
    */
   async pushCerif(actor: AuthenticatedUser): Promise<PeruCrisPushResult> {
+    void actor;
     const doc = await this.cerif.buildCerifDocument("todo");
     const payload = JSON.parse(JSON.stringify(doc)) as unknown;
     const httpStatus = await this.perucris.pushCerif(payload);
@@ -179,20 +165,6 @@ export class PeruCrisService {
       totalPublicaciones: doc.publicaciones.length,
       totalPatentes: doc.patentes.length,
     };
-    await this.audit.writeGenericAudit(
-      { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-      "perucris.push",
-      "perucris",
-      "push",
-      JSON.stringify({
-        httpStatus,
-        organizaciones: result.totalOrganizaciones,
-        personas: result.totalPersonas,
-        proyectos: result.totalProyectos,
-        publicaciones: result.totalPublicaciones,
-        patentes: result.totalPatentes,
-      }),
-    );
     return result;
   }
 
@@ -212,18 +184,24 @@ export class PeruCrisService {
 
   async importIniciales(actor: AuthenticatedUser): Promise<{ jobId: string; message: string }> {
     const jobId = `perucris-import-${Date.now()}`;
-    this.jobs.crear(jobId, 2, actor.id_usuario);
+    this.jobs.crear(jobId, 2, actor.id_usuario, {
+      actor: { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
+      action: "perucris.import",
+      targetType: "perucris.import",
+      targetId: "iniciales",
+    });
     this.jobs.enEjecucion(jobId);
-    void this.ejecutarImportIniciales(jobId, actor).catch((err) => {
+    void this.ejecutarImportIniciales(jobId).catch((err) => {
       this.jobs.fallar(jobId, err instanceof Error ? err.message : String(err));
     });
+    void actor;
     return {
       jobId,
       message: `Job enqueued. Procesara proyectos + publicaciones de UNF desde PeruCRIS.`,
     };
   }
 
-  private async ejecutarImportIniciales(jobId: string, actor: AuthenticatedUser): Promise<void> {
+  private async ejecutarImportIniciales(jobId: string): Promise<void> {
     const result: PeruCrisImportResultado = {
       importados: 0,
       omitidos: 0,
@@ -239,11 +217,8 @@ export class PeruCrisService {
         omitidos: result.omitidos,
         errores: result.errores.length,
       });
-      await this.audit.writeGenericAudit(
-        { id_usuario: actor.id_usuario, username: actor.username, rol: actor.rol },
-        "perucris.import",
-        "perucris.import",
-        "iniciales",
+      this.jobs.setAuditDetails(
+        jobId,
         JSON.stringify({
           jobId,
           importados: result.importados,

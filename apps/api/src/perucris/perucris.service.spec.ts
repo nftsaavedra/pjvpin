@@ -1,6 +1,10 @@
 /**
  * Tests del service de PeruCRIS (`pushCerif`). Cubre la orquestacion:
- * build CERIF → push → audit → resultado.
+ * build CERIF → push → resultado.
+ *
+ * La auditoría declarativa la ejecuta `AuditInterceptor`; el servicio solo
+ * expone `auditContext` para casos internos. Por eso este spec no verifica
+ * el audit: esa responsabilidad es del interceptor + listener, no del service.
  */
 jest.mock("@nestjs/event-emitter", () => ({
   EventEmitter2: jest.fn().mockImplementation(() => ({
@@ -12,7 +16,7 @@ jest.mock("@nestjs/event-emitter", () => ({
 import type { AuthenticatedUser } from "../rbac/current-user.decorator";
 import type { PeruCrisClient } from "../infra/http/perucris.client";
 import type { CerifService } from "../cerif/cerif.service";
-import type { AuditService } from "../audit/audit.service";
+import type { AuditContextService } from "../audit/audit-context.service";
 import type { JobRegistry } from "../external-http/job-registry.service";
 import { AppError } from "../infra/errors/app-error";
 import { PeruCrisService } from "./perucris.service";
@@ -44,21 +48,24 @@ describe("PeruCrisService.pushCerif", () => {
       buildCerifDocument: jest.fn().mockResolvedValue(cerifDoc),
     } as unknown as jest.Mocked<CerifService>;
 
-    const auditService = {
-      writeGenericAudit: jest.fn().mockResolvedValue(undefined),
-    } as unknown as jest.Mocked<AuditService>;
+    const auditContext = {
+      run: jest.fn(),
+      get: jest.fn(),
+      setTargetId: jest.fn(),
+      setDetails: jest.fn(),
+    } as unknown as jest.Mocked<AuditContextService>;
 
     const jobs = {} as JobRegistry;
 
     const sut = new PeruCrisService(
       perucrisClient,
-      auditService,
+      auditContext,
       jobs,
       cerifService,
       {} as never, // db
     );
 
-    return { sut, perucrisClient, cerifService, auditService };
+    return { sut, perucrisClient, cerifService };
   }
 
   it("devuelve PeruCrisPushResult con totales correctos", async () => {
@@ -73,19 +80,6 @@ describe("PeruCrisService.pushCerif", () => {
     expect(result.totalPublicaciones).toBe(3);
     expect(result.totalPatentes).toBe(0);
     expect(result.enviadoAt).toBeGreaterThan(0);
-  });
-
-  it("registra audit con datos del push", async () => {
-    const { sut, auditService } = buildSut();
-    await sut.pushCerif(actor);
-
-    expect(auditService.writeGenericAudit).toHaveBeenCalledWith(
-      { id_usuario: "u1", username: "admin", rol: "admin" },
-      "perucris.push",
-      "perucris",
-      "push",
-      expect.stringContaining('"httpStatus":200'),
-    );
   });
 
   it("propaga AppError del client (config/external)", async () => {

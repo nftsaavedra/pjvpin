@@ -15,6 +15,7 @@ import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 import { CreateProyectoConParticipantesDto } from "./dto/create-proyecto.dto";
 import { UpdateProyectoConParticipantesDto } from "./dto/update-proyecto.dto";
 import { VincularFinanciamientoDto } from "./dto/pivot-financiamiento.dto";
@@ -68,6 +69,12 @@ export class ProyectosController {
 
   @Post()
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.create",
+    targetType: "proyecto",
+    targetId: { from: "response", field: "id_proyecto" },
+    details: { from: "context" },
+  })
   async create(
     @Body() body: CreateProyectoConParticipantesDto,
     @CurrentUser() actor: AuthenticatedUser,
@@ -77,6 +84,11 @@ export class ProyectosController {
 
   @Patch(":id")
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.update",
+    targetType: "proyecto",
+    details: { from: "context" },
+  })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateProyectoConParticipantesDto,
@@ -87,6 +99,7 @@ export class ProyectosController {
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({ action: "proyecto.reactivate", targetType: "proyecto" })
   async reactivate(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -97,6 +110,14 @@ export class ProyectosController {
   @Delete(":id/participaciones/:investigadorId")
   @HttpCode(204)
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.delete_relation",
+    targetType: "proyecto",
+    details: {
+      from: "resolver",
+      fn: (ctx) => ({ id_investigador: ctx.params.investigadorId }),
+    },
+  })
   async eliminarRelacion(
     @Param("id") id: string,
     @Param("investigadorId") investigadorId: string,
@@ -108,6 +129,11 @@ export class ProyectosController {
   @Delete(":id/participaciones")
   @HttpCode(204)
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.delete_relations",
+    targetType: "proyecto",
+    details: { from: "context" },
+  })
   async eliminarRelaciones(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -117,6 +143,11 @@ export class ProyectosController {
 
   @Delete(":id")
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.delete",
+    targetType: "proyecto",
+    details: { from: "context" },
+  })
   async delete(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -127,6 +158,17 @@ export class ProyectosController {
   @Post(":id/organizaciones")
   @HttpCode(204)
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.vincular_org",
+    targetType: "proyecto",
+    details: {
+      from: "resolver",
+      fn: (ctx) => {
+        const body = ctx.body as VincularOrgDto | null;
+        return body ? { id_org_unit: body.id_org_unit, rol: body.rol } : undefined;
+      },
+    },
+  })
   async attachOrg(
     @Param("id") id: string,
     @Body() body: VincularOrgDto,
@@ -138,6 +180,11 @@ export class ProyectosController {
   @Delete(":id/organizaciones/:pivotId")
   @HttpCode(204)
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.desvincular_org",
+    targetType: "proyecto_org",
+    targetId: { from: "param", name: "pivotId" },
+  })
   async detachOrg(
     @Param("id") id: string,
     @Param("pivotId") pivotId: string,
@@ -149,6 +196,11 @@ export class ProyectosController {
   @Post(":id/financiamientos")
   @HttpCode(204)
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.vincular_fin",
+    targetType: "proyecto",
+    details: { from: "context" },
+  })
   async attachFin(
     @Param("id") id: string,
     @Body() body: VincularFinanciamientoDto,
@@ -160,6 +212,11 @@ export class ProyectosController {
   @Delete(":id/financiamientos/:pivotId")
   @HttpCode(204)
   @RequirePermission(AppPermission.ProyectosManage)
+  @Audit({
+    action: "proyecto.desvincular_fin",
+    targetType: "proyecto_fin",
+    targetId: { from: "param", name: "pivotId" },
+  })
   async detachFin(
     @Param("id") id: string,
     @Param("pivotId") pivotId: string,

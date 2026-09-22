@@ -20,7 +20,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
-import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 
 @Controller("catalogos")
 @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -41,38 +41,42 @@ export class CatalogosController {
 
   @Post()
   @RequirePermission(AppPermission.CatalogosManage)
-  async create(
-    @Body() body: CreateCatalogoRequest,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<CatalogoItemDto> {
-    return this.service.create(body, actor);
+  @Audit({
+    action: "catalogo.create",
+    targetType: "catalogo",
+    targetId: { from: "response", field: "id" },
+    details: { from: "resolver", fn: (ctx) => {
+      const body = ctx.body as { tipo?: unknown; codigo?: unknown } | null;
+      return body && typeof body.tipo === "string" && typeof body.codigo === "string"
+        ? { tipo: body.tipo, codigo: body.codigo }
+        : undefined;
+    } },
+  })
+  async create(@Body() body: CreateCatalogoRequest): Promise<CatalogoItemDto> {
+    return this.service.create(body);
   }
 
   @Patch(":id")
   @RequirePermission(AppPermission.CatalogosManage)
+  @Audit({ action: "catalogo.update", targetType: "catalogo" })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateCatalogoRequest,
-    @CurrentUser() actor: AuthenticatedUser,
   ): Promise<CatalogoItemDto> {
-    return this.service.update(id, body, actor);
+    return this.service.update(id, body);
   }
 
   @Delete(":id")
   @RequirePermission(AppPermission.CatalogosManage)
-  async delete(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<EliminarCatalogoResultadoDto> {
-    return this.service.softDelete(id, actor);
+  @Audit({ action: "catalogo.delete", targetType: "catalogo" })
+  async delete(@Param("id") id: string): Promise<EliminarCatalogoResultadoDto> {
+    return this.service.softDelete(id);
   }
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.CatalogosManage)
-  async reactivate(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<CatalogoItemDto> {
-    return this.service.reactivate(id, actor);
+  @Audit({ action: "catalogo.reactivate", targetType: "catalogo" })
+  async reactivate(@Param("id") id: string): Promise<CatalogoItemDto> {
+    return this.service.reactivate(id);
   }
 }

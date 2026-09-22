@@ -13,6 +13,7 @@ import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 import { CreateFinanciamientoDto, FinanciamientoDto, UpdateFinanciamientoDto } from "./dto/financiamiento.dto";
 import { RecursosService } from "./recursos.service";
 
@@ -29,6 +30,18 @@ export class FinanciamientosController {
 
   @Post()
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "financiamiento.create",
+    targetType: "financiamiento",
+    targetId: { from: "response", field: "id_financiamiento" },
+    details: {
+      from: "response",
+      pick: (response) => {
+        const r = response as FinanciamientoDto | null;
+        return r ? { codigo: r.codigo } : undefined;
+      },
+    },
+  })
   async create(
     @Body() body: CreateFinanciamientoDto,
     @CurrentUser() actor: AuthenticatedUser,
@@ -38,6 +51,11 @@ export class FinanciamientosController {
 
   @Patch(":id")
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({
+    action: "financiamiento.update",
+    targetType: "financiamiento",
+    details: { from: "context" },
+  })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateFinanciamientoDto,
@@ -49,6 +67,7 @@ export class FinanciamientosController {
   @Delete(":id")
   @HttpCode(204)
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({ action: "financiamiento.delete", targetType: "financiamiento" })
   async delete(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,
@@ -58,6 +77,7 @@ export class FinanciamientosController {
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.RecursosManage)
+  @Audit({ action: "financiamiento.reactivate", targetType: "financiamiento" })
   async reactivate(
     @Param("id") id: string,
     @CurrentUser() actor: AuthenticatedUser,

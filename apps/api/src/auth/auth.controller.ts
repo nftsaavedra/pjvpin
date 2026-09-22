@@ -6,6 +6,7 @@ import type { AuthResponse, AuthStatusDto, UsuarioDto } from "./dto/auth.respons
 import { BootstrapUsuarioRequest, BootstrapReniecDniRequest } from "./dto/bootstrap.request";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { AuditUser } from "../audit/audit.decorator";
 
 @Controller("auth")
 export class AuthController {
@@ -46,6 +47,7 @@ export class AuthController {
 
   @Post("bootstrap")
   @HttpCode(201)
+  @AuditUser({ action: "usuario.create", actor: { from: "response" } })
   async bootstrap(@Body() body: BootstrapUsuarioRequest): Promise<UsuarioDto> {
     return this.auth.bootstrap(
       body.username,

@@ -5,6 +5,7 @@ import { AppPermission } from "../rbac/permissions.enum";
 import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
+import { Audit } from "../audit/audit.decorator";
 import {
   ExportDataConProjectosDto,
   ExportDataDto,
@@ -85,6 +86,12 @@ export class ReportesController {
    */
   @Get("cerif")
   @RequirePermission(AppPermission.ReportesExport)
+  @Audit({
+    action: "reportes.export",
+    targetType: "cerif",
+    targetId: { from: "context" },
+    details: { from: "context" },
+  })
   async getCerif(
     @Query("entidad") entidad: string | undefined,
     @CurrentUser() actor: AuthenticatedUser,

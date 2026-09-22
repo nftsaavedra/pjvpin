@@ -6,6 +6,7 @@ import { PermissionsGuard } from "../rbac/permissions.guard";
 import { RequirePermission } from "../rbac/require-permission.decorator";
 import { CurrentUser, type AuthenticatedUser } from "../rbac/current-user.decorator";
 import { AppPermission } from "../rbac/permissions.enum";
+import { AuditUser } from "../audit/audit.decorator";
 import { CreateUsuarioRequest, UpdateUsuarioRequest } from "./dto/usuarios.dto";
 import type { UsuarioDto } from "../auth/dto/auth.response";
 import type { PaginatedUsuarios } from "./dto/usuarios.dto";
@@ -59,16 +60,13 @@ export class UsuariosController {
 
   @Post()
   @RequirePermission(AppPermission.UsuariosManage)
-  async create(
-    @Body() body: CreateUsuarioRequest,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<UsuarioDto> {
+  @AuditUser({ action: "usuario.create" })
+  async create(@Body() body: CreateUsuarioRequest): Promise<UsuarioDto> {
     return this.service.create({
       username: body.username,
       password: body.password,
       rol: body.rol,
       dni: body.dni,
-      actor,
     });
   }
 
@@ -80,6 +78,7 @@ export class UsuariosController {
 
   @Patch(":id")
   @RequirePermission(AppPermission.UsuariosManage)
+  @AuditUser({ action: "usuario.update" })
   async update(
     @Param("id") id: string,
     @Body() body: UpdateUsuarioRequest,
@@ -90,19 +89,15 @@ export class UsuariosController {
 
   @Patch(":id/desactivar")
   @RequirePermission(AppPermission.UsuariosManage)
-  async deactivate(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<UsuarioDto> {
-    return this.service.deactivate(id, actor);
+  @AuditUser({ action: "usuario.deactivate" })
+  async deactivate(@Param("id") id: string): Promise<UsuarioDto> {
+    return this.service.deactivate(id);
   }
 
   @Patch(":id/reactivar")
   @RequirePermission(AppPermission.UsuariosManage)
-  async reactivate(
-    @Param("id") id: string,
-    @CurrentUser() actor: AuthenticatedUser,
-  ): Promise<UsuarioDto> {
-    return this.service.reactivate(id, actor);
+  @AuditUser({ action: "usuario.reactivate" })
+  async reactivate(@Param("id") id: string): Promise<UsuarioDto> {
+    return this.service.reactivate(id);
   }
 }
