@@ -44,6 +44,11 @@ scripts/
 .agents/
 .continue/
 .opencode/
+# Config raiz de opencode CLI: opencode la auto-modifica cuando un MCP
+# server registrado deja de estar disponible en la sesion (no es trabajo
+# del usuario, es ruido de session-state). Ignorar para evitar drift.
+opencode.json
+opencode.local.json
 .impeccable/
 .vscode/*
 !.vscode/extensions.json
